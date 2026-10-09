@@ -7,7 +7,12 @@
 	const arrowLeftArt = ap('/assets/mcschmutzo/tutorial/arrow-left.svg');
 	const arrowRightArt = ap('/assets/mcschmutzo/tutorial/arrow-right.svg');
 
+	const frameArt = ap('/assets/mcschmutzo/popup/rules-frame.svg');
+	const tabArt = ap('/assets/mcschmutzo/popup/rules-tab.svg');
+
 	const TOTAL_PAGES = 7;
+	// Each page's title, shown in the frame's red header (outside the scrolling page).
+	const PAGE_TITLES = ['OVERVIEW', 'PAYTABLE', 'FEATURES', 'WAYS TO WIN', 'FEATURE BUY', 'GENERAL INFO', 'USER INTERFACE GUIDE'];
 
 	const symArt = (name: string) => ap(`/assets/mcschmutzo/symbols/${name === 'S' ? 'S_scatter' : name}.webp`);
 
@@ -101,6 +106,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import { popIn, popOut } from '../lib/popOut';
+	import PopupScrews from './PopupScrews.svelte';
 	import { i18nDerived } from '../i18n/i18nDerived';
 
 	type Props = { onclose: () => void };
@@ -152,9 +158,20 @@
 
 <div class="tu-root" in:popIn|global out:popOut|global role="dialog" aria-modal="true">
 	<div class="tu-popup">
+		<!-- Figma 8170:5527: the bolted diner frame (9-slice, so the screws keep their shape at any
+		     aspect) with a red tab on each side, over a cream body and a red title header. -->
+		<span class="tu-frame" style={`border-image-source:url('${frameArt}')`} aria-hidden="true"></span>
+		<PopupScrews frame="rules" />
+		<img class="tu-tab" src={tabArt} alt="" draggable="false" />
+		<img class="tu-tab tu-tab--right" src={tabArt} alt="" draggable="false" />
+
+		<header class="tu-head">
+			<h2 class="tu-title">
+				{page <= TOTAL_PAGES ? i18nDerived.translate(PAGE_TITLES[page - 1]) : `${i18nDerived.translate('INFO PAGE')} ${page}`}
+			</h2>
+		</header>
 		{#if page === 1}
 			<div class="tu-page" use:scrollCue>
-				<h2 class="tu-title">{i18nDerived.translate('OVERVIEW')}</h2>
 				<p class="tu-body">{i18nDerived.translate('INFO OVERVIEW BODY')}</p>
 
 				<div class="tu-lower">
@@ -172,7 +189,6 @@
 			</div>
 		{:else if page === 2}
 			<div class="tu-page" use:scrollCue>
-				<h2 class="tu-title">{i18nDerived.translate('PAYTABLE')}</h2>
 
 				<div class="pt-table">
 					<div class="pt-head">
@@ -200,7 +216,6 @@
 			</div>
 		{:else if page === 3}
 			<div class="tu-page" use:scrollCue>
-				<h2 class="tu-title">{i18nDerived.translate('FEATURES')}</h2>
 
 				<div class="ft-grid">
 					<div class="ft-card ft-card--wild">
@@ -288,7 +303,6 @@
 			</div>
 		{:else if page === 4}
 			<div class="tu-page" use:scrollCue>
-				<h2 class="tu-title">{i18nDerived.translate('WAYS TO WIN')}</h2>
 				<p class="tu-body tu-body--wide">{i18nDerived.translate('INFO WAYS BODY')}</p>
 
 				<div class="wt-grid">
@@ -305,7 +319,6 @@
 			</div>
 		{:else if page === 5}
 			<div class="tu-page" use:scrollCue>
-				<h2 class="tu-title">{i18nDerived.translate('FEATURE BUY')}</h2>
 
 				<div class="fb-grid">
 					{#each FEATURE_BUYS as fb}
@@ -324,12 +337,11 @@
 			</div>
 		{:else if page === 6}
 			<div class="tu-page" use:scrollCue>
-				<h2 class="tu-title">{i18nDerived.translate('GENERAL INFO')}</h2>
 
 				<div class="gi-grid">
 					<div class="gi-card">
 						<div class="gi-head">
-							<img class="gi-icon" src={reloadArt} alt="" draggable="false" />
+							<span class="gi-icon" style={`--icon:url('${reloadArt}')`} aria-hidden="true"></span>
 							<h3 class="gi-title">{i18nDerived.translate('INTERRUPTED ROUNDS')}</h3>
 						</div>
 						<div class="gi-body">
@@ -340,7 +352,7 @@
 
 					<div class="gi-card">
 						<div class="gi-head">
-							<img class="gi-icon" src={scalesArt} alt="" draggable="false" />
+							<span class="gi-icon" style={`--icon:url('${scalesArt}')`} aria-hidden="true"></span>
 							<h3 class="gi-title">{i18nDerived.translate('LEGAL NOTICE')}</h3>
 						</div>
 						<div class="gi-body">
@@ -354,7 +366,6 @@
 			</div>
 		{:else if page === 7}
 			<div class="tu-page" use:scrollCue>
-				<h2 class="tu-title">{i18nDerived.translate('USER INTERFACE GUIDE')}</h2>
 
 				<div class="ug-grid">
 					{#each UI_ITEMS as it}
@@ -370,7 +381,6 @@
 			</div>
 		{:else}
 			<div class="tu-page tu-page--placeholder">
-				<h2 class="tu-title">{i18nDerived.translate('INFO PAGE')} {page}</h2>
 				<p class="tu-body">{i18nDerived.translate('INFO COMING SOON')}</p>
 			</div>
 		{/if}
@@ -436,12 +446,16 @@
 		left: 50%;
 		transform: translate(-50%, -50%);
 		z-index: 59;
-		width: min(980px, 94vw);
+		/* the design's 1030×595, as big as the screen allows */
+		width: min(94vw, 1400px, calc(88dvh * 1030 / 595));
 		max-height: 94dvh;
+		container-type: inline-size;
 		font-family: 'Nunito', sans-serif;
 	}
 
 	.tu-popup {
+		/* --k = one design px (the frame is 1030 wide), floored so phones keep a usable frame. */
+		--k: max(0.42px, calc(100cqw / 1030));
 		position: relative;
 		box-sizing: border-box;
 		display: flex;
@@ -449,13 +463,57 @@
 		/* FIXED height so the popup stays the same size on every page (no jump when paging). It scales
 		   with the viewport (dvh) and is capped in px on big screens; the page body scrolls if a page's
 		   content is taller than the box. */
-		height: min(680px, 86dvh);
-		padding: clamp(20px, 3.2vmin, 40px) clamp(28px, 5vmin, 60px) 0;
-		border: 1.91px solid #605553;
-		border-radius: 22px;
-		background: #181818;
-		box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6);
-		overflow: hidden;
+		height: max(calc(100cqw * 595 / 1030), min(86dvh, 640px));
+		/* inside the frame's dark rim (design: header from y 26.7, body to 32 px off the bottom) */
+		padding: calc(26.7 * var(--k)) calc(27 * var(--k)) calc(30 * var(--k));
+		filter: drop-shadow(0 calc(18 * var(--k)) calc(30 * var(--k)) rgba(0, 0, 0, 0.55));
+	}
+	/* the cream body, inset so it never shows past the frame's rounded outer corners */
+	.tu-popup::before {
+		content: '';
+		position: absolute;
+		inset: calc(16 * var(--k));
+		border-radius: calc(16 * var(--k));
+		background: #f9dca6;
+	}
+	.tu-frame {
+		position: absolute;
+		inset: 0;
+		z-index: 3;
+		pointer-events: none;
+		border-style: solid;
+		border-width: calc(82 * var(--k));
+		border-image-slice: 82;
+		border-image-repeat: stretch;
+	}
+	.tu-tab {
+		position: absolute;
+		z-index: 3;
+		left: calc(18.85 * var(--k));
+		top: 50%;
+		translate: 0 -50%;
+		width: calc(16.48 * var(--k));
+		height: min(calc(133.9 * var(--k)), 30%);
+		pointer-events: none;
+		user-select: none;
+	}
+	.tu-tab--right {
+		left: auto;
+		right: calc(18.85 * var(--k));
+		scale: -1 1;
+	}
+	/* Red header band holding the page title (Comica Brush 50, cream with a dark outline). */
+	.tu-head {
+		position: relative;
+		z-index: 1;
+		flex: 0 0 auto;
+		display: grid;
+		place-items: center;
+		min-height: calc(100 * var(--k));
+		padding: calc(10 * var(--k)) calc(60 * var(--k));
+		box-sizing: border-box;
+		background: #b1190a;
+		border-radius: calc(10 * var(--k)) calc(10 * var(--k)) 0 0;
 	}
 
 	/* Sits fully ABOVE the popup's top-right corner (the button is a child of .tu-root, not the
@@ -486,7 +544,7 @@
 	   it lands off the top of the screen. Tuck it INSIDE the top-right corner instead. */
 	@media (max-height: 500px) {
 		.tu-root {
-			width: min(760px, 92vw);
+			width: min(760px, 92vw, calc(90dvh * 1030 / 595));
 		}
 		.tu-close {
 			--x-size: clamp(28px, 7vmin, 40px);
@@ -497,27 +555,31 @@
 
 	/* The page body is the scroll area (flex child of the popup); the nav sits below it. */
 	.tu-page {
+		position: relative;
+		z-index: 1;
 		flex: 1 1 auto;
 		min-height: 0;
 		width: 100%;
+		box-sizing: border-box;
 		overflow-y: auto;
 		overflow-x: hidden;
-		padding-bottom: clamp(6px, 1.2vmin, 14px);
+		padding: clamp(10px, calc(22 * var(--k)), 26px) clamp(14px, calc(36 * var(--k)), 44px) clamp(6px, 1.2vmin, 14px);
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 	}
 
 	.tu-title {
-		margin: 0 0 clamp(10px, 1.9vmin, 20px);
+		margin: 0;
 		max-width: 100%;
 		text-align: center;
-		color: #f3e7cb;
-		font-family: 'Bowlby One SC', sans-serif;
+		color: #e7d5b7;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
 		font-weight: 400;
-		font-size: clamp(1.5rem, 4.2vmin, 2.5rem);
-		line-height: 1.06;
-		letter-spacing: 0.04em;
+		font-size: clamp(1.35rem, calc(46 * var(--k)), 3rem);
+		line-height: 1.05;
+		letter-spacing: 0.05em;
 		text-transform: uppercase;
 		/* Long single-word titles (e.g. Finnish "KÄYTTÖLIITTYMÄOPAS") must wrap instead of overflowing. */
 		overflow-wrap: break-word;
@@ -527,18 +589,19 @@
 
 	.tu-body {
 		margin: 0;
-		max-width: 62ch;
+		max-width: 92%;
 		text-align: center;
-		color: #ece2cd;
-		font-weight: 600;
-		font-size: clamp(0.9rem, 2.1vmin, 1.28rem);
-		line-height: 1.5;
+		color: #000;
+		font-weight: 500;
+		font-size: clamp(0.9rem, 2.1vmin, 1.15rem);
+		line-height: 1.4;
+		letter-spacing: 0.03em;
 	}
 
 	/* Page 2 — paytable. Shared column template keeps header cells and body columns aligned. */
 	.pt-table {
 		width: 100%;
-		margin-top: clamp(12px, 2.2vmin, 24px);
+		margin-top: clamp(2px, 0.6vmin, 6px);
 		/* minmax(0, …) lets the columns shrink to the popup width instead of the header/symbol
 		   content forcing the table wider (which cut the last column off on narrow phones). */
 		--pt-cols: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
@@ -551,27 +614,29 @@
 	}
 	.pt-hcell {
 		min-width: 0;
-		padding: clamp(7px, 1.4vmin, 14px) clamp(3px, 0.8vmin, 10px);
-		border-radius: 8px;
-		background: #e9a02a;
-		color: #fff;
+		padding: clamp(5px, 1vmin, 9px) clamp(3px, 0.8vmin, 10px);
+		border-radius: 8px 8px 0 0;
+		background: #b1190a;
+		color: #f0a112;
 		text-align: center;
 		/* Wrap "X OF A KIND" instead of clipping when the column is narrow. */
 		white-space: normal;
 		line-height: 1.1;
-		font-family: 'Bowlby One SC', sans-serif;
+		font-family: 'Luckiest Guy', 'Bowlby One SC', sans-serif;
 		font-weight: 400;
-		font-size: clamp(0.62rem, 1.55vmin, 1.02rem);
+		font-size: clamp(0.72rem, 2.3vmin, 1.1rem);
 		letter-spacing: 0.02em;
+		-webkit-text-stroke: 2px #3a1206;
+		paint-order: stroke fill;
 	}
 	.pt-body {
-		border-top: 1px solid rgba(255, 255, 255, 0.09);
+		border-top: 1px solid #695a3f;
 	}
 	.pt-row {
 		display: grid;
 		grid-template-columns: var(--pt-cols);
 		align-items: center;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+		border-bottom: 1px solid #695a3f;
 	}
 	.pt-sym {
 		min-width: 0;
@@ -580,25 +645,25 @@
 		align-items: center;
 		justify-content: center;
 		gap: clamp(2px, 0.6vmin, 6px);
-		padding: clamp(4px, 0.9vmin, 9px) clamp(4px, 1vmin, 14px);
+		padding: clamp(2px, 0.5vmin, 5px) clamp(4px, 1vmin, 14px);
 	}
 	.pt-sym img {
-		height: clamp(36px, 7.6vmin, 82px);
+		height: clamp(30px, 6.4vmin, 50px);
 		max-width: 100%;
 		width: auto;
 		object-fit: contain;
 	}
 	.pt-sym--multi img {
-		height: clamp(34px, 6.6vmin, 68px);
+		height: clamp(28px, 6vmin, 46px);
 	}
 	.pt-val {
 		min-width: 0;
-		padding: clamp(6px, 1.2vmin, 14px) 0;
-		border-left: 1px solid rgba(255, 255, 255, 0.09);
+		padding: clamp(4px, 0.9vmin, 10px) 0;
+		border-left: 1px solid #695a3f;
 		text-align: center;
-		color: #efe8d8;
+		color: #b1190a;
 		font-weight: 700;
-		font-size: clamp(0.9rem, 2.5vmin, 1.55rem);
+		font-size: clamp(0.9rem, 2.3vmin, 1.35rem);
 	}
 
 	/* Page 3 — features. Two cards on top (wild | re-spin), full-width multiplier card below. */
@@ -628,17 +693,10 @@
 	/* Boards match the Buy Bonus cards: dark gradient body with an inset #605553 frame (::before). */
 	.ft-card {
 		position: relative;
-		padding: clamp(14px, 2.2vmin, 24px) clamp(16px, 2.2vmin, 26px);
-		border-radius: 16px;
-		background: linear-gradient(180deg, #221e1b 0%, #191512 100%);
-	}
-	.ft-card::before {
-		content: '';
-		position: absolute;
-		inset: 6px;
-		border: 2.03px solid #605553;
+		padding: clamp(12px, 2vmin, 20px) clamp(14px, 2vmin, 22px);
 		border-radius: 12px;
-		pointer-events: none;
+		border: 3px solid #a7977a;
+		background: #fee3b2;
 	}
 	.ft-head {
 		display: flex;
@@ -670,17 +728,18 @@
 	}
 	.ft-title {
 		margin: 0;
-		color: #f0a112;
-		font-family: 'Bowlby One SC', sans-serif;
+		color: #b1190a;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
 		font-weight: 400;
 		font-size: clamp(0.85rem, 1.9vmin, 1.2rem);
-		letter-spacing: 0.02em;
+		letter-spacing: 0.03em;
 		text-transform: uppercase;
 	}
 	.ft-body {
-		color: #c9c0b2;
-		font-weight: 600;
-		font-size: clamp(0.62rem, 1.45vmin, 0.9rem);
+		color: #000;
+		font-weight: 500;
+		font-size: clamp(0.66rem, 1.5vmin, 0.92rem);
 		line-height: 1.42;
 	}
 	.ft-body p {
@@ -708,15 +767,15 @@
 	.ft-chip {
 		padding: clamp(2px, 0.5vmin, 5px) clamp(6px, 1vmin, 10px);
 		border-radius: 6px;
-		background: #1b1917;
-		border: 1px solid rgba(255, 255, 255, 0.07);
-		color: #ece2cd;
-		font-weight: 700;
-		font-size: clamp(0.58rem, 1.35vmin, 0.82rem);
+		background: #b1190a;
+		color: #fef4d5;
+		font-family: 'Luckiest Guy', 'Bowlby One SC', sans-serif;
+		font-size: clamp(0.62rem, 1.4vmin, 0.86rem);
+		line-height: 1.25;
 		white-space: nowrap;
 	}
 	.ft-arrow {
-		color: #8a8177;
+		color: #695a3f;
 		font-size: clamp(0.55rem, 1.2vmin, 0.78rem);
 	}
 
@@ -773,17 +832,18 @@
 		min-width: 0;
 	}
 	.ft-sub-title {
-		color: #f0a112;
-		font-family: 'Bowlby One SC', sans-serif;
+		color: #b1190a;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
 		font-weight: 400;
 		font-size: clamp(0.66rem, 1.5vmin, 0.92rem);
-		letter-spacing: 0.02em;
+		letter-spacing: 0.03em;
 		text-transform: uppercase;
 	}
 	.ft-sub-body {
-		color: #c9c0b2;
-		font-weight: 600;
-		font-size: clamp(0.6rem, 1.35vmin, 0.85rem);
+		color: #000;
+		font-weight: 500;
+		font-size: clamp(0.62rem, 1.4vmin, 0.86rem);
 		line-height: 1.35;
 	}
 
@@ -792,7 +852,13 @@
 	.tu-body--wide {
 		max-width: none;
 		width: 100%;
-		text-align: left;
+		text-align: center;
+	}
+	.wt-grid .ft-card {
+		border-width: 1px;
+		border-color: #605553;
+		border-radius: 14px;
+		background: transparent;
 	}
 	.wt-grid {
 		width: 100%;
@@ -811,6 +877,7 @@
 		   column and pushed the 4th card off the popup (seen at 1920×1080). */
 		grid-template-columns: repeat(4, minmax(0, 1fr));
 		gap: clamp(8px, 1.5vmin, 16px);
+		flex: 1 0 auto;
 	}
 	.fb-card {
 		min-width: 0;
@@ -819,32 +886,25 @@
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
-		min-height: clamp(280px, 44vmin, 420px);
-		padding: clamp(16px, 2.4vmin, 28px) clamp(16px, 2vmin, 22px);
-		border-radius: 16px;
-		background: linear-gradient(180deg, #221e1b 0%, #191512 100%);
-	}
-	.fb-card::before {
-		content: '';
-		position: absolute;
-		inset: 6px;
-		border: 2.03px solid #605553;
-		border-radius: 12px;
-		pointer-events: none;
+		padding: clamp(14px, 2.2vmin, 24px) clamp(14px, 1.8vmin, 20px);
+		border-radius: 14px;
+		border: 1px solid #605553;
+		background: #fee3b2;
 	}
 	.fb-title {
 		margin: 0 0 clamp(10px, 1.8vmin, 18px);
-		color: #f0a112;
-		font-family: 'Bowlby One SC', sans-serif;
+		color: #b1190a;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
 		font-weight: 400;
 		font-size: clamp(0.8rem, 1.75vmin, 1.1rem);
-		letter-spacing: 0.02em;
+		letter-spacing: 0.03em;
 		text-transform: uppercase;
 	}
 	.fb-body {
 		margin: 0;
-		color: #c9c0b2;
-		font-weight: 600;
+		color: #000;
+		font-weight: 500;
 		font-size: clamp(0.66rem, 1.5vmin, 0.92rem);
 		line-height: 1.45;
 	}
@@ -853,19 +913,19 @@
 		margin-bottom: clamp(8px, 1.4vmin, 14px);
 		padding: clamp(6px, 1.1vmin, 11px) clamp(10px, 1.8vmin, 18px);
 		border-radius: 8px;
-		background: #1b1917;
-		border: 1px solid rgba(255, 255, 255, 0.08);
-		color: #fff;
-		font-weight: 800;
+		background: #322e2b;
+		color: #fef4d5;
+		font-family: 'Luckiest Guy', 'Bowlby One SC', sans-serif;
 		font-size: clamp(0.72rem, 1.55vmin, 0.98rem);
+		line-height: 1.2;
 		max-width: 100%;
 		box-sizing: border-box;
 		text-align: center;
 		overflow-wrap: anywhere;
 	}
 	.fb-rtp {
-		color: #c9c0b2;
-		font-weight: 600;
+		color: #000;
+		font-weight: 700;
 		font-size: clamp(0.72rem, 1.5vmin, 0.95rem);
 	}
 
@@ -884,16 +944,9 @@
 		align-items: center;
 		text-align: center;
 		padding: clamp(16px, 2.4vmin, 28px) clamp(18px, 2.4vmin, 32px);
-		border-radius: 16px;
-		background: linear-gradient(180deg, #221e1b 0%, #191512 100%);
-	}
-	.gi-card::before {
-		content: '';
-		position: absolute;
-		inset: 6px;
-		border: 2.03px solid #605553;
-		border-radius: 12px;
-		pointer-events: none;
+		border-radius: 14px;
+		border: 3px solid #beaa8c;
+		background: #fee3b2;
 	}
 	/* Icon sits ABOVE the title (matches the other games' info pages); larger, prominent icons. */
 	.gi-head {
@@ -904,24 +957,28 @@
 		gap: clamp(6px, 1.2vmin, 12px);
 		margin-bottom: clamp(10px, 1.8vmin, 18px);
 	}
+	/* the white icon art, shown as a mask over the design's red */
 	.gi-icon {
-		height: clamp(46px, 7.2vmin, 88px);
-		width: auto;
-		object-fit: contain;
-		filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.4));
+		display: block;
+		height: clamp(40px, 6.4vmin, 72px);
+		aspect-ratio: 1;
+		background: #b1190a;
+		-webkit-mask: var(--icon) center / contain no-repeat;
+		mask: var(--icon) center / contain no-repeat;
 	}
 	.gi-title {
 		margin: 0;
-		color: #f3e7cb;
-		font-family: 'Bowlby One SC', sans-serif;
+		color: #b1190a;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
 		font-weight: 400;
 		font-size: clamp(1rem, 2.3vmin, 1.5rem);
-		letter-spacing: 0.02em;
+		letter-spacing: 0.03em;
 		text-transform: uppercase;
 	}
 	.gi-body {
-		color: #cfc6b7;
-		font-weight: 600;
+		color: #000;
+		font-weight: 500;
 		font-size: clamp(0.8rem, 1.8vmin, 1.12rem);
 		line-height: 1.5;
 	}
@@ -940,7 +997,7 @@
 		width: 100%;
 		margin-top: clamp(12px, 2vmin, 22px);
 		display: grid;
-		grid-template-columns: repeat(5, 1fr);
+		grid-template-columns: repeat(6, minmax(0, 1fr));
 		gap: clamp(14px, 2.4vmin, 28px) clamp(6px, 1.4vmin, 16px);
 	}
 	.ug-item {
@@ -965,17 +1022,17 @@
 		min-width: 0;
 	}
 	.ug-label {
-		color: #f2ead9;
-		font-family: 'Bowlby One SC', sans-serif;
-		font-weight: 400;
+		color: #000;
+		font-family: 'Nunito', sans-serif;
+		font-weight: 900;
 		font-size: clamp(0.78rem, 1.6vmin, 1rem);
-		letter-spacing: 0.02em;
+		letter-spacing: 0.03em;
 		text-transform: uppercase;
 	}
 	.ug-desc {
-		color: #b3a99c;
+		color: #000;
 		font-family: 'Nunito', sans-serif;
-		font-weight: 600;
+		font-weight: 500;
 		font-size: clamp(0.66rem, 1.4vmin, 0.85rem);
 		line-height: 1.35;
 	}
@@ -996,14 +1053,12 @@
 	   (absolute positioning references the padding box, so the popup padding doesn't push it in). */
 	.tu-guy {
 		position: absolute;
-		left: 0;
-		/* Slightly below the edge so the transparent gap under the art is clipped away by the popup. */
-		bottom: clamp(-30px, -3.4vmin, -14px);
-		width: clamp(120px, 19%, 210px);
+		left: calc(30 * var(--k));
+		bottom: calc(30 * var(--k));
+		width: clamp(110px, 21%, 220px);
 		height: auto;
-		z-index: 1;
+		z-index: 2;
 		pointer-events: none;
-		filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.4));
 	}
 	.tu-stats {
 		display: flex;
@@ -1023,27 +1078,32 @@
 		gap: clamp(6px, 1.4vw, 14px);
 	}
 	.tu-stat-label {
-		color: #ece2cd;
-		font-weight: 600;
-		font-size: clamp(0.9rem, 2.1vmin, 1.32rem);
+		color: #000;
+		font-weight: 500;
+		font-size: clamp(0.9rem, 2.1vmin, 1.2rem);
+		letter-spacing: 0.03em;
 	}
 	.tu-stat-big {
 		color: #f0a112;
-		font-family: 'Bowlby One SC', sans-serif;
+		font-family: 'Luckiest Guy', 'Bowlby One SC', sans-serif;
 		font-weight: 400;
-		font-size: clamp(1.15rem, 3.2vmin, 2.1rem);
+		font-size: clamp(1.3rem, 3.6vmin, 2.3rem);
 		letter-spacing: 0.01em;
 		white-space: nowrap;
+		-webkit-text-stroke: max(1.5px, calc(3 * var(--k))) #2b120c;
+		paint-order: stroke fill;
 	}
 	.tu-pill {
 		padding: clamp(4px, 0.8vmin, 8px) clamp(14px, 2.4vmin, 24px);
-		border-radius: 8px;
-		background: #f0a112;
-		color: #241f1c;
-		font-family: 'Bowlby One SC', sans-serif;
+		border-radius: 6px;
+		background: #b1190a;
+		color: #e7d5b7;
+		font-family: 'Luckiest Guy', 'Bowlby One SC', sans-serif;
 		font-weight: 400;
-		font-size: clamp(1rem, 2.4vmin, 1.4rem);
+		font-size: clamp(1rem, 2.1vmin, 1.2rem);
 		letter-spacing: 0.01em;
+		-webkit-text-stroke: 2px #2b120c;
+		paint-order: stroke fill;
 	}
 
 	.tu-page--placeholder {
@@ -1090,12 +1150,13 @@
 
 	.tu-nav {
 		position: relative;
+		z-index: 4;
 		flex: 0 0 auto;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: clamp(12px, 2vmin, 20px);
-		padding: clamp(10px, 1.6vmin, 18px) 0 clamp(14px, 2.4vmin, 26px);
+		gap: clamp(10px, 1.6vmin, 14px);
+		padding: clamp(6px, 1.2vmin, 12px) 0 clamp(4px, 1vmin, 10px);
 	}
 	.tu-arrow {
 		width: clamp(30px, 5vmin, 48px);
@@ -1120,8 +1181,8 @@
 	}
 	.tu-page-num {
 		position: absolute;
-		right: clamp(16px, 3vmin, 34px);
-		color: #b3a99c;
+		right: max(30px, calc(56 * var(--k)));
+		color: #000;
 		font-weight: 600;
 		font-size: clamp(0.8rem, 1.8vmin, 1rem);
 	}
@@ -1130,20 +1191,17 @@
 	   The scroll structure is the default now; here we just widen to the phone and tighten padding. */
 	@media (max-width: 680px), (max-height: 560px) {
 		.tu-root {
-			width: 94vw;
+			width: min(94vw, calc(90dvh * 1030 / 595));
 		}
 		/* Overview chef is desktop-only — hide it on mobile + smaller landscape (design ask). */
 		.tu-guy {
 			display: none;
 		}
-		.tu-popup {
-			padding: clamp(16px, 4.5vw, 30px) clamp(14px, 4vw, 26px) 0;
-		}
 		.tu-nav {
 			padding: clamp(8px, 2vw, 12px) 0 clamp(12px, 3vw, 18px);
 		}
 		.tu-page-num {
-			right: clamp(4px, 2vw, 12px);
+			right: max(26px, calc(50 * var(--k)));
 		}
 	}
 
@@ -1165,12 +1223,11 @@
 		/* Overview chef: bigger on big popups, scaling with the popup width (26% ≈ 255px at the full
 		   980px popup) and never wider than the empty column left of the stats. */
 		.tu-guy {
-			width: clamp(186px, 26%, 260px);
+			width: clamp(170px, 22%, 230px);
 		}
 		/* FEATURE BUY (page 5) — taller cards + larger title/body/cost/RTP. */
 		.fb-card {
-			min-height: clamp(320px, 50vmin, 470px);
-			padding: clamp(20px, 2.8vmin, 34px) clamp(18px, 2.2vmin, 26px);
+			padding: clamp(18px, 2.6vmin, 30px) clamp(18px, 2.2vmin, 26px);
 		}
 		.fb-title {
 			font-size: clamp(0.95rem, 2vmin, 1.28rem);
@@ -1191,7 +1248,7 @@
 			padding: clamp(22px, 3vmin, 40px) clamp(24px, 3vmin, 44px);
 		}
 		.gi-icon {
-			height: clamp(58px, 8.4vmin, 104px);
+			height: clamp(48px, 7vmin, 80px);
 		}
 		.gi-title {
 			font-size: clamp(1.15rem, 2.6vmin, 1.7rem);
@@ -1251,16 +1308,9 @@
 			text-align: left;
 			gap: clamp(10px, 1.5vmin, 16px);
 			padding: clamp(10px, 1.7vmin, 18px) clamp(16px, 2.4vmin, 28px);
-			border-radius: 14px;
-			background: linear-gradient(180deg, #221e1b 0%, #191512 100%);
-		}
-		.ug-item::before {
-			content: '';
-			position: absolute;
-			inset: 5px;
-			border: 2.03px solid #605553;
-			border-radius: 11px;
-			pointer-events: none;
+			border-radius: 12px;
+			border: 3px solid #beaa8c;
+			background: #fee3b2;
 		}
 		.ug-btn {
 			width: clamp(38px, 5vmin, 52px);
@@ -1331,11 +1381,10 @@
 			/* Fixed (like the base rule) so pages don't jump; short enough that the close (X) can sit
 			   ABOVE it, outside, without clipping off the top of the screen. */
 			height: 74dvh;
-			padding: clamp(10px, 4vmin, 20px) clamp(14px, 5vmin, 28px) 0;
 		}
 		/* Narrower so there's a clear margin around the popup for the outside X. */
 		.tu-root {
-			width: min(760px, 84vw);
+			width: min(760px, 84vw, calc(74dvh * 1030 / 595));
 		}
 		.tu-title {
 			font-size: clamp(1rem, 8vmin, 1.6rem);
@@ -1361,8 +1410,6 @@
 		}
 		/* Card pages (features / general info / feature buy / UI guide): tighten padding + type so more
 		   of a card is visible before the nav on the tiny popout (less mid-card scroll cut-off). */
-		/* The visible frame is an INSET border (6px in + 2px line), so the padding must clear that too:
-		   ≥6px of air above/below the text and ≥8px at the sides, inside the drawn frame. */
 		.ft-card,
 		.gi-card,
 		.fb-card,

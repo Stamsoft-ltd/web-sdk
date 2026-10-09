@@ -16,11 +16,11 @@ export default {
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
 	'CARD CHANCE TITLE': 'Lisämahdollisuus',
-	'CARD CHANCE DESC': 'Kasvata mahdollisuutta päästä bonukseen.',
+	'CARD CHANCE DESC': 'Aktivoi, niin mahdollisuus käynnistää bonuskierros kasvaa *3-kertaiseksi*.',
 	'CARD FEATURE TITLE': 'Lukituskierros',
 	'CARD FEATURE DESC': 'Takaa voittavan kierroksen ja käynnistää Lukituksen ja uusintakierroksen.',
 	'CARD DEALIT DESC': 'Astu Normaaliin bonukseen kolmella scatterilla.',
-	'CARD ALLIN DESC': 'Astu Super-bonukseen neljällä scatterilla.',
+	'CARD ALLIN DESC': 'Astu Super-bonukseen *neljällä* scatterilla.',
 	'CONFIRM TEXT': 'Ostetaanko %mode% hintaan %cost%?',
 	'NORMAL BONUS': 'Normaali bonus',
 	'SUPER BONUS': 'Super-bonus',
@@ -62,9 +62,9 @@ export default {
 	INFO: 'TIEDOT',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': "TERVETULOA McSCHMUTZOON",
+	'SPLASH C1 TITLE': "TERVETULOA SCHMUTZOON",
 	'SPLASH C1 BODY': "Voitot lukittuvat ja pyörivät uudelleen, kunnes grilli on täynnä.",
-	'SPLASH C2 TITLE': "3\nHERKULLISTA\nOMINAISUUTTA",
+	'SPLASH C2 TITLE': "3\nAINUTLAATUISTA\nBONUSTA",
 	'SPLASH C2 BODY 1': "Lukitus ja uudelleenpyöräytys",
 	'SPLASH C2 BODY 2': "Pyöräytä bonuspyörää",
 	'SPLASH C2 BODY 3': "Kasvata kerrointa",

@@ -204,7 +204,7 @@
 
 	// Nobody is at the controls during autoplay / held Space, and a replay must play through on its
 	// own — waiting for a SPIN press there stalls the round. Give the wheel a beat on screen, then spin.
-	const AUTO_SPIN_DELAY_MS = 1200;
+	const AUTO_SPIN_DELAY_MS = 1800; // (after the screen's ~1.4 s entrance — see wb-in-* in the styles)
 	const autoSpins = $derived(
 		isReplayMode() ||
 			stateBetDerived.hasAutoBetCounter() ||
@@ -399,6 +399,7 @@
 			<img class="wb-base" src={baseArt} alt="" draggable="false" />
 			<div
 				class="wb-ring"
+				class:wb-ring--settled={settled}
 				bind:this={outerEl}
 				style={ringStyle(rotOuter, OUTER_MS, OUTER)}
 				ontransitionend={onSettled('outer')}
@@ -415,6 +416,7 @@
 			</div>
 			<div
 				class="wb-ring"
+				class:wb-ring--settled={settled}
 				style={ringStyle(rotInner, INNER_MS, INNER, INNER_DELAY_MS)}
 				bind:this={innerEl}
 				ontransitionend={onSettled('inner')}
@@ -624,20 +626,44 @@
 	.wb-label > span {
 		display: block;
 	}
+	/* The landed values: everything else on the rings dims, the winners pop to ~1.75×, settle at
+	   1.45× in a hot gold glow and keep pulsing while the result is on show. */
+	.wb-label {
+		transition: opacity 0.35s ease;
+	}
+	.wb-ring--settled .wb-label:not(.wb-label--win) {
+		opacity: 0.4;
+	}
 	.wb-label--win > span {
-		animation: wb-win 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+		animation:
+			wb-win 0.75s cubic-bezier(0.3, 1.5, 0.5, 1) both,
+			wb-win-pulse 1.1s ease-in-out 0.75s infinite;
+	}
+	.wb-label--inner.wb-label--win {
+		color: #fff7d6;
 	}
 	@keyframes wb-win {
 		0% {
 			scale: 1;
 		}
-		40% {
-			scale: 1.3;
-			filter: drop-shadow(0 0 8px rgba(255, 214, 90, 1));
+		45% {
+			scale: 1.75;
+			filter: drop-shadow(0 0 6px #fff1a8) drop-shadow(0 0 16px #ffb400);
 		}
 		100% {
-			scale: 1.12;
-			filter: drop-shadow(0 0 5px rgba(255, 214, 90, 0.8));
+			scale: 1.45;
+			filter: drop-shadow(0 0 4px #ffe27a) drop-shadow(0 0 10px #ff9a00);
+		}
+	}
+	@keyframes wb-win-pulse {
+		0%,
+		100% {
+			scale: 1.45;
+			filter: drop-shadow(0 0 4px #ffe27a) drop-shadow(0 0 10px #ff9a00);
+		}
+		50% {
+			scale: 1.55;
+			filter: drop-shadow(0 0 7px #fff1a8) drop-shadow(0 0 18px #ffb400);
 		}
 	}
 
@@ -683,8 +709,9 @@
 		left: 600px;
 		top: 78.5px;
 		translate: -50% -50%;
-		font-family: 'Bowlby One SC', sans-serif;
-		font-size: 56px;
+		/* the game's title face (app.html --font-brush), a touch larger: it's narrower and lighter */
+		font-family: var(--font-brush);
+		font-size: 64px;
 		line-height: 1.2;
 		letter-spacing: 1.4px;
 		text-transform: uppercase;
@@ -692,7 +719,8 @@
 	}
 	.wb-title-outline {
 		color: #5c1a07;
-		-webkit-text-stroke: 5px #5c1a07;
+		/* the fill's 3px stroke + the 5px outline beyond it */
+		-webkit-text-stroke: 8px #5c1a07;
 		filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
 	}
 	.wb-title-fill {
@@ -702,6 +730,9 @@
 		-webkit-background-clip: text;
 		background-clip: text;
 		color: transparent;
+		/* bold: the brush face is light, so the glyphs are fattened with a transparent stroke — the
+		   text clip includes the stroke, so the gradient paints it too */
+		-webkit-text-stroke: 3px transparent;
 	}
 
 	.wb-badge {
@@ -709,7 +740,10 @@
 		top: 36px;
 		width: 221px;
 		height: 147px;
-		animation: wb-badge-bob 2.8s ease-in-out infinite;
+		/* entrance pop (scale/opacity), then the endless bob (translate/rotate) — separate properties */
+		animation:
+			wb-in-pop 0.5s cubic-bezier(0.34, 1.7, 0.6, 1) var(--in, 0.8s) both,
+			wb-badge-bob 2.8s ease-in-out var(--bob, 0s) infinite;
 	}
 	/* Figma: 209×209 at (18, 19) — the symbol art's own padding sits it like the design. */
 	.wb-badge--soup {
@@ -720,7 +754,8 @@
 	}
 	.wb-badge--games {
 		left: 938px; /* mirrored: 1200 − 41 − 221 */
-		animation-delay: -1.4s;
+		--bob: -1.4s;
+		--in: 0.9s;
 	}
 	.wb-badge--portrait {
 		top: -165px;
@@ -732,7 +767,8 @@
 		top: 132px;
 		width: 100px;
 		height: 66px;
-		animation-delay: -0.7s;
+		--bob: -0.7s;
+		--in: 1s;
 	}
 	.wb-badge--steps.wb-badge--portrait {
 		left: 490px; /* the same offset from the portrait pot (378, −196) */
@@ -1026,5 +1062,110 @@
 	.wb-spin:disabled {
 		filter: saturate(0.6) brightness(0.8);
 		cursor: default;
+	}
+
+	/* ── Entrance (the scene's own fade is wb-in) ─────────────────────────────────────────────────
+	   The room settles (wall eases back, the counter rises into place), the wheel pops up spinning
+	   into place, the spatula drops onto it, then the title stamps down, the badges pop and SPIN
+	   bounces in last (~1.4 s). Only scale / rotate / translate / opacity are animated, so nothing
+	   fights the inline transforms (the rings' spin, the spatula's tilt) or the badges' bob. */
+	.wb-bg-frame {
+		animation: wb-in-settle 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+	}
+	.wb-wood,
+	.wb-floor,
+	.wb-glint,
+	.wb-bar {
+		animation: wb-in-rise 0.55s cubic-bezier(0.2, 0.8, 0.3, 1.05) 0.1s both;
+	}
+	.wb-base,
+	.wb-ring {
+		animation: wb-in-wheel 0.75s cubic-bezier(0.3, 1.35, 0.55, 1) 0.2s both;
+	}
+	.wb-base {
+		transform-origin: 50% 50%;
+	}
+	.wb-bulbs {
+		animation: wb-in-fade 0.35s ease-out 0.75s both;
+	}
+	.wb-spatula {
+		animation: wb-in-drop 0.5s cubic-bezier(0.3, 1.5, 0.55, 1) 0.65s both;
+	}
+	.wb-title {
+		animation: wb-in-stamp 0.45s cubic-bezier(0.3, 1.4, 0.55, 1) 0.6s both;
+	}
+	.wb-spin {
+		animation: wb-in-pop 0.5s cubic-bezier(0.34, 1.7, 0.6, 1) 1.05s both;
+	}
+	@keyframes wb-in-settle {
+		from {
+			scale: 1.08;
+		}
+	}
+	@keyframes wb-in-rise {
+		from {
+			translate: 0 90px;
+			opacity: 0;
+		}
+	}
+	@keyframes wb-in-wheel {
+		from {
+			scale: 0.35;
+			rotate: -150deg;
+			opacity: 0;
+		}
+		35% {
+			opacity: 1;
+		}
+	}
+	@keyframes wb-in-fade {
+		from {
+			opacity: 0;
+		}
+	}
+	@keyframes wb-in-drop {
+		from {
+			translate: 0 -260px;
+			opacity: 0;
+		}
+		40% {
+			opacity: 1;
+		}
+	}
+	@keyframes wb-in-stamp {
+		from {
+			scale: 1.9;
+			opacity: 0;
+		}
+		60% {
+			opacity: 1;
+		}
+	}
+	@keyframes wb-in-pop {
+		from {
+			scale: 0;
+			opacity: 0;
+		}
+		50% {
+			opacity: 1;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.wb-bg-frame,
+		.wb-wood,
+		.wb-floor,
+		.wb-glint,
+		.wb-bar,
+		.wb-base,
+		.wb-ring,
+		.wb-bulbs,
+		.wb-spatula,
+		.wb-title,
+		.wb-spin {
+			animation: none;
+		}
+		.wb-badge {
+			animation: wb-badge-bob 2.8s ease-in-out var(--bob, 0s) infinite;
+		}
 	}
 </style>

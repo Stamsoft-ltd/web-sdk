@@ -38,6 +38,7 @@
 	// Share the dim with the HTML layers (HUD etc. sit above the canvas, so the pixi overlay misses them).
 	$effect(() => {
 		context.stateGame.winDim = show && winLevelData ? (winLevelData.type === 'big' ? 0.6 : SMALL_WIN_DIM) : 0;
+		context.stateGame.winOver = show && winLevelData?.type === 'big';
 	});
 	let onCountUpComplete = $state(() => {});
 
@@ -53,6 +54,11 @@
 		const u = exit.current;
 		return u < 0.35 ? 1 + 0.1 * Math.sin((u / 0.35) * (Math.PI / 2)) : 1.1 * (1 - ((u - 0.35) / 0.65) ** 2);
 	});
+
+	// Big-win tiers escalate in size: SWEET is 28% smaller than the shared plaque, and each tier
+	// above it is 10% bigger than the one below (WILD, EPIC, MYTHIC, LEGENDARY). Small wins keep 1.
+	const TIER_SCALE: Partial<Record<number, number>> = { 6: 0.72, 7: 0.79, 8: 0.87, 9: 0.96, 10: 1.05 };
+	const tierScale = $derived(TIER_SCALE[winLevelData?.level ?? 0] ?? 1);
 
 	context.eventEmitter.subscribeOnMount({
 		winShow: () => (show = true),
@@ -128,7 +134,7 @@
 					<Container
 						x={context.stateGameDerived.boardLayout().x}
 						y={context.stateGameDerived.boardLayout().y}
-						scale={padScale}
+						scale={padScale * tierScale}
 					>
 						{#if winLevelData?.pad}
 							<!-- Amount in the win-box-amount plaque: Bowlby One SC (the game's display face), cream. Fixed base size so every
@@ -136,8 +142,11 @@
 							     down so even large values stay inside the red panel. -->
 							{@const amountFontSize = SYMBOL_SIZE * 0.48}
 							<WinPad padKey={winLevelData.pad}>
+								<!-- Anchored on the INK centre: Bowlby's text box (1.129·fs tall, baseline at 1.090·fs)
+								     puts the figures' ink 0.644 of the way down, so anchor 0.5 sat them ~0.16·fs low.
+								     The anchor also keeps a shrunk (maxWidth) amount centred. -->
 								<ResponsiveText
-									anchor={0.5}
+									anchor={{ x: 0.5, y: 0.644 }}
 									maxWidth={context.stateGameDerived.boardLayout().width * 0.4}
 									text={bookEventAmountToCurrencyString(Math.round(countUpAmount))}
 									style={{

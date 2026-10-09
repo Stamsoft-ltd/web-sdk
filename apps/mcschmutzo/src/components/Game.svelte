@@ -89,7 +89,13 @@
 		const h = context.stateLayoutDerived.canvasSizes().height;
 		boardDrop.set(-h * 1.05, { duration: 0 });
 		// a short beat so the splash's fade-out has started before the board arrives
-		setTimeout(() => boardDrop.set(0, { duration: 950, easing: landBounce }).then(() => (boardLanded = true)), 120);
+		setTimeout(
+			() =>
+				boardDrop
+					.set(0, { duration: 950, easing: landBounce })
+					.then(() => (boardLanded = context.stateGame.boardLanded = true)),
+			120,
+		);
 	});
 	const modeImage = './assets/mcschmutzo/background-base.webp';
 	// (the scatter's art is S_scatter.webp: the SCATTER-lettered version under a new name, so no cached S.webp shows)
@@ -141,7 +147,7 @@
 					containers: [
 						{
 							title: 'BASE GAME',
-							text: 'Wins pay left to right on 50 fixed paylines. The same paytable applies in every mode. Maximum win is 25,000x.',
+							text: 'Wins are counted left to right on 50 fixed win lines. The same win table applies in every mode. Maximum win is 25,000x.',
 							image: modeImage,
 							row: 0,
 							column: 0,
@@ -149,7 +155,7 @@
 						},
 						{
 							title: 'LOCK & RE-SPIN',
-							text: 'Every spin with at least one paying line locks its winning symbol and starts the re-spin feature. New matching wins add locked positions.',
+							text: 'Every spin with at least one winning line locks its winning symbol and starts the re-spin feature. New matching wins add locked positions.',
 							image: './assets/mcschmutzo/lock-respin.webp',
 							row: 1,
 							column: 0,
@@ -157,7 +163,7 @@
 						},
 						{
 							title: 'NORMAL BONUS',
-							text: 'Three Scatter symbols trigger the Normal Bonus. It can also be bought for 100x bet.',
+							text: 'Three Scatter symbols trigger the Normal Bonus. It can also be instantly triggered for 100x the play amount.',
 							image: symbolImage('S'),
 							row: 2,
 							column: 0,
@@ -165,7 +171,7 @@
 						},
 						{
 							title: 'SUPER BONUS',
-							text: 'Four Scatter symbols trigger the Super Bonus. No spin can land more than four Scatters. It can also be bought for 500x bet.',
+							text: 'Four Scatter symbols trigger the Super Bonus. No spin can land more than four Scatters. It can also be instantly triggered for 500x the play amount.',
 							image: './assets/mcschmutzo/bonus-wheel.webp',
 							row: 3,
 							column: 0,
@@ -176,7 +182,7 @@
 			],
 			payTable: [
 				{
-					title: 'PAYTABLE',
+					title: 'WIN TABLE',
 					rows: 6,
 					columns: 2,
 					containers: [
@@ -191,7 +197,7 @@
 							['L3', '5: 1x · 4: 0.4x · 3: 0.1x'],
 							['L4', '5: 1x · 4: 0.4x · 3: 0.1x'],
 							['L5', '5: 1x · 4: 0.4x · 3: 0.1x'],
-							['W', 'Wild substitutes for regular paying symbols.'],
+							['W', 'Wild substitutes for regular winning symbols.'],
 							['S', 'Three Scatters trigger Normal Bonus; four trigger Super Bonus.'],
 						].map(([name, text], index) => ({
 							title: name,

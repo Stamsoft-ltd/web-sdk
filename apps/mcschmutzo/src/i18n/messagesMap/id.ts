@@ -16,11 +16,11 @@ export default {
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
 	'CARD CHANCE TITLE': 'Peluang Ekstra',
-	'CARD CHANCE DESC': 'Tingkatkan peluang mencapai bonus.',
+	'CARD CHANCE DESC': 'Aktifkan untuk meningkatkan peluang memicu putaran bonus hingga *3 kali*.',
 	'CARD FEATURE TITLE': 'Kunci Putaran Fitur',
 	"CARD FEATURE DESC": "Menjamin putaran menang dan memulai Lock & Re-Spin.",
 	'CARD DEALIT DESC': 'Masuk ke Bonus Normal dengan tiga scatter.',
-	'CARD ALLIN DESC': 'Masuk ke Super Bonus dengan empat scatter.',
+	'CARD ALLIN DESC': 'Masuk ke Super Bonus dengan *empat* scatter.',
 	'CONFIRM TEXT': 'Beli %mode% seharga %cost%?',
 	'NORMAL BONUS': 'Bonus Normal',
 	'SUPER BONUS': 'Super Bonus',
@@ -62,9 +62,9 @@ export default {
 	INFO: 'INFO',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': "SELAMAT DATANG DI McSCHMUTZO",
+	'SPLASH C1 TITLE': "SELAMAT DATANG DI SCHMUTZO",
 	'SPLASH C1 BODY': "Kemenangan terkunci dan berputar ulang sampai panggangan penuh.",
-	'SPLASH C2 TITLE': "3\nFITUR\nLEZAT",
+	'SPLASH C2 TITLE': "3\nBONUS\nUNIK",
 	'SPLASH C2 BODY 1': "Kunci & Putar Ulang",
 	'SPLASH C2 BODY 2': "Putar Roda Bonus",
 	'SPLASH C2 BODY 3': "Tingkatkan Pengganda",

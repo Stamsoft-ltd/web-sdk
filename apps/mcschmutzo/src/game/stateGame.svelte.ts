@@ -139,6 +139,11 @@ export const stateGame = $state({
 	// While a win screen (big-win pad / bonus total) counts up, the HUD WIN readout shows THIS value
 	// instead of roundWin, so the two never disagree. null = no win screen owns the readout.
 	winCountUp: null as number | null,
+	/** The amount the HUD's WIN readout is showing right now (book units, mid count-up included) —
+	 *  HudHtml writes it; the free-spin TOTAL WIN counts along with it. */
+	winShown: 0,
+	// the board's drop-in has landed (Game.svelte) — the landscape chef and HUD boxes come on after it
+	boardLanded: false,
 	pendingStop: false,
 	awaitingFirstReveal: false,
 	hasAnticipationPending: false,
@@ -159,6 +164,9 @@ export const stateGame = $state({
 	// Win popup dim (0..1 black alpha) while a win screen is up — the pixi overlay only darkens the
 	// canvas, so the HTML layers (HUD, free-games panels) read this to dim themselves to match.
 	winDim: 0,
+	// A BIG win screen is up: its food splats and plaque must read over everything, so the HTML layers
+	// (HUD, free-games cards, pot) fade right out instead of only dimming.
+	winOver: false,
 });
 
 const boardLayout = () => {

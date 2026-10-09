@@ -37,6 +37,14 @@ export const potState = $state({
 	mult: 1,
 	/** Set by SpecialMascot while the pot is on screen (desktop free games), canvas px. */
 	rect: null as null | { x: number; y: number; w: number; h: number },
+	/**
+	 * The pot is the phone one, drawn in HTML OVER the canvas (FreeSpinPanelHtml): a shot's landing,
+	 * drawn on the canvas, would happen under it, so PotShots stops at the surface and the pot plays
+	 * the splash itself (`splash`).
+	 */
+	html: false,
+	/** The latest shot to hit the soup (PotShots): the HTML pot splashes once per id. */
+	splash: null as null | { id: number; steps: number },
 	/** Shots waiting for the end of the round. */
 	pending: [] as PotShot[],
 	/** The volley currently flying (PotShots animates it and calls `done`). */
@@ -63,6 +71,7 @@ export const resetPot = (mult: number) => {
 	potState.pending = [];
 	potState.volley = null;
 	potState.hidden = {};
+	potState.splash = null;
 	shotCells.clear();
 };
 

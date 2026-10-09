@@ -141,10 +141,10 @@ const bottle = (n: string, sauce: number, capDy = 0.022): SymbolPartsConfig => (
 });
 
 export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
-	L1: bottle('L1', 0xdb1812), // ketchup — tomato red (sampled from the sauce)
+	L1: bottle('L1', 0xdb1812, 0), // ketchup — tomato red; Figma 8936:2677 (cap seated as designed)
 	L2: bottle('L2', 0xf7edcf, 0), // mayo — pale cream
 	L3: bottle('L3', 0xdc9c02), // mustard — golden yellow
-	L4: bottle('L4', 0xa62410), // BBQ — dark red-brown
+	L4: bottle('L4', 0x7a2a12, 0), // BBQ — dark brown (LockedCells' BBQ); Figma 8936:2592
 	L5: bottle('L5', 0xaac14d), // avocado ranch — green
 	// Burger — the stack separates (bun up, bottom down, fillings fan out) then reassembles.
 	H1: {
@@ -232,6 +232,8 @@ export const SYMBOL_PARTS: Record<string, SymbolPartsConfig> = {
 		aspect: 1.2565,
 		fit: 0.95,
 		squash: 0,
+		// alive at rest, like the wild and the scatter: the steam rises, the spoon stirs, the blobs pop
+		idle: 0.4,
 		layers: [
 			{
 				key: 'soupSteam',

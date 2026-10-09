@@ -85,6 +85,7 @@
 
 	import { getContext } from '../game/context';
 	import { boardFrameScreenRect, boardLogoScreenRect } from '../game/boardLogo';
+	import { landscapeLayout } from '../game/landscapeLayout';
 	import { PORTRAIT_SHORT_ASPECT } from '../game/stateLayout';
 	import { continueBottom } from '../lib/continuePos';
 	import { i18nDerived } from '../i18n/i18nDerived';
@@ -103,6 +104,7 @@
 	import CustomConfirmModal from './CustomConfirmModal.svelte';
 	import CustomTutorialModal from './CustomTutorialModal.svelte';
 	import LogoHtml from './LogoHtml.svelte';
+	import { potState } from '../game/potState.svelte';
 
 	const context = getContext();
 
@@ -347,34 +349,45 @@
 	// Portrait WIN readout: this spin's win (per round) — during a bonus it shows each round's win,
 	// NOT the cumulative total (that's EARNED). Set to the grand total at bonus end, cleared each
 	// spin. Count-up on a win, snap on the spin-start clear.
-	// Landscape corner readouts: the real gap beside the board frame, and whether the WIN corner sits
-	// clear BELOW it (then the pill may run in under the board's side instead of shrinking into the
-	// side gap — the 700×460 popout's WIN pill was being scaled down to ~12×8 px).
+	// Landscape: the real gap beside the board frame on each side.
 	const lsBoard = $derived.by(() => {
 		const canvas = context.stateLayoutDerived.canvasSizes();
 		const frame = boardFrameScreenRect(context);
 		return {
 			leftGap: Math.max(0, frame.left),
 			rightGap: Math.max(0, canvas.width - frame.right),
-			below: Math.max(0, canvas.height - frame.bottom),
 		};
 	});
 	const ptLogoStyle = $derived.by(() => {
 		const r = boardLogoScreenRect(context);
 		return `left:${(r.cx - r.width / 2).toFixed(1)}px;top:${(r.cy - r.height / 2).toFixed(1)}px;width:${r.width.toFixed(1)}px`;
 	});
-	const lsBoardVars = $derived(
-		`--ls-board-left-gap:${lsBoard.leftGap.toFixed(1)}px;--ls-board-right-gap:${lsBoard.rightGap.toFixed(1)}px`,
-	);
-	// Clear below = the WIN pill's own height (measured, unscaled) plus its corner inset (CSS
-	// --ls-corner-bottom: clamp(4px, 1.8dvh, 14px)) and a few px fit under the frame, so it can't reach
-	// the board whatever its width.
-	let lsWinH = $state(0);
-	const lsClearBelow = $derived.by(() => {
-		const h = context.stateLayoutDerived.canvasSizes().height;
-		const cornerBottom = Math.min(14, Math.max(4, h * 0.018));
-		return lsWinH > 0 && lsBoard.below >= lsWinH + cornerBottom + 4;
+	// Figma 8295:22703: the bet box hugs the frame's bottom-left, BALANCE over WIN sit right of the
+	// frame (game/landscapeLayout, shared with the pixi chef).
+	const lsPlace = $derived(isLandscapeMobile ? landscapeLayout(context, false) : null);
+	// The readouts' box: the design's 110 wide, 26 right of the frame — slid in towards the frame
+	// (down to 8 of air) before narrowing when the control rail (CSS .ls-right: right clamp(6px, 1.2vw,
+	// 14px), width clamp(40px, 7.3vw, 70px)) leaves less room, with 6 px of air before it.
+	const lsReadout = $derived.by(() => {
+		if (!lsPlace) return { left: 0, w: 0 };
+		const vw = lsPlace.canvas.width;
+		const clamp = (lo: number, v: number, hi: number) => Math.max(lo, Math.min(hi, v));
+		const railLeft = vw - clamp(6, vw * 0.012, 14) - clamp(40, vw * 0.073, 70) - 6;
+		const { u, frame, readouts } = lsPlace;
+		const left = Math.max(frame.right + 8 * u, Math.min(readouts.left, railLeft - readouts.w));
+		return { left, w: Math.max(40, Math.min(readouts.w, railLeft - left)) };
 	});
+	const lsReadoutW = $derived(lsReadout.w);
+	const lsBoardVars = $derived(
+		`--ls-board-left-gap:${lsBoard.leftGap.toFixed(1)}px;--ls-board-right-gap:${lsBoard.rightGap.toFixed(1)}px` +
+			(lsPlace
+				? `;--ls-u:${lsPlace.u.toFixed(3)}px;--ls-bet-left:${(lsPlace.bet.right - lsPlace.bet.w).toFixed(1)}px` +
+					`;--ls-bet-bottom:${(lsPlace.canvas.height - lsPlace.bet.bottom).toFixed(1)}px` +
+					`;--ls-rd-left:${lsReadout.left.toFixed(1)}px;--ls-rd-bottom:${lsPlace.readouts.bottom.toFixed(1)}px` +
+					`;--ls-rd-w:${lsReadoutW.toFixed(1)}px`
+				: ''),
+	);
+
 
 	const winTween = new Tween(0);
 	// The last value a win screen counted the readout up to. The handler sets roundWin and releases
@@ -396,15 +409,17 @@
 	// settled value is printed exactly, so a 0.0016 win reads $0.0016 (STAKE_REVIEW_LESSONS R-01).
 	// While a win screen counts up, follow it — never below what the readout already showed.
 	const winCountUp = $derived(context.stateGame.winCountUp);
-	const winValue = $derived(
-		bookEventAmountToCurrencyString(
-			winCountUp !== null
-				? Math.max(Math.round(winCountUp), context.stateGame.roundWin)
-				: winTween.current === winTween.target
-					? winTween.target
-					: Math.round(winTween.current),
-		),
+	const winShown = $derived(
+		winCountUp !== null
+			? Math.max(Math.round(winCountUp), context.stateGame.roundWin)
+			: winTween.current === winTween.target
+				? winTween.target
+				: Math.round(winTween.current),
 	);
+	const winValue = $derived(bookEventAmountToCurrencyString(winShown));
+	$effect(() => {
+		context.stateGame.winShown = winShown;
+	});
 	const hasWin = $derived(context.stateGame.roundWin > 0);
 
 	// Deterministic text-fit for the FIXED-width desktop BALANCE / WIN slots. The transform-based
@@ -431,10 +446,27 @@
 		return `font-size: calc(var(--u) * ${(DESKTOP_VALUE_BASE_U * scale).toFixed(2)});`;
 	};
 
-	const openPaytable = () => {
-		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
-		stateModal.modal = { name: 'payTable' };
+	// The landscape values sit in fixed boxes, so they're sized from their characters (the
+	// glyphEm estimate below, as on desktop) to the room the box leaves them: `room` and `base` in px.
+	const lsFitPx = (value: string, room: number, base: number) => {
+		let em = 0;
+		for (const c of value) em += glyphEm(c);
+		return Math.min(base, (room * 0.94) / Math.max(em, 0.01));
 	};
+	const lsFit = (value: string, room: number, base: number) => `font-size:${lsFitPx(value, room, base).toFixed(2)}px`;
+	// BALANCE is one row (label + value) as designed; where the rail squeezes the box so the value
+	// would drop below 80% of its size, the label goes over the value instead (like WIN).
+	const lsBalance = $derived.by(() => {
+		if (!lsPlace) return { stacked: false, style: '' };
+		const u = lsPlace.u;
+		// the label is Nunito caps, ~0.7 em a glyph at 7.5 design px
+		const label = [...balanceLabel].length * 0.7 * 7.5 * u;
+		const row = lsFitPx(formattedBalance, lsReadoutW - 12 * u - 5 * u - label, 10 * u);
+		if (row >= 8 * u) return { stacked: false, style: `font-size:${row.toFixed(2)}px` };
+		return { stacked: true, style: lsFit(formattedBalance, lsReadoutW - 12 * u, 10 * u) };
+	});
+	const lsWinStyle = $derived(lsPlace ? lsFit(winValue, lsReadoutW - 16 * lsPlace.u, 15 * lsPlace.u) : '');
+	const lsBetStyle = $derived(lsPlace ? lsFit(formattedBet, 54 * lsPlace.u, 12 * lsPlace.u) : '');
 
 	let showBuyModal = $state(false);
 	let showAutoModal = $state(false);
@@ -874,52 +906,6 @@
 		return { update: raf, destroy: () => ro.disconnect() };
 	}
 
-	// Landscape BALANCE pill: scale the WHOLE pill (label + value + padding, measured at max-content
-	// width) down to its rail, instead of fitText's shrink-only-the-value. On small landscape windows
-	// the rail is ~0.32·viewport minus the BUY BONUS clearance — down to ~80px — and a full-size
-	// "BALANCE" label claims most of that, so fitting only the value crushed the number to a few px
-	// while the label stayed large. Scaling the pill as a unit keeps the label/value proportions the
-	// design specifies and leaves the number several times bigger at the same rail width.
-	function fitPill(node: HTMLElement, params: { dep: unknown; align: 'left' | 'right' }) {
-		let align = params.align;
-		const fit = () => {
-			const rail = node.parentElement;
-			if (!rail) return;
-			node.style.transform = 'none';
-			const cs = getComputedStyle(rail);
-			const avail = rail.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-			// Layout px on both sides: the pill is width:max-content, so offsetWidth is its true
-			// unwrapped width however narrow the rail gets (a shrink-to-fit width would clamp to the
-			// rail, and the overflow this needs to see would never appear).
-			const full = node.offsetWidth;
-			const scale = full > avail && avail > 0 ? avail / full : 1;
-			// Origin at the rail's own bottom corner: both rails are bottom-anchored, so the pill has
-			// to shrink toward the corner it sits in — a centre origin would lift it off the bottom as
-			// it scales. Stacking the label above the value was tried here to buy the number more
-			// width; it works, but the resulting two-line block stands far taller than the WIN pill
-			// opposite it and reads as floating up toward the board, so both readouts stay one row.
-			node.style.transformOrigin = `${align} bottom`;
-			node.style.transform = scale < 1 ? `scale(${scale})` : 'none';
-			// Publish the pill's RENDERED height so the rail can drop itself by half of it and land
-			// the pill's centre on the BUY BONUS centre line. Must be the post-scale height — the
-			// layout height would over-drop a scaled-down pill.
-			rail.style.setProperty('--ls-pill-h', `${node.offsetHeight * scale}px`);
-		};
-		const raf = () => requestAnimationFrame(fit);
-		const ro = new ResizeObserver(raf);
-		ro.observe(node);
-		if (node.parentElement) ro.observe(node.parentElement);
-		document.fonts?.ready.then(raf);
-		raf();
-		return {
-			update: (p: { dep: unknown; align: 'left' | 'right' }) => {
-				align = p.align;
-				raf();
-			},
-			destroy: () => ro.disconnect(),
-		};
-	}
-
 	onDestroy(() => {
 		clearHoldRepeat();
 	});
@@ -959,6 +945,7 @@
 	class="hud-shell"
 	class:hud-shell--blocked={congratsBlocking}
 	class:hud-shell--win-dim={context.stateGame.winDim > 0}
+	class:hud-shell--win-over={context.stateGame.winOver}
 	data-layout={layoutType}
 	style={`--win-dim:${1 - context.stateGame.winDim};--menu-btn-bg:url('${menuBtnFrame}');--sound-btn-bg:url('${soundBtnFrame}');--menu-bar-bg:url('${menuBarFrame}');--menu-popup-bg:url('${menuPopupBg}');--scatter-frame-bg:url('${scatterFrame}');--hud-frame-bg:url('${hudFrame}');--buy-btn-bg:url('${btnWideBg}');--small-btn-bg:url('${smallBtnFrame}');--play-btn-bg:url('${playBtnFrame}');--btn-round-bg:url('${btnRoundBg}');--btn-spin-bg:url('${btnSpinBg}');--btn-spin-hover-bg:url('${btnSpinHoverBg}');--buy-btn-hover-bg:url('${btnWideHoverBg}');--ls-spin-hover:url('${btnSpinHoverBg}');--pt-navpad:url('${navPadMobile}');--pt-betpad:url('${betPadMobile}');--pt-buybonus:url('${buyBonusMobile}');--pt-spin:url('${spinMobile}');--ls-rightbar:url('${lsRightBar}');--ls-betpad:url('${lsBetPad}');--ls-buybonus:url('${lsBuyBonus}');--ls-spin:url('${btnSpinBg}');--ls-navbox:url('${lsNavBox}');--ls-bonus:url('${lsBonus}');--ls-turn:url('${lsTurn}');--ls-vh:${lsVh}px`}
 >
@@ -1123,32 +1110,15 @@
 		<!-- Dedicated mobile-landscape HUD: a big centred board flanked by a bottom-left BALANCE+BET
 		     stack and a right control rail (menu · BONUS · spin · turbo · auto), WIN bottom-right.
 		     Everything scales with viewport height (vh) so it shrinks together on smaller landscapes. -->
-		<div class="ls-hud" class:ls-hud--clear-below={lsClearBelow} style={lsBoardVars}>
+		<div class="ls-hud" class:ls-hud--in={context.stateGame.boardLanded} style={lsBoardVars}>
 			<!-- Press Play studio mark, centred above the right control rail. -->
 			<img class="ls-pp" src={ptPressPlay} alt="Press Play" draggable="false" />
 
-			<!-- Left column: BALANCE over the BET stepper, bottom-left -->
-			<div class="ls-left">
-				<div class="ls-balance" use:fitPill={{ dep: formattedBalance, align: 'left' }}>
-					<span class="ls-balance__label">{balanceLabel}</span>
-					<span class="ls-balance__value">{formattedBalance}</span>
-				</div>
+			<!-- The BET box, hugging the board frame's bottom-left: − over the bet over + -->
+			<!-- (it steps aside while soup shots fly past it into the pot: the shots are drawn on the
+			     canvas, under this HTML) -->
+			<div class="ls-left" class:ls-left--clear={!!potState.volley}>
 				<div class="ls-bet">
-					<button
-						class="ls-step"
-						style:visibility={showBetControls ? null : 'hidden'}
-						type="button"
-						onclick={onDecrease}
-						disabled={disableDecrease}
-						aria-label={decBetLabel}
-					>
-						<img class="ls-icon" src={iconMinus} alt="minus" />
-					</button>
-					<span
-						class="ls-bet__value"
-						class:value--feature={isAnyModeActive}
-						use:fitText={formattedBet}
-					>{formattedBet}</span>
 					<button
 						class="ls-step"
 						style:visibility={showBetControls ? null : 'hidden'}
@@ -1158,6 +1128,21 @@
 						aria-label={incBetLabel}
 					>
 						<img class="ls-icon" src={iconPlus} alt="plus" />
+					</button>
+					<span
+						class="ls-bet__value"
+						class:value--feature={isAnyModeActive}
+						style={lsBetStyle}
+					>{formattedBet}</span>
+					<button
+						class="ls-step"
+						style:visibility={showBetControls ? null : 'hidden'}
+						type="button"
+						onclick={onDecrease}
+						disabled={disableDecrease}
+						aria-label={decBetLabel}
+					>
+						<img class="ls-icon" src={iconMinus} alt="minus" />
 					</button>
 				</div>
 			</div>
@@ -1241,12 +1226,16 @@
 				</button>
 			</div>
 
-			<!-- WIN readout, bottom-right — mirrors the BALANCE block bottom-left. Current spin win /
-			     running bonus total, cleared on the next spin; keeps its slot while hidden. -->
+			<!-- BALANCE over WIN, right of the board frame. WIN = the current spin's win, cleared on the
+			     next spin; keeps its slot while hidden. -->
 			<div class="ls-right-bottom">
-				<div class="ls-win" bind:clientHeight={lsWinH} use:fitPill={{ dep: winValue, align: 'right' }}>
+				<div class="ls-balance" class:ls-balance--stacked={lsBalance.stacked}>
+					<span class="ls-balance__label">{balanceLabel}</span>
+					<span class="ls-balance__value" style={lsBalance.style}>{formattedBalance}</span>
+				</div>
+				<div class="ls-win">
 					<span class="ls-win__label">{i18nDerived.win()}</span>
-					<span class="ls-win__value">{winValue}</span>
+					<span class="ls-win__value" style={lsWinStyle}>{winValue}</span>
 				</div>
 			</div>
 		</div>
@@ -2473,17 +2462,6 @@
 		pointer-events: none;
 		z-index: 20;
 		font-family: 'Nunito', sans-serif;
-		/* Bottom inset shared by the BALANCE/BET stack (bottom-left) and the WIN pill (bottom-right)
-		   so the two readouts sit level in their corners. Scales with viewport height. */
-		--ls-corner-bottom: clamp(4px, 1.8dvh, 14px);
-		/* The board sizes to the viewport height and is centred, so its left/right edges sit at
-		   ≈ 50vw ∓ 50dvh. The readouts cap their width to the gap between that edge and their own
-		   corner offset, so a large BALANCE/BET/WIN scales down (fitPill) instead of sliding over the
-		   board on the smallest landscape (e.g. the 400×225 popout). */
-		--ls-corner-left: clamp(8px, 2vw, 22px);
-		--ls-win-right: calc(
-			clamp(34px, 14dvh, 112px) + clamp(16px, 3vw, 34px) + clamp(8px, 1.5vw, 18px)
-		);
 	}
 	.ls-hud button,
 	.ls-hud .ls-bet__value {
@@ -2495,7 +2473,11 @@
 	.ls-pp {
 		position: absolute;
 		top: clamp(3px, 1.6vh, 14px);
-		right: calc(clamp(16px, 3vw, 34px) + clamp(34px, 14dvh, 112px) / 2);
+		/* (but never past the screen's right edge: 6 px of air) */
+		right: max(
+			calc(6px + clamp(56px, 13vh, 116px) / 2),
+			calc(clamp(6px, 1.2vw, 14px) + clamp(40px, 7.3vw, 70px) / 2)
+		);
 		transform: translateX(50%);
 		width: clamp(56px, 13vh, 116px);
 		height: auto;
@@ -2503,28 +2485,33 @@
 		filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
 	}
 
-	/* Left column: BALANCE over the BET stepper, bottom-left corner. width:max-content lets fitPill
-	   see the pills' true width; max-width caps a giant balance so it shrinks instead of reaching the
-	   board. The corner is clear of the board (the board doesn't extend full-width to the bottom). */
+	/* The BET box (Figma 8295:22703: 60 × 91 design px, 4 px left of the board frame, its bottom 6 px
+	   above the frame's) — placed by game/landscapeLayout (--ls-bet-left / --ls-bet-bottom, --ls-u =
+	   one design px). */
 	.ls-left {
 		position: absolute;
-		left: var(--ls-corner-left);
-		bottom: var(--ls-corner-bottom);
-		width: max-content;
-		/* Never cross the board frame's left edge (measured: --ls-board-left-gap); 8px of clearance. */
-		max-width: calc(var(--ls-board-left-gap, 50vw - 50dvh) - var(--ls-corner-left) - 8px);
+		left: var(--ls-bet-left);
+		bottom: var(--ls-bet-bottom);
+		width: calc(60 * var(--ls-u, 1px));
+		height: calc(91 * var(--ls-u, 1px));
 		display: flex;
-		flex-direction: column;
-		/* stretch so BALANCE and BET share the same width (the wider one — BALANCE — sets it). */
-		align-items: stretch;
-		gap: clamp(4px, 1.5vh, 11px);
+	}
+	/* Soup shots fly from the board over the bet box into the pot (canvas-drawn, so under this box):
+	   it fades out of their way for the volley. !important: the entrance animation holds opacity. */
+	.ls-left {
+		transition: opacity 0.18s ease;
+	}
+	.ls-left--clear {
+		opacity: 0 !important;
+		transition-duration: 0.12s;
 	}
 	.pt-buy:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
 	/* Vertical BONUS button in the right rail — the bonus-landscape art (red button, "BONUS" baked
 	   in). Sits between the menu and the spin disc (design). Aspect 31:66. */
 	.ls-buy-rail {
-		/* Height in dvh (width follows the 31:66 aspect) so it fits the fixed-height bar. */
-		height: clamp(28px, 13.5dvh, 72px);
+		/* Height in dvh (width follows the 31:66 aspect) so it fits the fixed-height bar — as tall as
+		   the rail's spare room allows, since its stacked letters are small at 13.5dvh. */
+		height: clamp(30px, 17dvh, 84px);
 		width: auto;
 		aspect-ratio: 31 / 66;
 		flex: 0 0 auto;
@@ -2536,158 +2523,173 @@
 	}
 	.ls-buy-rail:not(:disabled):hover { filter: brightness(1.08); }
 	.ls-buy-rail:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
+	/* BALANCE: one row, small label + value (110 × 23 design px) */
 	.ls-balance {
 		display: flex;
 		align-items: baseline;
-		gap: 6px;
-		/* max-content so fitPill can see the pill's true unwrapped width vs the column's capped width. */
-		width: max-content;
-		max-width: none;
+		gap: calc(5 * var(--ls-u, 1px));
 		box-sizing: border-box;
-		/* Smaller dark pill: #1F1F1F body with a lighter top bevel (design ask). */
-		padding: clamp(1px, 0.5vh, 3px) clamp(4px, 1vh, 9px);
+		width: 100%;
+		padding: calc(5 * var(--ls-u, 1px)) calc(6 * var(--ls-u, 1px));
 		border-radius: 4.21px;
 		background: #1f1f1f;
 		border-top: 1.28px solid #605553;
 		box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
 	}
-	/* Bottom-right corner — the mirror of .ls-left, holding the WIN readout. Its right offset clears
-	   the vertical control rail (rail width + a margin) so WIN sits to the LEFT of the rail, level
-	   with the BALANCE/BET stack opposite it. */
+	/* Entrance: hidden until the board's drop-in lands (stateGame.boardLanded), then the bet box
+	   springs out from behind the frame's left side, BALANCE and WIN from its right, one after the
+	   other. */
+	.ls-hud:not(.ls-hud--in) :is(.ls-left, .ls-balance, .ls-win) {
+		opacity: 0;
+	}
+	.ls-hud--in .ls-left {
+		animation: ls-in-left 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+	}
+	.ls-hud--in .ls-right-bottom .ls-balance {
+		animation: ls-in-right 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+	}
+	.ls-hud--in .ls-right-bottom .ls-win {
+		animation: ls-in-right 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.22s both;
+	}
+	@keyframes ls-in-left {
+		from {
+			opacity: 0;
+			translate: calc(40 * var(--ls-u, 1px)) 0;
+			scale: 0.7;
+		}
+		to {
+			opacity: 1;
+			translate: 0 0;
+			scale: 1;
+		}
+	}
+	@keyframes ls-in-right {
+		from {
+			opacity: 0;
+			translate: calc(-36 * var(--ls-u, 1px)) 0;
+			scale: 0.75;
+		}
+		to {
+			opacity: 1;
+			translate: 0 0;
+			scale: 1;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.ls-hud--in .ls-left,
+		.ls-hud--in .ls-right-bottom .ls-balance,
+		.ls-hud--in .ls-right-bottom .ls-win {
+			animation: none;
+		}
+	}
+	.ls-balance--stacked {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: calc(2 * var(--ls-u, 1px));
+	}
+	/* BALANCE over WIN, right of the board frame (Figma: 26 px right of it, 110 wide, WIN's bottom 5 px
+	   above the frame's). Never wider than the room left before the control rail. */
 	.ls-right-bottom {
 		position: absolute;
-		/* Clear the vertical control rail + its right margin (the turn disc overflow sits above WIN,
-		   not at the bottom corner, so only the bar width matters here). */
-		right: var(--ls-win-right);
-		bottom: var(--ls-corner-bottom);
-		width: max-content;
-		/* Never cross the board frame's right edge (measured: --ls-board-right-gap); WIN extends left
-		   from its right anchor. */
-		max-width: calc(var(--ls-board-right-gap, 50vw - 50dvh) - var(--ls-win-right) - 8px);
+		left: var(--ls-rd-left);
+		bottom: var(--ls-rd-bottom);
+		width: var(--ls-rd-w);
 		display: flex;
 		flex-direction: column;
-		align-items: flex-end;
+		align-items: stretch;
+		gap: calc(7 * var(--ls-u, 1px));
 	}
-	/* WIN readout — mirrors the BALANCE block bottom-left, same pill and same fitPill scaling.
-	   Dark translucent pill keeps the text readable over the bright forest art. */
+	/* WIN: label over the value, left-aligned (110 × 48 design px) */
 	.ls-win {
 		display: flex;
-		/* Two rows: WIN label over the value (design ask). */
 		flex-direction: column;
-		align-items: center;
+		align-items: flex-start;
 		justify-content: center;
-		gap: 1px;
-		width: max-content;
-		max-width: none;
+		gap: calc(2 * var(--ls-u, 1px));
 		box-sizing: border-box;
-		/* #1F1F1F pill with a lighter top bevel (WIN readout). */
-		padding: clamp(3px, 0.9vh, 6px) clamp(7px, 1.6vh, 14px);
+		width: 100%;
+		min-height: calc(48 * var(--ls-u, 1px));
+		padding: calc(5 * var(--ls-u, 1px)) calc(8 * var(--ls-u, 1px));
 		border-radius: 4.21px;
-		text-align: center;
 		background: #1f1f1f;
 		border-top: 1.28px solid #605553;
 		box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
-	}
-	/* WIN corner clear below the board frame: the one-pill WIN readout may run in under the board's
-	   side (up to the centre line) instead of shrinking into the narrow side gap. Not the BALANCE/BET
-	   stack: it is about twice as tall and would reach the board's side. */
-	.ls-hud--clear-below .ls-right-bottom {
-		max-width: calc(50vw - var(--ls-win-right) - 8px);
 	}
 	/* No win yet → keep the slot but show nothing (matches the portrait WIN behavior). */
 	.ls-win--hidden {
 		visibility: hidden;
 	}
 	.ls-win__label {
-		font-family: 'Nunito', sans-serif;
-		font-size: clamp(7px, 2.3vh, 12px);
-		font-style: normal;
-		font-weight: 700;
-		line-height: normal;
-		letter-spacing: 0.36px;
+		/* the brush face, as the FREE SPINS / TOTAL WIN cards' labels */
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
+		font-size: calc(13 * var(--ls-u, 1px));
+		font-weight: 400;
+		line-height: 1;
+		letter-spacing: 0.02em;
 		color: #fff;
 	}
 	.ls-win__value {
 		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
-		font-size: clamp(10px, 2.9vh, 15px);
+		font-size: calc(15 * var(--ls-u, 1px));
+		line-height: 1.1;
+		white-space: nowrap;
 		color: #fff;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
 	}
 	.ls-balance__label {
-		font-family: 'Nunito', sans-serif;
-		/* nowrap on both halves: the rail gets narrow on small landscape windows, and locales that
-		   format with spaces ("5 000 592,00 kr") would otherwise wrap to a second line inside the
-		   fixed-height pill instead of letting fitText scale them down. */
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
+		/* nowrap on both halves: locales that format with spaces ("5 000 592,00 kr") would otherwise
+		   wrap inside the pill instead of letting fitPill scale them down. */
 		white-space: nowrap;
-		font-size: clamp(7px, 2.1vh, 11px);
-		font-style: normal;
-		font-weight: 700;
-		line-height: normal;
-		letter-spacing: 0.36px;
+		font-size: calc(7.5 * var(--ls-u, 1px));
+		font-weight: 400;
+		line-height: 1;
+		letter-spacing: 0.03em;
 		color: #fff;
 	}
 	.ls-balance__value {
 		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
 		white-space: nowrap;
-		font-size: clamp(8px, 2.3vh, 11px);
+		font-size: calc(10 * var(--ls-u, 1px));
+		line-height: 1;
 		color: #fff;
 	}
 
-	/* Popout L ONLY (landscape layout with a taller window than popout S's ≤375px short side):
-	   the BALANCE / WIN readouts sit higher and render bigger there (design ask). The ls-*
-	   classes exist only in the landscape layout, so desktop windows never match. */
-	@media (min-height: 376px) {
-		/* .ls-left / .ls-right-bottom are NOT nudged here any more: both ride --ls-controls-center,
-		   which is already viewport-driven, so a fixed bottom would pull them back off the BUY BONUS
-		   centre line. */
-		.ls-balance { padding: clamp(2px, 0.8vh, 5px) clamp(6px, 1.4vh, 12px); border-radius: 4.21px; }
-		.ls-balance__label { font-size: clamp(7px, 2.3vh, 12px); font-weight: 700; }
-		.ls-balance__value { font-size: clamp(9px, 2.6vh, 13px); font-weight: 400; }
-		.ls-win { padding: clamp(3px, 1vh, 6px) clamp(7px, 1.6vh, 14px); border-radius: 4.21px; }
-		.ls-win__label { font-size: clamp(8px, 2.6vh, 13px); font-weight: 700; }
-		.ls-win__value { font-size: clamp(11px, 3.2vh, 16px); font-weight: 400; }
-	}
-
-	/* BET stepper — same small #1F1F1F pill as BALANCE, stretched to BALANCE's width and stacked under
-	   it: − value + spread across the width. */
+	/* BET box — #1F1F1F with the readouts' top bevel: a ringed + button, the bet, a ringed − button. */
 	.ls-bet {
+		flex: 1;
 		display: flex;
+		flex-direction: column;
 		align-items: center;
 		justify-content: space-between;
-		gap: clamp(3px, 1vh, 8px);
 		box-sizing: border-box;
-		padding: clamp(1px, 0.5vh, 4px) clamp(5px, 1.2vh, 11px);
+		padding: calc(5 * var(--ls-u, 1px)) calc(3 * var(--ls-u, 1px));
 		border-radius: 4.21px;
 		background: #1f1f1f;
 		border-top: 1.28px solid #605553;
 		box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28);
+		min-width: 0;
 	}
 	.ls-bet__value {
 		font-family: 'Bowlby One SC', sans-serif;
 		font-weight: 400;
-		font-size: clamp(10px, 3vh, 18px);
+		font-size: calc(12 * var(--ls-u, 1px));
+		line-height: 1;
 		color: #fff;
-		/* Grow to fill the room BETWEEN the − / + steppers (flex:1 1 0, min-width:0) so fitText can scale
-		   the value into that whole space and it stays readable; the pill itself can't run away because
-		   the .ls-left column is width-capped (never crosses the board). A long feature/bonus value (BET
-		   × multiplier) therefore scales down instead of pushing the pill wider. overflow:hidden is a
-		   hard backstop only. */
-		flex: 1 1 0;
-		min-width: 0;
-		/* NOT overflow:hidden — fitText scales this same element, and a clip on it cuts the text at the
-		   un-scaled box BEFORE the scale applies (a long bet read "$50,000" on 400×225 popouts). */
-		overflow: visible;
+		/* (sized to the box from its characters: lsBetStyle) */
 		white-space: nowrap;
 		text-align: center;
 	}
-	/* − / + steppers — plain white glyphs (no button chrome), sitting inside the dark bet pill. */
+	/* − / + : white glyphs in a thin ring (31 design px) */
 	.ls-step {
-		width: clamp(16px, 5vh, 40px);
-		height: clamp(16px, 5vh, 40px);
+		width: calc(31 * var(--ls-u, 1px));
+		height: calc(31 * var(--ls-u, 1px));
 		flex: 0 0 auto;
-		border: 0;
+		border: 1px solid #5b5048;
+		border-radius: 50%;
 		background: none;
 		padding: 0;
 		cursor: pointer;
@@ -2698,21 +2700,7 @@
 	.ls-step:not(:disabled):hover { filter: brightness(1.2); }
 	.ls-step:disabled { opacity: 0.4; cursor: default; }
 	/* Force the glyphs white (the source icons are gold). */
-	.ls-step .ls-icon { width: 78%; height: 78%; object-fit: contain; filter: brightness(0) invert(1); }
-
-	/* Smallest landscape popouts (~400x225, ≤300px tall): shrink the BET stepper so the bottom-left
-	   stack stays compact. BALANCE keeps its size — fitPill already scales a big balance down to the
-	   rail, so it never breaks. 812x375 (height 375) is unaffected. */
-	@media (max-height: 300px) {
-		.ls-bet { padding: 1px 4px; gap: 2px; }
-		.ls-bet__value { font-size: clamp(10px, 3.4vmin, 11px); min-width: 0; }
-		/* readable floors on the smallest popouts (were ~7–8px); fitPill still shrinks long balances */
-		.ls-balance__label,
-		.ls-win__label { font-size: 8px; }
-		.ls-balance__value { font-size: 10.5px; }
-		.ls-win__value { font-size: 11px; }
-		.ls-step { width: clamp(11px, 5.5vmin, 18px); height: clamp(11px, 5.5vmin, 18px); }
-	}
+	.ls-step .ls-icon { width: 46%; height: 46%; object-fit: contain; filter: brightness(0) invert(1); }
 
 	/* Right rail: menu, sound, spin, turbo, autospin (vertical bar).
 	   Figma 3451-2143: the dark pill hugs the buttons (pill ≈ 1.25× button width), the buttons
@@ -2720,8 +2708,9 @@
 	   overflowing the pill's sides. */
 	.ls-right {
 		position: absolute;
-		/* Right margin leaves room for the turn disc to bulge past the bar's right side. */
-		right: clamp(16px, 4vw, 40px);
+		/* A small right margin: the turn disc only just bulges past the bar's right side, and the
+		   room it frees goes to BALANCE / WIN. */
+		right: clamp(6px, 1.2vw, 14px);
 		/* Figma bar spec (59×302 at top 50 in an ~812×375 frame) as viewport ratios: top 13dvh, height
 		   ~81dvh (bottom 6dvh), width 7vw — matching the previous games' rail. Pinned top+bottom so it
 		   can never exceed the screen. Controls are sized in dvh (below) so they fit this fixed height;
@@ -2991,7 +2980,10 @@
 		/* THE portrait HUD unit: the bar width. EVERYTHING below is sized as a fraction of this one
 		   value, so the layout keeps the design's exact proportions at every viewport width (mixed
 		   px/vw clamps previously saturated into different proportions on different screens). */
-		--u: min(412px, 97vw);
+		/* Phones: 412px max. Wider portrait screens (tablets, 768+) grow it to 70% of the width (600px
+		   max) so the controls don't shrink to a strip under a full-width board. stateLayout's
+		   portraitFit uses the same formula. */
+		--u: min(97vw, max(412px, min(70vw, 600px)));
 	}
 	/* No browser focus ring / tap highlight on the game buttons (the blue box after a tap). */
 	.pt-hud button { outline: none; -webkit-tap-highlight-color: transparent; }
@@ -3057,7 +3049,7 @@
 	.pt-spin__icon { width: 42%; height: 42%; object-fit: contain; transform: translate(-4.6%, -1.03%); filter: brightness(0) invert(1); } /* arrow overlay, centred on the new disc */
 	.pt-spin__stop { width: 30%; height: 30%; object-fit: contain; transform: translate(-6.9%, -3.1%); filter: brightness(0) invert(1); } /* square on the red-disc centre (47.93% / 49.07% of the box) */
 	.pt-spin__count {
-		font-family: 'Bowlby One SC', sans-serif; font-weight: 400; font-size: 1.3rem; color: #fff;
+		font-family: 'Bowlby One SC', sans-serif; font-weight: 400; font-size: max(1.3rem, calc(var(--u) * 0.0505)); color: #fff;
 		text-shadow: 0 2px 4px rgba(0,0,0,0.7);
 	}
 
@@ -3095,8 +3087,10 @@
 		box-shadow: 0 8px 16px rgba(0, 0, 0, 0.22);
 		backdrop-filter: blur(4px);
 	}
+	/* Readout text: the phone px sizes, growing with --u past 412px (tablets) — max() keeps phones as-is. */
 	.pt-balance__label {
-		font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 10px;
+		/* the brush face, as the FREE SPINS / TOTAL WIN cards' labels */
+		font-family: var(--font-brush); -webkit-text-stroke: var(--brush-stroke) currentColor; font-weight: 400; font-size: max(10px, calc(var(--u) * 0.0243));
 		letter-spacing: 0.04em; white-space: nowrap;
 		color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 	}
@@ -3105,7 +3099,7 @@
 		   inline elements) and scrollWidth measures the true text width — otherwise a long balance
 		   renders full-size and gets clipped by the parent's overflow:hidden. */
 		display: inline-block;
-		font-family: 'Bowlby One SC', sans-serif; font-weight: 500; font-size: 12px;
+		font-family: 'Bowlby One SC', sans-serif; font-weight: 500; font-size: max(12px, calc(var(--u) * 0.0291));
 		font-style: normal; line-height: normal; letter-spacing: 0.36px;
 		white-space: nowrap; transform-origin: center;
 		color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.55);
@@ -3131,7 +3125,7 @@
 		gap: 1px;
 	}
 	.pt-bet__label {
-		font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 10px;
+		font-family: 'Nunito', sans-serif; font-weight: 700; font-size: max(10px, calc(var(--u) * 0.0243));
 		letter-spacing: 0.06em; white-space: nowrap; pointer-events: none;
 		background: linear-gradient(184.14deg, #ffa90e 15.26%, #ee960b 69.74%, #d18005 92.88%);
 		-webkit-background-clip: text; background-clip: text;
@@ -3139,7 +3133,7 @@
 	}
 	.pt-bet__value {
 		text-align: center;
-		font-family: 'Bowlby One SC', sans-serif; font-weight: 500; font-size: 17px;
+		font-family: 'Bowlby One SC', sans-serif; font-weight: 500; font-size: max(17px, calc(var(--u) * 0.0413));
 		font-style: normal; line-height: normal; letter-spacing: 0.54px; color: #fff;
 		white-space: nowrap; cursor: pointer; transform-origin: center;
 		text-shadow: 0 1px 2px rgba(0,0,0,0.6);
@@ -3166,7 +3160,7 @@
 	.pt-buy:active { transform: scale(0.95); }
 	.pt-buy__label {
 		font-family: 'Bowlby One SC', sans-serif; font-weight: 400;
-		font-size: 13px; line-height: 1.05; letter-spacing: 0.02em; text-align: center;
+		font-size: max(13px, calc(var(--u) * 0.0316)); line-height: 1.05; letter-spacing: 0.02em; text-align: center;
 		max-width: 100%;
 		/* Glyphs centred in the red box: the line box is trimmed to the capitals (uneven font
 		   ascent/descent pushed the text up), and no horizontal nudge (the old -2px overshot left). */
@@ -3198,14 +3192,14 @@
 		backdrop-filter: blur(4px);
 	}
 	.pt-win__label {
-		font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 10px;
+		font-family: var(--font-brush); -webkit-text-stroke: var(--brush-stroke) currentColor; font-weight: 400; font-size: max(10px, calc(var(--u) * 0.0243));
 		letter-spacing: 0.04em; white-space: nowrap;
 		color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 	}
 	.pt-win__value {
 		/* inline-block so fitText's transform:scale applies (see .pt-balance__value). */
 		display: inline-block;
-		font-family: 'Bowlby One SC', sans-serif; font-weight: 500; font-size: 12px;
+		font-family: 'Bowlby One SC', sans-serif; font-weight: 500; font-size: max(12px, calc(var(--u) * 0.0291));
 		font-style: normal; line-height: normal; letter-spacing: 0.36px;
 		white-space: nowrap; transform-origin: center; min-height: 12px;
 		color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.55);
@@ -3285,7 +3279,16 @@
 	   screens. */
 	.hud-shell--win-dim > * {
 		filter: brightness(var(--win-dim));
-		transition: filter 0.25s ease;
+		transition: filter 0.25s ease, opacity 0.3s ease;
+	}
+	/* A BIG win screen: its food splats fly over the whole screen, but they are drawn on the canvas,
+	   under these HTML layers — so the HUD fades right out instead and the win reads over everything. */
+	:where(.hud-shell > *) {
+		transition: opacity 0.3s ease;
+	}
+	.hud-shell--win-over > * {
+		opacity: 0;
+		pointer-events: none;
 	}
 	/* Matches FreeSpinIntroHtml .fs-continue. Above the HUD shade; taps pass through to the game. */
 	.win-continue {

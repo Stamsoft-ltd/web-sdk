@@ -140,7 +140,7 @@
 			<div class="fo-plaque" style={`background-image:url('${plaqueArt}')`}>
 				<div class="fo-content">
 					<p class="fo-congrats">{i18nDerived.translate('CONGRATS')}</p>
-					<p class="fo-youwon">{i18nDerived.translate('TOTAL WIN')}</p>
+					<p class="fo-youwon">{i18nDerived.translate('YOU WON')}</p>
 					<div class="fo-amount"><span>{amountText}</span></div>
 				</div>
 			</div>
@@ -189,7 +189,8 @@
 		position: relative;
 		/* Height-capped (plaque ≈ 1/2 of its width tall, burger + splashes overhang above) so the whole
 		   composition stays on short landscape screens. */
-		width: min(560px, 92vw, 110dvh);
+		/* (85% of the design's size, like the intro's) */
+		width: min(476px, 78vw, 94dvh);
 		aspect-ratio: 1241 / 623;
 		container-type: inline-size; /* text below scales with the plaque (cqw) */
 		font-family: 'Nunito', sans-serif;
@@ -242,7 +243,8 @@
 
 	.fo-congrats {
 		margin: 0;
-		font-family: 'Bowlby One SC', sans-serif;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
 		font-weight: 400;
 		font-size: min(clamp(1.5rem, 6.4vmin, 2.7rem), 7cqw);
 		line-height: 1;
@@ -258,9 +260,11 @@
 	}
 	.fo-youwon {
 		margin: clamp(1px, 0.5vmin, 4px) 0 0;
-		font-family: 'Nunito', sans-serif;
-		font-weight: 700;
-		font-size: min(clamp(0.66rem, 2vmin, 0.95rem), 2.7cqw);
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
+		font-weight: 400;
+		/* the design's 25 : 62 to CONGRATS (8259:4651 / 4650) */
+		font-size: min(clamp(0.72rem, 2.6vmin, 1.1rem), 3cqw);
 		letter-spacing: 0.16em;
 	}
 
@@ -357,7 +361,7 @@
 	   rules. 812x375 (height 375) is unaffected. */
 	@media (max-height: 300px) {
 		.fo-stage {
-			width: min(560px, 92vw, 108dvh);
+			width: min(476px, 78vw, 92dvh);
 			max-height: none;
 		}
 		.fo-close {

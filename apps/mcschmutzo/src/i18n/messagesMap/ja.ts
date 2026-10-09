@@ -16,11 +16,11 @@ export default {
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
 	'CARD CHANCE TITLE': 'エクストラチャンス',
-	'CARD CHANCE DESC': 'ボーナス到達のチャンスをアップ。',
+	'CARD CHANCE DESC': '有効にすると、ボーナスラウンド突入のチャンスが*3倍*になります。',
 	'CARD FEATURE TITLE': 'ロックフィーチャースピン',
 	"CARD FEATURE DESC": "当たりスピンを保証し、ロック＆リスピンを開始。",
 	'CARD DEALIT DESC': '3つのスキャッターでノーマルボーナスに突入。',
-	'CARD ALLIN DESC': '4つのスキャッターでスーパーボーナスに突入。',
+	'CARD ALLIN DESC': '*4つ*のスキャッターでスーパーボーナスに突入。',
 	'CONFIRM TEXT': '%mode%を%cost%で購入しますか？',
 	'NORMAL BONUS': 'ノーマルボーナス',
 	'SUPER BONUS': 'スーパーボーナス',
@@ -62,9 +62,9 @@ export default {
 	INFO: '情報',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': "McSCHMUTZOへようこそ",
+	'SPLASH C1 TITLE': "SCHMUTZOへようこそ",
 	'SPLASH C1 BODY': "当たりはロックされ、グリルが埋まるまで再スピン。",
-	'SPLASH C2 TITLE': "3つの\nおいしい\n機能",
+	'SPLASH C2 TITLE': "3つの\nユニークな\nボーナス",
 	'SPLASH C2 BODY 1': "ロック＆リスピン",
 	'SPLASH C2 BODY 2': "ボーナスホイールを回そう",
 	'SPLASH C2 BODY 3': "マルチプライヤーを育てよう",

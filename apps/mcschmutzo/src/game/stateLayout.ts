@@ -9,7 +9,7 @@ export const PORTRAIT_SHORT_ASPECT = 0.52;
  * Portrait fit, in screen px: the board FRAME (1.043 × 1.0473 of the board, see boardLogo) must sit
  * below the header (the Press Play mark, then the logo straddling the frame's top rail) with the
  * phone chef's hat on screen, and above the bottom HUD, whose height is a pure function of the
- * width (HudHtml .pt-hud: --u = min(412px, 97vw); 18 pad + 0.14u stats + 0.055u gap + 6 + 0.138u bar,
+ * width (HudHtml .pt-hud: --u = min(97vw, max(412px, min(70vw, 600px))); 18 pad + 0.14u stats + 0.055u gap + 6 + 0.138u bar,
  * with the spin disc 0.036u above the bar). The board is as wide as the phone when that fits and
  * shrinks only when it doesn't (short phones — Stake rejection R-14: the bottom row sat under the
  * controls); the slack left over on tall phones goes mostly ABOVE the board so it sits on the HUD
@@ -25,7 +25,7 @@ const GAP = 6;
 const SLACK_ABOVE = 0.65;
 export const portraitFit = (vw: number, vh: number) => {
 	const short = vw / Math.max(1, vh) > PORTRAIT_SHORT_ASPECT;
-	const u = Math.min(412, vw * 0.97);
+	const u = Math.min(vw * 0.97, Math.max(412, Math.min(vw * 0.7, 600)));
 	const hudTop = vh - (18 + 0.14 * u + 0.055 * u + 6 + 0.138 * u + 0.036 * u);
 	const ppW = short ? Math.min(vw * 0.22, 110) : Math.min(vw * 0.32, 150);
 	const ppBottom = vh * (short ? 0.008 : 0.02) + ppW / PP_ASPECT;

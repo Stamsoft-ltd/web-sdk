@@ -39,6 +39,10 @@
 	const CYCLE = 7200; // ms per order: pin on top → write → hold → tick
 	const WRITE = 1600; // ms to write the lines
 	const TICK = 5200; // when the order is ticked off
+	// The items are crossed off one at a time while the order is held (a dish goes out, a stroke),
+	// the last one just before the tick.
+	const STRIKE_FROM = 2300;
+	const strikeAt = (i: number, n: number) => STRIKE_FROM + (i * (TICK - 350 - STRIKE_FROM)) / Math.max(1, n - 1);
 	let clock = $state(0);
 	// Only tick while the notes are on screen (they're unmounted during free games / non-desktop);
 	// the clock still counts from the same t0, so the orders resume exactly where they'd be.
@@ -160,7 +164,7 @@
 						{#each t.o.items as item, i (i)}
 							<p
 								class="ticket__line"
-								class:ticket__line--done={!t.top || ticked}
+								class:ticket__line--done={!t.top || u >= strikeAt(i, t.o.items.length)}
 								style={`--r:${t.top ? lineReveal(i + 1, t.o.items.length) : 1}`}
 							>
 								{item}
@@ -241,7 +245,7 @@
 		transform-origin: 0 50%;
 		transform: scaleX(var(--r));
 	}
-	/* Done: each line gets struck through (a quick pen stroke). */
+	/* Done: each line gets struck through (a pen stroke), one after another (strikeAt). */
 	.ticket__line {
 		position: relative;
 	}
@@ -255,14 +259,11 @@
 		background: rgba(40, 30, 25, 0.75);
 		transform-origin: 0 50%;
 		transform: scaleX(0);
-		transition: transform 0.25s ease-out;
+		transition: transform 0.38s cubic-bezier(0.45, 0, 0.25, 1);
 	}
 	.ticket__line--done::after {
 		transform: scaleX(1);
 	}
-	.ticket__line--done:nth-child(4)::after { transition-delay: 0.08s; }
-	.ticket__line--done:nth-child(5)::after { transition-delay: 0.16s; }
-	.ticket__line--done:nth-child(6)::after { transition-delay: 0.24s; }
 	.ticket__tick {
 		position: absolute;
 		left: 14%;

@@ -3,11 +3,11 @@ export default {
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
 	"CARD CHANCE TITLE": "Ekstra Chance",
-	"CARD CHANCE DESC": "Øg chancen for at nå bonussen.",
+	"CARD CHANCE DESC": "Aktivér for at øge chancen for at udløse en bonusrunde *3 gange*.",
 	"CARD FEATURE TITLE": "Lock-funktionsspin",
 	"CARD FEATURE DESC": "Garanterer et vindende spin og starter Lock & Re-Spin.",
 	"CARD DEALIT DESC": "Gå ind i Normal Bonus med tre scattere.",
-	"CARD ALLIN DESC": "Gå ind i Super Bonus med fire scattere.",
+	"CARD ALLIN DESC": "Gå ind i Super Bonus med *fire* scattere.",
 	"CONFIRM TEXT": "Køb %mode% for %cost%?",
 	"NORMAL BONUS": "Normal Bonus",
 	"SUPER BONUS": "Super Bonus",
@@ -49,9 +49,9 @@ export default {
 	"INFO": "INFO",
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	"SPLASH C1 TITLE": "VELKOMMEN TIL McSCHMUTZO",
+	"SPLASH C1 TITLE": "VELKOMMEN TIL SCHMUTZO",
 	"SPLASH C1 BODY": "Gevinster låses fast og spinner igen, indtil grillen er fuld.",
-	"SPLASH C2 TITLE": "3\nLÆKRE\nFUNKTIONER",
+	"SPLASH C2 TITLE": "3\nUNIKKE\nBONUSSER",
 	"SPLASH C2 BODY 1": "Lås & Re-Spin",
 	"SPLASH C2 BODY 2": "Drej Bonushjulet",
 	"SPLASH C2 BODY 3": "Øg Multiplikatoren",

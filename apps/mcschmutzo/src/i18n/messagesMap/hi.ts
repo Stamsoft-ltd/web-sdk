@@ -16,11 +16,11 @@ export default {
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
 	'CARD CHANCE TITLE': 'अतिरिक्त मौका',
-	'CARD CHANCE DESC': 'बोनस तक पहुँचने का मौका बढ़ाएँ।',
+	'CARD CHANCE DESC': 'बोनस राउंड ट्रिगर होने की संभावना *3 गुना* बढ़ाने के लिए सक्रिय करें।',
 	'CARD FEATURE TITLE': 'लॉक फीचर स्पिन',
 	"CARD FEATURE DESC": "एक जीतने वाला स्पिन सुनिश्चित करता है और लॉक एंड री-स्पिन शुरू करता है।",
 	'CARD DEALIT DESC': 'तीन स्कैटर के साथ सामान्य बोनस में प्रवेश करें।',
-	'CARD ALLIN DESC': 'चार स्कैटर के साथ सुपर बोनस में प्रवेश करें।',
+	'CARD ALLIN DESC': '*चार* स्कैटर के साथ सुपर बोनस में प्रवेश करें।',
 	'CONFIRM TEXT': '%mode% को %cost% में खरीदें?',
 	'NORMAL BONUS': 'सामान्य बोनस',
 	'SUPER BONUS': 'सुपर बोनस',
@@ -62,9 +62,9 @@ export default {
 	INFO: 'जानकारी',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': "McSCHMUTZO में आपका स्वागत है",
+	'SPLASH C1 TITLE': "SCHMUTZO में आपका स्वागत है",
 	'SPLASH C1 BODY': "जीतें लॉक हो जाती हैं और ग्रिल भरने तक फिर से स्पिन होती हैं।",
-	'SPLASH C2 TITLE': "3\nस्वादिष्ट\nफ़ीचर",
+	'SPLASH C2 TITLE': "3\nअनोखे\nबोनस",
 	'SPLASH C2 BODY 1': "लॉक और री-स्पिन",
 	'SPLASH C2 BODY 2': "बोनस व्हील घुमाएँ",
 	'SPLASH C2 BODY 3': "मल्टीप्लायर बढ़ाएँ",

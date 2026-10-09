@@ -1,19 +1,11 @@
-<script lang="ts" module>
-	// Module scope so the art preloads during the loading screen.
-	import { ap } from '../lib/preloadArt';
-
-	// Mobile: the soup pot carries the multiplier (desktop draws it next to the chef, SpecialMascot).
-	const potArt = ap('/assets/mcschmutzo/special-pot-v2.webp');
-</script>
-
 <script lang="ts">
-	import PotDripsHtml from './PotDripsHtml.svelte';
 	import { stateBet, stateUi } from 'state-shared';
 	import { bookEventAmountToCurrencyString } from 'utils-shared/amount';
 
 	import { getContext } from '../game/context';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { flushPot, potState, queuePotShots } from '../game/potState.svelte';
+	import { landscapeLayout } from '../game/landscapeLayout';
 
 	const context = getContext();
 
@@ -28,39 +20,30 @@
 	// The accordion reveals the running win multiplier once it climbs above 1x.
 	const mult = $derived(context.stateGame.globalMultiplier);
 	const hasMult = $derived(mult > 1);
-	// Publish the mobile pot's box to potState (canvas px) so the soup shots aim at it.
-	let potEl: HTMLDivElement | undefined = $state();
-	$effect(() => {
-		const el = potEl;
-		if (!el) return;
-		let raf = 0;
-		const measure = () => {
-			const r = el.getBoundingClientRect();
-			const c = document.querySelector('.mcschmutzo-stage canvas')?.getBoundingClientRect();
-			const ox = c?.left ?? 0;
-			const oy = c?.top ?? 0;
-			const next = { x: r.left - ox, y: r.top - oy, w: r.width, h: r.height };
-			const cur = potState.rect;
-			if (!cur || Math.abs(cur.x - next.x) + Math.abs(cur.y - next.y) + Math.abs(cur.w - next.w) > 0.5) potState.rect = next;
-			raf = requestAnimationFrame(measure);
-		};
-		raf = requestAnimationFrame(measure);
-		return () => {
-			cancelAnimationFrame(raf);
-			potState.rect = null;
-		};
-	});
 	// Running bonus total — the sum of every free-spin win (the bottom-right WIN shows only the
-	// latest spin's win, this sums them). Set via the setTotalWin book event.
-	const totalWin = $derived(bookEventAmountToCurrencyString(stateBet.winBookEventAmount));
+	// latest spin's win, this sums them). The book only sets it (setTotalWin) AFTER a spin's win
+	// screen, so on its own it sat on the old total while WIN counted the new win up. It now counts
+	// along: the total before this spin (taken while the spin's win is still 0) plus exactly what
+	// the WIN readout shows (HudHtml's winShown), never below the book's total.
+	let spinBase = $state(0);
+	$effect(() => {
+		if (context.stateGame.roundWin === 0) spinBase = stateBet.winBookEventAmount;
+	});
+	// (only inside the free spins - a lock re-spin there runs as gameType 'respin' and is part of the
+	// same spin's win; the bonus total's own count-up at the end runs through the same readout, and
+	// must not be added on top of the total)
+	const inBonusSpin = $derived(
+		isFreegame || (context.stateGame.gameType === 'respin' && context.stateGame.bonusMode === 'freegame'),
+	);
+	const shownSpinWin = $derived(inBonusSpin ? context.stateGame.winShown : 0);
+	const totalWin = $derived(
+		bookEventAmountToCurrencyString(Math.max(stateBet.winBookEventAmount, spinBase + shownSpinWin)),
+	);
 
 	// Portrait: the three panels sit in ONE row in the gap between the board's bottom edge and the
 	// control bar — measured live (board from the pixi layout, bar from the DOM) so they never
 	// collide with either on any phone (the fixed % positions overlapped both on short screens).
 	let row = $state<{ top: number; h: number; c: number; accH: number } | null>(null);
-	// Portrait: the pot stands on the board's top-right corner in front of the phone chef
-	// (MobileChef) — Figma 8870:33637, placed in board-FRAME fractions like him.
-	let pot = $state<{ cx: number; cy: number; w: number } | null>(null);
 	$effect(() => {
 		if (!show || layoutType !== 'portrait') return;
 		let raf = 0;
@@ -68,14 +51,6 @@
 			const main = context.stateLayoutDerived.mainLayout();
 			const b = context.stateGameDerived.boardLayout();
 			const boardBottom = main.y - (main.height * main.scale) / 2 + (b.y + b.height / 2) * main.scale;
-			const s = main.scale;
-			const frameX = main.x + (b.x - b.width / 2 - main.width / 2) * s - b.width * 0.0206 * s;
-			const frameY = main.y + (b.y - b.height / 2 - main.height / 2) * s - b.height * 0.0224 * s;
-			const frameW = b.width * 1.043 * s;
-			const frameH = b.height * 1.0473 * s;
-			const nextPot = { cx: frameX + 0.844 * frameW, cy: frameY - 0.047 * frameH, w: 0.2 * frameW };
-			if (!pot || Math.abs(pot.cx - nextPot.cx) + Math.abs(pot.cy - nextPot.cy) + Math.abs(pot.w - nextPot.w) > 0.5)
-				pot = nextPot;
 			const bar = document.querySelector('.pt-controls')?.getBoundingClientRect();
 			// The round spin button bulges above the bar in the middle — the row is centred between the
 			// board and the BAR, and only its height is limited so it still clears the spin disc.
@@ -95,6 +70,18 @@
 		};
 		raf = requestAnimationFrame(measure);
 		return () => cancelAnimationFrame(raf);
+	});
+
+	// Phone landscape (Figma 8302:23371): FREE SPINS over TOTAL WIN top-left, the pot bottom-left in
+	// front of the chef (LandscapeChef) — game/landscapeLayout.
+	const lsVars = $derived.by(() => {
+		if (layoutType !== 'landscape') return '';
+		const { cards: c, pot: p, u } = landscapeLayout(context, true);
+		return (
+			`;--ls-u:${u.toFixed(3)}px;--lc-left:${c.left.toFixed(1)}px;--lc-top:${c.top.toFixed(1)}px` +
+			`;--lc-w:${c.w.toFixed(1)}px;--lc-h:${c.h.toFixed(1)}px;--lc-gap:${c.gap.toFixed(1)}px;--lc-s:${(c.w / (114 * u)).toFixed(3)}` +
+			`;--pot-cx:${p.cx.toFixed(1)}px;--pot-cy:${p.cy.toFixed(1)}px;--pot-w:${p.w.toFixed(1)}px`
+		);
 	});
 
 	// DEV preview: press 8 to force a free-games state (special bg + counter + multiplier + total).
@@ -130,7 +117,8 @@
 		data-layout={layoutType}
 		class:fp--dim={context.stateGame.winDim > 0}
 		class:fp--hidden={context.stateGame.freeSpinPopupShowing}
-		style={`--win-dim:${1 - context.stateGame.winDim};` + (row ? `--row-top:${row.top}px;--row-h:${row.h}px;--acc-top:${row.c - row.accH / 2}px;--acc-h:${row.accH}px` : '') + (pot ? `;--pot-cx:${pot.cx}px;--pot-cy:${pot.cy}px;--pot-w:${pot.w}px` : '')}
+		class:fp--win-over={context.stateGame.winOver}
+		style={`--win-dim:${1 - context.stateGame.winDim};` + (row ? `--row-top:${row.top}px;--row-h:${row.h}px;--acc-top:${row.c - row.accH / 2}px;--acc-h:${row.accH}px` : '') + lsVars}
 	>
 		<!-- FREE SPINS counter -->
 		<div class="fp-card fp-fs" class:fp-fs--tense={tension === 1} class:fp-fs--final={tension === 2}>
@@ -147,24 +135,6 @@
 			<span class="fp-card__value">{totalWin}</span>
 		</div>
 
-		<!-- Mobile: the soup pot with the multiplier on its front (same design as desktop: "MULTIPLIER"
-		     printed on the pot, under it a #BCB7AF box with a 1 px #C10C01 border holding only the value —
-		     in cqw of the pot, so it scales with it). Soup shots fly into it (potState.rect). -->
-		{#if layoutType !== 'desktop'}
-		<div class="fp-acc fp-pot" bind:this={potEl}>
-			<img class="fp-pot__img" src={potArt} alt="" draggable="false" />
-			<!-- its painted drips ooze and let drops go (game/potDrips), under the label -->
-			<PotDripsHtml />
-			<div class="fp-pot__front">
-				<span class="fp-pot__label">{i18nDerived.translate('POT MULTIPLIER')}</span>
-				{#key potState.mult}
-					<div class="fp-pot__plaque" class:fp-pot__plaque--stamp={potState.mult > 1}>
-						<span class="fp-pot__value">×{potState.mult}</span>
-					</div>
-				{/key}
-			</div>
-		</div>
-		{/if}
 	</div>
 {/if}
 
@@ -182,8 +152,7 @@
 		transition: opacity 0.2s ease;
 	}
 
-	.fp-card,
-	.fp-acc {
+	.fp-card{
 		position: absolute;
 	}
 
@@ -220,17 +189,20 @@
 	.fp-card__value {
 		font-size: clamp(17px, 1.9vw, 27px);
 	}
-	/* FREE SPINS + TOTAL WIN cards (design 8274:11443): a heavier label and a much bigger value in the
-	   game's display face (Bowlby One SC), so the spins left / the win read at a glance. */
+	/* FREE SPINS + TOTAL WIN cards (design 8274:11443): the label in the brush face (the design's
+	   Comica Brush → --font-brush) over a much bigger value in Nunito Regular, so the spins left / the
+	   win read at a glance. */
 	.fp-fs .fp-card__label,
 	.fp-total .fp-card__label {
-		font-weight: 800;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
+		font-weight: 400;
 		font-size: clamp(11px, 1.3vw, 19px);
 		opacity: 1;
 	}
 	.fp-fs .fp-card__value,
 	.fp-total .fp-card__value {
-		font-family: 'Bowlby One SC', sans-serif;
+		font-family: 'Nunito', sans-serif;
 		font-weight: 400;
 		font-size: clamp(22px, 2.6vw, 38px);
 		letter-spacing: 0.03em;
@@ -291,74 +263,6 @@
 			animation: none;
 		}
 	}
-
-	/* Mobile soup pot + multiplier plaque (cqw = % of the pot width; the design pot is 376 px wide, so
-	   1 design px = 0.266cqw). */
-	.fp-pot {
-		container-type: inline-size;
-		aspect-ratio: 1271 / 914 !important;
-		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
-	}
-	.fp-pot__img {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: contain;
-	}
-	/* label + box block, centred on the pot body's front (body: 54% → 97% of the sprite, axis 49.8%) */
-	.fp-pot__front {
-		position: absolute;
-		left: 49.8%;
-		top: 78%;
-		translate: -50% -50%;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1.8cqw;
-		font-family: 'Bowlby One SC', sans-serif;
-		color: #c10c01;
-		line-height: 1;
-		white-space: nowrap;
-	}
-	.fp-pot__plaque {
-		min-width: 29cqw; /* the design's 128 px box at a 438 px pot */
-		box-sizing: border-box;
-		display: flex;
-		justify-content: center;
-		padding: 3cqw 4.4cqw;
-		background: #bcb7af;
-		border: 1px solid #c10c01;
-		border-radius: 6cqw;
-	}
-	.fp-pot__label {
-		font-size: 7cqw; /* the design's 18 px, enlarged — the mobile pot is small */
-		text-box: trim-both cap alphabetic;
-	}
-	.fp-pot__value {
-		font-size: 16cqw;
-		text-box: trim-both cap alphabetic;
-	}
-	.fp-pot__plaque--stamp {
-		animation: fp-pot-stamp 0.6s cubic-bezier(0.2, 1.5, 0.4, 1) both;
-	}
-	@keyframes fp-pot-stamp {
-		from {
-			scale: 1.45;
-		}
-		to {
-			scale: 1;
-		}
-	}
-
-	/* Multiplier accordion machine. */
-	.fp-acc {
-		container-type: inline-size;
-		aspect-ratio: 1127 / 794;
-		background-size: 100% 100%;
-		background-repeat: no-repeat;
-		filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
-	}
 	/* The value "prints/stamps" onto the ticket: drops in big + tilted with an overshoot, then
 	   settles — replayed whenever the multiplier value changes (the {#key} remounts it). */
 
@@ -370,8 +274,7 @@
 	/* ── Portrait: FREE SPINS · TOTAL WIN · printer in one row, filling the board-to-control-bar gap
 	   (--row-top / --row-h measured in the script). Everything scales off the row height. ── */
 	.fp[data-layout='portrait'] .fp-fs,
-	.fp[data-layout='portrait'] .fp-total,
-	.fp[data-layout='portrait'] .fp-acc {
+	.fp[data-layout='portrait'] .fp-total {
 		top: var(--row-top, 70%);
 		height: var(--row-h, 56px);
 	}
@@ -411,34 +314,6 @@
 	.fp[data-layout='portrait'] .fp-total .fp-card__value {
 		font-size: min(calc(var(--row-h, 56px) * 0.44), 11.5cqw);
 	}
-	.fp[data-layout='portrait'] .fp-acc {
-		top: var(--acc-top, 70%);
-		height: var(--acc-h, 56px);
-		right: 3%;
-		width: auto;
-		aspect-ratio: 1127 / 794;
-		max-width: 36%;
-	}
-
-	/* the pot (on the board's top-right corner, in front of the chef) instead of the printer slot */
-	.fp[data-layout='portrait'] .fp-acc.fp-pot {
-		top: var(--pot-cy, 14%);
-		left: var(--pot-cx, 84%);
-		right: auto;
-		width: var(--pot-w, 25%);
-		height: auto;
-		max-width: none;
-		translate: -50% -50%;
-	}
-
-	/* ── Desktop / landscape: FREE SPINS + TOTAL WIN stacked on the LEFT of the board, accordion above.
-	   Sized in vmin (short side) so the pills shrink on tiny popouts (400x225) and clear the board's
-	   left column, while staying full-size on normal mobile-landscape. ── */
-	.fp:not([data-layout='portrait']) .fp-acc {
-		left: 3%;
-		top: 12%;
-		width: clamp(96px, 34vmin, 230px);
-	}
 	.fp:not([data-layout='portrait']) .fp-fs {
 		left: 3.5%;
 		top: 44%;
@@ -454,10 +329,6 @@
 	   the multiplier accordion so they don't dominate the tiny screen. Placed LAST so it wins over the
 	   base rules (equal specificity → later wins). 812x375 (height 375) is unaffected. */
 	@media (max-height: 300px) {
-		.fp:not([data-layout='portrait']) .fp-acc {
-			top: 8%;
-			width: clamp(70px, 32vmin, 140px);
-		}
 		.fp:not([data-layout='portrait']) .fp-fs {
 			top: 42%;
 			min-width: clamp(56px, 22vmin, 150px);
@@ -489,7 +360,47 @@
 			font-size: clamp(9px, 4.2vmin, 14px);
 		}
 	}
+
+	/* ── Phone landscape (Figma 8302:23371): FREE SPINS over TOTAL WIN in the top-left corner (114 × 52
+	   design px each), the pot bottom-left in front of the chef. Placed by game/landscapeLayout; last
+	   in the sheet so it wins over the shared desktop/landscape rules above. ── */
+	.fp[data-layout='landscape'] .fp-fs,
+	.fp[data-layout='landscape'] .fp-total {
+		left: var(--lc-left);
+		width: var(--lc-w);
+		min-width: 0;
+		height: var(--lc-h);
+		padding: 0 calc(4 * var(--ls-u));
+		gap: calc(4 * var(--ls-u) * var(--lc-s));
+		container-type: inline-size;
+	}
+	.fp[data-layout='landscape'] .fp-fs {
+		top: var(--lc-top);
+	}
+	.fp[data-layout='landscape'] .fp-total {
+		top: calc(var(--lc-top) + var(--lc-h) + var(--lc-gap));
+	}
+	/* the same faces as every layout (8274:11443: brush label, Nunito Regular value) at the landscape
+	   design's sizes (label 13.6, value 17.4 design px) */
+	.fp[data-layout='landscape'] .fp-fs .fp-card__label,
+	.fp[data-layout='landscape'] .fp-total .fp-card__label {
+		font-size: calc(13.6 * var(--ls-u) * var(--lc-s));
+		letter-spacing: 0.03em;
+	}
+	.fp[data-layout='landscape'] .fp-fs .fp-card__value,
+	.fp[data-layout='landscape'] .fp-total .fp-card__value {
+		font-size: min(calc(17.4 * var(--ls-u) * var(--lc-s)), 15cqw);
+		letter-spacing: 0.03em;
+	}
 	.fp--dim {
 		filter: brightness(var(--win-dim));
+	}
+	/* A BIG win screen: its splats are drawn on the canvas, under these cards, so the cards fade right
+	   out and the win reads over them (the pot stays, dimmed, hiding the chef). */
+	.fp-card {
+		transition: opacity 0.3s ease;
+	}
+	.fp--win-over .fp-card {
+		opacity: 0;
 	}
 </style>

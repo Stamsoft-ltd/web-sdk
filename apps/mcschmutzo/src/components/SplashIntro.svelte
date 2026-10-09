@@ -12,7 +12,7 @@
 	import SauceFx from './SauceFx.svelte';
 	import LogoHtml from './LogoHtml.svelte';
 	import { getContext } from '../game/context';
-	import { chefPose, idleSnicker } from '../game/chefMood.svelte';
+	import { bowShake, chefPose, idleSnicker } from '../game/chefMood.svelte';
 
 	type Props = {
 		onpress: () => void;
@@ -104,17 +104,25 @@
 	// The chef is the board chef (Figma "Frame 427321577", 4× = 1304×1699) flipped horizontally so he
 	// faces the cards from the left. The base is the relaxed-arm body (McShmutzo node 8779:1769) with
 	// the old eye whites + brows pasted in, pre-mirrored (the nametag is its own readable layer).
-	// Layers: body (pupils erased) + the bottle hand, drawn BEHIND the body and shaking about the wrist,
-	// + the head (tilting and nodding on its neck, carrying the eyes, brows and grin sparkle) and the
+	// Layers: body (pupils erased) + the bottle arm, drawn BEHIND the body and swinging from the strap seam,
+	// + the head (tilting and nodding on its neck, carrying the eyes and brows) and the
 	// hanging forearm (swinging from the elbow) — the board chef's rig, cut the same way
 	// (scripts/build-chef-head.py) and driven by the same chefPose / idle snicker (the rAF loop below).
 	// Pupils and eyelids are drawn in CSS. Geometry is in the frame's px.
-	const manBody = ap('/assets/mcschmutzo/splash/man-body-v1.webp');
-	const manHead = ap('/assets/mcschmutzo/splash/man-head-v1.webp');
+	const manBody = ap('/assets/mcschmutzo/splash/man-body-v2.webp');
+	// The bow tie, lifted off the body (scripts/build-chef-bow.py), wobbling on its knot like the board's.
+	const manBow = ap('/assets/mcschmutzo/splash/man-bow-v1.webp');
+	// head v2 carries a feathered strip of the under-chin shadow with it and has no copy of the collar
+	// (build-splash-head-skirt.py), so a tilt never shows a second jaw or collar line
+	const manHead = ap('/assets/mcschmutzo/splash/man-head-v2.webp');
 	const manArm = ap('/assets/mcschmutzo/splash/man-arm-v1.webp');
-	const manBottle = ap('/assets/mcschmutzo/splash/man-bottle-v3.webp');
+	const manBottle = ap('/assets/mcschmutzo/splash/man-bottle-v4.webp');
 	// The nametag plate (cropped layer over its baked copy) jiggles on its pin, like the board chef.
 	const manLabel = ap('/assets/mcschmutzo/splash/man-label-v3.webp');
+	// Card frame (Figma 8888:28568): dark rim with screws + red side tabs over a cream panel.
+	const cardFrame = ap('/assets/mcschmutzo/splash/card-frame-v1.svg');
+	// The corner sauce draws in a 470-px-wide card space: the frame's 283.154 × 384.895 at that width.
+	const CARD_ART_H = Math.round((470 * 384.895) / 283.154);
 	// Mirrored board-chef nozzle (frame fractions) + squirt direction (up, leaning toward the cards).
 	const NOZZLE = { x: 1 - 0.1438, y: 0.3773, dir: Math.atan2(-0.979, 0.204) };
 	const manBrows = ap('/assets/mcschmutzo/splash/man-brows-v3.webp'); // above the lids
@@ -133,10 +141,13 @@
 		// Nametag / brows are cropped to their visible bounds (they were mostly-transparent
 		// full-frame canvases); these boxes put each crop back exactly where it sat in the frame.
 		label: [368, 1023, 624, 1160] as Box,
+		bow: [516, 833, 788, 976] as Box, // build-chef-bow.py (splash box + knot)
+		knot: [654, 905] as [number, number],
 		brows: [574, 326, 907, 470] as Box,
-		bottlePivot: [926, 951] as [number, number], // the wrist, tucked behind the body
+		// the whole raised arm swings from where its sleeve runs in under the strap (build-chef-bottle.py)
+		bottlePivot: [814, 1050] as [number, number],
 		// build-chef-head.py prints these (splash man-head / man-arm boxes, neck + elbow)
-		head: [287, 0, 986, 875] as Box,
+		head: [287, 0, 986, 897] as Box, // + build-splash-head-skirt.py's skirt rows
 		neck: [642, 861] as [number, number], // the head turns about this
 		arm: [50, 1295, 274, 1794] as Box,
 		elbow: [166, 1322] as [number, number],
@@ -178,31 +189,55 @@
 		return { x: 0, y: 0 };
 	};
 	const HEAD_LAG_MS = 170;
+	// The neck stays clean between these (offline composites of the rig): past them the jaw line
+	// visibly leaves the collar's outline. Eased into, so the sway slows at the limit, never stops.
+	const HEAD_ROT: [number, number] = [-0.022, 0.02];
+	const HEAD_LIFT = 0.003; // fraction of the height the head may rise
+	// Squash & stretch: the head flattens a touch as the chin drops fast and stretches as it pops up
+	// (scaled about the neck, so the jaw edge stays put) — so it reads as flesh, not a rigid cut-out.
+	const SQUASH_PER_SPEED = 3; // scale change per (fraction of the height per second) of nod speed
+	const SQUASH_MAX = 0.02;
+	const soft = (v: number, lo: number, hi: number) => {
+		const lim = v >= 0 ? hi : -lo;
+		return lim * Math.tanh(v / lim);
+	};
 	const HEAD_FOLLOW = 4.5; // radians of tilt per frame-width of glance
 	const ARM_MAX = 0.04;
-	let rig = $state({ head: '', arm: '', body: '', bottle: '', brows: '', squint: 0 });
+	let rig = $state({ head: '', arm: '', body: '', bottle: '', bow: '', brows: '', squint: 0 });
 	let manH = $state(0); // the figure's px height (nod / brow offsets are fractions of it)
 	onMount(() => {
 		if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 		const t0 = performance.now(); // the CSS eye animations start with the element
 		let raf = 0;
+		let lastNod = 0;
+		let lastNow = t0;
+		let nodSpeed = 0; // smoothed, fraction of the height per second (+ = down)
 		const frame = (now: number) => {
 			raf = requestAnimationFrame(frame);
 			idleSnicker(now);
 			const pose = chefPose(now);
 			const g = glanceAt(now - t0 - HEAD_LAG_MS);
 			const sway = 0.014 * Math.sin(now / 1730) + 0.006 * Math.sin(now / 830 + 1.1);
-			const rot = sway + g.x * HEAD_FOLLOW - pose.headTilt;
-			const nod = 0.0009 * Math.sin(now / 580) + g.y * 0.5 + pose.headNod;
+			const rot = soft(sway + g.x * HEAD_FOLLOW - pose.headTilt, HEAD_ROT[0], HEAD_ROT[1]);
+			const nod = Math.max(-HEAD_LIFT, 0.0009 * Math.sin(now / 580) + g.y * 0.5 + pose.headNod);
+			const dt = Math.max(1, now - lastNow);
+			nodSpeed += (((nod - lastNod) * 1000) / dt - nodSpeed) * Math.min(1, dt / 60);
+			lastNod = nod;
+			lastNow = now;
+			const squash = Math.max(-SQUASH_MAX, Math.min(SQUASH_MAX, nodSpeed * SQUASH_PER_SPEED));
 			const swing = Math.min(
 				ARM_MAX,
 				Math.max(0, 0.014 + 0.012 * Math.sin(now / 1270 + 0.6) + 0.004 * Math.sin(now / 610) + Math.abs(pose.propRot) * 0.35),
 			);
+			// the board chef's bow wobble (Background.svelte bowTilt): sway + the head's tilt + the
+			// bottle's waggle + the reaction shake, sign-flipped for the mirrored art
+			const bow = Math.max(-0.06, Math.min(0.06, 0.014 * Math.sin(now / 1150 + 0.8) + 0.006 * Math.sin(now / 530) + 0.25 * pose.propRot + 0.3 * pose.headTilt + bowShake(now)));
 			rig = {
-				head: `transform:translateY(${(nod * manH).toFixed(2)}px) rotate(${rot.toFixed(4)}rad);`,
+				head: `transform:translateY(${(nod * manH).toFixed(2)}px) rotate(${rot.toFixed(4)}rad) scale(${(1 + 0.5 * squash).toFixed(4)},${(1 - squash).toFixed(4)});`,
 				arm: `transform:rotate(${(-swing).toFixed(4)}rad);`,
 				body: `transform:translate(${(-pose.dx * 100).toFixed(3)}%,${(pose.dy * 100).toFixed(3)}%) scale(${pose.sx.toFixed(4)},${pose.sy.toFixed(4)});`,
-				bottle: `rotate:${(-pose.propRot).toFixed(4)}rad;`,
+				bottle: `rotate:${(-0.72 * pose.propRot).toFixed(4)}rad;`,
+				bow: `transform:rotate(${(-bow).toFixed(4)}rad);`,
 				brows: `translate:0 ${(pose.brow * manH).toFixed(2)}px;`,
 				squint: pose.squint,
 			};
@@ -338,6 +373,14 @@
 >
 	{#if !isPortrait && vw > 0}
 		<img class="pano" src={panoArt} alt="" draggable="false" style={panoStyle} />
+		<!-- The wall lantern, lit: a warm halo on the wall + a hot core in the glass, flickering like a
+		     flame. Same box + pan as the panorama, so it stays on the painted lamp. -->
+		<div class="pano pano-lamp pano-lamp--halo" style={panoStyle} aria-hidden="true">
+			<span class="lamp-halo"></span>
+		</div>
+		<div class="pano pano-lamp pano-lamp--core" style={panoStyle} aria-hidden="true">
+			<span class="lamp-core"></span>
+		</div>
 		<div class="pano-dim" style={`--pan-ms:${PAN_MS}ms`}></div>
 	{/if}
 	<div class="stage" bind:this={stageEl} style={`--sbg-mobile:url('${bg}')`}>
@@ -346,6 +389,9 @@
 		<div class="shine" aria-hidden="true"><div class="shine__band"></div></div>
 		<div class="logo" bind:this={logoEl} style={logoFly}><LogoHtml hitAt={LOGO_HIT_MS} /></div>
 		<div class="man" style={`--skin:${MAN.skin}`} bind:clientHeight={manH}>
+		<!-- the rig's art is the board chef mirrored; the redesign (8888:28541) stands him at the right
+		     facing the cards like on the board, so it is flipped back here as a whole -->
+		<div class="man-flip">
 		<div class="man-rig" style={rig.body}>
 			<div class="bottle" style={bottleStyle + rig.bottle}>
 				<img src={manBottle} alt="" draggable="false" />
@@ -365,7 +411,6 @@
 			<!-- The head on its neck: a frame-sized layer, so the face parts keep their frame boxes. -->
 			<div class="man-head" style={headOrigin + rig.head}>
 				<img class="man-part" src={manHead} alt="" draggable="false" style={manBox(MAN.head)} />
-				<span class="man-sparkle" aria-hidden="true"></span>
 				<div class="pupil" style={manBox(MAN.pupilL)}><span class="glint"></span></div>
 				<div class="pupil" style={manBox(MAN.pupilR)}><span class="glint"></span></div>
 				{#each [MAN.eyeL, MAN.eyeR] as eye, i (i)}
@@ -380,6 +425,9 @@
 				<!-- Brows over the lids, so a blink closes under the brow. -->
 				<img class="man-brows" src={manBrows} alt="" draggable="false" style={manBox(MAN.brows) + rig.brows} />
 			</div>
+			<!-- The bow tie, in front of the neck, wobbling on its knot. -->
+			<img class="man-part" src={manBow} alt="" draggable="false" style={manBox(MAN.bow) + origin(MAN.knot, MAN.bow) + rig.bow} />
+		</div>
 		</div>
 		</div>
 		<!-- Mobile only: the Press Play wordmark (desktop has none; mobile has no character). -->
@@ -387,13 +435,13 @@
 
 		{#snippet cardEl(card: (typeof CARDS)[number])}
 			<div class="card {card.cls}">
-				<!-- The frame is drawn in CSS (wood band, outlines, cream panel) so it stays
-				     sharp at any zoom / screen density — the old 470×690 raster went soft when scaled up. -->
-				<div class="card-frame" aria-hidden="true"><div class="card-panel"></div></div>
+				<!-- Cream panel + the design's frame (vector, so it stays sharp at any size). -->
+				<div class="card-panel" aria-hidden="true"></div>
+				<img class="card-frame" src={cardFrame} alt="" draggable="false" />
 				<!-- Corner sauce, drawn in code: the blob + both tendrils dripping. Sits OVER the copy so a
 				     drop can splat onto the title; the wrap sags as a whole. -->
 				<div class="drip-wrap">
-					<SauceCorner spec={card.sauce} />
+					<SauceCorner spec={card.sauce} artH={CARD_ART_H} frameR={20} />
 				</div>
 				<div class="card-inner">
 					<h3 class="card-title" use:fitFont={i18nDerived.translate(card.title)}>
@@ -462,6 +510,17 @@
 		background-repeat: no-repeat;
 		container-type: size;
 	}
+	/* Narrower than 16:9 (4:3, 16:10 …): covering the screen cropped the stage's sides, and the chef
+	   (bottom right, already 2.7% past the edge by design) went off-screen with them. Fit the stage to
+	   the width instead, overhanging by at most ~6% in all — the cards row fills 13–87% of it, so that
+	   keeps the cards and the chef in view; the panorama behind still fills the screen above and below. */
+	@media (min-aspect-ratio: 1 / 1) and (max-aspect-ratio: 16 / 9) {
+		.stage {
+			--sw: max(100vw, min(100vh * 16 / 9, 106vw));
+			width: var(--sw);
+			height: calc(var(--sw) * 9 / 16);
+		}
+	}
 
 	/* The diner panorama, positioned in px from panoramaRect (same maths as the game's background).
 	   The camera pan is a translateX to the base-game view. */
@@ -472,6 +531,69 @@
 		will-change: transform;
 		pointer-events: none;
 	}
+	/* Lantern (background-panorama.webp, 2172×724): the bulb's core is at 248.5, 276 px, the glass
+	   ~227–270 × 250–303. Positions are % of the art; sizes are % of its width.
+	   The blend sits on the .pano layers themselves: .pano's will-change makes each one its own
+	   stacking context, so a blend on a child would mix with that empty layer, not the painting. */
+	.pano-lamp {
+		pointer-events: none;
+	}
+	/* the light thrown on the wall: overlay warms + brightens the lit wall, keeps the dark metal dark */
+	.pano-lamp--halo {
+		mix-blend-mode: overlay;
+	}
+	/* the flame: screen only ever brightens the glass */
+	.pano-lamp--core {
+		mix-blend-mode: screen;
+	}
+	.lamp-halo,
+	.lamp-core {
+		position: absolute;
+		left: calc(248.5 / 2172 * 100%);
+		top: calc(276 / 724 * 100%);
+		translate: -50% -50%;
+		aspect-ratio: 1;
+		border-radius: 50%;
+	}
+	.lamp-halo {
+		width: calc(260 / 2172 * 100%);
+		background: radial-gradient(circle, rgba(255, 214, 120, 0.85) 0%, rgba(255, 190, 90, 0.5) 30%, rgba(255, 170, 70, 0) 68%);
+		animation:
+			lamp-flicker 3.7s linear infinite,
+			lamp-breathe 5.3s ease-in-out infinite alternate;
+	}
+	/* the flame itself, inside the glass only */
+	.lamp-core {
+		width: calc(34 / 2172 * 100%);
+		background: radial-gradient(circle, rgba(255, 252, 225, 0.9) 0%, rgba(255, 226, 140, 0.5) 45%, rgba(255, 200, 90, 0) 75%);
+		animation: lamp-flicker 3.7s linear -0.15s infinite;
+	}
+	/* a gas flame: steady, with the odd quick dip-and-catch */
+	@keyframes lamp-flicker {
+		0%, 100% { opacity: 1; }
+		6% { opacity: 0.86; }
+		8% { opacity: 1; }
+		31% { opacity: 0.93; }
+		34% { opacity: 0.68; }
+		36% { opacity: 0.97; }
+		38% { opacity: 0.8; }
+		41% { opacity: 1; }
+		63% { opacity: 0.9; }
+		66% { opacity: 1; }
+		84% { opacity: 0.88; }
+		87% { opacity: 1; }
+	}
+	@keyframes lamp-breathe {
+		from { scale: 0.94; }
+		to { scale: 1.06; }
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.lamp-halo,
+		.lamp-core {
+			animation: none;
+		}
+	}
+
 	/* The base game's background carries a 16% dark wash — fade it in during the pan so the handover
 	   to the game background is seamless. */
 	.pano-dim {
@@ -540,12 +662,15 @@
 	}
 	.logo {
 		position: absolute;
-		left: 50%;
-		top: 4.5%;
+		/* Redesign (8888:28541, 1200×670): the wordmark spans ~265–955 px, letters from y≈75 — big, and
+		   OVER the top of the cards and their corner sauce (the design's layer order). */
+		z-index: 4;
+		left: 50.8%;
+		top: 11.2%;
 		transform: translateX(-50%);
-		/* squash about the bottom edge — it lands on the awning */
+		/* squash about the bottom edge — it lands on the cards */
 		transform-origin: 50% 100%;
-		width: 39%;
+		width: 61%;
 		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.35));
 		/* Entrance: once the cards are in, it drops in from the top, HITS and squashes (the splats
 		   squeeze out — LogoHtml), springs back, then stays put. */
@@ -554,12 +679,11 @@
 
 	.man {
 		position: absolute;
-		left: -1.5%;
-		/* Sunk below the stage edge so the art's curved apron cut-off is never visible — the screen
-		   edge crops his lower torso (the stage is a 16:9 cover box, so its bottom is always at or
-		   below the viewport's). */
-		bottom: -5%;
-		height: 58%;
+		/* Redesign (8888:28612): bottom-right, frame 956–1232 × 318–677.5 of the 1200×670 stage — a
+		   little past the right and bottom edges, so the stage edge crops his lower torso. */
+		right: -2.7%;
+		bottom: -1.1%;
+		height: 53.7%;
 		aspect-ratio: 1304 / 1699;
 		/* The real art's frame includes the raised bottle on its right, so the figure is wider than
 		   the old cut — sit him IN FRONT of the card stack (a foreground character) so the bottle
@@ -598,10 +722,14 @@
 		display: block;
 		max-width: none;
 	}
+	.man-flip,
 	.man-rig,
 	.man-head {
 		position: absolute;
 		inset: 0;
+	}
+	.man-flip {
+		transform: scaleX(-1);
 	}
 	.man-rig {
 		transform-origin: 50% 100%;
@@ -649,6 +777,7 @@
 	.man-label {
 		position: absolute;
 		transform-origin: 50.02% 2.95%; /* the pin: frame 38.04% / 60.45% */
+		scale: -1 1; /* reads the right way round inside the flipped rig */
 		animation: label-jiggle 2.2s ease-in-out infinite alternate;
 	}
 	@keyframes label-jiggle {
@@ -659,63 +788,31 @@
 			transform: rotate(1.6deg);
 		}
 	}
-	/* Tooth *ding*: a 4-point sparkle that flashes on his grin now and then (board chef's, mirrored). */
-	.man-sparkle {
-		position: absolute;
-		left: 54%;
-		top: 37.6%;
-		width: 7.5%;
-		aspect-ratio: 1;
-		transform: translate(-50%, -50%) scale(0);
-		background:
-			linear-gradient(#fff, #fff) center / 15% 100% no-repeat,
-			linear-gradient(#fff, #fff) center / 100% 15% no-repeat,
-			radial-gradient(circle, #fff 0 20%, transparent 21%);
-		border-radius: 2px;
-		pointer-events: none;
-		animation: tooth-ding 6s ease-out 2.5s infinite;
-	}
-	@keyframes tooth-ding {
-		0%,
-		86%,
-		100% {
-			transform: translate(-50%, -50%) scale(0) rotate(0deg);
-			opacity: 0;
-		}
-		90% {
-			transform: translate(-50%, -50%) scale(1.1) rotate(20deg);
-			opacity: 1;
-		}
-		95% {
-			transform: translate(-50%, -50%) scale(0.7) rotate(40deg);
-			opacity: 0.8;
-		}
-	}
 
 	/* Press Play wordmark — mobile only (see portrait media query); hidden on desktop. */
 	.pp-mark {
 		display: none;
 	}
 
-	/* Three cards centred in the lower half, clear of the character on the left. */
+	/* Three cards in a row under the logo (8896:40967: 879.5 × 384.9 at 160, 217 of the 1200×670
+	   stage, 15 px apart). */
 	.cards {
 		position: absolute;
-		left: 51%;
-		top: 52%;
+		left: 50%;
+		top: 61.1%;
 		transform: translate(-50%, -50%);
-		height: 58%;
+		height: 57.4%;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 0.6cqw;
+		gap: 1.25cqw;
 	}
 
 	.card {
 		position: relative;
 		height: 100%;
-		/* All three frames are cropped to the same 470×690 box, so one aspect ratio → equal width &
-		   height for every card (and the gap between them stays equal). */
-		aspect-ratio: 470 / 690;
+		/* The three frames are identical (283.154 × 384.895). */
+		aspect-ratio: 283.154 / 384.895;
 		filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.22));
 		/* Each card is its own query container so the copy scales with the card in ANY orientation
 		   (on portrait the row shrinks the cards, and the text has to follow). */
@@ -787,65 +884,58 @@
 		animation-delay: -4.4s;
 	}
 
-	/* Copy sits inside the cream interior; insets tuned per frame (red carries the shadow margin). */
+	/* Copy in the design's two zones (card px of 384.9): the title centred in 50–222, the description
+	   in 222–335 — so every card's title and body line up across the row whatever their length. */
 	.card-inner {
 		position: absolute;
 		inset: 0;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		/* Centre the title+body block so it fills the card (title upper, description mid-lower with a
-		   gap) instead of clustering at the top and leaving the lower half empty. */
-		justify-content: center;
+		display: grid;
+		grid-template-rows: 13cqh 44.7cqh 29.3cqh;
+		justify-items: center;
 		text-align: center;
 		font-family: 'Nunito', sans-serif;
-		/* Insets clear the drip on the red/yellow cards; trimmed so longer localized titles/bodies
-		   (pt, ru, fi, id) still fit inside the cream area. */
-		padding: 15.5% 12.5% 12%;
+		padding: 0 10.5%;
+	}
+	.card-inner > .card-title {
+		grid-row: 2;
+		align-self: center;
+	}
+	.card-inner > .card-body {
+		grid-row: 3;
+		align-self: center;
 	}
 
-	/* Titles = Bowlby One 32px @ design (cqh is a fraction of the CARD's height, so it scales with
-	   the card in any orientation: a 367px-tall desktop card → ~32px). */
+	/* Titles: the design's 42 px on a 283-px card (14.8cqw), line-height 1.2, 0.03em, in the brush
+	   face (`fitFont` shrinks a long word to the frame). */
 	.card-title {
 		margin: 0;
 		max-width: 100%;
 		/* Titles may carry explicit line breaks (card 2: the number on its own line, as designed). */
 		white-space: pre-line;
-		/* A big base size (matches the design); the `fitFont` action multiplies it by `--fit` (≤1) per
-		   card so long localized words (fi "AINUTLAATUISTA", de "EINZIGARTIGE", tr) shrink to fit the
-		   frame — reflowing (so they stay centred) instead of breaking mid-word or spilling past it. */
-		font-family: 'Bowlby One SC', sans-serif;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
 		font-weight: 400;
-		line-height: 1.16;
+		line-height: 1.2;
 		letter-spacing: 0.03em;
-		/* cqw (card WIDTH) not cqh, so a wide word like "SCHMUTZO" fits the frame at any card size.
-		   Sized so the title reads big (wraps to ~3 lines) yet long localized titles still fit. */
-		font-size: calc(11.5cqw * var(--fit, 1));
+		font-size: calc(12cqw * var(--fit, 1));
 	}
-	/* The frame, in the old art's 470×690 px space expressed as card-width units (1cqw = 4.7 art px):
-	   a 4.5px dark outline, a 13px wood band lit from the top, a 2.5px dark line and the cream panel. The outer radius (54px) is the one the sauce
-	   corner clips to (SauceCorner frameR). */
+	/* The cream panel (8888:28566/7: 2.6% in from the sides, 0.8% top, 2.2% bottom) under the frame
+	   art, whose middle is cut out. */
+	.card-panel {
+		position: absolute;
+		left: 2.62%;
+		right: 2.96%;
+		top: 0.83%;
+		bottom: 2.24%;
+		border-radius: 2.6cqw;
+		background: #fef4d5;
+	}
 	.card-frame {
 		position: absolute;
 		inset: 0;
-		box-sizing: border-box;
-		border: 0.96cqw solid #3a1203;
-		border-radius: 11.49cqw;
-		padding: 2.77cqw;
-		background: linear-gradient(180deg, #b06a3e 0%, #95491c 18%, #8a4318 70%, #7a3912 100%);
-		box-shadow:
-			inset 0 0.45cqw 0.35cqw rgba(255, 210, 160, 0.38),
-			inset 0 -0.45cqw 0.5cqw rgba(40, 10, 0, 0.35);
-	}
-	.card-panel {
-		position: relative;
-		box-sizing: border-box;
 		width: 100%;
 		height: 100%;
-		border: 0.53cqw solid #3a1000;
-		border-radius: 7.7cqw;
-		background: radial-gradient(ellipse 80% 70% at 50% 40%, #fcf4e3 0%, #f8eedb 70%, #f4e7d0 100%);
-		box-shadow: inset 0 0.35cqw 0.7cqw rgba(70, 25, 0, 0.22);
+		pointer-events: none;
 	}
 	/* (No coloured inner rule: its left side ran right under each corner drip and read as a thread
 	   hanging from the sauce.) */
@@ -859,18 +949,22 @@
 		color: #75ac10;
 	}
 
-	/* Description = Nunito 20px @ design. A clear gap below the title (mid-lower placement). */
+	/* Description = Nunito Medium 20 px on the 384.9-px card, 0.03em. */
 	.card-body {
-		margin-top: 5cqh;
 		font-family: 'Nunito', sans-serif;
 		color: #232323;
 		font-weight: 500;
-		font-size: 4.5cqh;
-		line-height: 1.3;
-		letter-spacing: 0.02em;
+		font-size: 5.2cqh;
+		line-height: 1.36;
+		letter-spacing: 0.03em;
 	}
 	.card-body p {
 		margin: 0;
+	}
+	/* the chef's bottle comes in over this card's right edge (from ~76% of its width): keep the
+	   centred copy clear of it (desktop row only — portrait has no chef) */
+	.cards:not(.cards--single) .card--green .card-body {
+		max-width: 52cqw;
 	}
 
 	/* Carousel dot indicators (portrait only). */
@@ -897,14 +991,15 @@
 	.press-label {
 		position: absolute;
 		left: 50%;
-		bottom: 3.2%;
+		/* 8888:28586: Nunito Bold 18 px, 0.03em, 18 px off the bottom of the 670-px stage */
+		bottom: 2.7%;
 		transform: translateX(-50%);
 		margin: 0;
 		white-space: nowrap;
 		font-family: 'Nunito', sans-serif;
 		font-weight: 700;
-		font-size: clamp(13px, 2.1cqh, 24px);
-		letter-spacing: 0.08em;
+		font-size: clamp(13px, 2.7cqh, 26px);
+		letter-spacing: 0.03em;
 		color: #fff;
 		text-shadow: 0 2px 5px rgba(0, 0, 0, 0.55);
 		animation: blink 2.4s ease-in-out infinite;
@@ -928,7 +1023,7 @@
 		/* Mobile: no character; the Press Play wordmark at the top and the logo OVER the card's top
 		   edge (Figma 8259:3928 / logo 8878:2010: its art ~97% of the card frame's width, centre ~9% of
 		   its height above the frame's top, tilted 2.03° clockwise). The card is --card-w wide at
-		   470:690, centred at 46% (.cards), so this is pure CSS. */
+		   283.154:384.895, centred at 46% (.cards), so this is pure CSS. */
 		.stage {
 			--card-w: min(66vw, 340px);
 		}
@@ -937,7 +1032,7 @@
 		}
 		.logo {
 			width: calc(var(--card-w) * 1.045);
-			top: calc(46cqh - var(--card-w) * 690 / 470 / 2 - var(--card-w) * 1.045 / 3.97 * 0.59);
+			top: calc(46cqh - var(--card-w) * 384.895 / 283.154 / 2 - var(--card-w) * 1.045 / 3.97 * 0.59);
 			/* its own property, so the drop / fly keyframes (transform) leave the tilt alone */
 			rotate: 2.03deg;
 			filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.3));
@@ -1093,7 +1188,7 @@
 	}
 	@keyframes man-in {
 		from {
-			translate: -120% 0;
+			translate: 120% 0;
 		}
 		to {
 			translate: 0 0;
@@ -1104,7 +1199,7 @@
 			translate: 0 0;
 		}
 		to {
-			translate: -130% 0;
+			translate: 130% 0;
 		}
 	}
 	/* Far enough that the RIGHT card (≈ the stage's right third) also clears the left edge. */
@@ -1176,6 +1271,8 @@
 			transform: translateY(-101%);
 		}
 	}
+	/* the arm swings from the strap seam now, ~1.4x farther from the bottle than the old wrist pivot:
+	   angles x0.72 keep the bottle's travel */
 	@keyframes bottle-shake {
 		0%,
 		48%,
@@ -1184,19 +1281,19 @@
 			transform: rotate(0deg);
 		}
 		51% {
-			transform: rotate(-3.2deg);
+			transform: rotate(-2.3deg);
 		}
 		54% {
-			transform: rotate(2.6deg);
+			transform: rotate(1.9deg);
 		}
 		57% {
-			transform: rotate(-2deg);
+			transform: rotate(-1.45deg);
 		}
 		60% {
-			transform: rotate(1.2deg);
+			transform: rotate(0.85deg);
 		}
 		63% {
-			transform: rotate(-0.5deg);
+			transform: rotate(-0.35deg);
 		}
 	}
 	@keyframes chef-breathe {

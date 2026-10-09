@@ -1,18 +1,19 @@
 <script lang="ts">
-	import { Graphics, Rectangle, Sprite } from 'pixi-svelte';
+	import { Container, Graphics, Rectangle, Sprite } from 'pixi-svelte';
 	import { Tween } from 'svelte/motion';
 	import { cubicInOut } from 'svelte/easing';
 	import { stateUi } from 'state-shared';
 
 	import { getContext } from '../game/context';
 	import { mascotIdle } from '../game/mascotIdle';
+	import { breathAt, flexAt, type BodyFlex } from '../game/bodyFlex';
 	import { SQUIRT_EMIT, SQUIRT_LIFE, drawSauceSquirt, squirtHash, type SquirtGraphics } from '../game/ketchupSquirt';
-	import { MOOD_MS, chefMood, chefPose, idleSnicker, setChefMood } from '../game/chefMood.svelte';
+	import { MOOD_MS, bowShake, chefMood, chefPose, idleSnicker, setChefMood } from '../game/chefMood.svelte';
 	import { panoramaRect, PANORAMA_BASE_X } from '../game/panorama';
 	import AnimatedGuy, { GUY_CROPS, cropPivot, cropRect } from './AnimatedGuy.svelte';
 	import SpecialMascot from './SpecialMascot.svelte';
-	import MobileChef from './MobileChef.svelte';
 	import PortraitLamp from './PortraitLamp.svelte';
+	import { landscapeLayout } from '../game/landscapeLayout';
 
 	type Props = {
 		/** False while the loading screen / splash is up: only the dark backdrop renders. */
@@ -49,12 +50,95 @@
 	const isFreegame = $derived(
 		context.stateGame.gameType === 'freegame' || stateUi.freeSpinCounterShow,
 	);
-	// The chef mascots (base + salting) and the special grey-kitchen bg are DESKTOP-only. Landscape
-	// uses its own clean wide diner background with no chef (design ask).
-	const showMascot = $derived(!isFreegame && layoutType === 'desktop');
+	// The board chef (bottle + ketchup) and the salting chef with his boiling pot: desktop beside the
+	// board; phone PORTRAIT peeking over the board's top-right corner (behind it — his lower body and
+	// the pot's base tuck under the board frame), the same rigs as desktop. Phone landscape: the same rigs
+	// again, mirrored into the bottom-left corner (the design's bust spot).
+	const portraitChefOn = $derived(isPortrait && boardLanded && !context.stateGame.freeSpinPopupShowing);
+	// phone landscape: the same desktop rig, mirrored into the bottom-left corner (LANDSCAPE_CHEF)
+	const landscapeChefOn = $derived(isLandscape && boardLanded && !context.stateGame.freeSpinPopupShowing);
+	const showMascot = $derived(!isFreegame && (layoutType === 'desktop' || portraitChefOn || landscapeChefOn));
 	const showSpecialMascot = $derived(isFreegame && layoutType === 'desktop');
-	const mascotHeight = $derived(canvas.height * 0.6);
+	// The board frame on screen (BoardFrame's sprite: 1.043 × 1.0473 of the board, inset
+	// 0.0206 / 0.0224), canvas px — the portrait chefs are placed in fractions of it.
+	const boardFrame = $derived.by(() => {
+		const main = context.stateLayoutDerived.mainLayout();
+		const b = context.stateGameDerived.boardLayout();
+		const sc = main.scale;
+		const left = main.x + (b.x - b.width / 2 - main.width / 2) * sc;
+		const top = main.y + (b.y - b.height / 2 - main.height / 2) * sc;
+		return { x: left - b.width * 0.0206 * sc, y: top - b.height * 0.0224 * sc, w: b.width * 1.043 * sc, h: b.height * 1.0473 * sc };
+	});
+	// Portrait board chef: his frame 0.456 of the board frame tall (0.6 crowded the top of a phone),
+	// hat top 0.37 of it above the board (his lower body still tucked behind it), his face at 0.77 of
+	// its width so the bottle hand stays on screen.
+	const PORTRAIT_CHEF = { h: 0.456, top: -0.37, face: 0.77 };
+	// desktop: tied with the board containers (insertion order keeps him behind the reels); portrait:
+	// explicitly behind the board, which hides his lower body
+	const chefZ = $derived(isPortrait ? -0.2 : 0);
+	// Phone landscape: the desktop chef MIRRORED (facing the board from the bottom-left corner, as the
+	// design's bust does), sized off landscapeLayout's design unit; his bottle ends just short of the
+	// bet box, sliding left (never past his face) on squarer screens.
+	const LANDSCAPE_CHEF = { h: 240, sink: 28, bottle: 0.42, face: 0.06 };
+	const landChef = $derived.by(() => {
+		if (!isLandscape) return null;
+		const { chef, bet, u, k } = landscapeLayout(context, false);
+		const h = LANDSCAPE_CHEF.h * u * k;
+		const w = h * (1304 / 1699);
+		const cx = Math.max(w * (0.12 - LANDSCAPE_CHEF.face), bet.right - bet.w - 4 * u - LANDSCAPE_CHEF.bottle * w);
+		return { h, cx, cy: canvas.height + LANDSCAPE_CHEF.sink * chef.unit - h / 2 };
+	});
+	const mirrorChef = $derived(landChef !== null);
+	const mascotHeight = $derived(landChef ? landChef.h : isPortrait ? boardFrame.h * PORTRAIT_CHEF.h : canvas.height * 0.6);
 	const mascotWidth = $derived(mascotHeight * (1304 / 1699));
+	const mascotCx = $derived(
+		landChef
+			? landChef.cx
+			: isPortrait
+				? boardFrame.x + boardFrame.w * PORTRAIT_CHEF.face + (0.5 - 0.44) * mascotWidth
+				: canvas.width * 0.86,
+	);
+	const mascotCy = $derived(
+		landChef
+			? landChef.cy
+			: isPortrait
+				? boardFrame.y + boardFrame.h * PORTRAIT_CHEF.top + mascotHeight / 2
+				: canvas.height * 0.59,
+	);
+	// Portrait free games: the salting chef in the same spot, his pot standing on the board's top edge
+	// (its base just tucked behind the frame) so MULTIPLIER ×n reads above the reels.
+	const portraitSpecial = $derived.by(() => {
+		const f = boardFrame;
+		const guyWidth = f.h * 0.5 * (358 / 425); // (0.62 crowded the top of a phone; see PORTRAIT_CHEF)
+		const potWidth = f.w * 0.26;
+		const potHeight = potWidth * (914 / 1271);
+		return {
+			// his face over the board's right quarter, high enough that the pot stays under his chin
+			cx: f.x + f.w * 0.76,
+			guyY: f.y - f.h * 0.4 + (guyWidth * 425) / 358 / 2,
+			guyWidth,
+			potX: f.x + f.w * 0.78,
+			potY: f.y + f.h * 0.03 - potHeight / 2,
+			potWidth,
+		};
+	});
+	// Landscape free games: the boiling pot where game/landscapeLayout puts it, the (mirrored) salting
+	// chef behind it as SpecialMascot stands him on desktop: frame 0.98 of the pot, his hand on its rim
+	// (guyY = potY - 0.2·potH - 0.304·guyH).
+	const landscapePot = $derived.by(() => {
+		const { pot } = landscapeLayout(context, true);
+		const potHeight = (pot.w * 914) / 1271;
+		const guyWidth = pot.w / 0.98;
+		const guyHeight = (guyWidth * 425) / 358;
+		return {
+			cx: pot.cx + guyWidth * 0.02,
+			guyY: pot.cy - 0.2 * potHeight - 0.304 * guyHeight,
+			guyWidth,
+			potX: pot.cx,
+			potY: pot.cy,
+			potWidth: pot.w,
+		};
+	});
 	// Subtle idle so the chef isn't a frozen cut-out: a slow breathe (no lean — his eyes carry the
 	// life, and a rotation would drag the pupils/label out of place).
 	let clock = $state(0);
@@ -64,7 +148,9 @@
 		let raf = 0;
 		const loop = (ts: number) => {
 			clock = ts;
-			idleSnicker(ts);
+			// (the salting chef in free games doesn't snicker: without a head of its own the body's
+			// shoulder pops read as a tick)
+			if (!isFreegame) idleSnicker(ts);
 			raf = requestAnimationFrame(loop);
 		};
 		raf = requestAnimationFrame(loop);
@@ -140,16 +226,28 @@
 		}
 	};
 	const idlePose = $derived(
-		mascotIdle(clock, canvas.width * 0.86, canvas.height * 0.59, mascotWidth, mascotHeight, {
+		mascotIdle(clock, mascotCx, mascotCy, mascotWidth, mascotHeight, {
 			sway: 0,
-			breathe: 0.005,
-			bob: 0.004,
+			// (the breath is the torso's own now — CHEF_FLEX bends the body instead of scaling it whole)
+			breathe: 0,
+			bob: 0,
 		}),
 	);
+	// His torso as soft tissue (game/bodyFlex): the chest fills and the shoulders rise on each breath
+	// and give a little to the head's tilt; head, arms, bow, nametag and the held bottle ride along.
+	const CHEF_FLEX: BodyFlex = {
+		neckY: 0.507, // = the head's neck pivot
+		baseY: 1, // the frame's bottom edge (the board cuts him off there)
+		chest: { x: 0.52, y: 0.66, r: 0.1 }, // the shirt front below the bow, between the straps
+		lift: 0.006,
+		swell: 0.035,
+		lean: 0.25,
+	};
 	// The chef reacts to the game (game/chefMood: leans in on a spin, shrugs at a dead spin, nods at a
 	// win, lunges + smacks at a WILD, laughs / celebrates big wins). Offsets ride on the idle pose,
 	// scaled about his feet.
 	const react = $derived(chefPose(clock));
+	const chefFlexState = $derived({ breath: breathAt(clock), tilt: react.headTilt });
 	// Entrance (he used to just snap in): whenever he comes on — the splash handing over, back from
 	// free games — he pops up from behind the bottom edge with an overshoot, squashes as he lands,
 	// then gives a "hello" nod. Starts just after the splash's 350 ms fade, alongside the board drop.
@@ -168,8 +266,11 @@
 		if (enterAt < 0) return { dy: 0, sy: 1 };
 		const t = clock - enterAt;
 		if (t >= ENTER_MS + 260) return { dy: 0, sy: 1 };
-		// fully below the screen's bottom edge until his start, then a back-out rise
-		const hidden = canvas.height - (idlePose.y - idlePose.height / 2) + idlePose.height * 0.02;
+		// fully below the screen's bottom edge (portrait: down behind the board) until his start, then a
+		// back-out rise
+		const hidden = isPortrait
+			? idlePose.height * 0.5
+			: canvas.height - (idlePose.y - idlePose.height / 2) + idlePose.height * 0.02;
 		const u = Math.max(0, Math.min(1, t / ENTER_MS));
 		const back = 1 + 2.4 * (u - 1) ** 3 + 1.4 * (u - 1) ** 2; // overshoots ~6% then settles
 		const land = t - ENTER_MS * 0.55; // the squash as he tops out and drops back
@@ -200,23 +301,32 @@
 		{ cx: 0.3658, cy: 0.2778, w: 0.069, h: 0.056 },
 		{ cx: 0.4885, cy: 0.2666, w: 0.0767, h: 0.0689 },
 	];
-	// The held ketchup bottle (full-frame hand layer) shakes about the wrist, tucked behind the body.
-	const BOTTLE_PIVX = 0.29;
-	const BOTTLE_PIVY = 0.56;
+	// The held ketchup bottle — the whole raised arm, sleeve included — swings from where the sleeve
+	// runs in under the apron strap (scripts/build-chef-bottle.py SEAM), tucked behind the body. It
+	// used to turn about the thumb, which slid the sleeve's cut edge out beside the strap buckle.
+	const BOTTLE_PIVX = 0.3758;
+	const BOTTLE_PIVY = 0.618;
+	// The bottle sits ~1.4x farther from this pivot than from the old wrist one: angles are scaled by
+	// this so it travels as far as before. Positive turns are capped (past ~0.1 the sleeve's lower end
+	// lifts off the apron).
+	const ARM_GAIN = 0.72;
+	const ARM_MAX_IN = 0.1;
 	// The bottle layer is cropped to its opaque box: same pivot, expressed inside the crop.
 	const BOTTLE_RECT = cropRect(GUY_CROPS.mascotBottle);
 	const BOTTLE_ANCHOR = cropPivot(GUY_CROPS.mascotBottle, BOTTLE_PIVX, BOTTLE_PIVY);
 	const mascotLeft = $derived(mascotPose.x - mascotPose.width / 2);
 	const mascotTop = $derived(mascotPose.y - mascotPose.height / 2);
-	const bottlePivotX = $derived(mascotLeft + BOTTLE_PIVX * mascotPose.width);
-	const bottlePivotY = $derived(mascotTop + BOTTLE_PIVY * mascotPose.height);
-	// A quick damped wiggle, more often now (matching the splash's bottle-shake), otherwise still.
+	// (riding the torso field where the sleeve runs in under the strap, like the layers on the body)
+	const bottleFlex = $derived(flexAt(CHEF_FLEX, chefFlexState, BOTTLE_PIVX, BOTTLE_PIVY, mascotPose.width, mascotPose.height));
+	const bottlePivotX = $derived(mascotLeft + BOTTLE_PIVX * mascotPose.width + bottleFlex.dx);
+	const bottlePivotY = $derived(mascotTop + BOTTLE_PIVY * mascotPose.height + bottleFlex.dy);
+	// An unhurried damped waggle now and then (a quick 2.6-wiggle shake read as trembling).
 	const BOTTLE_PERIOD = 2800; // ms between shakes
-	const SHAKE_DUR = 950; // ms the wiggle lasts
+	const SHAKE_DUR = 1100; // ms the waggle lasts
 	const shakeAt = (t: number) => {
 		const u = (t % BOTTLE_PERIOD) / SHAKE_DUR; // 0..1 across the shake
 		if (u > 1) return 0;
-		return 0.058 * Math.exp(-2.7 * u) * Math.sin(u * 2 * Math.PI * 2.6); // ~3.3° damped, ~2.6 wiggles
+		return 0.058 * Math.exp(-2.7 * u) * Math.sin(u * 2 * Math.PI * 1.5); // ~3.3° damped, 1.5 swings
 	};
 
 	// Ketchup squirt: now and then he squeezes the bottle and a real-looking shot of ketchup leaves the
@@ -253,7 +363,8 @@
 		const squirting = u >= -200 && u <= SQUIRT_EMIT + 700;
 		return (squirting ? 0 : shakeAt(t)) + recoilAt(t);
 	};
-	const bottleShake = $derived(bottleRotAt(clock) + react.propRot);
+	const armTurn = (rot: number) => Math.max(-0.16, Math.min(ARM_MAX_IN, rot * ARM_GAIN));
+	const bottleShake = $derived(armTurn(bottleRotAt(clock) + react.propRot));
 	// The hanging forearm swings a little from the elbow: a slow pendulum, plus a jolt when he smacks
 	// or waggles the bottle (WILD, laughs). Inward only (0..ARM_MAX, + = the hand toward his apron):
 	// swinging out would uncover what the hand hides on the body layer.
@@ -263,6 +374,23 @@
 		Math.min(
 			ARM_MAX,
 			Math.max(0, 0.014 + 0.012 * Math.sin(clock / 1270 + 0.6) + 0.004 * Math.sin(clock / 610) + Math.abs(react.propRot) * 0.35),
+		),
+	);
+	// The bow tie wobbles on its knot: a slow sway, the head's tilt passed down, and a follow-through
+	// of the arm's shake ~80 ms late (it's tied to the same shoulders). Small: past ~0.06 its shadowed
+	// footprint on the body shows round the lobes.
+	const BOW_KNOT = cropPivot(GUY_CROPS.mascotBow, 0.4985, 0.5327); // build-chef-bow.py KNOT
+	const bowTilt = $derived(
+		Math.max(
+			-0.06,
+			Math.min(
+				0.06,
+				0.014 * Math.sin(clock / 1150 + 0.8) +
+					0.006 * Math.sin(clock / 530) +
+					0.35 * armTurn(bottleRotAt(clock - 80)) +
+					0.3 * react.headTilt +
+					bowShake(clock),
+			),
 		),
 	);
 	// the celebration squirts are heard (the idle ones stay silent: short reactions, not constant noise)
@@ -290,11 +418,11 @@
 				unit: canvas.height,
 				color: 0xb3160d,
 				dark: 0x5e0704,
-				floorY: canvas.height * 0.8, // gone behind the HUD band
+				floorY: isPortrait ? boardFrame.y + boardFrame.h : canvas.height * 0.8, // gone behind the HUD band / board
 				seed: i,
-				// The nozzle rides the bottle's rotation about the wrist.
+				// The nozzle rides the arm's rotation about the strap seam.
 				nozzleAt: (ms) => {
-					const th = bottleRotAt(t0 + ms);
+					const th = armTurn(bottleRotAt(t0 + ms));
 					const c = Math.cos(th);
 					const sn = Math.sin(th);
 					return { x: bottlePivotX + dx * c - dy * sn, y: bottlePivotY + dx * sn + dy * c, dir: NOZZLE_DIR + th };
@@ -381,7 +509,8 @@
 	<!-- Loading / splash: nothing but the backdrop (the art below would show through). -->
 {:else if isLandscape}
 	<!-- Mobile-landscape: the real full diner (cover-scaled) for the base game, swapping to the
-	     dedicated wide grey-kitchen crop for free games. No chef in landscape (design ask). -->
+	     dedicated wide grey-kitchen crop for free games. The chef stands bottom-left (Figma
+	     8295:22703 / 8302:23371). -->
 	{#if isFreegame}
 		<Sprite
 			key="backgroundLandscapeBonus"
@@ -399,6 +528,11 @@
 		{/if}
 	{/if}
 	<Rectangle {...canvas} backgroundColor={0x180903} alpha={0.16} zIndex={-1} />
+	{#if isFreegame}
+		<!-- the desktop's salting chef, mirrored, behind his boiling pot (only the pot stays through a
+		     CONGRATS card: its soups fly into it) -->
+		<SpecialMascot place={landscapePot} mirror potOnly={!boardLanded || context.stateGame.freeSpinPopupShowing} zIndex={-0.1} />
+	{/if}
 {:else if isPortrait}
 	<!-- Mobile portrait: the dedicated diner background, no darkening overlay (matches the splash).
 	     Swaps to the special grey-kitchen background during free games. -->
@@ -415,9 +549,11 @@
 		<!-- the painted pendant lamp, lit for real -->
 		<PortraitLamp cx={canvas.width * 0.5} cy={canvas.height * 0.5} width={portraitCover.width} height={portraitCover.height} />
 	{/if}
-	<!-- The phone chef peeks over the board's top-right corner (Figma 8870:32978 / 8870:33637). -->
-	{#if boardLanded}
-		<MobileChef freegame={isFreegame} />
+	<!-- Free games: the salting chef and his boiling pot over the board's top-right corner, behind the
+	     board (the base game's board chef is drawn below with the desktop's). During the CONGRATS card
+	     only the pot stays (its soups fly into it). -->
+	{#if isFreegame && boardLanded}
+		<SpecialMascot place={portraitSpecial} potOnly={context.stateGame.freeSpinPopupShowing} />
 	{/if}
 {:else}
 	{#if isFreegame}
@@ -465,71 +601,99 @@
 	<Graphics zIndex={-0.5} blendMode="add" draw={drawSparks} />
 {/if}
 {#if showArt && showMascot}
-	<!-- The chef breathes, his eyes glance + blink, and his nametag jiggles (layered art). -->
-	<AnimatedGuy
-		baseKey="mascotBody"
-		baseRect={cropRect(GUY_CROPS.mascotBody)}
-		head={{
-			key: 'mascotHead',
-			rect: cropRect(GUY_CROPS.mascotHead),
-			// the neck's base (scripts/build-chef-head.py PIVOT, in frame fractions)
-			px: 0.5075,
-			py: 0.507,
-			tilt: react.headTilt,
-			nod: react.headNod,
-		}}
-		x={mascotPose.x}
-		y={mascotPose.y}
-		width={mascotPose.width}
-		height={mascotPose.height}
-		zIndex={0}
-		pupils={mascotPupils}
-		lids={mascotLids}
-		skin={0xee9c58}
-		look={{ x: react.lookX, y: react.lookY, weight: react.look }}
-		squint={react.squint}
-		brow={react.brow}
-		browKey="mascotBrows"
-		extras={[
-			{
-				// The relaxed forearm + hand, swinging from the elbow (amp 0: Background drives it).
-				key: 'mascotArm',
-				...cropRect(GUY_CROPS.mascotArm),
-				...ARM_ELBOW,
-				amp: 0,
-				bias: armSwing,
-			},
-			{
-				// Full-frame layer (the exact plate pixels), tilting about its pin.
-				key: 'mascotLabel',
-				...cropRect(GUY_CROPS.mascotLabel),
-				...cropPivot(GUY_CROPS.mascotLabel, 0.6196, 0.6027),
-				amp: 0.035,
-				period: 320,
-			},
-			{
-				// Brows above the blink lids (static full-frame layer).
-				key: 'mascotBrows',
-				...cropRect(GUY_CROPS.mascotBrows),
-				amp: 0,
-			},
-		]}
-		sparkle={{ nx: 0.46, ny: 0.376, size: 0.075, period: 3400 }}
-	/>
-	<!-- The held ketchup bottle — behind the body (as in the Figma layer order), shaking about the wrist. -->
-	<Sprite
-		key="mascotBottle"
-		x={bottlePivotX}
-		y={bottlePivotY}
-		anchor={{ x: BOTTLE_ANCHOR.px, y: BOTTLE_ANCHOR.py }}
-		width={mascotPose.width * BOTTLE_RECT.nw}
-		height={mascotPose.height * BOTTLE_RECT.nh}
-		rotation={bottleShake}
-		zIndex={-0.1}
-	/>
-	<!-- The ketchup squirt: zIndex 0 ties with the chef and the board containers, so insertion order
+	<!-- (phone landscape: the whole rig mirrored about his centre line) -->
+	<Container
+		x={mirrorChef ? mascotCx * 2 : 0}
+		scale={{ x: mirrorChef ? -1 : 1, y: 1 }}
+		zIndex={chefZ}
+	>
+		<!-- The chef breathes, his eyes glance + blink, and his nametag jiggles (layered art). -->
+		<AnimatedGuy
+			baseKey="mascotBody"
+			baseRect={cropRect(GUY_CROPS.mascotBody)}
+			flex={CHEF_FLEX}
+			flexState={chefFlexState}
+			head={{
+				key: 'mascotHead',
+				rect: cropRect(GUY_CROPS.mascotHead),
+				// the neck's base (scripts/build-chef-head.py PIVOT, in frame fractions)
+				px: 0.5075,
+				py: 0.507,
+				tilt: react.headTilt,
+				nod: react.headNod,
+				// past these the neck seam shows (a second chin line under the jaw)
+				tiltRange: [-0.035, 0.035],
+				maxLift: 0.0004,
+			}}
+			x={mascotPose.x}
+			y={mascotPose.y}
+			width={mascotPose.width}
+			height={mascotPose.height}
+			zIndex={chefZ}
+			pupils={mascotPupils}
+			lids={mascotLids}
+			skin={0xee9c58}
+			look={{ x: react.lookX, y: react.lookY, weight: react.look }}
+			squint={react.squint}
+			brow={react.brow}
+			browKey="mascotBrows"
+			extras={[
+				{
+					// The collar's edge, over the head's lower edge (static).
+					key: 'mascotCollar',
+					...cropRect(GUY_CROPS.mascotCollar),
+					amp: 0,
+				},
+				{
+					// The relaxed forearm + hand, swinging from the elbow (amp 0: Background drives it).
+					key: 'mascotArm',
+					...cropRect(GUY_CROPS.mascotArm),
+					...ARM_ELBOW,
+					amp: 0,
+					bias: armSwing,
+				},
+				{
+					key: 'mascotBow',
+					...cropRect(GUY_CROPS.mascotBow),
+					...BOW_KNOT,
+					amp: 0,
+					bias: bowTilt,
+				},
+				{
+					// Full-frame layer (the exact plate pixels), tilting about its pin.
+					key: 'mascotLabel',
+					...cropRect(GUY_CROPS.mascotLabel),
+					...cropPivot(GUY_CROPS.mascotLabel, 0.6196, 0.6027),
+					// swinging on its pin (a 2 s sway), kicked along with the bow when he reacts
+					amp: 0.035,
+					period: 320,
+					bias: 1.4 * bowShake(clock),
+					flipX: mirrorChef,
+				},
+				{
+					// Brows above the blink lids (static full-frame layer).
+					key: 'mascotBrows',
+					...cropRect(GUY_CROPS.mascotBrows),
+					amp: 0,
+				},
+			]}
+			sparkle={{ nx: 0.46, ny: 0.376, size: 0.075, period: 3400 }}
+		/>
+		<!-- The held ketchup bottle — behind the body (as in the Figma layer order), shaking about the wrist. -->
+		<Sprite
+			key="mascotBottle"
+			x={bottlePivotX}
+			y={bottlePivotY}
+			anchor={{ x: BOTTLE_ANCHOR.px, y: BOTTLE_ANCHOR.py }}
+			width={mascotPose.width * BOTTLE_RECT.nw}
+			height={mascotPose.height * BOTTLE_RECT.nh}
+			rotation={bottleShake}
+			zIndex={chefZ - 0.1}
+		/>
+		<!-- The ketchup squirt: zIndex 0 ties with the chef and the board containers, so insertion order
 	     puts it in front of the chef but BEHIND the reels (drops never cover symbols). -->
-	<Graphics zIndex={0} draw={drawSquirt} />
+		<Graphics zIndex={chefZ} draw={drawSquirt} />
+	</Container>
 {/if}
 {#if showArt && showSpecialMascot}
 	<SpecialMascot />

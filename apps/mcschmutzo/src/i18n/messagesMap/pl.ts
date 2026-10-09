@@ -16,11 +16,11 @@ export default {
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
 	'CARD CHANCE TITLE': 'Dodatkowa Szansa',
-	'CARD CHANCE DESC': 'Zwiększ szansę na uzyskanie bonusu.',
+	'CARD CHANCE DESC': 'Aktywuj, aby *3 razy* zwiększyć szansę na uruchomienie rundy bonusowej.',
 	'CARD FEATURE TITLE': 'Spin z Blokadą',
 	'CARD FEATURE DESC': 'Gwarantuje wygrywający spin i uruchamia Blokadę i Ponowny Spin.',
 	'CARD DEALIT DESC': 'Wejdź do Zwykłego Bonusu z trzema symbolami scatter.',
-	'CARD ALLIN DESC': 'Wejdź do Super Bonusu z czterema symbolami scatter.',
+	'CARD ALLIN DESC': 'Wejdź do Super Bonusu z *czterema* symbolami scatter.',
 	'CONFIRM TEXT': 'Kupić %mode% za %cost%?',
 	'NORMAL BONUS': 'Zwykły Bonus',
 	'SUPER BONUS': 'Super Bonus',
@@ -62,9 +62,9 @@ export default {
 	INFO: 'INFO',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': "WITAJ W McSCHMUTZO",
+	'SPLASH C1 TITLE': "WITAJ W SCHMUTZO",
 	'SPLASH C1 BODY': "Wygrane blokują się i kręcą ponownie, aż grill się zapełni.",
-	'SPLASH C2 TITLE': "3\nSMAKOWITE\nFUNKCJE",
+	'SPLASH C2 TITLE': "3\nWYJĄTKOWE\nBONUSY",
 	'SPLASH C2 BODY 1': "Blokada i Re-Spin",
 	'SPLASH C2 BODY 2': "Zakręć Kołem Bonusowym",
 	'SPLASH C2 BODY 3': "Zwiększaj Mnożnik",

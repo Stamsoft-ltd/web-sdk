@@ -2,7 +2,7 @@
 	// Module scope so the art preloads during the loading screen (the modal mounts on demand).
 	import { ap } from '../lib/preloadArt';
 
-	const hatArt = ap('/assets/mcschmutzo/autoplay/hat.webp');
+	const frameArt = ap('/assets/mcschmutzo/popup/autospin-frame.svg');
 	const minusArt = ap('/assets/mcschmutzo/autoplay/minus.svg');
 	const plusArt = ap('/assets/mcschmutzo/autoplay/plus-icon.svg');
 	const closeArt = ap('/assets/mcschmutzo/win/x-button.webp');
@@ -11,6 +11,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import { popIn, popOut } from '../lib/popOut';
+	import PopupScrews from './PopupScrews.svelte';
 	import { onMount } from 'svelte';
 	import { stateBet, stateConfig } from 'state-shared';
 	import { getContext } from '../game/context';
@@ -97,6 +98,14 @@
 			: []),
 		{ label: i18nDerived.translate('LOCK FEATURE SPIN'), on: isFeature, onclick: toggleFeature },
 	]);
+
+	// The design's lettering is sized for "AUTO SPIN" / "START AUTOPLAY": longer localized words shrink
+	// to the frame instead of overflowing it.
+	const longestWord = (text: string) => Math.max(1, ...text.split(/\s+/).map((w) => w.length));
+	const titleText = $derived(i18nDerived.translate('AUTO SPIN'));
+	const startText = $derived(i18nDerived.translate('START AUTOPLAY'));
+	const titleFit = $derived(Math.min(1, 9.5 / longestWord(titleText)));
+	const startFit = $derived(Math.min(1, 17 / startText.length));
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
@@ -112,10 +121,17 @@
 	aria-label={i18nDerived.translate('CLOSE')}
 ></button>
 
-<div class="ap-root" in:popIn|global out:popOut|global role="dialog" aria-modal="true">
+<!-- Figma 8888:19398 (437x594): cream body + red header under the drawn frame, a dashed rule, the
+     toggle rows, the spin counter and the red START button, all laid out in design px (--u). -->
+<div class="ap-root" in:popIn|global out:popOut|global role="dialog" aria-modal="true" aria-label={titleText}>
 	<div class="ap-popup">
-		<p class="ap-title">{i18nDerived.translate('AUTO SPIN')}</p>
-		<div class="ap-divider"></div>
+		<div class="ap-body" aria-hidden="true"></div>
+		<div class="ap-head" aria-hidden="true"></div>
+		<img class="ap-frame" src={frameArt} alt="" draggable="false" />
+		<PopupScrews frame="autospin" />
+		<div class="ap-dash" aria-hidden="true"></div>
+
+		<p class="ap-title" style={`--fit:${titleFit}`}>{titleText}</p>
 
 		<div class="ap-toggles">
 			{#each TOGGLES as t (t.label)}
@@ -136,7 +152,7 @@
 		</div>
 
 		<div class="ap-counter-group">
-			<p class="ap-spins-label">{i18nDerived.translate('NUMBER OF SPINS')}</p>
+			<p class="ap-spins-label">{i18nDerived.translate('NUMBER OF SPINS')}:</p>
 			<div class="ap-counter">
 				<button
 					class="ap-step"
@@ -162,19 +178,10 @@
 			</div>
 		</div>
 
-		<button
-			class="ap-start"
-			type="button"
-			onclick={start}
-			aria-label={i18nDerived.translate('START AUTOPLAY')}
-		>
-			<span class="ap-start__label">{i18nDerived.translate('START AUTOPLAY')}</span>
+		<button class="ap-start" type="button" onclick={start} aria-label={startText}>
+			<span class="ap-start__label" style={`--fit:${startFit}`}>{startText}</span>
 		</button>
 	</div>
-
-	<!-- Chef hat mascot straddling the top edge of the pop-up (half in, half out). Kept a sibling
-	     of the pop-up so the pop-up's own overflow clipping never cuts off its upper half. -->
-	<img class="ap-hat" src={hatArt} alt="" draggable="false" />
 </div>
 
 <style>
@@ -186,45 +193,268 @@
 		backdrop-filter: blur(4px);
 	}
 
+	/* Width follows the design's aspect so the whole dialog fits short (landscape) screens too. */
 	.ap-root {
 		position: fixed;
 		top: 50%;
 		left: 50%;
 		transform: translate(-50%, -50%);
 		z-index: 59;
-		width: min(460px, 92vw);
-		max-height: 94dvh;
+		width: min(437px, 92vw, calc(92dvh * 437 / 594));
+		container-type: inline-size;
 		font-family: 'Nunito', sans-serif;
 	}
-
-	/* Dark pop-up: 3px #444444 border wrapped by a few px of #181818 (the outer-most layer).
-	   Sizing uses vmin so it also shrinks on short (landscape) viewports and never overflows. */
 	.ap-popup {
+		--u: calc(100cqw / 437);
 		position: relative;
-		display: flex;
-		flex-direction: column;
-		gap: clamp(12px, 2.6vmin, 22px);
-		padding: clamp(44px, 8.5vmin, 60px) clamp(18px, 3.8vmin, 32px) clamp(22px, 4vmin, 34px);
-		max-height: 94dvh;
-		overflow-y: auto;
-		border: 3px solid #444444;
-		border-radius: 20px;
-		background: linear-gradient(180deg, #241f1c 0%, #171412 100%);
-		box-shadow:
-			0 0 0 4px #181818,
-			0 18px 50px rgba(0, 0, 0, 0.6);
+		width: 100%;
+		aspect-ratio: 437 / 594;
+		filter: drop-shadow(0 calc(14 * var(--u)) calc(24 * var(--u)) rgba(0, 0, 0, 0.5));
+	}
+	.ap-body {
+		position: absolute;
+		inset: calc(98 * var(--u)) calc(13.07 * var(--u)) calc(13.07 * var(--u)) calc(13 * var(--u));
+		background: #f9dca6;
+	}
+	.ap-head {
+		position: absolute;
+		top: calc(5 * var(--u));
+		left: calc(11 * var(--u));
+		right: calc(16 * var(--u));
+		height: calc(106 * var(--u));
+		background: #b1190a;
+	}
+	.ap-frame {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+	}
+	.ap-dash {
+		position: absolute;
+		top: calc(125 * var(--u));
+		left: calc(20 * var(--u));
+		width: calc(397 * var(--u));
+		height: calc(2 * var(--u));
+		background: repeating-linear-gradient(
+			90deg,
+			#b11909 0 calc(14 * var(--u)),
+			transparent calc(14 * var(--u)) calc(28 * var(--u))
+		);
 	}
 
-	/* Half above the pop-up, half inside it. */
-	.ap-hat {
+	.ap-title {
 		position: absolute;
-		left: 50%;
-		top: 0;
-		transform: translate(-50%, -50%);
-		height: clamp(56px, 11vmin, 90px);
-		width: auto;
+		top: calc(5 * var(--u));
+		left: calc(30 * var(--u));
+		right: calc(30 * var(--u));
+		height: calc(106 * var(--u));
+		margin: 0;
+		display: grid;
+		place-items: center;
+		text-align: center;
+		color: #e7d5b7;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
+		font-weight: 400;
+		font-size: calc(48 * var(--u) * var(--fit, 1));
+		line-height: 1;
+		letter-spacing: calc(2.29 * var(--u) * var(--fit, 1));
+		text-transform: uppercase;
+		overflow-wrap: break-word;
+	}
+
+	/* Toggle rows: 321 wide from y 165, 16 apart; Nunito Black 20, black. */
+	.ap-toggles {
+		position: absolute;
+		top: calc(165 * var(--u));
+		left: calc(67 * var(--u));
+		width: calc(321 * var(--u));
+		display: flex;
+		flex-direction: column;
+		gap: calc(16 * var(--u));
+	}
+	.ap-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: calc(12 * var(--u));
+		min-height: calc(33.2 * var(--u));
+	}
+	.ap-row__label {
+		min-width: 0;
+		color: #000;
+		font-weight: 900;
+		font-size: calc(20 * var(--u));
+		line-height: 1.1;
+		letter-spacing: calc(0.6 * var(--u));
+		text-transform: uppercase;
+	}
+
+	/* Switch from the design SVGs: off #605553, on #C51F0B→#AF190A, knob white with a black ring. */
+	.ap-switch {
+		flex: 0 0 auto;
+		position: relative;
+		width: calc(62 * var(--u));
+		height: calc(33.2 * var(--u));
+		padding: 0;
+		border: none;
+		border-radius: 999px;
+		background: #605553;
+		cursor: pointer;
+		transition: background 0.22s ease;
+	}
+	.ap-switch.on {
+		background: linear-gradient(0deg, #c51f0b 0%, #af190a 100%);
+	}
+	.ap-switch__knob {
+		position: absolute;
+		top: 50%;
+		left: calc(4.4 * var(--u));
+		width: calc(24.4 * var(--u));
+		aspect-ratio: 1;
+		box-sizing: border-box;
+		transform: translateY(-50%);
+		border: calc(2 * var(--u)) solid #000;
+		border-radius: 50%;
+		background: #fff;
+		transition: left 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+	.ap-switch.on .ap-switch__knob {
+		left: calc(33.2 * var(--u));
+	}
+
+	/* Spin counter: red brush label over  −  [ value ]  +  (y 366–466). */
+	.ap-counter-group {
+		position: absolute;
+		top: calc(366 * var(--u));
+		left: calc(30 * var(--u));
+		right: calc(30 * var(--u));
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: calc(22 * var(--u));
+	}
+	.ap-spins-label {
+		margin: 0;
+		text-align: center;
+		color: #b11909;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
+		font-weight: 400;
+		font-size: calc(23.9 * var(--u));
+		line-height: 1.2;
+		text-transform: uppercase;
+	}
+	.ap-counter {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: calc(11 * var(--u));
+	}
+	.ap-step {
+		flex: 0 0 auto;
+		width: calc(48 * var(--u));
+		aspect-ratio: 1;
+		padding: 0;
+		border: none;
+		background: transparent center / contain no-repeat;
+		cursor: pointer;
+		transition:
+			filter 0.12s ease,
+			transform 0.08s ease;
+	}
+	.ap-step:hover {
+		filter: brightness(1.15);
+	}
+	.ap-step:active {
+		transform: scale(0.92);
+	}
+	.ap-step:disabled {
+		opacity: 0.35;
+		cursor: default;
+		filter: none;
+	}
+	.ap-counter-box {
+		width: calc(150 * var(--u));
+		height: calc(49 * var(--u));
+		display: grid;
+		place-items: center;
+		box-sizing: border-box;
+		border: max(0.5px, calc(0.44 * var(--u))) solid #fff;
+		border-radius: calc(6.7 * var(--u));
+		background: #292624;
+		box-shadow: inset 0 0 calc(6.2 * var(--u)) #000;
+	}
+	/* the design sets the count in the brush face too (8888:19439), without the stroke */
+	.ap-count {
+		color: #e7d5b7;
+		font-family: var(--font-brush);
+		font-weight: 400;
+		font-size: calc(41.6 * var(--u));
+		line-height: 1;
+		letter-spacing: calc(2.36 * var(--u));
+	}
+
+	/* START AUTOPLAY (317x50 at y 508): red gradient, inner #851406 rim, white glint. */
+	.ap-start {
+		position: absolute;
+		top: calc(508 * var(--u));
+		left: calc(60 * var(--u));
+		width: calc(317 * var(--u));
+		height: calc(50 * var(--u));
+		display: grid;
+		place-items: center;
+		padding: 0 calc(16 * var(--u));
+		border: none;
+		border-radius: calc(12 * var(--u));
+		background: linear-gradient(97deg, #c41e0a 49.3%, #ae1809 99%);
+		box-shadow: 0 calc(3 * var(--u)) calc(7 * var(--u)) rgba(0, 0, 0, 0.35);
+		cursor: pointer;
+		transition:
+			filter 0.12s ease,
+			transform 0.08s ease;
+	}
+	.ap-start::before {
+		content: '';
+		position: absolute;
+		left: calc(6.5 * var(--u));
+		top: calc(4.5 * var(--u));
+		width: calc(304 * var(--u));
+		height: calc(41 * var(--u));
+		box-sizing: border-box;
+		border: calc(2 * var(--u)) solid #851406;
+		border-radius: calc(10 * var(--u));
 		pointer-events: none;
-		filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.55));
+	}
+	.ap-start::after {
+		content: '';
+		position: absolute;
+		top: calc(4 * var(--u));
+		left: calc(12 * var(--u));
+		width: calc(186 * var(--u));
+		height: calc(1.2 * var(--u));
+		background: linear-gradient(90deg, rgba(255, 255, 255, 0), #fff 50%, rgba(255, 255, 255, 0));
+		pointer-events: none;
+	}
+	.ap-start__label {
+		position: relative;
+		color: #feefcf;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
+		font-weight: 400;
+		font-size: calc(20 * var(--u) * var(--fit, 1));
+		line-height: 1;
+		letter-spacing: 0.03em;
+		text-transform: uppercase;
+		white-space: nowrap;
+	}
+	.ap-start:hover {
+		filter: brightness(1.06);
+	}
+	.ap-start:active {
+		transform: scale(0.98);
 	}
 
 	.ap-close {
@@ -248,247 +478,16 @@
 	.ap-close:active {
 		transform: scale(0.94);
 	}
-
-	/* Title per spec: Bowlby One SC, white, 36px, +1.4px tracking, uppercase. */
-	.ap-title {
-		margin: 0;
-		text-align: center;
-		color: #ffffff;
-		font-family: 'Bowlby One SC', sans-serif;
-		font-weight: 400;
-		/* Cap lowered + wrap allowed so long localized titles (e.g. Finnish "AUTOMAATTIKIERROS")
-		   don't overflow the popup on desktop. */
-		font-size: clamp(1.2rem, 5vmin, 1.85rem);
-		line-height: 1.05;
-		letter-spacing: 1.4px;
-		text-transform: uppercase;
-		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-		max-width: 100%;
-		overflow-wrap: break-word;
-	}
-
-	/* Fading rule under the title, 90% width. */
-	.ap-divider {
-		align-self: center;
-		width: 90%;
-		height: 0;
-		border: solid;
-		border-width: 2px 0 0 0;
-		border-image-source: linear-gradient(
-			90deg,
-			rgba(96, 85, 83, 0) 0%,
-			#605553 50%,
-			rgba(96, 85, 83, 0) 100%
-		);
-		border-image-slice: 1;
-		margin-bottom: clamp(2px, 0.8vmin, 6px);
-	}
-
-	/* Label + counter kept tight together, with extra breathing room around the whole block. */
-	.ap-counter-group {
-		display: flex;
-		flex-direction: column;
-		gap: clamp(9px, 2vmin, 16px);
-		margin: clamp(6px, 1.8vmin, 14px) 0;
-	}
-
-	.ap-spins-label {
-		margin: 0;
-		text-align: center;
-		color: #c9beb0;
-		font-weight: 600;
-		font-size: clamp(0.7rem, 2vmin, 0.92rem);
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-	}
-
-	/* Counter row: −  [ count ]  + */
-	.ap-counter {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: clamp(12px, 3vmin, 22px);
-	}
-
-	.ap-step {
-		flex: 0 0 auto;
-		width: clamp(40px, 8vmin, 56px);
-		aspect-ratio: 1;
-		padding: 0;
-		border: none;
-		background: transparent center / contain no-repeat;
-		cursor: pointer;
-		transition:
-			filter 0.12s ease,
-			transform 0.08s ease;
-	}
-	.ap-step:hover {
-		filter: brightness(1.15);
-	}
-	.ap-step:active {
-		transform: scale(0.92);
-	}
-	.ap-step:disabled {
-		opacity: 0.35;
-		cursor: default;
-		filter: none;
-	}
-
-	/* Middle counter box per spec: thin white border + inset shadow on #292624. */
-	.ap-counter-box {
-		flex: 0 0 auto;
-		width: clamp(112px, 33%, 165px);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		min-width: 0;
-		padding: clamp(8px, 1.8vmin, 15px) clamp(12px, 2.4vmin, 20px);
-		/* Crisp bright-white frame — reads clearly white so it doesn't blend with the muted
-		   #605554 rings on the −/+ buttons. */
-		border: 1px solid #ffffff;
-		border-radius: 12px;
-		background: #292624;
-		box-shadow: 0px 0px 6px 0px #000000 inset;
-	}
-	.ap-count {
-		color: #fff1cf;
-		font-family: 'Bowlby One SC', sans-serif; /* values are in the display face, like the HUD's */
-		font-weight: 400;
-		font-size: clamp(1.4rem, 5vmin, 2.1rem);
-		line-height: 1;
-		letter-spacing: 0.02em;
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-	}
-
-	.ap-toggles {
-		display: flex;
-		flex-direction: column;
-		gap: clamp(10px, 2vmin, 17px);
-	}
-	.ap-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 12px;
-	}
-	.ap-row__label {
-		color: #fff;
-		font-family: 'Nunito', sans-serif;
-		font-weight: 700;
-		font-size: clamp(0.9rem, 3vmin, 1.25rem); /* 20px @ design */
-		line-height: 1;
-		letter-spacing: 0.03em; /* 3% */
-		text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-	}
-
-	/* Animated switch — colours from the design SVGs (off #605553, on #C51F0B→#AF190A). */
-	.ap-switch {
-		flex: 0 0 auto;
-		position: relative;
-		width: clamp(50px, 9vmin, 62px);
-		aspect-ratio: 62 / 34;
-		padding: 0;
-		border: none;
-		border-radius: 999px;
-		background: #605553;
-		cursor: pointer;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4) inset;
-		transition: background 0.22s ease;
-	}
-	.ap-switch.on {
-		background: linear-gradient(180deg, #c51f0b 0%, #af190a 100%);
-	}
-	.ap-switch__knob {
-		position: absolute;
-		top: 50%;
-		left: 7.1%; /* off: knob near the left edge */
-		transform: translateY(-50%);
-		height: 71.6%;
-		aspect-ratio: 1;
-		border-radius: 50%;
-		background: #fff;
-		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
-		transition: left 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-	}
-	.ap-switch.on .ap-switch__knob {
-		left: 53.6%; /* on: knob near the right edge */
-	}
-
-	/* START AUTOPLAY button — CSS pill (was baked art) so the label is translatable. Red matches the
-	   original #c41e0a art; the label auto-fits and the pill grows with longer localized text. */
-	.ap-start {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		align-self: center;
-		max-width: 94%;
-		margin-top: clamp(4px, 1.2vmin, 10px);
-		padding: clamp(9px, 1.8vmin, 15px) clamp(20px, 5vmin, 46px);
-		border: 2px solid #7d1206;
-		border-radius: clamp(9px, 2vmin, 14px);
-		background: linear-gradient(180deg, #d62a12 0%, #a81606 100%);
-		box-shadow:
-			inset 0 2px 0 rgba(255, 255, 255, 0.22),
-			0 3px 7px rgba(0, 0, 0, 0.35);
-		cursor: pointer;
-		transition:
-			filter 0.12s ease,
-			transform 0.08s ease;
-	}
-	.ap-start__label {
-		font-family: 'Bowlby One SC', sans-serif;
-		font-weight: 400;
-		font-size: clamp(0.85rem, 2.2vmin, 1.3rem);
-		letter-spacing: 0.03em;
-		text-transform: uppercase;
-		color: #fff;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-		white-space: nowrap;
-		line-height: 1;
-	}
-	.ap-start:hover {
-		filter: brightness(1.06);
-	}
-	.ap-start:active {
-		transform: scale(0.98);
-	}
-
-	/* Narrow portrait phones (e.g. 320-wide): match the smaller X used on the buy-bonus / info popups
-	   so the close button is consistent across the modals. Landscape max-height rules below still win. */
-	@media (max-width: 480px) {
+	/* Narrow phones and short screens: the smaller X used on the buy-bonus / info popups. */
+	@media (max-width: 480px), (max-height: 500px) {
+		/* a smaller card on phones (at 92% of the height it filled the landscape screen) */
+		.ap-root {
+			width: min(437px, 80vw, calc(80dvh * 437 / 594));
+		}
 		.ap-close {
-			width: clamp(28px, 8.5vw, 36px);
+			width: clamp(28px, 8vmin, 40px);
 			top: 8px;
 			right: 8px;
 		}
-	}
-
-	/* Short viewports (mobile landscape, incl. tiny 400x225 popouts): the content is taller than the
-	   screen, so it would scroll and hide the spin-count + START. Lay it out at a FIXED design size and
-	   transform-scale the whole popup to fit, keeping every control visible. Placed LAST so it wins over
-	   the base .ap-root / .ap-popup rules. Centred origin → translate(-50%,-50%) still centres it. */
-	@media (max-height: 500px) {
-		.ap-root {
-			width: 430px;
-			max-width: none;
-			max-height: none;
-			/* 430x380 design box → fit into 87vw x 87vh (slightly smaller), min() picks the limiting axis. */
-			transform: translate(-50%, -50%)
-				scale(min(calc(87vw / 430px), calc(87vh / 380px)));
-		}
-		.ap-popup {
-			max-height: none;
-			overflow: visible;
-		}
-		.ap-close {
-			top: 10px;
-			right: 10px;
-			width: clamp(30px, 7vmin, 44px);
-		}
-	}
-
-	/* Tiny popouts (~400x225): shrink the close (X) so it doesn't dominate the small screen. */
-	@media (max-height: 300px) {
-		.ap-close { width: clamp(20px, 9dvh, 30px); top: 6px; right: 6px; }
 	}
 </style>

@@ -5,6 +5,7 @@
 	import AnimatedSymbol from './AnimatedSymbol.svelte';
 	import { potState } from '../game/potState.svelte';
 	import { focusAlpha, isWinningCell } from '../game/winFocus.svelte';
+	import { RELEASE_HOLD_MS, RELEASE_MS, RELEASE_RIDE_MS, lockRelease } from '../game/lockRelease.svelte';
 	import { getContext } from '../game/context';
 	import { getSymbolInfo } from '../game/utils';
 	import { SYMBOL_PARTS, fallbackConfig } from '../game/symbolParts';
@@ -71,8 +72,44 @@
 			for (const k of Object.keys(wildAt)) if (!keys.has(k)) delete wildAt[k];
 		});
 	});
+	// releaseLocks (next spin) needs what each box shows — the wild carry-over lives here
 	$effect(() => {
-		if (!cells.length) return;
+		const held: typeof lockRelease.held = {};
+		for (const c of cells) if (c.name) held[`${c.reel}:${c.gridRow}`] = c.name;
+		lockRelease.held = held;
+	});
+	// The release (game/lockRelease): config per released symbol, built once per release.
+	const released = $derived(
+		lockRelease.cells.map((c) => {
+			const info = c.name ? getSymbolInfo({ rawSymbol: { name: c.name }, state: 'static' }) : undefined;
+			return {
+				...c,
+				config: c.name ? (SYMBOL_PARTS[c.name] ?? fallbackConfig(info!.assetKey)) : undefined,
+				scale: info?.sizeRatios.width ?? 0.92,
+			};
+		}),
+	);
+	// The release, in two beats. HOLD (the reels wait — actor): the heat glow and light box ease off
+	// the held symbol, which settles from the box's lift back to the reel's size. RIDE: the reels start,
+	// and the symbol rides its reel down on its cover and fades as it goes. The ride never runs
+	// backwards: once the reel starts its next pre-spin leg the reading restarts, but the copy has
+	// left the board by then.
+	let rideMax: Record<string, number> = {};
+	let rideAt = 0;
+	const releaseAnim = (c: (typeof released)[number]) => {
+		if (rideAt !== lockRelease.at) (rideAt = lockRelease.at), (rideMax = {});
+		const t = clock - lockRelease.at - c.delay * 0.5;
+		const raw = c.ref ? c.ref.symbolY() - c.restY : 0;
+		const ride = raw < -0.3 * SYMBOL_SIZE ? raw + c.span : raw;
+		const k = `${c.reel}:${c.gridRow}`;
+		const dy = (rideMax[k] = Math.max(rideMax[k] ?? 0, ride));
+		const b = Math.min(1, Math.max(0, t / RELEASE_HOLD_MS));
+		const eb = b * b * (3 - 2 * b); // ease in-out: no snap at either end
+		const r = Math.min(1, Math.max(0, (t - RELEASE_HOLD_MS - 140) / (RELEASE_RIDE_MS - 140)));
+		return { dy, box: 1 - eb, boxScale: 1 - 0.12 * eb, sym: 1 - r * r, done: t >= RELEASE_MS + c.delay };
+	};
+	$effect(() => {
+		if (!cells.length && !lockRelease.cells.length) return;
 		let raf = 0;
 		const loop = (ts: number) => {
 			clock = ts;
@@ -298,4 +335,45 @@
 			{/if}
 		</Container>
 	{/each}
+	<!-- The release (next spin, game/lockRelease): each held symbol rides its reel down on its own
+	     cover while the light box fades + shrinks off it. -->
+	<!-- clipped to the board like the reels (BoardMask), so a copy riding its reel leaves the same way -->
+	{#if released.length}
+	<Container>
+	<Rectangle isMask x={-SYMBOL_WIDTH} width={board.width + SYMBOL_WIDTH * 2} height={board.height} />
+	{#each released as c (`rel:${c.reel}:${c.gridRow}:${lockRelease.at}`)}
+		{@const ra = releaseAnim(c)}
+		{#if !ra.done}
+			<Container x={c.reel * SYMBOL_WIDTH + SYMBOL_WIDTH / 2} y={c.gridRow * SYMBOL_SIZE + SYMBOL_SIZE / 2 + ra.dy}>
+				<!-- the cell's cover, riding along: hides the reel's own symbol in this slot -->
+				<Rectangle
+					x={-SYMBOL_WIDTH / 2 - 1}
+					y={-SYMBOL_SIZE / 2 - 1}
+					width={SYMBOL_WIDTH + 2}
+					height={SYMBOL_SIZE + 2}
+					backgroundColor={0x2e2a27}
+					alpha={ra.sym}
+				/>
+				<Container scale={ra.boxScale} alpha={ra.box}>
+					<Rectangle
+						x={-SYMBOL_WIDTH / 2 + 9}
+						y={-SYMBOL_SIZE / 2 + 9}
+						width={SYMBOL_WIDTH - 18}
+						height={SYMBOL_SIZE - 18}
+						borderRadius={10}
+						backgroundColor={0xe8b574}
+						borderColor={0xffc383}
+						borderWidth={4}
+					/>
+				</Container>
+				{#if c.config}
+					<Container alpha={ra.sym}>
+						<AnimatedSymbol config={c.config} x={0} y={0} scale={c.scale} winning={true} />
+					</Container>
+				{/if}
+			</Container>
+		{/if}
+	{/each}
+	</Container>
+	{/if}
 </Container>

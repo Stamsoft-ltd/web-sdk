@@ -16,11 +16,11 @@ export default {
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
 	'CARD CHANCE TITLE': 'Cơ Hội Thêm',
-	'CARD CHANCE DESC': 'Tăng cơ hội kích hoạt vòng thưởng.',
+	'CARD CHANCE DESC': 'Kích hoạt để tăng *3 lần* cơ hội kích hoạt vòng thưởng.',
 	'CARD FEATURE TITLE': 'Lượt Quay Khóa',
 	'CARD FEATURE DESC': 'Đảm bảo một lượt quay trúng thưởng và bắt đầu Khóa & Quay Lại.',
 	'CARD DEALIT DESC': 'Vào Vòng Thưởng Thường với ba biểu tượng Scatter.',
-	'CARD ALLIN DESC': 'Vào Vòng Thưởng Siêu Cấp với bốn biểu tượng Scatter.',
+	'CARD ALLIN DESC': 'Vào Vòng Thưởng Siêu Cấp với *bốn* biểu tượng Scatter.',
 	'CONFIRM TEXT': 'Mua %mode% với giá %cost%?',
 	'NORMAL BONUS': 'Vòng Thưởng Thường',
 	'SUPER BONUS': 'Vòng Thưởng Siêu Cấp',
@@ -62,9 +62,9 @@ export default {
 	INFO: 'THÔNG TIN',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': "CHÀO MỪNG ĐẾN McSCHMUTZO",
+	'SPLASH C1 TITLE': "CHÀO MỪNG ĐẾN SCHMUTZO",
 	'SPLASH C1 BODY': "Thắng sẽ được khóa lại và quay lại cho đến khi đầy vỉ nướng.",
-	'SPLASH C2 TITLE': "3\nTÍNH NĂNG\nHẤP DẪN",
+	'SPLASH C2 TITLE': "3\nTHƯỞNG\nĐỘC ĐÁO",
 	'SPLASH C2 BODY 1': "Khóa & Quay lại",
 	'SPLASH C2 BODY 2': "Quay Vòng Quay Thưởng",
 	'SPLASH C2 BODY 3': "Tăng Hệ Số Nhân",

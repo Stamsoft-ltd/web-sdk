@@ -22,6 +22,7 @@
 	import { waitForResolve } from 'utils-shared/wait';
 
 	import { getContext } from '../game/context';
+	import { potState } from '../game/potState.svelte';
 	import { i18nDerived } from '../i18n/i18nDerived';
 	import { continueBottom } from '../lib/continuePos';
 	import { popOut } from '../lib/popOut';
@@ -50,6 +51,7 @@
 
 	let show = $state(false);
 	let totalFreeSpins = $state(0);
+	let potSteps = $state(0);
 	let oncomplete = $state(() => {});
 
 	context.eventEmitter.subscribeOnMount({
@@ -63,18 +65,44 @@
 		},
 		freeSpinIntroUpdate: async (emitterEvent) => {
 			totalFreeSpins = emitterEvent.totalFreeSpins;
+			potSteps = emitterEvent.steps ?? 0;
 			awaitingPress = true;
 			await waitForResolve((resolve) => (oncomplete = resolve));
 			awaitingPress = false;
 		},
 	});
 
-	// One soup pot per free spin won, in rows of five (the design's 2 × 5 for 10); capped at 3 rows.
-	const POTS_PER_ROW = 5;
-	const potRows = $derived.by(() => {
-		const n = Math.max(0, Math.min(15, totalFreeSpins));
-		return Array.from({ length: Math.ceil(n / POTS_PER_ROW) }, (_, r) => Math.min(POTS_PER_ROW, n - r * POTS_PER_ROW));
+	// One soup pot per multiplier step the wheel awarded (its inner ring, +3 … +15 — they fly into the
+	// bonus's multiplier pot on continue), in balanced rows so no pot is left dangling on its own
+	// (6 → 3 + 3, 7 → 4 + 3). Every count must fit the design's 2 × 5 box (10), so more steps shrink
+	// the pots (`potScale`): of 1–3 rows, the arrangement that keeps them largest wins
+	// (12 → 2 × 6, not 3 × 4 hanging off the card). Each row is { count, first } — `first` is its
+	// first pot's index, for the dealing delay.
+	const POT = 9.29; // cqw, one pot
+	const POT_STEP_X = POT - 2.23; // overlapped neighbours
+	const POT_STEP_Y = POT - 2.9;
+	const POT_BOX = { w: POT + 4 * POT_STEP_X, h: POT + POT_STEP_Y }; // the design's 2 × 5
+	const potLayout = $derived.by(() => {
+		const n = Math.max(0, Math.min(15, potSteps));
+		let best = { rows: 0, scale: 1 };
+		for (let rows = 1; rows <= 3 && n; rows++) {
+			const perRow = Math.ceil(n / rows);
+			if (rows > 1 && Math.ceil(n / (rows - 1)) === perRow) continue; // a row would stay empty
+			const w = POT + (perRow - 1) * POT_STEP_X;
+			const h = POT + (rows - 1) * POT_STEP_Y;
+			const scale = Math.min(1, POT_BOX.w / w, POT_BOX.h / h);
+			if (scale > best.scale + 1e-6 || !best.rows) best = { rows, scale };
+		}
+		let first = 0;
+		const rows = Array.from({ length: best.rows }, (_, r) => {
+			const count = Math.ceil((n - first) / (best.rows - r));
+			const row = { count, first };
+			first += count;
+			return row;
+		});
+		return { rows, scale: best.scale };
 	});
+	const potRows = $derived(potLayout.rows);
 
 	// DEV preview: press 6 to show the free-spin bonus congrats with mock data.
 	import { onMount } from 'svelte';
@@ -84,6 +112,7 @@
 			if (e.code !== 'Digit6') return;
 			stateBet.activeBetModeKey = 'bonus2';
 			totalFreeSpins = 10;
+			potSteps = 8;
 			show = true;
 			context.stateGame.freeSpinPopupShowing = true;
 		};
@@ -91,8 +120,65 @@
 		return () => window.removeEventListener('keydown', onDev);
 	});
 
+	// On continue, the spins won jump into the bonus's soup pot: each little pot leaves its disc in an
+	// arc (one after the other, as they were dealt), shrinks into the big pot's soup and is gone; the
+	// last one landing bumps the pot (potState.nudge). The fliers are clones on <body>, placed by
+	// their on-screen rects — the card fades away under them, and the overlay's scaled container
+	// can't skew them. No pot on screen yet (or reduced motion): the card just closes.
+	let potsEl: HTMLDivElement | undefined = $state();
+	const FLY_MS = 640;
+	const FLY_STAGGER = 70;
+	const flyPots = () => {
+		const pot = potState.rect;
+		// (once: a click and a key press can both arrive)
+		if (!pot || !potsEl || potsEl.style.visibility === 'hidden') return;
+		if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		const c = document.querySelector('.mcschmutzo-stage canvas')?.getBoundingClientRect();
+		const tx = (c?.left ?? 0) + pot.x + pot.w * 0.48;
+		const ty = (c?.top ?? 0) + pot.y + pot.h * 0.3;
+		// just the pot art jumps — its red disc stays behind (it goes with the card)
+		const discs = [...potsEl.querySelectorAll<HTMLElement>('.fs-pot img')];
+		discs.forEach((el, i) => {
+			const r = el.getBoundingClientRect();
+			const fly = el.cloneNode(true) as HTMLElement;
+			Object.assign(fly.style, {
+				position: 'fixed',
+				left: `${r.left}px`,
+				top: `${r.top}px`,
+				width: `${r.width}px`,
+				height: `${r.height}px`,
+				margin: '0',
+				objectFit: 'contain', // (the scoped .fs-pot img rule doesn't reach the clone)
+				zIndex: '70',
+				animation: 'none',
+				pointerEvents: 'none',
+			});
+			document.body.appendChild(fly);
+			const dx = tx - (r.left + r.width / 2);
+			const dy = ty - (r.top + r.height / 2);
+			const lift = Math.min(180, 60 + Math.abs(dx) * 0.3);
+			const spin = (dx > 0 ? 1 : -1) * (160 + (i % 3) * 40);
+			const end = Math.max(0.12, Math.min(0.5, (pot.w * 0.18) / r.width));
+			const anim = fly.animate(
+				[
+					{ transform: 'translate(0, 0) scale(1) rotate(0deg)' },
+					{ transform: `translate(0, -10px) scale(1.12) rotate(0deg)`, offset: 0.12 },
+					{ transform: `translate(${dx * 0.5}px, ${dy * 0.5 - lift}px) scale(0.85) rotate(${spin * 0.5}deg)`, offset: 0.55 },
+					{ transform: `translate(${dx}px, ${dy}px) scale(${end}) rotate(${spin}deg)`, opacity: 1, offset: 0.92 },
+					{ transform: `translate(${dx}px, ${dy + 4}px) scale(${end * 0.4}) rotate(${spin}deg)`, opacity: 0 },
+				],
+				{ duration: FLY_MS, delay: i * FLY_STAGGER, easing: 'cubic-bezier(0.45, 0, 0.55, 1)', fill: 'both' },
+			);
+			anim.onfinish = () => fly.remove();
+			anim.oncancel = () => fly.remove();
+		});
+		potsEl.style.visibility = 'hidden';
+		if (discs.length) setTimeout(() => (potState.nudge += 1), (discs.length - 1) * FLY_STAGGER + FLY_MS * 0.92);
+	};
+
 	const proceed = () => {
 		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
+		flyPots();
 		oncomplete();
 	};
 
@@ -147,11 +233,11 @@
 				<p class="fs-count">{totalFreeSpins}</p>
 				<img class="fs-star fs-star--r" src={starArt} alt="" draggable="false" />
 				<p class="fs-label">{i18nDerived.translate('FREE SPINS')}</p>
-				<div class="fs-pots" aria-hidden="true">
-					{#each potRows as count, r (r)}
+				<div class="fs-pots" aria-hidden="true" bind:this={potsEl} style={`--pk:${potLayout.scale}`}>
+					{#each potRows as row, r (r)}
 						<div class="fs-pots__row">
-							{#each Array(count) as _, i (i)}
-								<span class="fs-pot" style={`--i:${r * POTS_PER_ROW + i}`}><img src={potArt} alt="" draggable="false" /></span>
+							{#each Array(row.count) as _, i (i)}
+								<span class="fs-pot" style={`--i:${row.first + i}`}><img src={potArt} alt="" draggable="false" /></span>
 							{/each}
 						</div>
 					{/each}
@@ -206,7 +292,8 @@
 		position: relative;
 		/* height cap: the board (740 × 493) fits the measured room above PRESS TO CONTINUE with a
 		   little air; the 180px floor keeps tiny popouts from collapsing */
-		width: min(740px, 80vw, max(calc((var(--room-h, 100dvh) - 24px) * 1.5), 180px));
+		/* (85% of the design's 740: the board left too little of the game showing round it) */
+		width: min(630px, 68vw, max(calc((var(--room-h, 100dvh) - 24px) * 1.28), 180px));
 		aspect-ratio: 740 / 493.44;
 		container-type: inline-size;
 		font-family: 'Bowlby One SC', sans-serif;
@@ -284,6 +371,8 @@
 	/* ── copy (8808:13079 / 13080 / 13044 / 13045) ── */
 	.fs-congrats {
 		top: 18.9%;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
 		translate: -50% -50% !important;
 		font-size: 5.4cqw;
 		letter-spacing: 0.035em;
@@ -298,6 +387,8 @@
 	}
 	.fs-youwon {
 		top: 25.08%;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
 		font-size: 2.16cqw;
 		letter-spacing: 0.03em;
 		color: #fff1cf;
@@ -315,6 +406,8 @@
 	}
 	.fs-label {
 		top: 55.68%;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
 		font-size: 2.7cqw;
 		letter-spacing: 0.03em;
 		color: #fff1cf;
@@ -326,21 +419,56 @@
 		height: auto;
 		translate: -50% -50%;
 		filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35));
+		/* each flies in from its own side of the screen on a spinning arc and lands with a bump just
+		   after the count punches in (--dir: −1 = from the left, 1 = from the right), then twinkles */
 		animation:
-			fs-star-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 1.05s both,
+			fs-star-in 0.75s cubic-bezier(0.22, 0.9, 0.3, 1) 0.75s both,
 			fs-star-twinkle 1.5s ease-in-out 1.6s infinite;
 	}
 	.fs-star--l {
+		--dir: -1;
 		left: 34.51%;
 		top: 45.04%;
 	}
 	.fs-star--r {
+		--dir: 1;
 		left: 68.29%;
 		top: 44.43%;
-		animation-delay: 1.15s, 2.35s;
+		animation-delay: 0.85s, 2.35s;
+	}
+	@keyframes fs-star-in {
+		0% {
+			opacity: 0;
+			transform: translate(calc(var(--dir) * 520%), 180%) rotate(calc(var(--dir) * 540deg)) scale(0.35);
+		}
+		15% {
+			opacity: 1;
+		}
+		55% {
+			transform: translate(calc(var(--dir) * 150%), -90%) rotate(calc(var(--dir) * 160deg)) scale(0.95);
+		}
+		80% {
+			transform: translate(0, 0) rotate(calc(var(--dir) * -14deg)) scale(1.3);
+		}
+		100% {
+			opacity: 1;
+			transform: none;
+		}
+	}
+	@keyframes fs-star-twinkle {
+		0%,
+		100% {
+			transform: none;
+			filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35));
+		}
+		50% {
+			transform: rotate(calc(var(--dir) * 12deg)) scale(1.12);
+			filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 0.8cqw rgba(255, 220, 90, 0.85))
+				brightness(1.15);
+		}
 	}
 
-	/* ── spin counter: overlapping discs (#902220, #FFB3B1 rim) each holding a pot (8808:13046) ── */
+	/* ── spin counter: a pot per spin won (8808:13046, without its red discs — the pots alone) ── */
 	.fs-pots {
 		position: absolute;
 		left: 50.4%;
@@ -354,20 +482,17 @@
 		display: flex;
 	}
 	.fs-pots__row + .fs-pots__row {
-		margin-top: -2.9cqw;
+		margin-top: calc(-2.9cqw * var(--pk, 1));
 	}
 	.fs-pot {
 		position: relative;
-		width: 9.29cqw;
+		width: calc(9.29cqw * var(--pk, 1));
 		aspect-ratio: 1;
-		border-radius: 50%;
-		background: #902220;
-		box-shadow: inset 0 0 0 0.1cqw #ffb3b1;
 		/* one after another, like spins being dealt */
 		animation: fs-pot-in 0.42s cubic-bezier(0.34, 1.7, 0.6, 1) calc(1.25s + var(--i) * 0.07s) both;
 	}
 	.fs-pot + .fs-pot {
-		margin-left: -2.23cqw;
+		margin-left: calc(-2.23cqw * var(--pk, 1));
 	}
 	.fs-pot img {
 		position: absolute;
@@ -470,6 +595,20 @@
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.fs-stage, .fs-sauce, .fs-congrats, .fs-youwon, .fs-count, .fs-label, .fs-star, .fs-pot { animation: none; }
+	}
+
+	/* Portrait phones: 68vw left the card ~265px wide and its small words ~6px tall. Use most of the
+	   width (the sauces may overhang the screen edge a little) and keep YOU WON / FREE SPINS readable. */
+	@media (max-aspect-ratio: 4/5) {
+		.fs-stage {
+			width: min(630px, 88vw, max(calc((var(--room-h, 100dvh) - 24px) * 1.28), 180px));
+		}
+		.fs-youwon {
+			font-size: max(2.16cqw, 12px);
+		}
+		.fs-label {
+			font-size: max(2.7cqw, 13px);
+		}
 	}
 
 	/* Tiny popouts (~400x225): shrink the close (X) so it doesn't dominate the small screen. */

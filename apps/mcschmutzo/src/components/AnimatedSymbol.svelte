@@ -30,6 +30,8 @@
 		scale?: number; // symbol size ratio (matches the other symbols' sizeRatios)
 		state?: SymbolState;
 		winning?: boolean;
+		/** Its turn to come alive at rest (game/idleSpotlight): one soft cycle of its idle loop. */
+		spotlight?: boolean;
 		oncomplete?: () => void;
 		/** Plays the land one-shot this much faster (the scatter's land sound is pitched up per scatter). */
 		landRate?: number;
@@ -125,7 +127,10 @@
 
 	// Run the loop while the symbol is active — or, for idle-configured symbols, whenever it sits on
 	// the board (not mid-spin). Stop (settle) otherwise.
-	const idleAmp = $derived(props.config.idle ?? 0);
+	// A spotlit symbol (the board at rest, game/idleSpotlight) runs the same idle loop for one cycle
+	// at SPOTLIGHT_AMP of its win motion — its own gesture, softly.
+	const SPOTLIGHT_AMP = 0.6;
+	const idleAmp = $derived(props.config.idle ?? (props.spotlight ? SPOTLIGHT_AMP : 0));
 	const shouldRun = $derived(!!props.winning || (idleAmp > 0 && props.state !== 'spin'));
 	// These effects WRITE the loop state (running / startTime / clock), so they must not also depend
 	// on it: reading it tracked made an effect re-trigger itself (write startTime → it re-runs →
@@ -613,10 +618,14 @@
 	// Shot out SIDEWAYS in a short arc that drops down beside the bottle: the cap sits just under the
 	// cell's top edge, so an upward shot would be cut by the cell clip.
 	const SQUIRT_UNIT = 0.95;
+	const SPOT_SQUIRT_AT = 750; // ms into a spotlight: its drops (SQUIRT_LIFE 1500) are gone by its end (2600)
 	const SQUIRT_WIDTH = 2.7; // …with a proportionally fatter rope so it still reads as sauce (same thickness as before the shorter arc)
 	const drawSquirt = (g: SquirtGraphics) => {
 		const cfg = props.config.squirt;
-		const active = running && startTime >= 0 && !!props.winning;
+		// (a spotlit bottle — the board at rest, game/idleSpotlight — gives ONE small squeeze at its
+		// squash peak, done before its spotlight ends)
+		const spot = !props.winning && !!props.spotlight;
+		const active = running && startTime >= 0 && (!!props.winning || spot);
 		if (!cfg || !active) return;
 		const t = clock - startTime;
 		const cx = props.x ?? 0;
@@ -627,6 +636,21 @@
 			dir: -Math.PI / 2 + (cfg.dir ?? 0) * 0.25,
 		};
 		const cycle = Math.floor((t - PERIOD * 0.35) / PERIOD);
+		if (spot) {
+			if (t < SPOT_SQUIRT_AT) return;
+			const hk = squirtHash(1.7 + cx * 0.01);
+			drawSauceSquirt(g, {
+				u: t - SPOT_SQUIRT_AT,
+				unit: h * SQUIRT_UNIT * 0.8,
+				widthScale: SQUIRT_WIDTH,
+				color: cfg.color,
+				floorY: cy + h * 0.42,
+				floorBand: h * 0.12,
+				seed: cx * 0.013 + cy * 0.007,
+				nozzleAt: () => ({ ...noz, dir: noz.dir + (hk < 0.5 ? -1 : 1) * (0.8 + 0.2 * hk) }),
+			});
+			return;
+		}
 		for (const k of [cycle - 1, cycle]) {
 			if (k < 0) continue;
 			// Each shot arcs off to one side (~25°, side varies per shot) so it lands beside the bottle.

@@ -16,11 +16,11 @@ export default {
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
 	'CARD CHANCE TITLE': 'Oportunidad Extra',
-	'CARD CHANCE DESC': 'Aumenta la probabilidad de alcanzar el bono.',
+	'CARD CHANCE DESC': 'Actívalo para aumentar *3 veces* la probabilidad de activar una ronda de bonificación.',
 	'CARD FEATURE TITLE': 'Giro con Bloqueo',
 	"CARD FEATURE DESC": "Garantiza un giro ganador e inicia el Bloqueo y Regiro.",
 	'CARD DEALIT DESC': 'Entra al Bono Normal con tres símbolos scatter.',
-	'CARD ALLIN DESC': 'Entra al Súper Bono con cuatro símbolos scatter.',
+	'CARD ALLIN DESC': 'Entra al Súper Bono con *cuatro* símbolos scatter.',
 	'CONFIRM TEXT': '¿Comprar %mode% por %cost%?',
 	'NORMAL BONUS': 'Bono Normal',
 	'SUPER BONUS': 'Súper Bono',
@@ -62,9 +62,9 @@ export default {
 	INFO: 'INFO',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': "BIENVENIDO A McSCHMUTZO",
+	'SPLASH C1 TITLE': "BIENVENIDO A SCHMUTZO",
 	'SPLASH C1 BODY': "Las ganancias se bloquean y vuelven a girar hasta llenar la parrilla.",
-	'SPLASH C2 TITLE': "3\nFUNCIONES\nSABROSAS",
+	'SPLASH C2 TITLE': "3\nBONOS\nÚNICOS",
 	'SPLASH C2 BODY 1': "Bloqueo y Re-Spin",
 	'SPLASH C2 BODY 2': "Gira la Rueda de Bonos",
 	'SPLASH C2 BODY 3': "Haz crecer el Multiplicador",

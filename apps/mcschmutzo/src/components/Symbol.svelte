@@ -18,6 +18,8 @@
 		state: SymbolState;
 		rawSymbol: RawSymbol;
 		winning?: boolean;
+		/** The board is at rest and it is this symbol's turn to come alive once (game/idleSpotlight). */
+		spotlight?: boolean;
 		oncomplete?: () => void;
 		loop?: boolean;
 		/** performance.now() when this symbol should land (its reel's stop + a per-row offset). */
@@ -41,14 +43,17 @@
 
 	// Landing, by symbol weight. The reel strip itself already overshoots and snaps back on its stop,
 	// so the symbols only add the settle:
-	// - low symbols: a light uniform pop, 100% → 103% → 99% → 100% over 150ms;
+	// - low symbols: a bottom-anchored squash that springs a little tall and settles, with a small
+	//   wobble (left or right per cell) — lighter than the premiums', over 280ms (the old 3% pop
+	//   read as no landing at all next to the premiums and specials);
 	// - premium symbols: a short weighted squash onto their base that springs back, over 240ms;
 	// - scatter / soup keep the big squash-and-hop — it is their entrance;
 	// - the wild has its own entrance (AnimatedSymbol: splat, letter pop, shake, drip) — nothing here.
 	// Timed from the reel's landing stamp (props.landedAt, already offset per row by ReelSymbol) —
 	// robust to the reel swapping in fresh symbol objects around the landing.
 	type Key = [ms: number, value: number];
-	const LOW_POP: Key[] = [[0, 1], [45, 1.03], [100, 0.99], [150, 1]];
+	const LOW_SQUASH: Key[] = [[0, 0.92], [80, 1.05], [170, 0.985], [280, 1]];
+	const LOW_TILT: Key[] = [[0, 0], [90, 0.045], [185, -0.02], [280, 0]];
 	const PREMIUM_SQUASH: Key[] = [[0, 0.9], [70, 1.04], [150, 0.985], [240, 1]];
 	const SPECIAL_MS = 680;
 	const SPECIALS = ['S', 'M'];
@@ -63,7 +68,7 @@
 					: 'low',
 	);
 	const landMs = $derived(
-		tier === 'special' ? SPECIAL_MS : (tier === 'premium' ? PREMIUM_SQUASH : LOW_POP).at(-1)![0],
+		tier === 'special' ? SPECIAL_MS : (tier === 'premium' ? PREMIUM_SQUASH : LOW_SQUASH).at(-1)![0],
 	);
 	const smooth = (x: number) => x * x * (3 - 2 * x);
 	// Smoothstep between keyframes (eases into and out of every key — no velocity kinks).
@@ -91,15 +96,18 @@
 	});
 	const bounce = $derived.by(() => {
 		const ms = now - landStart;
-		if (landStart < 0 || ms < 0 || ms >= landMs || tier === 'own') return { sx: 1, sy: 1, dy: 0 };
+		if (landStart < 0 || ms < 0 || ms >= landMs || tier === 'own') return { sx: 1, sy: 1, dy: 0, rot: 0 };
 		if (tier === 'low') {
-			const k = keyed(LOW_POP, ms);
-			return { sx: k, sy: k, dy: 0 };
+			// volume-preserving, bottom-anchored; the wobble's side varies cell to cell (the per-row
+			// landing offsets make the stamp's parity differ)
+			const sy = keyed(LOW_SQUASH, ms);
+			const side = Math.floor(landStart / 28) % 2 ? 1 : -1;
+			return { sx: 1 / Math.sqrt(sy), sy, dy: (1 - sy) * SYMBOL_SIZE * 0.4, rot: side * keyed(LOW_TILT, ms) };
 		}
 		if (tier === 'premium') {
 			// volume-preserving, bottom-anchored
 			const sy = keyed(PREMIUM_SQUASH, ms);
-			return { sx: 1 / Math.sqrt(sy), sy, dy: (1 - sy) * SYMBOL_SIZE * 0.4 };
+			return { sx: 1 / Math.sqrt(sy), sy, dy: (1 - sy) * SYMBOL_SIZE * 0.4, rot: 0 };
 		}
 		// special: squash on impact, hop (stretched rising), lighter second landing, damped out —
 		// all deeper / higher by landBoost (the 2nd, 3rd … scatter of a spin hits harder)
@@ -117,7 +125,7 @@
 			const b = (u - 0.6) / 0.4;
 			sy = 1 - 0.1 * k * Math.exp(-4 * b) * Math.cos(Math.PI * 2 * b);
 		}
-		return { sx: 1 / Math.sqrt(sy), sy, dy: (1 - sy) * SYMBOL_SIZE * 0.4 - hop * SYMBOL_SIZE * 0.15 };
+		return { sx: 1 / Math.sqrt(sy), sy, dy: (1 - sy) * SYMBOL_SIZE * 0.4 - hop * SYMBOL_SIZE * 0.15, rot: 0 };
 	});
 
 	// Speed stretch: while its reel runs at full speed the symbol is drawn a little long and thin (a
@@ -225,7 +233,7 @@
 	scale={{ x: shadowScale * bounce.sx, y: shadowScale }}
 	alpha={shadowAlpha}
 />
-<Container x={props.x ?? 0} y={(props.y ?? 0) + bounce.dy} scale={{ x: scaleX, y: scaleY }}>
+<Container x={props.x ?? 0} y={(props.y ?? 0) + bounce.dy} scale={{ x: scaleX, y: scaleY }} rotation={bounce.rot}>
 	{#if flash > 0}
 		<Graphics draw={drawFlash} alpha={flash * 0.9} blendMode="add" />
 	{/if}
@@ -237,6 +245,7 @@
 			scale={symbolInfo.sizeRatios.width}
 			state={props.state}
 			winning={props.winning}
+			spotlight={props.spotlight}
 			oncomplete={props.oncomplete}
 			landRate={props.landRate}
 		/>

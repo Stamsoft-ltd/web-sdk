@@ -112,13 +112,14 @@
 	const smooth = (x: number) => x * x * (3 - 2 * x);
 	const backOut = (u: number, c = 1.7) => 1 + (c + 1) * (u - 1) ** 3 + c * (u - 1) ** 2;
 
-	// BONUS COMPLETE: slam from 2× (back-out); when the multiplier comes, it rises out of its way.
+	// BONUS COMPLETE: slam from 2× (back-out); when the multiplier comes, it rises out of its way —
+	// only so far (13cqh): higher, it settled over the logo above the board.
 	const title = $derived.by(() => {
 		if (ms < 0) return { s: 0, a: 0, y: 0 };
 		const u = Math.min(1, ms / SLAM_MS);
 		const s = 2 - backOut(u);
 		const lift = withMult ? smooth(Math.min(1, Math.max(0, (ms - MULT_FROM_MS) / 350))) : 0;
-		return { s: s * (1 - 0.35 * lift), a: Math.min(1, u * 3), y: -lift * 22 };
+		return { s: s * (1 - 0.35 * lift), a: Math.min(1, u * 3), y: -lift * 13 };
 	});
 	// impact squash on the title as it lands
 	const titleSquash = $derived.by(() => {
@@ -211,8 +212,8 @@
 	}
 	.be__title span {
 		position: relative;
-		font-family: 'Bowlby One SC', sans-serif;
-		font-size: min(7.5cqw, 11cqh);
+		font-family: var(--font-brush);
+		font-size: min(8.5cqw, 12.5cqh);
 		color: #ffd36b;
 		letter-spacing: 0.04em;
 		white-space: nowrap;
@@ -229,8 +230,8 @@
 	}
 	.be__label {
 		position: relative;
-		font-family: 'Bowlby One SC', sans-serif;
-		font-size: min(3.2cqw, 5cqh);
+		font-family: var(--font-brush);
+		font-size: min(3.8cqw, 6cqh);
 		color: #fff1cf;
 		letter-spacing: 0.06em;
 		white-space: nowrap;

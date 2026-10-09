@@ -16,11 +16,11 @@ export default {
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
 	'CARD CHANCE TITLE': 'فرصة إضافية',
-	'CARD CHANCE DESC': 'زد فرصة الوصول إلى الجولة الإضافية.',
+	'CARD CHANCE DESC': 'فعّلها لزيادة فرصة تفعيل جولة المكافأة *ثلاث مرات*.',
 	'CARD FEATURE TITLE': 'ميزة دورة القفل',
 	'CARD FEATURE DESC': 'تضمن دورة رابحة وتبدأ ميزة القفل وإعادة الدوران.',
 	'CARD DEALIT DESC': 'ادخل الجولة العادية بثلاثة رموز سكاتر.',
-	'CARD ALLIN DESC': 'ادخل الجولة الخارقة بأربعة رموز سكاتر.',
+	'CARD ALLIN DESC': 'ادخل الجولة الخارقة *بأربعة* رموز سكاتر.',
 	'CONFIRM TEXT': 'هل تريد شراء %mode% مقابل %cost%؟',
 	'NORMAL BONUS': 'الجولة العادية',
 	'SUPER BONUS': 'الجولة الخارقة',
@@ -62,9 +62,9 @@ export default {
 	INFO: 'معلومات',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': "مرحبًا بك في McSCHMUTZO",
+	'SPLASH C1 TITLE': "مرحبًا بك في SCHMUTZO",
 	'SPLASH C1 BODY': "تُثبَّت المكاسب وتدور من جديد حتى تمتلئ الشواية.",
-	'SPLASH C2 TITLE': "3\nميزات\nشهية",
+	'SPLASH C2 TITLE': "3\nمكافآت\nفريدة",
 	'SPLASH C2 BODY 1': "التثبيت وإعادة الدوران",
 	'SPLASH C2 BODY 2': "أدِر عجلة المكافأة",
 	'SPLASH C2 BODY 3': "ارفع المُضاعِف",

@@ -2,7 +2,8 @@
 	export type EmitterEventFreeSpinIntro =
 		| { type: 'freeSpinIntroShow' }
 		| { type: 'freeSpinIntroHide' }
-		| { type: 'freeSpinIntroUpdate'; totalFreeSpins: number };
+		/** steps: the multiplier steps the wheel awarded — the card's soups, one per step */
+		| { type: 'freeSpinIntroUpdate'; totalFreeSpins: number; steps?: number };
 </script>
 
 <script lang="ts">

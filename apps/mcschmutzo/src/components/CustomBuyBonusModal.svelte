@@ -8,12 +8,13 @@
 	const artSuperBonus = ap('/assets/mcschmutzo/buybonus/super-bonus.webp');
 	const minusArt = ap('/assets/mcschmutzo/autoplay/minus.svg');
 	const plusArt = ap('/assets/mcschmutzo/autoplay/plus-icon.svg');
-	const moneyArt = ap('/assets/mcschmutzo/buybonus/money.webp');
+	const cardFrameArt = ap('/assets/mcschmutzo/popup/card-frame.svg');
 </script>
 
 <script lang="ts">
 	import { fade } from 'svelte/transition';
 	import { popIn, popOut } from '../lib/popOut';
+	import PopupScrews from './PopupScrews.svelte';
 	import { onMount } from 'svelte';
 	import { stateBet, stateBetDerived, stateConfig, stateUrlDerived } from 'state-shared';
 
@@ -88,7 +89,7 @@
 			description: 'CARD CHANCE DESC',
 			action: 'activate',
 			art: artExtraChance,
-			badge: '2x',
+			badge: '3x',
 		},
 		{
 			id: 'featureSpin',
@@ -115,9 +116,12 @@
 			description: 'CARD ALLIN DESC',
 			action: 'buy',
 			art: artSuperBonus,
-			badge: null,
+			badge: '4x',
 		},
 	];
+
+	// A description marks its key word (the scatter count) as *word*: odd parts are drawn red.
+	const descParts = (text: string) => text.split(/\*([^*]+)\*/);
 
 	const betAmount = $derived(stateBet.betAmount);
 	const betOptions = $derived(stateConfig.betAmountOptions);
@@ -182,6 +186,23 @@
 	};
 
 	const confirmCost = $derived(confirmMode ? formatCost(modeById(confirmMode).multiplier) : '');
+	// The confirm sentence split around its %cost% (in whatever language): the words before it are the
+	// message line, the cost is the dialog's big amount, and anything after it is a small last line
+	// (dropped when it's only the closing punctuation — and then so is a Spanish opening ¿).
+	const confirmCopy = $derived.by(() => {
+		if (!confirmMode) return { message: '', after: '' };
+		const MARK = '\u0000';
+		const text = i18nDerived.translateVars(
+			confirmMode === 'featureSpin' ? 'CONFIRM ACTIVATE TEXT' : 'CONFIRM TEXT',
+			{ mode: i18nDerived.translate(modeById(confirmMode).title), cost: MARK },
+		);
+		const at = text.indexOf(MARK);
+		if (at < 0) return { message: text, after: '' };
+		const after = text.slice(at + MARK.length).trim();
+		const bare = /^[\s?.!؟。？！]*$/.test(after);
+		const message = text.slice(0, at).trim();
+		return { message: bare ? message.replace(/^[¿¡]\s*/, '') : message, after: bare ? '' : after };
+	});
 	const closeConfirm = () => (confirmMode = null);
 	const confirmAccept = () => {
 		if (!confirmMode) return;
@@ -242,48 +263,60 @@
 	<div class="bb-grid">
 		{#each modes as mode (mode.id)}
 			<article class="bb-card" class:bb-card--active={isActive(mode.id)}>
+				<!-- Figma 8888:4033: cream body + red header under the screwed-down frame, a dashed rule -->
+				<div class="bb-card-body"></div>
+				<div class="bb-card-head"></div>
+				<img class="bb-card-frame" src={cardFrameArt} alt="" draggable="false" />
+				<PopupScrews frame="card" />
+				<span class="bb-dash" aria-hidden="true"></span>
+
 				<h3 class="bb-card-title" use:fitWords={i18nDerived.translate(mode.title)}>{i18nDerived.translate(mode.title)}</h3>
-				<div class="bb-divider"></div>
-				<p class="bb-desc" use:fitWords={i18nDerived.translate(mode.description)}>{i18nDerived.translate(mode.description)}</p>
 
-				<div
-					class="bb-art"
-					class:bb-art--burger={mode.id === 'featureSpin'}
-					class:bb-art--scatter={mode.id === 'bonus1'}
-					class:bb-art--wheel={mode.id === 'bonus2'}
-					class:bb-art--chance={mode.id === 'enhancer1'}
-				>
-					{#if mode.id === 'featureSpin'}
-						<!-- The Lock & Re-spin feature IS the burger symbol — rebuild it from its slices so it
-						     assembles / disassembles exactly like the reels. -->
-						<div class="bb-burger-holder"><BurgerStack /></div>
-					{:else if mode.id === 'bonus1' || mode.id === 'enhancer1'}
-						<!-- Both scatter-shack cards ARE the SCATTER symbol — rebuild it from its parts so the
-						     sign sways like the reels. Offset the two so they don't sway in lock-step. -->
-						<div class="bb-scatter-holder">
-							<ScatterStack delay={mode.id === 'enhancer1' ? -1.35 : 0} />
-						</div>
-					{:else}
-						<img src={mode.art} alt="" draggable="false" />
-					{/if}
-					{#if mode.badge}<span class="bb-badge">{mode.badge}</span>{/if}
+				<div class="bb-card-content">
+					<p class="bb-desc" use:fitWords={i18nDerived.translate(mode.description)}>
+						{#each descParts(i18nDerived.translate(mode.description)) as part, i (i)}{#if i % 2}<span class="bb-desc-hot">{part}</span>{:else}{part}{/if}{/each}
+					</p>
+
+					<div
+						class="bb-art"
+						class:bb-art--burger={mode.id === 'featureSpin'}
+						class:bb-art--scatter={mode.id === 'bonus1'}
+						class:bb-art--wheel={mode.id === 'bonus2'}
+						class:bb-art--chance={mode.id === 'enhancer1'}
+					>
+						{#if mode.id === 'featureSpin'}
+							<!-- The Lock & Re-spin feature IS the burger symbol — rebuild it from its slices so it
+							     assembles / disassembles exactly like the reels. -->
+							<div class="bb-burger-holder"><BurgerStack /></div>
+						{:else if mode.id === 'bonus1' || mode.id === 'enhancer1'}
+							<!-- Both scatter-shack cards ARE the SCATTER symbol — rebuild it from its parts so the
+							     sign sways like the reels. Offset the two so they don't sway in lock-step. -->
+							<div class="bb-scatter-holder">
+								<ScatterStack delay={mode.id === 'enhancer1' ? -1.35 : 0} />
+							</div>
+						{:else}
+							<img src={mode.art} alt="" draggable="false" />
+						{/if}
+						{#if mode.badge}<span class="bb-badge">{mode.badge}</span>{/if}
+					</div>
+
+					<!-- (not in the design, kept: the price has to be on the card before the player buys) -->
+					<div class="bb-amount">
+						<span class="bb-mult">{mode.multiplier}x</span>
+						<span class="bb-cost">{formatCost(mode.multiplier)}</span>
+					</div>
+
+					<button
+						class="bb-btn"
+						class:bb-btn--buy={mode.action === 'buy'}
+						type="button"
+						disabled={isDisabled(mode)}
+						onclick={() => chooseMode(mode.id)}
+						aria-label={buttonLabel(mode)}
+					>
+						<span class="bb-btn__label">{buttonLabel(mode)}</span>
+					</button>
 				</div>
-
-				<div class="bb-amount">
-					<span class="bb-mult">{mode.multiplier}x</span>
-					<span class="bb-cost">{formatCost(mode.multiplier)}</span>
-				</div>
-
-				<button
-					class="bb-btn"
-					class:bb-btn--buy={mode.action === 'buy'}
-					type="button"
-					disabled={isDisabled(mode)}
-					onclick={() => chooseMode(mode.id)}
-					aria-label={buttonLabel(mode)}
-				>
-					<span class="bb-btn__label">{buttonLabel(mode)}</span>
-				</button>
 			</article>
 		{/each}
 	</div>
@@ -299,11 +332,8 @@
 				onclick={() => stepBet(-1)}
 			></button>
 			<div class="bb-bet">
-				<img class="bb-bet-coin" src={moneyArt} alt="" />
-				<span class="bb-bet-vals">
-					<span class="bb-bet-label">{i18nDerived.translate('BET')}</span>
-					<strong class="bb-bet-amount">{formattedBet}</strong>
-				</span>
+				<span class="bb-bet-label">{i18nDerived.translate('BET')}</span>
+				<strong class="bb-bet-amount">{formattedBet}</strong>
 			</div>
 			<button
 				class="bb-step"
@@ -322,10 +352,9 @@
 		title={i18nDerived.translate(
 			confirmMode === 'featureSpin' ? modeById(confirmMode).title : 'CONFIRM PURCHASE',
 		)}
-		message={i18nDerived.translateVars(
-			confirmMode === 'featureSpin' ? 'CONFIRM ACTIVATE TEXT' : 'CONFIRM TEXT',
-			{ mode: i18nDerived.translate(modeById(confirmMode).title), cost: confirmCost },
-		)}
+		message={confirmCopy.message}
+		amount={confirmCost}
+		after={confirmCopy.after}
 		cancelLabel={i18nDerived.translate('CANCEL')}
 		confirmLabel={i18nDerived.translate('CONFIRM')}
 		oncancel={closeConfirm}
@@ -365,14 +394,15 @@
 		transform: scale(0.94);
 	}
 
-	/* Dark panel: 3px #444 border wrapped by #181818 (outer-most), matching the other modals. */
+	/* The panel is just the layout box (title, cards, bet stepper) — the cards carry the look. */
 	.bb-panel {
 		position: fixed;
 		left: 50%;
 		top: 50%;
 		z-index: 59;
 		transform: translate(-50%, -50%);
-		width: min(1080px, 95vw);
+		width: max-content;
+		max-width: 98vw;
 		max-height: 94dvh;
 		overflow-y: auto;
 		box-sizing: border-box;
@@ -380,99 +410,136 @@
 		font-family: 'Nunito', sans-serif;
 	}
 
+	/* Title: Comica Brush 36 in the design (Bowlby One SC until that font ships). */
 	.bb-title {
-		margin: 0 0 clamp(14px, 2.4vmin, 24px);
+		margin: 0 0 clamp(14px, 3.4vmin, 36px);
 		text-align: center;
-		color: #ffffff;
-		font-family: 'Bowlby One SC', sans-serif;
+		color: #e7d5b7;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
 		font-weight: 400;
-		font-size: clamp(1.75rem, 5vmin, 2.9rem);
+		font-size: clamp(1.6rem, 4.6vmin, 2.25rem);
 		line-height: 1;
-		letter-spacing: 1.6px;
-		text-transform: uppercase;
-		text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-	}
-
-	.bb-grid {
-		display: grid;
-		grid-template-columns: repeat(4, minmax(0, 1fr));
-		gap: clamp(10px, 1.6vmin, 18px);
-	}
-
-	/* Card is the outer box (bg + radius); ::before is a #605553 border inset a few px,
-	   so the card bg shows as padding around it (same bg, same rounded corners). */
-	.bb-card {
-		position: relative;
-		display: grid;
-		grid-template-rows: auto auto minmax(38px, auto) 1fr auto auto;
-		gap: clamp(6px, 1.2vmin, 12px);
-		min-width: 0;
-		padding: clamp(16px, 2.4vmin, 26px) clamp(14px, 2vmin, 20px);
-		border-radius: 16px;
-		background: linear-gradient(180deg, #221e1b 0%, #191512 100%);
-		text-align: center;
-	}
-	.bb-card::before {
-		content: '';
-		position: absolute;
-		inset: 6px;
-		border: 2.03px solid #605553;
-		border-radius: 12px;
-		pointer-events: none;
-	}
-	.bb-card--active::before {
-		border-color: #e8b574;
-	}
-	.bb-card--active {
-		box-shadow: 0 0 16px rgba(232, 181, 116, 0.25);
-	}
-	/* First box (Extra Chance) keeps the neutral frame even when active — no yellow highlight. */
-	.bb-card:first-child.bb-card--active::before {
-		border-color: #605553;
-	}
-	.bb-card:first-child.bb-card--active {
-		box-shadow: none;
-	}
-
-	.bb-card-title {
-		margin: 0;
-		min-height: 2.5em;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		white-space: pre-line; /* explicit two-row breaks in the title strings */
-		color: #ffffff;
-		font-family: 'Bowlby One SC', sans-serif;
-		font-weight: 400;
-		font-size: clamp(1.05rem, 2.4vmin, 1.6rem);
-		line-height: 1.12;
 		letter-spacing: 1.4px;
 		text-transform: uppercase;
 	}
 
-	/* Fading rule under the title (same as the auto-spin modal). */
-	.bb-divider {
-		align-self: center;
-		width: 88%;
-		height: 0;
-		border: solid;
-		border-width: 2px 0 0 0;
-		border-image-source: linear-gradient(
-			90deg,
-			rgba(96, 85, 83, 0) 0%,
-			#605553 50%,
-			rgba(96, 85, 83, 0) 100%
-		);
-		border-image-slice: 1;
+	/* Four 267×363 cards (Figma 8888:3854), as big as the screen allows: by width, four across; by
+	   height, leaving room for the title and the bet stepper. */
+	.bb-grid {
+		--gap: clamp(8px, 1.2vmin, 12px);
+		--cw: min(330px, calc((95vw - 3 * var(--gap) - 44px) / 4), calc((94dvh - 210px) * 267 / 363));
+		display: grid;
+		grid-template-columns: repeat(4, var(--cw));
+		justify-content: center;
+		gap: var(--gap);
 	}
 
+	/* Each card lays out in design px: --u is one of the card's 267. */
+	.bb-card {
+		position: relative;
+		width: var(--cw);
+		aspect-ratio: 267 / 363;
+		container-type: inline-size;
+		text-align: center;
+		transition: filter 0.18s ease;
+	}
+	.bb-card > * {
+		--u: calc(100cqw / 267);
+	}
+	/* the selected (toggled-on) Lock Feature Spin glows (Extra Chance never highlights) */
+	.bb-card--active:not(:first-child) {
+		filter: drop-shadow(0 0 10px rgba(255, 196, 100, 0.75));
+	}
+	.bb-card-body,
+	.bb-card-head {
+		position: absolute;
+	}
+	.bb-card-body {
+		left: calc(8 * var(--u));
+		top: calc(92 * var(--u));
+		width: calc(251 * var(--u));
+		height: calc(263 * var(--u));
+		background: #f9dca6;
+	}
+	.bb-card-head {
+		left: calc(7 * var(--u));
+		top: calc(3 * var(--u));
+		width: calc(250 * var(--u));
+		height: calc(95 * var(--u));
+		border-radius: calc(7 * var(--u));
+		background: #b1190a;
+	}
+	.bb-card-frame {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+		user-select: none;
+	}
+	.bb-dash {
+		position: absolute;
+		left: calc(13 * var(--u));
+		top: calc(107.5 * var(--u));
+		width: calc(242 * var(--u));
+		height: max(1px, calc(1 * var(--u)));
+		background: repeating-linear-gradient(
+			90deg,
+			#b11909 0 calc(14 * var(--u)),
+			transparent calc(14 * var(--u)) calc(28 * var(--u))
+		);
+	}
+
+	/* Title: Comica Brush 24 (Bowlby One SC for now), cream with a dark outline, centred in the header. */
+	.bb-card-title {
+		position: absolute;
+		left: calc(30 * var(--u));
+		right: calc(30 * var(--u));
+		top: calc(10 * var(--u));
+		height: calc(84 * var(--u));
+		margin: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: #e7d5b7;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
+		font-weight: 400;
+		font-size: calc(21 * var(--u));
+		line-height: 1.2;
+		letter-spacing: calc(1.4 * var(--u));
+		text-transform: uppercase;
+		text-wrap: balance;
+	}
+
+	/* Copy, art, price and button down the cream body. */
+	.bb-card-content {
+		position: absolute;
+		left: calc(26 * var(--u));
+		right: calc(26 * var(--u));
+		top: calc(118 * var(--u));
+		bottom: calc(27 * var(--u));
+		display: grid;
+		grid-template-rows: auto minmax(0, 1fr) auto auto;
+		justify-items: center;
+		gap: calc(5 * var(--u));
+	}
+	.bb-card-content > * {
+		--u: calc(100cqw / 267);
+	}
 	.bb-desc {
 		margin: 0;
-		color: #ddd3c7;
-		font-weight: 600;
-		/* ≥13px on a 1200×670 desktop (it sat at a ~10px floor — "unreadable" in the rating review) */
-		font-size: clamp(0.82rem, 1.95vmin, 1.05rem);
+		max-width: calc(206 * var(--u));
+		color: #000;
+		font-weight: 900;
+		font-size: calc(15 * var(--u));
 		line-height: 1.3;
+		letter-spacing: calc(0.48 * var(--u));
+		text-wrap: balance;
+	}
+	.bb-desc-hot {
+		color: #b1190a;
 	}
 
 	.bb-art {
@@ -480,36 +547,29 @@
 		display: grid;
 		place-items: center;
 		min-height: 0;
-		padding: clamp(2px, 0.6vmin, 8px) 0;
 	}
 	.bb-art img {
 		width: auto;
-		height: clamp(66px, 12vmin, 108px);
+		height: calc(74 * var(--u));
 		object-fit: contain;
-		filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.4));
+		filter: drop-shadow(0 calc(3 * var(--u)) calc(4 * var(--u)) rgba(0, 0, 0, 0.3));
 	}
 	/* The Lock & Re-spin feature IS the burger symbol — it's rebuilt from its slices (BurgerStack) so it
-	   assembles / disassembles like the reels. The holder sizes it to the same footprint as the other
-	   icons and fixes the board cell's aspect so the slices line up. */
-	/* The burger card clips to its art box so the separating stack can never draw over the copy/amount,
-	   and the holder is left smaller than the others' icons to give the bun headroom to rise into. */
+	   assembles / disassembles like the reels. The holder fixes the board cell's aspect so the slices
+	   line up; the art box clips so the separating stack never draws over the copy, with padding for
+	   the buns' full throw (--sep 0.55: top bun rises ~14% of the burger's height, bottom drops ~11%). */
 	.bb-art--burger {
 		overflow: hidden;
-		/* Room for the full separate/regroup throw (--sep 0.55: top bun rises ~14% of the burger's
-		   height, bottom bun drops ~11%) so the buns are never sliced by the clip — on portrait the art
-		   box hugs the burger, so this padding is the only headroom it has. */
-		padding-block: clamp(10px, 1.9vmin, 16px) clamp(8px, 1.5vmin, 12px);
+		padding-block: calc(11 * var(--u)) calc(8 * var(--u));
 	}
 	.bb-burger-holder {
-		height: clamp(52px, 9.5vmin, 82px);
+		height: calc(58 * var(--u));
 		aspect-ratio: 1.077;
-		/* Roughly half the reels' full throw — still a clear assemble/disassemble, but the extremes stay
-		   inside the (smaller) box. */
 		--sep: 0.55;
 	}
 	/* Both scatter cards rebuild the SCATTER symbol (stand + swaying sign) at the icon footprint. */
 	.bb-scatter-holder {
-		height: clamp(60px, 11vmin, 100px);
+		height: calc(76 * var(--u));
 		aspect-ratio: 1;
 	}
 	/* Super Bonus IS the prize wheel — spin it steadily so the card previews what it does. */
@@ -525,100 +585,97 @@
 			animation: none;
 		}
 	}
+	/* Red multiplier coin on the art's corner (design: #c10c01, 1.24px #ebb877 rim, Bowlby 11.2). */
 	.bb-badge {
 		position: absolute;
-		right: 22%;
-		bottom: 8%;
+		right: -6%;
+		bottom: 2%;
 		display: grid;
 		place-items: center;
-		/* Always a PERFECT circle: explicit equal width + height (aspect-ratio alone let the box stretch
-		   in its grid/flex parent or widen to the text), no shrink/grow, no padding. */
-		--badge-d: clamp(24px, 4vmin, 34px);
-		width: var(--badge-d);
-		height: var(--badge-d);
-		min-width: var(--badge-d);
-		max-width: var(--badge-d);
-		min-height: var(--badge-d);
-		max-height: var(--badge-d);
-		flex: 0 0 auto;
-		align-self: auto;
-		padding: 0;
+		/* (floors: on a portrait phone --u left the coin ~22px and its 3x ~8px — the smallest text in
+		   the game; kept modest so the coin doesn't reach the price row on narrow phones) */
+		width: max(calc(33.6 * var(--u)), 25px);
+		height: max(calc(33.6 * var(--u)), 25px);
 		box-sizing: border-box;
-		line-height: 1;
-		white-space: nowrap;
 		border-radius: 50%;
-		border: 2px solid #ffce6a;
-		background: #c4281c;
-		color: #fff4d2;
-		font-family: 'Nunito', sans-serif;
-		font-weight: 700;
-		font-size: clamp(0.6rem, 1.3vmin, 0.85rem);
+		border: max(1px, calc(1.24 * var(--u))) solid #ebb877;
+		background: #c10c01;
+		color: #feefcf;
+		font-family: 'Bowlby One SC', sans-serif;
+		font-size: max(calc(11.25 * var(--u)), 9px);
+		line-height: 1;
+		letter-spacing: calc(0.98 * var(--u));
+		text-transform: uppercase;
+		white-space: nowrap;
 	}
 
-	/* Amount chip — small, borderless, sized to content (~half the card). */
 	.bb-amount {
 		display: flex;
 		align-items: baseline;
 		justify-content: center;
-		gap: 6px;
-		align-self: center;
-		justify-self: center;
-		padding: clamp(3px, 0.6vmin, 6px) clamp(10px, 1.8vmin, 18px);
-		border-radius: 8px;
-		background: #292624;
+		gap: calc(6 * var(--u));
+		color: #2b2c2a;
+		font-weight: 900;
+		font-size: calc(15 * var(--u));
+		line-height: 1;
 	}
 	.bb-mult {
-		color: #ffc264;
-		font-family: 'Nunito', sans-serif;
-		font-weight: 700;
-		font-size: clamp(0.86rem, 1.9vmin, 1.1rem);
-	}
-	.bb-cost {
-		color: #ffffff;
-		font-weight: 700;
-		font-size: clamp(0.84rem, 1.85vmin, 1.06rem);
+		color: #b1190a;
 	}
 
-	/* Buttons use the provided ACTIVATE / BUY art. */
-	/* CSS pills (were baked BUY/ACTIVATE art) so the label is translatable. Default = cream ACTIVATE;
-	   .bb-btn--buy = red BUY. Label wraps rather than clipping for long localized words. */
+	/* ACTIVATE = dark #2b2c2a with a #605553 rim; BUY = the red pill with an inner dark-red rim and a
+	   white glint along the top (215×50 in the design). Labels: Comica Brush 20 (Bowlby One SC for now). */
 	.bb-btn {
+		position: relative;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		width: 100%;
-		min-height: clamp(32px, 7.5vmin, 48px);
-		padding: clamp(5px, 1.2vmin, 9px) clamp(8px, 2vmin, 16px);
-		border: 2px solid #605553;
-		border-radius: clamp(7px, 1.4vmin, 12px);
-		background: #60534c3d;
+		width: calc(215 * var(--u));
+		height: calc(50 * var(--u));
+		padding: 0 calc(12 * var(--u));
+		border: calc(2 * var(--u)) solid #605553;
+		border-radius: calc(12 * var(--u));
+		background: #2b2c2a;
 		cursor: pointer;
 		transition:
 			filter 0.12s ease,
 			transform 0.08s ease;
 	}
 	.bb-btn__label {
-		font-family: 'Bowlby One SC', sans-serif;
+		position: relative;
+		color: #feefcf;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
 		font-weight: 400;
-		font-size: clamp(0.56rem, 1.8vmin, 0.98rem);
-		letter-spacing: 0.03em;
-		text-transform: uppercase;
-		/* Light label — the ACTIVATE pill background is now a dark translucent brown. */
-		color: #efe8d8;
+		font-size: calc(16 * var(--u));
 		line-height: 1.05;
+		letter-spacing: calc(1.65 * var(--u));
+		text-transform: uppercase;
 		text-align: center;
 		overflow-wrap: break-word;
 	}
 	.bb-btn--buy {
-		border-color: #7d1206;
-		background: linear-gradient(180deg, #d62a12 0%, #a81606 100%);
+		border: none;
+		background: linear-gradient(95deg, #c41e0a 49.3%, #ae1809 99%);
 	}
-	.bb-btn--buy .bb-btn__label {
-		color: #fff;
-		text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+	.bb-btn--buy::before {
+		content: '';
+		position: absolute;
+		inset: calc(5 * var(--u));
+		border: calc(2 * var(--u)) solid #851406;
+		border-radius: calc(10 * var(--u));
+	}
+	.bb-btn--buy::after {
+		content: '';
+		position: absolute;
+		top: calc(3.5 * var(--u));
+		left: calc(12 * var(--u));
+		width: calc(186 * var(--u));
+		height: max(1px, calc(1 * var(--u)));
+		background: linear-gradient(90deg, rgba(255, 255, 255, 0), #fff 50%, rgba(255, 255, 255, 0));
 	}
 	.bb-btn:hover:not(:disabled) {
-		filter: brightness(1.08);
+		filter: brightness(1.1);
 	}
 	.bb-btn:active:not(:disabled) {
 		transform: scale(0.97);
@@ -628,26 +685,29 @@
 		cursor: default;
 	}
 
-	/* Bet stepper — a single #181818 box (2.03px #605553 border) holding − value +. */
+	/* Bet stepper (Figma 8888:3838): a cream pill with a red rim — −, a red BET tag over the amount, +. */
 	.bb-betbar {
 		display: flex;
 		justify-content: center;
-		margin-top: clamp(24px, 4vmin, 42px);
+		margin-top: clamp(14px, 4.4vmin, 52px);
 	}
 	.bb-betbox {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: clamp(10px, 1.7vmin, 18px);
-		width: min(196px, 70vw);
-		padding: clamp(8px, 1.3vmin, 13px) clamp(13px, 2vmin, 20px);
-		border-radius: 8.13px;
-		border: 2.03px solid #605553;
-		background: #181818;
+		gap: 12px;
+		width: 278px;
+		max-width: 80vw;
+		box-sizing: border-box;
+		padding: 6px 12px;
+		border-radius: 8px;
+		border: 2px solid #b21a0a;
+		background: #fef4d5;
+		box-shadow: 0 0 0 3px #fef4d5;
 	}
 	.bb-step {
 		flex: 0 0 auto;
-		width: clamp(38px, 5.4vmin, 48px);
+		width: 48px;
 		aspect-ratio: 1;
 		padding: 0;
 		border: none;
@@ -668,65 +728,91 @@
 		cursor: default;
 	}
 	.bb-bet {
-		flex: 1 1 auto;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: clamp(11px, 2vmin, 18px);
-	}
-	.bb-bet-coin {
-		width: clamp(22px, 3.2vmin, 28px);
-		height: auto;
-		object-fit: contain;
-	}
-	/* BET label above the amount. */
-	.bb-bet-vals {
 		display: flex;
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: center;
+		gap: 4px;
 		line-height: 1;
 	}
 	.bb-bet-label {
-		color: #d88200;
-		font-family: 'Nunito', sans-serif;
-		font-weight: 700;
-		font-size: clamp(0.58rem, 1.1vmin, 0.7rem); /* ~12px @ design */
-		line-height: 1;
-		letter-spacing: 2px;
+		padding: 4px 12px;
+		border-radius: 4px;
+		background: #b1190a;
+		color: #f9dca6;
+		font-family: var(--font-brush);
+		-webkit-text-stroke: var(--brush-stroke) currentColor;
+		font-size: 10px;
+		letter-spacing: 0.67px;
 		text-transform: uppercase;
 	}
 	.bb-bet-amount {
-		margin-top: 3px;
-		color: #ffffff;
-		font-weight: 700;
-		font-size: clamp(1.05rem, 2.2vmin, 1.4rem);
+		color: #2b2c2a;
+		font-family: 'Luckiest Guy', 'Bowlby One SC', sans-serif;
+		font-weight: 400;
+		font-size: 23px;
+		line-height: 1;
+		/* Luckiest Guy sits high in its line box */
+		padding-top: 3px;
 	}
 
-	@media (max-width: 900px) {
+	/* Tall narrow screens (tablet portrait): two by two. */
+	@media (max-width: 900px) and (min-height: 501px) {
 		.bb-grid {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
+			--cw: min(300px, calc((95vw - var(--gap) - 44px) / 2), calc(((94dvh - 210px) / 2 - var(--gap)) * 267 / 363));
+			grid-template-columns: repeat(2, var(--cw));
 		}
 	}
-	@media (max-width: 520px) {
-		/* One full card per row, scrolling (the panel already scrolls). Each bonus keeps its full
-		   vertical form — title, art, amount, button — instead of a compact horizontal row. */
+	/* Phones: still two by two, so all four bonuses are in view at once (one per row left three of
+	   them below the fold). Sized by width; on short phones the cards keep a readable 150px and the
+	   panel scrolls the last few px instead. The small cards lift their copy to a legible floor. */
+	@media (max-width: 520px) and (min-height: 501px) {
+		.bb-panel {
+			padding-inline: 6px;
+		}
 		.bb-grid {
-			grid-template-columns: 1fr;
+			--gap: 8px;
+			--cw: min(
+				200px,
+				calc((100vw - 12px - var(--gap)) / 2),
+				max(150px, calc(((94dvh - 190px) / 2 - var(--gap)) * 267 / 363))
+			);
+			grid-template-columns: repeat(2, var(--cw));
 		}
-		/* Hug the art so the multiplier badge sits on its corner (the card is now wide, so a
-		   full-width art row would float the badge far to the right). */
-		.bb-art {
-			width: fit-content;
-			margin: 0 auto;
+		.bb-title {
+			margin-bottom: 12px;
 		}
-		/* Cap the button so a full-width wide card doesn't blow the 215:50 art up too tall. */
-		.bb-btn {
-			width: min(100%, 220px);
-			justify-self: center;
+		/* the bet stepper, a size down: at desktop size it dominated the foot of a phone */
+		.bb-betbox {
+			width: 224px;
+			gap: 8px;
+			padding: 4px 10px;
+		}
+		.bb-step {
+			width: 38px;
+		}
+		.bb-bet-label {
+			padding: 3px 10px;
+			font-size: 9px;
+		}
+		.bb-bet-amount {
+			font-size: 19px;
+		}
+		.bb-betbar {
+			margin-top: 12px;
+		}
+		.bb-desc {
+			font-size: max(9.5px, calc(15 * var(--u)));
+			line-height: 1.2;
+			letter-spacing: 0;
+		}
+		.bb-amount {
+			font-size: max(10.5px, calc(15 * var(--u)));
+		}
+		.bb-btn__label {
+			font-size: max(11px, calc(16 * var(--u)));
 		}
 		/* Narrow portrait phones (e.g. 320-wide): the fixed 42-52px X crowds the near-full-width popup —
-		   shrink it and tuck it into the corner, matching the info/auto popups. The landscape
-		   max-height rules below still win on short viewports. */
+		   shrink it and tuck it into the corner, matching the info/auto popups. */
 		.bb-close {
 			width: clamp(28px, 8.5vw, 36px);
 			top: 8px;
@@ -735,47 +821,55 @@
 	}
 
 	/* Short viewports (mobile landscape, incl. tiny 400x225 popouts): lay the panel out at a FIXED
-	   design size (so the four cards get real room and nothing clips), then transform-scale the whole
-	   thing down to fit whichever viewport dimension is tighter. Placed last so it wins over the base
-	   .bb-panel rule. transform-origin stays centred, so translate(-50%,-50%) still centres it. */
+	   design size, then transform-scale the whole thing down to fit whichever viewport dimension is
+	   tighter. transform-origin stays centred, so translate(-50%,-50%) still centres it. */
 	@media (max-height: 500px) {
 		.bb-panel {
-			width: 880px;
+			width: 900px;
 			max-width: none;
 			max-height: none;
 			overflow: visible;
 			padding: 14px;
-			/* 880x470 design box → fit into 96vw x 92vh, min() picks the limiting axis. */
+			/* 900x500 design box → fit into 96vw x 94vh, min() picks the limiting axis. */
 			transform: translate(-50%, -50%)
-				scale(min(calc(96vw / 880px), calc(92vh / 470px)));
+				scale(min(calc(96vw / 900px), calc(94vh / 500px)));
 		}
 		.bb-title {
-			margin-bottom: 16px;
-			font-size: 2.6rem;
+			margin-bottom: 14px;
+			font-size: 2.2rem;
+		}
+		.bb-grid {
+			--gap: 10px;
+			--cw: 208px;
+			grid-template-columns: repeat(4, var(--cw));
+		}
+		.bb-betbar {
+			margin-top: 14px;
 		}
 		.bb-close {
 			width: clamp(34px, 7vmin, 46px);
 			top: 10px;
 			right: 10px;
 		}
-		/* Keep all four cards in ONE row (the wide landscape has room across but not down), so they
-		   don't stack into 2x2. Overrides the max-width:900px/520px rules. */
-		.bb-grid {
-			grid-template-columns: repeat(4, minmax(0, 1fr));
-			gap: 16px;
-		}
-		/* Reset the 1-per-row art/button tweaks that the max-width breakpoints may have applied. */
-		.bb-art {
-			width: auto;
-			margin: 0;
-		}
-		.bb-btn {
-			width: 100%;
-		}
 	}
 
-	/* Tiny popouts (~400x225): shrink the close (X) so it doesn't dominate the small screen. */
+	/* Tiny popouts (~400x225): shrink the close (X) so it doesn't dominate the small screen. The
+	   whole panel is scaled to ~0.42 here, so the description would land at ~5px — drop it (the
+	   title, art and the confirm dialog say what each bonus is) and give its room to bigger title,
+	   price and button text, which then read at ~8-9px. */
 	@media (max-height: 300px) {
 		.bb-close { width: clamp(20px, 9dvh, 30px); top: 6px; right: 6px; }
+		.bb-desc { display: none; }
+		.bb-card-content { grid-template-rows: minmax(0, 1fr) auto auto; gap: calc(8 * var(--u)); }
+		.bb-card-title { font-size: calc(30 * var(--u)); letter-spacing: calc(0.8 * var(--u)); }
+		.bb-art img { height: calc(96 * var(--u)); }
+		.bb-scatter-holder { height: calc(96 * var(--u)); }
+		.bb-burger-holder { height: calc(74 * var(--u)); }
+		.bb-amount { font-size: calc(24 * var(--u)); }
+		.bb-btn { height: calc(60 * var(--u)); }
+		.bb-btn__label { font-size: calc(24 * var(--u)); }
+		.bb-title { font-size: 2.8rem; }
+		.bb-bet-label { font-size: 14px; }
+		.bb-bet-amount { font-size: 30px; }
 	}
 </style>

@@ -16,11 +16,11 @@ export default {
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
 	'CARD CHANCE TITLE': '추가 찬스',
-	'CARD CHANCE DESC': '보너스 도달 확률을 높입니다.',
+	'CARD CHANCE DESC': '활성화하면 보너스 라운드 발동 확률이 *3배*로 증가합니다.',
 	'CARD FEATURE TITLE': '락 피처 스핀',
 	'CARD FEATURE DESC': '당첨 스핀을 보장하고 락 앤 리스핀을 시작합니다.',
 	'CARD DEALIT DESC': '스캐터 3개로 일반 보너스에 진입합니다.',
-	'CARD ALLIN DESC': '스캐터 4개로 슈퍼 보너스에 진입합니다.',
+	'CARD ALLIN DESC': '스캐터 *4개*로 슈퍼 보너스에 진입합니다.',
 	'CONFIRM TEXT': '%cost%에 %mode%을(를) 구매하시겠습니까?',
 	'NORMAL BONUS': '일반 보너스',
 	'SUPER BONUS': '슈퍼 보너스',
@@ -62,9 +62,9 @@ export default {
 	INFO: '정보',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': "McSCHMUTZO에 오신 것을 환영합니다",
+	'SPLASH C1 TITLE': "SCHMUTZO에 오신 것을 환영합니다",
 	'SPLASH C1 BODY': "당첨은 고정되고 그릴이 가득 찰 때까지 다시 스핀됩니다.",
-	'SPLASH C2 TITLE': "3가지\n맛있는\n기능",
+	'SPLASH C2 TITLE': "3가지\n특별한\n보너스",
 	'SPLASH C2 BODY 1': "락 & 리스핀",
 	'SPLASH C2 BODY 2': "보너스 휠 돌리기",
 	'SPLASH C2 BODY 3': "배수 키우기",

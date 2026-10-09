@@ -16,6 +16,8 @@ export type SauceSpec = {
 	discs?: [number, number, number][];
 	/** extra shine capsules [x, y, rx, ry, rotation] (generated puddles) */
 	gloss?: [number, number, number, number, number][];
+	/** shrinks this blob's random size band (the green one is the widest and reached the title) */
+	size?: number;
 };
 
 export const SAUCE: Record<'red' | 'yellow' | 'green', SauceSpec> = {
@@ -68,6 +70,7 @@ export const SAUCE: Record<'red' | 'yellow' | 'green', SauceSpec> = {
 	},
 	green: {
 		body: [140, 204, 24],
+		size: 0.78,
 		tendrils: [
 			{ cx: 28.1, tip: 149.1, w: 35, reach: 30, run: 230, period: 6600, phase: 4650 },
 			{ cx: 91.1, tip: 105.1, w: 33, reach: 24, run: 160, period: 9100, phase: 1200 },

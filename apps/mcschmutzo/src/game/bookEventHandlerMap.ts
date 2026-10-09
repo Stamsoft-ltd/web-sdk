@@ -72,6 +72,7 @@ const releaseBoughtMode = () => {
 		stateBet.activeBetModeKey = 'base';
 	}
 };
+const WHEEL_ENTRY_DELAY_MS = 500; // the board holds the triggering scatters this long before the wheel
 const WHEEL_FADE_OUT_MS = 280; // keep in sync with WheelBonus.svelte's out:fade duration
 
 import { eventEmitter } from './eventEmitter';
@@ -83,6 +84,7 @@ import type { Position } from './types';
 import { BOARD_DIMENSIONS, LOCK_SLAM_MS } from './constants';
 import { beginPotReveal, flushPot, potState, queuePotShots, resetPot } from './potState.svelte';
 import { setChefMood } from './chefMood.svelte';
+import { releaseLocks } from './lockRelease.svelte';
 import config from './config';
 
 const getWinLevelData = (winLevel: number): WinLevelData => {
@@ -159,12 +161,35 @@ const scatterOnlyAnticipation = (bookEvent: BookEventOfType<'reveal'>) => {
 	const anticipation = bookEvent.anticipation ?? zeros;
 	if (bookEvent.gameType !== 'basegame') return zeros;
 
-	const visibleScatterCount = bookEvent.board.reduce((total, reel) => {
+	const scattersPerReel = bookEvent.board.map((reel) => {
 		const visibleSymbols = reel.length === BOARD_DIMENSIONS.y + 2 ? reel.slice(1, -1) : reel;
-		return total + visibleSymbols.filter((symbol) => symbol.name === 'S').length;
-	}, 0);
+		return visibleSymbols.filter((symbol) => symbol.name === 'S').length;
+	});
+	const visibleScatterCount = scattersPerReel.reduce((total, n) => total + n, 0);
+	if (visibleScatterCount < 2) return zeros;
 
-	return visibleScatterCount >= 2 ? anticipation : zeros;
+	// 4 scatters is the most there is to win (3 = Normal Bonus, 4 = Super Bonus): once the reels
+	// already stopped show 4, the reels after them have nothing left to wait for — no tease.
+	let landed = 0;
+	return anticipation.map((value, reel) => {
+		const tease = landed >= MAX_TRIGGER_SCATTERS ? 0 : value;
+		landed += scattersPerReel[reel] ?? 0;
+		return tease;
+	});
+};
+const MAX_TRIGGER_SCATTERS = 4;
+// …and those reels don't spin on one more stagger behind a long tease either: they stop TOGETHER
+// with the reel that brought the 4th scatter (utils-slots `stopWithPrevious`). Without a tease the
+// normal stagger is short, so they keep it.
+const stopWithPreviousReels = (bookEvent: BookEventOfType<'reveal'>, anticipation: number[]) => {
+	if (!anticipation.some(Boolean)) return undefined;
+	let landed = 0;
+	return bookEvent.board.map((reel) => {
+		const settled = landed >= MAX_TRIGGER_SCATTERS;
+		const visibleSymbols = reel.length === BOARD_DIMENSIONS.y + 2 ? reel.slice(1, -1) : reel;
+		landed += visibleSymbols.filter((symbol) => symbol.name === 'S').length;
+		return settled;
+	});
 };
 
 export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContext> = {
@@ -179,8 +204,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		}
 
 		if (bookEvent.gameType !== 'respin') {
-			stateGame.lockedPositions = [];
-			stateGame.lockSymbol = undefined;
+			releaseLocks(); // (usually already done when the round started — actor onNewGameStart)
 			stateGame.featureMessage = '';
 		}
 		stateGame.gameType = bookEvent.gameType;
@@ -190,15 +214,22 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		const hadPendingStop = stateGame.pendingStop && stateGame.awaitingFirstReveal;
 		stateGame.awaitingFirstReveal = false;
 		stateGame.pendingStop = false;
+		const anticipation = scatterOnlyAnticipation(bookEvent);
 		const revealEvent = {
 			...bookEvent,
-			anticipation: scatterOnlyAnticipation(bookEvent),
+			anticipation,
+			stopWithPrevious: stopWithPreviousReels(bookEvent, anticipation),
 		};
 		const spinPromise = stateGameDerived.enhancedBoard.spin({
 			revealEvent,
 			paddingBoard: config.paddingReels[bookEvent.gameType],
 		});
-		if (hadPendingStop) stateGameDerived.enhancedBoard.stop();
+		if (hadPendingStop) {
+			stateGameDerived.enhancedBoard.stop();
+			// teasing reels only take a forced skip, and only once their slide has begun
+			// (Board.svelte stopButtonClick) — pass the early press on to it
+			setTimeout(() => eventEmitter.broadcast({ type: 'stopButtonClick' }), 0);
+		}
 		await spinPromise;
 		reportSoupCheck();
 		if (inFreeGames()) {
@@ -312,8 +343,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.bonusMode = null;
 		stateGame.globalMultiplier = 1;
 		stateGame.collectedScatters = 0;
-		stateGame.lockedPositions = [];
-		stateGame.lockSymbol = undefined;
+		releaseLocks();
 		stateGame.featureMessage = '';
 		stateGame.paylineWins = [];
 		eventEmitter.broadcast({ type: 'boardFrameGlowHide' });
@@ -424,6 +454,9 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			bookEvent.addedSteps > 0 ? `MULTIPLIER +${bookEvent.addedSteps} STEPS` : '';
 	},
 	bonusWheel: async (bookEvent: BookEventOfType<'bonusWheel'>) => {
+		// a beat on the board first: the last scatter has just landed, let it be seen before the wheel
+		// screen takes over
+		await waitForTimeout(WHEEL_ENTRY_DELAY_MS);
 		stateGame.gameType = 'freegame';
 		stateGame.bonusMode = 'freegame';
 		stateGame.globalMultiplier = bookEvent.globalMult;
@@ -457,7 +490,11 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		// reveals the board. Every bonus comes through the wheel — natural and bought alike — so this is
 		// where players actually see the card. (It replaced the ketchup wipe, SauceWipeHtml, 2026-10-06.)
 		eventEmitter.broadcast({ type: 'freeSpinIntroShow' });
-		const pressed = eventEmitter.broadcastAsync({ type: 'freeSpinIntroUpdate', totalFreeSpins: bookEvent.freeSpins });
+		const pressed = eventEmitter.broadcastAsync({
+			type: 'freeSpinIntroUpdate',
+			totalFreeSpins: bookEvent.freeSpins,
+			steps: bookEvent.addedSteps, // the card's soups: the multiplier steps won, not the spins
+		});
 		await waitForTimeout(400); // the card is up over the wheel
 		stateGame.wheel = undefined;
 		// (and the wheel's fade-out has finished under it before the card leaves)

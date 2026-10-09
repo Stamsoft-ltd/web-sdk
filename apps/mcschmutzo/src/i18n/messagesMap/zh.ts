@@ -16,11 +16,11 @@ export default {
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
 	'CARD CHANCE TITLE': '额外机会',
-	'CARD CHANCE DESC': '提高触发奖励的机会。',
+	'CARD CHANCE DESC': '激活后触发奖励回合的几率提高*3倍*。',
 	'CARD FEATURE TITLE': '锁定特色旋转',
 	'CARD FEATURE DESC': '保证一次中奖旋转并开启锁定与重转。',
 	'CARD DEALIT DESC': '以三个分散符号进入普通奖励。',
-	'CARD ALLIN DESC': '以四个分散符号进入超级奖励。',
+	'CARD ALLIN DESC': '以*四个*分散符号进入超级奖励。',
 	'CONFIRM TEXT': '以%cost%购买%mode%？',
 	'NORMAL BONUS': '普通奖励',
 	'SUPER BONUS': '超级奖励',
@@ -62,9 +62,9 @@ export default {
 	INFO: '信息',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': "欢迎来到 McSCHMUTZO",
+	'SPLASH C1 TITLE': "欢迎来到 SCHMUTZO",
 	'SPLASH C1 BODY': "中奖符号锁定并重转，直到烤架填满。",
-	'SPLASH C2 TITLE': "3大\n美味\n特色",
+	'SPLASH C2 TITLE': "3大\n独特\n奖励",
 	'SPLASH C2 BODY 1': "锁定与重转",
 	'SPLASH C2 BODY 2': "转动奖励转盘",
 	'SPLASH C2 BODY 3': "提升倍数",

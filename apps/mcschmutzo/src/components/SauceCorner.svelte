@@ -75,7 +75,7 @@
 			maxY = Math.max(maxY, y + r);
 		}
 		// The blob scales about the frame's top-left corner (where every card's sauce is pinned).
-		const SCALE = free ? 1 : nextBlobScale();
+		const SCALE = free ? 1 : nextBlobScale() * (spec.size ?? 1);
 		const AX = 0;
 		const AY = 0;
 		const RX = Math.ceil(AX + (maxX - AX) * SCALE + 8);
@@ -270,15 +270,16 @@
 			paint(c);
 		};
 
-		// Where a falling drop can land: the top of each line of copy (title + description), in art px,
-		// top to bottom. A drop lands on the first line it is above (the lines are centred, so a drop near
-		// the side can miss a short line and hit a longer one below); one that misses them all falls on and
-		// fades. Re-measured now and then — the copy reflows / fits.
+		// Where a falling drop can land: the top of each TITLE line, in art px, top to bottom. A drop lands
+		// on the first line it is above (the lines are centred, so a drop near the side can miss a short
+		// line and hit a longer one below); one that misses them all falls on and fades. The small body
+		// copy is never a target: a splat there read as a smudge over the words (green card, "THE
+		// BIGGEST ORDER", rating review 2026-10-06). Re-measured now and then — the copy reflows / fits.
 		let lands: { top: number; left: number; right: number }[] = [];
 		const measureLand = () => {
 			lands = [];
 			const cr = canvas.getBoundingClientRect();
-			const copy = canvas.closest('.card')?.querySelectorAll('.card-title, .card-body p');
+			const copy = canvas.closest('.card')?.querySelectorAll('.card-title');
 			if (!copy?.length || cr.width <= 0) return;
 			const kk = cr.width / artW;
 			const range = document.createRange();

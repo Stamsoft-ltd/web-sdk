@@ -157,7 +157,7 @@ export default {
 	// overlaid separately (mascotBottle) so it can shake.
 	mascotBody: {
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/mascot_body_v2_c@0.882x.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/mascot_body_v3_c@0.882x.webp', import.meta.url).href,
 		preload: true,
 	},
 	mascotHead: {
@@ -171,10 +171,26 @@ export default {
 		preload: true,
 	},
 	mascotBottle: {
-		// The extracted ketchup bottle + gripping hand (full-frame canvas), overlaid on mascotBody and
-		// shaken about the wrist.
+		// The raised arm: ketchup bottle, gripping hand and sleeve, drawn behind mascotBody and swung
+		// from the strap seam. v6 = v5 with the shoulder gap filled and the sleeve run in under the
+		// strap (scripts/build-chef-bottle.py).
 		type: 'sprite',
-		src: new URL('../../assets/mcschmutzo/guys/mascot_bottle_v5_c@0.882x.webp', import.meta.url).href,
+		src: new URL('../../assets/mcschmutzo/guys/mascot_bottle_v6_c@0.882x.webp', import.meta.url).href,
+		preload: true,
+	},
+	mascotBow: {
+		// The bow tie, lifted off the body (scripts/build-chef-bow.py; body v3 has its footprint in the
+		// bow's shadow red) so it can wobble on its knot.
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mascot_bow_v1_c@0.882x.webp', import.meta.url).href,
+		preload: true,
+	},
+	mascotCollar: {
+		// The shirt collar's edge where the head meets it, lifted off the body and drawn OVER the head
+		// (scripts/build-chef-collar.py): the head's own copy of that edge slid off the body's as the
+		// head tilted / lifted, showing a second chin line round the neck.
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/mascot_collar_v2_c@0.882x.webp', import.meta.url).href,
 		preload: true,
 	},
 	mascotBrows: {
@@ -200,6 +216,47 @@ export default {
 		// the pot / nav bar no longer hide that edge.
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/guys/special_base_v12h_c@0.798x.webp', import.meta.url).href,
+		preload: true,
+	},
+	specialHead: {
+		// The salting chef's head (scripts/build-special-head.py): turns and nods on its neck. v2: the
+		// grin painted over in skin (scripts/build-special-bow-mouth.py) — specialMouth draws it. v3: the
+		// spiky tuft behind the ear taken off (scripts/build-special-hair.py) — specialHair draws it. v4:
+		// a feathered skirt of the original art under the jaw (scripts/build-special-head-skirt.py).
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_head_v4_c@0.798x.webp', import.meta.url).href,
+		preload: true,
+	},
+	specialHair: {
+		// The spiky tuft behind his ear, swaying on its root (scripts/build-special-hair.py).
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_hair_v1_c@0.798x.webp', import.meta.url).href,
+		preload: true,
+	},
+	specialHat: {
+		// …and his paper hat, lifted off it (hops on a win).
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_hat_v1_c@0.798x.webp', import.meta.url).href,
+		preload: true,
+	},
+	specialBody: {
+		// special_base_v12h without the head, same crop as the base. v2: what the head hides refilled
+		// from the shirt / neck around it (scripts/build-special-body-fill.py) — v1's neck-shadow socket
+		// still had the old jaw's shape and showed as a second jaw whenever the head moved.
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_body_v2_c@0.798x.webp', import.meta.url).href,
+		preload: true,
+	},
+	specialBow: {
+		// The bow tie, lifted off the body (scripts/build-special-bow-mouth.py): sways on its knot.
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_bow_v1_c@0.798x.webp', import.meta.url).href,
+		preload: true,
+	},
+	specialMouth: {
+		// The grin, lifted off the head: widens and lifts into a bigger smile.
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/special_mouth_v1_c@0.798x.webp', import.meta.url).href,
 		preload: true,
 	},
 	specialArm: {
@@ -237,6 +294,39 @@ export default {
 	mobileSalt: {
 		type: 'sprite',
 		src: new URL('../../assets/mcschmutzo/guys/mobile_salt_v1.webp', import.meta.url).href,
+		preload: true,
+	},
+	// The phone-LANDSCAPE chef — Figma 8888:2018 (base) / 8888:2673 (free games): a pointing bust in the
+	// bottom-left corner, the prop hand its own layer behind the body, the bow tie its own layer on top
+	// (scripts/build-landscape-chef.py).
+	landChefBaseBody: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/land_chef_base_body_v4.webp', import.meta.url).href,
+		preload: true,
+	},
+	landChefBaseHand: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/land_chef_base_hand_v2.webp', import.meta.url).href,
+		preload: true,
+	},
+	landChefBaseBow: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/land_chef_base_bow_v1.webp', import.meta.url).href,
+		preload: true,
+	},
+	landChefFreeBody: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/land_chef_free_body_v4.webp', import.meta.url).href,
+		preload: true,
+	},
+	landChefFreeBow: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/land_chef_free_bow_v1.webp', import.meta.url).href,
+		preload: true,
+	},
+	landChefFreeHand: {
+		type: 'sprite',
+		src: new URL('../../assets/mcschmutzo/guys/land_chef_free_hand_v2.webp', import.meta.url).href,
 		preload: true,
 	},
 	// The Figma logo (node 8870:33545, scripts/build-logo.py), drawn as the desktop/landscape board logo.
@@ -402,14 +492,14 @@ export default {
 		src: new URL('../../assets/mcschmutzo/symbols/parts/onion/ring3@0.287x.webp', import.meta.url).href,
 	},
 	// Sauce bottles (L1-L5) = body (+ splat + label) with the cap split off so it can rotate.
-	bottleL1Body: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L1_body.webp', import.meta.url).href },
-	bottleL1Cap: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L1_cap.webp', import.meta.url).href },
+	bottleL1Body: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L1_body_v2.webp', import.meta.url).href },
+	bottleL1Cap: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L1_cap_v2.webp', import.meta.url).href },
 	bottleL2Body: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L2_body.webp', import.meta.url).href },
 	bottleL2Cap: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L2_cap.webp', import.meta.url).href },
 	bottleL3Body: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L3_body.webp', import.meta.url).href },
 	bottleL3Cap: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L3_cap.webp', import.meta.url).href },
-	bottleL4Body: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L4_body.webp', import.meta.url).href },
-	bottleL4Cap: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L4_cap.webp', import.meta.url).href },
+	bottleL4Body: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L4_body_v2.webp', import.meta.url).href },
+	bottleL4Cap: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L4_cap_v2.webp', import.meta.url).href },
 	bottleL5Body: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L5_body.webp', import.meta.url).href },
 	bottleL5Cap: { type: 'sprite', src: new URL('../../assets/mcschmutzo/symbols/parts/bottle/L5_cap.webp', import.meta.url).href },
 	sound: {

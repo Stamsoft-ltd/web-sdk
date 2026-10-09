@@ -8,9 +8,24 @@
 
 	import { getContext } from '../game/context';
 	import { mascotIdle } from '../game/mascotIdle';
-	import { chefPose, moodAge } from '../game/chefMood.svelte';
-	import { shake } from '../game/screenShake.svelte';
+	import { breathAt, flexAt, type BodyFlex } from '../game/bodyFlex';
+	import { bowShake, chefMood, chefPose, type ChefMood } from '../game/chefMood.svelte';
 	import AnimatedGuy, { GUY_CROPS, cropPivot, cropRect } from './AnimatedGuy.svelte';
+
+	type Props = {
+		/**
+		 * Placement override for the phone layouts (canvas px): the chef frame's centre x / centre y /
+		 * width, and the pot's centre / width. Omitted: the desktop layout below.
+		 */
+		place?: { cx: number; guyY: number; guyWidth: number; potX: number; potY: number; potWidth: number };
+		/** Only the pot (boiling, with its multiplier) — while a congrats card is up on the phones. */
+		potOnly?: boolean;
+		/** The chef mirrored about his centre line (phone landscape: he stands left of the board). */
+		mirror?: boolean;
+		/** The group's zIndex: behind the board by default (desktop / portrait). */
+		zIndex?: number;
+	};
+	const props: Props = $props();
 
 	const context = getContext();
 	const canvas = $derived(context.stateLayoutDerived.canvasSizes());
@@ -31,17 +46,18 @@
 	const EDGE = 8; // px kept clear of the screen edge
 	const fullWidth = $derived(canvas.height * 0.72 * (358 / 425));
 	// Never shrink below 80% (narrow 4:3 screens): there he tucks further behind the board instead.
-	const guyWidth = $derived(
+	const autoGuyWidth = $derived(
 		Math.max(fullWidth * 0.8, Math.min(fullWidth, (canvas.width - EDGE - boardRight) / 0.93)),
 	);
+	const guyWidth = $derived(props.place?.guyWidth ?? autoGuyWidth);
 	const guyHeight = $derived(guyWidth * (425 / 358));
-	const cx = $derived(canvas.width - EDGE - guyWidth / 2);
+	const cx = $derived(props.place?.cx ?? canvas.width - EDGE - guyWidth / 2);
 	// Stand him so the pot's rim sits ≈80% down the frame: anchored to the screen bottom instead, the
 	// rim covered his nametag.
 	// The soup pot is the multiplier display, so it's bigger than before (0.98 of the frame, was 0.82)
 	// and stands with its BASE (and the multiplier plaque on it) just above the desktop nav bar — the
 	// bar's top is H − 166.7·u (HudHtml: 77 design px of bar + 36u margin, u = min(93vw, 1860)/1860).
-	const potWidth = $derived(guyWidth * 0.98);
+	const potWidth = $derived(props.place?.potWidth ?? guyWidth * 0.98);
 	const potHeight = $derived(potWidth * (914 / 1271)); // special-pot-v3 (label-free pot, surface left bare to boil live)
 	const navTop = $derived(canvas.height - 166.7 * (Math.min(canvas.width * 0.93, 1860) / 1860));
 	// He stands anchored to 0.82·H; the pot's rim sits just under his pointing hand (the hand's bottom
@@ -52,10 +68,10 @@
 	// the sprite), so the multiplier on its front is fully visible. Where that pot would tuck behind the
 	// bar, the pot AND the chef are lifted together — the hand stays resting on the rim.
 	const lift = $derived(Math.max(0, potY0 + potHeight * 0.47 + potHeight * 0.04 - navTop));
-	const potY = $derived(potY0 - lift);
-	const potX = $derived(cx - guyWidth * 0.02);
+	const potY = $derived(props.place?.potY ?? potY0 - lift);
+	const potX = $derived(props.place?.potX ?? cx - guyWidth * 0.02);
 	// (the chef only as far as his hat — ≈3% above his frame — stays on screen, on short windows)
-	const guyY = $derived(guyY0 - Math.min(lift, Math.max(0, guyY0 - 0.53 * guyHeight - 6)));
+	const guyY = $derived(props.place?.guyY ?? guyY0 - Math.min(lift, Math.max(0, guyY0 - 0.53 * guyHeight - 6)));
 
 	// Eyes (base v10): the eye region was rebuilt from a fresh render of the real SVG — pupils erased
 	// inside the eye opening only (outline band, skin and brows protected, so no white bleeds into the
@@ -99,8 +115,20 @@
 	// Subtle idle breathe/bob for the chef (he's mid-salt, so no big lean — just a living breath). The
 	// pot stays planted on the ground; only the guy + his salt origin drift.
 	const idlePose = $derived(
-		mascotIdle(elapsed, cx, guyY, guyWidth, guyHeight, { sway: 0, breathe: 0.005, bob: 0.004 }),
+		// (the breath is the torso's own — SALT_FLEX bends the body instead of scaling it whole)
+		mascotIdle(elapsed, cx, guyY, guyWidth, guyHeight, { sway: 0.012, breathe: 0, bob: 0 }),
 	);
+	// His torso as soft tissue (game/bodyFlex), as on the base-game chef: the chest fills and the
+	// shoulders rise on each breath and give to the head's tilt; head, bow, nametag and the salt arm
+	// (its shoulder pivot) ride along.
+	const SALT_FLEX: BodyFlex = {
+		neckY: 0.4719, // = HEAD_PIVOT.py
+		baseY: 1,
+		chest: { x: 0.6, y: 0.63, r: 0.09 }, // the shirt front below the bow
+		lift: 0.008,
+		swell: 0.035,
+		lean: 0.25,
+	};
 	// The chef reacts to the game (game/chefMood) — offsets on the idle pose, scaled about his feet.
 	const react = $derived(chefPose(now));
 	const guyPose = $derived({
@@ -110,61 +138,183 @@
 		height: idlePose.height * react.sy,
 	});
 
-	// The salt-shaker forearm is overlaid on the base and flicks gently so it reads as shaking; salt
-	// pours from the (moving) cap. The pivot sits ON the joint strip that's baked into the base, so
-	// the connection region never diverges from the painted joint (seamless), while the shaker end —
-	// far from the pivot — does the visible swinging. Frame fractions off the shared frame.
+	// The salt-shaker forearm is overlaid on the base and turns about the shoulder. The pivot sits ON
+	// the joint strip that's baked into the base, so the connection region never diverges from the
+	// painted joint (seamless), while the shaker end — far from the pivot — does the visible moving.
+	// Frame fractions off the shared frame. (+ rotation = cap up: the cap sits left of the shoulder.)
 	//
-	// He shakes like a cook does: bursts of three quick flicks — a wind-up (cap tips up), a hard snap
-	// down past rest that throws a puff of salt, a recoil — then a rest. The hotter the pot, the
-	// shorter the rest; a multiplier hit or a big win sets off a frenzy of fast flicks.
-	// (+ rotation = cap up: the cap sits left of the shoulder pivot.)
-	type Flick = { t: number; d: number };
-	const FLICK_MS = 210;
-	const FLICK_KEYS: [number, number][] = [[0, 0], [0.38, 0.065], [0.6, -0.08], [0.8, 0.012], [1, 0]];
-	const REST_BY_HEAT = [1100, 800, 520, 300];
-	const FRENZY_MS = 125;
+	// He salts the soup the way a hand does it: the shaker is held tipped over the pot, steady (a slow
+	// drift), and every couple of seconds the wrist gives it a short burst of taps — each a quick drop
+	// of the cap (fast down, slower back up) with a puff of salt out of the holes at its bottom — then
+	// it rests again. The hotter the pot, the sooner the next burst. On a win (or a multiplier landing)
+	// he lifts the shaker a little and taps it firmly for as long as the cheer lasts, the salt pouring;
+	// his hat hops off his head and the soup boils up meanwhile. Nothing fast anywhere: a sine shake,
+	// or taps quicker than ~3 a second, read as trembling, not a hand.
+	type Puff = { t: number; a: number; n: number; spread: number }; // a puff of salt leaving the cap
 	const PUFF_MS = 900; // a puff's grains are gone after this
-	let flicks: Flick[] = []; // plain array: read through `now`, which changes every frame
-	let nextFlick = 0;
-	let burstLeft = 2;
-	const frenzyNow = (ts: number) => {
-		const big = moodAge('bigWin', ts);
-		const huge = moodAge('hugeWin', ts);
-		const hit = ts - stampAt;
-		return (big >= 0 && big < 1300) || (huge >= 0 && huge < 2100) || (hit >= 0 && hit < 800);
+	const BURST_EVERY_BY_HEAT = [3000, 2600, 2200, 1800]; // ms from one burst of taps to the next
+	const TAPS_BY_HEAT = [2, 2, 3, 3];
+	const TAP_MS = 380; // unhurried: quicker taps (~5 a second) read as the hand trembling
+	const TAP_DOWN = 0.3; // of a tap: the cap's drop; the rest is the return
+	const TAP_AMP = 0.045; // − = cap down
+	const RAISE = 0.12; // + = up: a cheer lifts the shaker this much
+	const CHEER_TAP_MS = 340;
+	const CHEER_TAP_AMP = 0.055;
+	let puffs: Puff[] = []; // plain array: read through `now`, which changes every frame
+	let beat = 0; // bursts so far (fractional), advanced by the clock at the heat's tempo
+	let lastTs = 0;
+	// The latest celebration: [start, duration]. A win's cheer is latched when the mood starts, so the
+	// next spin's mood can't snap the raised arm down mid-cheer.
+	const CHEER_MS: Partial<Record<ChefMood, number>> = { win: 1300, bigWin: 2000, hugeWin: 2800 };
+	let winCheer = $state<[number, number, ChefMood]>([-1e9, 0, 'win']);
+	$effect(() => {
+		const dur = CHEER_MS[chefMood.mood];
+		if (dur) winCheer = [chefMood.at, dur, chefMood.mood];
+	});
+	const cheer = (ts: number): [number, number] =>
+		ts - stampAt >= 0 && stampAt > winCheer[0] ? [stampAt, 1100] : [winCheer[0], winCheer[1]];
+	const raiseAt = (ms: number, dur: number) =>
+		ms < 0 || ms > dur ? 0 : keyed([[0, 0], [260, 1], [dur - 420, 1], [dur, 0]], ms);
+	/** one tap, u 0..1 → 0..1..0: a quick drop, an eased return */
+	const tapShape = (u: number) => {
+		if (u < 0 || u >= 1) return 0;
+		if (u < TAP_DOWN) return smooth(u / TAP_DOWN);
+		const v = (u - TAP_DOWN) / (1 - TAP_DOWN);
+		return 1 - v * v * (3 - 2 * v);
+	};
+	const smooth = (x: number) => x * x * (3 - 2 * x);
+	/** the idle burst at this beat: 0..1 tap depth and an envelope (the shaker tips in for the burst) */
+	const burstAt = (b: number) => {
+		const ms = (((b % 1) + 1) % 1) * BURST_EVERY_BY_HEAT[heat];
+		const taps = TAPS_BY_HEAT[heat];
+		const len = taps * TAP_MS;
+		const env = ms < len + 200 ? smooth(Math.min(1, ms / 120)) * smooth(Math.min(1, (len + 200 - ms) / 200)) : 0;
+		return { tap: ms < len ? tapShape((ms % TAP_MS) / TAP_MS) : 0, env };
+	};
+	const cheerTapAt = (ms: number, dur: number) =>
+		ms < 300 || ms > dur - 420 ? 0 : tapShape(((ms - 300) % CHEER_TAP_MS) / CHEER_TAP_MS);
+	/** 0..1 while a cheer runs (eased in and out) — drives the boil, the laugh and the grin */
+	const cheerLevel = (ts: number) => {
+		const [c0, dur] = cheer(ts);
+		const ms = ts - c0;
+		if (ms < 0 || ms > dur + 900) return 0;
+		const k = Math.min(1, ms / 600) * (ms < dur ? 1 : 1 - (ms - dur) / 900);
+		return k * k * (3 - 2 * k);
+	};
+	const angleAt = (ts: number, b: number) => {
+		const [c0, dur] = cheer(ts);
+		const ms = ts - c0;
+		const up = raiseAt(ms, dur);
+		const idle = burstAt(b);
+		const hold = 0.02 * Math.sin(ts / 1300) - 0.025 * idle.env - TAP_AMP * idle.tap;
+		return (1 - up) * hold + up * (RAISE - CHEER_TAP_AMP * cheerTapAt(ms, dur)) + react.propRot * 0.25;
 	};
 	const scheduleFlicks = (ts: number) => {
-		if (ts < nextFlick) return;
-		const frenzy = frenzyNow(ts);
-		const d = frenzy ? FRENZY_MS : FLICK_MS;
-		flicks = [...flicks.filter((f) => ts - f.t < PUFF_MS + f.d), { t: ts, d }];
-		if (frenzy) {
-			nextFlick = ts + d;
-			burstLeft = 2;
-		} else if (burstLeft > 0) {
-			burstLeft -= 1;
-			nextFlick = ts + d;
+		const dt = lastTs ? Math.min(100, ts - lastTs) : 0;
+		lastTs = ts;
+		const prev = beat;
+		beat += dt / BURST_EVERY_BY_HEAT[heat];
+		const [c0, dur] = cheer(ts);
+		const ms = ts - c0;
+		if (ms >= 0 && ms <= dur) {
+			// cheering: a pour at the bottom of every firm tap
+			const k = Math.floor((ms - 300 - TAP_DOWN * CHEER_TAP_MS) / CHEER_TAP_MS);
+			const tk = c0 + 300 + TAP_DOWN * CHEER_TAP_MS + k * CHEER_TAP_MS;
+			if (k >= 0 && tk <= c0 + dur - 420 && !puffs.some((p) => Math.abs(p.t - tk) < 1))
+				puffs = [...puffs, { t: tk, a: angleAt(tk, beat), n: 40, spread: 1.4 }];
 		} else {
-			burstLeft = 2;
-			nextFlick = ts + d + REST_BY_HEAT[heat];
+			// idle: a light puff at the bottom of each tap of the burst
+			const P = BURST_EVERY_BY_HEAT[heat];
+			const a0 = (((prev % 1) + 1) % 1) * P;
+			const a1 = (((beat % 1) + 1) % 1) * P;
+			for (let i = 0; i < TAPS_BY_HEAT[heat]; i += 1) {
+				const bottom = i * TAP_MS + TAP_DOWN * TAP_MS;
+				const crossed = a1 >= a0 ? bottom > a0 && bottom <= a1 : bottom > a0 || bottom <= a1;
+				if (crossed) puffs = [...puffs, { t: ts, a: angleAt(ts, beat), n: 14, spread: 1 }];
+			}
 		}
+		puffs = puffs.filter((p) => ts - p.t < PUFF_MS);
 	};
-	const flickAngle = (f: Flick, ts: number) => {
-		const u = (ts - f.t) / f.d;
-		if (u < 0 || u > 1) return 0;
-		return keyed(FLICK_KEYS, u) * (f.d === FRENZY_MS ? 1.15 : 1);
-	};
-	const armAngle = $derived.by(() => {
-		const last = flicks[flicks.length - 1];
-		return (last ? flickAngle(last, now) : 0) + react.propRot * 0.5;
+	const armAngle = $derived(angleAt(now, beat));
+
+	// Head on its neck (scripts/build-special-head.py): a slow side-to-side bob plus the mood's tilt /
+	// nod; laughing, he tips his head back a little and holds it. Nothing on the head follows the
+	// shaker's taps (a nod per tap read as trembling).
+	const HEAD_PIVOT = { px: 0.6244, py: 0.4719 };
+	const headMove = $derived.by(() => {
+		const ts = now;
+		const laugh = cheerLevel(ts);
+		// slow, but big enough to read: a side-to-side bob, a nod on its own slower beat, and he
+		// leans into each salting burst (looking down at the soup)
+		const bob = 0.03 * Math.sin(ts / 1100) * (1 - laugh);
+		const nod = (0.003 * Math.sin(ts / 1700 + 0.6) + 0.004 * burstAt(beat).env) * (1 - laugh);
+		return {
+			tilt: bob - laugh * 0.03 + react.headTilt,
+			nod: nod - laugh * 0.006 + react.headNod,
+		};
+	});
+	const saltFlexState = $derived({ breath: breathAt(elapsed), tilt: headMove.tilt });
+	// The grin (scripts/build-special-bow-mouth.py): it widens and lifts at its right corner — the left
+	// one meets his jaw line, so it is the pivot and never moves — the way a smile spreads, and his eyes
+	// narrow with it (a real smile reaches the eyes). Now and then a slow, pleased smile on his own;
+	// on a win a full grin for the whole cheer.
+	const MOUTH_PIVOT = cropPivot(GUY_CROPS.specialMouth, 0.4121, 0.3618);
+	// The spiky tuft behind his ear sways slightly on its root (pivot printed in sprite fractions by
+	// scripts/build-special-hair.py): a slow ~5 s sway, flicked along with the bow when he reacts.
+	const HAIR_ROOT = { px: 0.1714, py: 0.5265 };
+	const SMILE_EVERY = 5600;
+	const grin = $derived.by(() => {
+		const laugh = cheerLevel(now);
+		const u = (now + 2400) % SMILE_EVERY;
+		const idle = u < 450 ? smooth(u / 450) : u < 1350 ? 1 : u < 2000 ? 1 - smooth((u - 1350) / 650) : 0;
+		return Math.max(0.45 * idle, laugh);
+	});
+	const mouth = $derived({ sx: 1 + 0.05 * grin, sy: 1 + 0.03 * grin, rot: -0.035 * grin });
+	// The bow tie sways on its knot: a slow sway, the head's tilt passed down and a small shake when
+	// he reacts (game/chefMood bowShake; it no longer follows the arm's taps — that made it jitter). Drawn 4% large about the knot, so the bow
+	// painted on the body under it stays covered within ±0.05.
+	const BOW_KNOT = cropPivot(GUY_CROPS.specialBow, 0.5529, 0.5328);
+	const bowTilt = $derived(
+		Math.max(
+			-0.05,
+			Math.min(
+				0.05,
+				0.03 * Math.sin(now / 1150 + 0.8) + 0.3 * headMove.tilt + bowShake(now),
+			),
+		),
+	);
+	// The hat hops off his head as a cheer starts (twice on a huge win): up, tipping, a squash as it
+	// lands back on the hair.
+	const HAT_PIVOT = { px: 0.6439, py: 0.1639 };
+	const hatPose = $derived.by(() => {
+		const [c0] = cheer(now);
+		const ms = now - c0;
+		const hops = winCheer[0] === c0 && winCheer[2] === 'hugeWin' ? [0, 700] : [0];
+		let dy = 0;
+		let rot = 0;
+		let sy = 1;
+		for (const h0 of hops) {
+			const t = ms - h0 - 60;
+			const u = t / 520;
+			if (u >= 0 && u < 1) {
+				const arc = Math.sin(Math.PI * u);
+				dy -= 0.075 * arc;
+				rot += -0.32 * Math.sin(Math.PI * 2 * u) * (1 - u);
+			}
+			const land = t - 520;
+			if (land >= 0 && land < 260) sy *= 1 - 0.14 * Math.sin((land / 260) * Math.PI) * (1 - land / 260);
+			if (t < 0 && t > -60) sy *= 1 - 0.08 * Math.sin((-t / 60) * Math.PI); // a little crouch first
+		}
+		return { dy, rot, sy };
 	});
 	const chefL = $derived(guyPose.x - guyPose.width / 2);
 	const chefT = $derived(guyPose.y - guyPose.height / 2);
 	const PIVX = 0.452; // middle of the baked joint strip (frame fractions)
 	const PIVY = 0.5;
-	const pivotX = $derived(chefL + PIVX * guyPose.width);
-	const pivotY = $derived(chefT + PIVY * guyPose.height);
+	// (riding the torso field at the shoulder, like the layers on the body)
+	const armFlex = $derived(flexAt(SALT_FLEX, saltFlexState, PIVX, PIVY, guyPose.width, guyPose.height));
+	const pivotX = $derived(chefL + PIVX * guyPose.width + armFlex.dx);
+	const pivotY = $derived(chefT + PIVY * guyPose.height + armFlex.dy);
 	// The arm layer is cropped to its opaque box: same shoulder pivot, expressed inside the crop.
 	const ARM_RECT = cropRect(GUY_CROPS.specialArm);
 	const ARM_ANCHOR = cropPivot(GUY_CROPS.specialArm, PIVX, PIVY);
@@ -178,29 +328,27 @@
 	const saltBotX = $derived(cx - guyWidth * 0.12);
 	const saltBotY = $derived(potY - potHeight * 0.18);
 	const grain = $derived(Math.max(2, canvas.height * 0.0045));
-	// Each flick's snap (60% through it) throws a puff: grains leave the cap together, accelerate
+	// Each tip / shake downstroke throws a puff: grains leave the cap together, accelerate
 	// down (p² gravity) and fan out into a narrow cone on the way to the pot; a little dust cloud
 	// bursts at the holes.
-	const PUFF_GRAINS = 32;
 	const grains = $derived.by(() => {
-		// `flicks` is a plain array: read the clock first so this re-runs every frame even when it
+		// `puffs` is a plain array: read the clock first so this re-runs every frame even when it
 		// was empty last time
 		const ts = now;
 		const out: { x: number; y: number; size: number; alpha: number }[] = [];
-		for (const [k, f] of flicks.entries()) {
-			const t0 = f.t + f.d * 0.6;
-			const age = ts - t0;
+		for (const [k, f] of puffs.entries()) {
+			const age = ts - f.t;
 			if (age < 0 || age > PUFF_MS) continue;
-			const cap = capAt(keyed(FLICK_KEYS, 0.6));
+			const cap = capAt(f.a);
 			const seed = Math.floor(f.t) % 997;
-			for (let i = 0; i < PUFF_GRAINS; i += 1) {
+			for (let i = 0; i < f.n; i += 1) {
 				const life = 620 + ((i * 37 + seed) % 7) * 35;
 				const p = (age - (i % 4) * 14) / life; // a short stagger: the puff leaves as a clump
 				if (p < 0 || p > 1) continue;
 				const ease = p * p * 0.82 + p * 0.18;
 				const dir = Math.sin((i + seed) * 2.3999);
 				const wob = Math.sin((i + seed) * 12.9898 + p * 9);
-				const spread = grain * (0.5 + ease * 6);
+				const spread = grain * (0.5 + ease * 6) * f.spread;
 				out.push({
 					x: cap.x + (saltBotX - cap.x) * ease + dir * spread + wob * grain * 0.35 * ease,
 					y: cap.y + (saltBotY - cap.y) * ease,
@@ -293,7 +441,6 @@
 			if (m > lastMult) {
 				shownBefore = lastMult;
 				stampAt = performance.now();
-				shake(2, 130);
 			}
 			lastMult = m;
 		}
@@ -332,26 +479,17 @@
 	const heat = $derived(potState.mult >= 100 ? 3 : potState.mult >= 20 ? 2 : potState.mult >= 5 ? 1 : 0);
 	// impact surge (0..1): the soup boils up and steam bursts for a moment after each hit
 	const surge = $derived(sinceHit < 0 || sinceHit > 900 ? 0 : Math.exp(-sinceHit / 260));
-	// Pot offset: a hard jolt on each impact + a constant tremble once it's hot.
+	// Pot offset: each impact knocks it down once and it springs back — one soft bounce. (The old
+	// four-way judder, the constant tremble once hot and a screen shake on every rise all read as
+	// the chef trembling; the hotter pot shows in its boil and steam instead.)
 	const potShake = $derived.by(() => {
-		const v = sinceHit / 320;
-		const jolt = v >= 0 && v < 1 ? potWidth * 0.007 * (1 - v) ** 2 : 0;
-		const tremble = heat >= 3 ? 2.2 : heat >= 2 ? 0.8 : 0;
-		return {
-			x: jolt * Math.sin(v * Math.PI * 8) + tremble * Math.sin(now / 29) * Math.sin(now / 71),
-			y: jolt * 0.5 * Math.cos(v * Math.PI * 6) + tremble * 0.6 * Math.sin(now / 37),
-		};
+		const v = sinceHit / 360;
+		return { x: 0, y: v >= 0 && v < 1 ? potHeight * 0.012 * Math.sin(Math.PI * v) * (1 - v) : 0 };
 	});
-	// Chef: hops as the multiplier lands; at huge heat he strains, leaning and shuddering on the pot.
+	// Chef: hops as the multiplier lands. (The huge-heat strain judder is gone: it read as shaking.)
 	const chefReact = $derived.by(() => {
 		const v = (sinceHit - 60) / 380;
-		const hop = v >= 0 && v < 1 ? -guyHeight * 0.022 * Math.sin(Math.PI * v) : 0;
-		const strain = heat >= 3 ? 1 : 0;
-		return {
-			// a slow effortful heave against the pot (a fast buzz on top read as electric jitter)
-			x: strain * guyWidth * 0.006 * Math.sin(now / 160),
-			y: hop + strain * guyHeight * 0.004 * Math.sin(now / 110 + 0.8),
-		};
+		return { x: 0, y: v >= 0 && v < 1 ? -guyHeight * 0.022 * Math.sin(Math.PI * v) : 0 };
 	});
 	const drawPlaque = (g: any) => {
 		const w = boxW;
@@ -407,8 +545,11 @@
 		}
 	};
 	const bubbles = $derived.by(() => {
+		// a win swells the bubbles that are already rising (count and timing stay put: changing them
+		// mid-cycle made bubbles pop in or jump to another point of their rise)
+		const boil = cheerLevel(now);
 		const n = BUBBLE_N_BY_HEAT[heat];
-		const period = BUBBLE_PERIOD_BY_HEAT[heat] * (1 - 0.35 * surge);
+		const period = BUBBLE_PERIOD_BY_HEAT[heat];
 		const out: { x: number; y: number; r: number; p: number; seed: number }[] = [];
 		for (let i = 0; i < n; i++) {
 			const own = period * (0.8 + 0.4 * squirtHash(i * 3.3)); // each bubble on its own beat
@@ -424,7 +565,7 @@
 			if (bx > SPOON_X) bx = SURF.cx - (bx - SURF.cx);
 			const by = SURF.cy + Math.sin(ang) * SURF.ry * rad;
 			const big = squirtHash(seed + 2.7);
-			const r = potWidth * (0.016 + 0.03 * big * big) * (1 + 0.35 * surge) * (0.85 + 0.3 * (by - SURF.cy + SURF.ry) / (2 * SURF.ry));
+			const r = potWidth * (0.016 + 0.03 * big * big) * (1 + 0.35 * surge + 0.55 * boil) * (0.85 + 0.3 * (by - SURF.cy + SURF.ry) / (2 * SURF.ry));
 			out.push({ x: potLeft + bx * potWidth, y: potTop + by * potHeight, r, p, seed });
 		}
 		return out.sort((a, b) => a.y - b.y); // far ones first
@@ -435,7 +576,7 @@
 	const drawSteam = (gfx: SquirtGraphics) => {
 		const STEAM_N = STEAM_N_BY_HEAT[heat];
 		const boiling = potState.overflowAt >= 0 && now - potState.overflowAt < 2600 ? 1.8 : 1;
-		const steamBoost = (heat >= 2 ? 1.5 : 1) * (1 + 1.8 * surge) * boiling;
+		const steamBoost = (heat >= 2 ? 1.5 : 1) * (1 + 1.8 * surge + 1.2 * cheerLevel(now)) * boiling;
 		for (let i = 0; i < STEAM_N; i++) {
 			const life = 3200 + 1800 * squirtHash(i * 3.1);
 			const tt = elapsed + squirtHash(i * 8.7) * life;
@@ -445,13 +586,16 @@
 			const x0 = potLeft + sx * potWidth;
 			const y0 = potTop + SOUP_CY * potHeight;
 			const x = x0 + Math.sin(p * 4 + i * 1.7) * potWidth * 0.035 * p;
-			const y = y0 - p * potHeight * (1.1 + 0.5 * squirtHash(i * 5.3 + k));
+			// rises less high (it is gone before his chest) and every wisp is a soft stack of rings,
+			// faint at the rim — hard-edged see-through discs over the chef read as a glitch (they
+			// washed his suspenders out in patches)
+			const y = y0 - p * potHeight * (0.7 + 0.35 * squirtHash(i * 5.3 + k));
 			const r = potWidth * (0.035 + 0.075 * p) * (0.8 + 0.4 * squirtHash(i * 2.2));
-			const a = Math.min(1, Math.min(1, p / 0.15) * (1 - p) * 0.2 * steamBoost);
+			const a = Math.min(0.6, Math.min(1, p / 0.15) * (1 - p) ** 2 * 0.2 * steamBoost);
 			for (let j = 0; j < 3; j++) {
 				const ox = (j - 1) * r * 0.55;
 				const oy = Math.sin(j * 2.1 + p * 3) * r * 0.2;
-				gfx.circle(x + ox, y + oy, r * (0.75 + 0.2 * j)).fill({ color: 0xf2efe8, alpha: a });
+				for (let q = 0; q < 4; q++) gfx.circle(x + ox, y + oy, r * (0.75 + 0.2 * j) * (1 - q * 0.22)).fill({ color: 0xf2efe8, alpha: a * 0.3 });
 			}
 		}
 	};
@@ -546,14 +690,30 @@
 
 <!-- Chef (behind) salting the pot (in front), with a falling stream of salt grains. The whole group
      sits BEHIND the board (negative zIndex) but in front of the background. -->
-<Container zIndex={-0.5}>
+<Container zIndex={props.zIndex ?? -0.5}>
 	<!-- Real chef base (no salting arm). Baked pupils are kept, so no fresh discs (pupils empty) — he
 	     just BLINKS via skin lids. The nametag jiggles as an overlay (a touch larger than the baked
-	     one so it stays covered), and a tooth *ding* sparkles. -->
+	     one so it stays covered). No tooth sparkle any more: its flash read as a flicker. -->
+	{#if !props.potOnly}
+	<Container x={props.mirror ? cx * 2 : 0} scale={{ x: props.mirror ? -1 : 1, y: 1 }} zIndex={0}>
 	<Container x={chefReact.x} y={chefReact.y} zIndex={0}>
 	<AnimatedGuy
-		baseKey="specialBase"
+		baseKey="specialBody"
 		baseRect={cropRect(GUY_CROPS.specialBase)}
+		flex={SALT_FLEX}
+		flexState={saltFlexState}
+		head={{
+			key: 'specialHead',
+			rect: cropRect(GUY_CROPS.specialHead),
+			...HEAD_PIVOT,
+			tilt: headMove.tilt,
+			nod: headMove.nod,
+			// past these the head's under-jaw skirt (head v4) no longer covers the neck: clockwise lifts
+			// the left corner of his jaw, so that way is tight
+			tiltRange: [-0.05, 0.015],
+			maxLift: 0.0006,
+		}}
+		hat={{ key: 'specialHat', rect: cropRect(GUY_CROPS.specialHat), ...HAT_PIVOT, ...hatPose }}
 		x={guyPose.x}
 		y={guyPose.y}
 		width={guyPose.width}
@@ -564,13 +724,17 @@
 		lidRest={LID_REST}
 		skin={0xef9650}
 		look={{ x: react.lookX, y: react.lookY, weight: react.look }}
-		squint={react.squint}
+		squint={Math.max(react.squint, 0.2 * grin)}
 		brow={react.brow}
 		browKey="specialBrows"
 		phase={2000}
-		sparkle={{ nx: 0.5, ny: 0.4, size: 0.06, period: 3800, phase: 1200 }}
+		headExtras={[
+			{ key: 'specialMouth', ...cropRect(GUY_CROPS.specialMouth), ...MOUTH_PIVOT, amp: 0, bias: mouth.rot, sx: mouth.sx, sy: mouth.sy },
+			{ key: 'specialHair', ...cropRect(GUY_CROPS.specialHair), ...HAIR_ROOT, amp: 0.022, period: 760, bias: 0.6 * bowShake(now) },
+		]}
 		extras={[
-			{ key: 'specialLabel', nx: 0.5643, ny: 0.5737, nw: 0.1984, nh: 0.1119, px: 0.5, py: 0.13, amp: 0.045, period: 320, phase: 900 },
+			{ key: 'specialBow', ...cropRect(GUY_CROPS.specialBow), ...BOW_KNOT, amp: 0, bias: bowTilt, sx: 1.04, sy: 1.04 },
+			{ key: 'specialLabel', nx: 0.5643, ny: 0.5737, nw: 0.1984, nh: 0.1119, px: 0.5, py: 0.13, amp: 0.035, period: 320, phase: 900, bias: 1.4 * bowShake(now), flipX: props.mirror },
 			{ key: 'specialBrows', ...cropRect(GUY_CROPS.specialBrows), amp: 0 },
 		]}
 	/>
@@ -590,6 +754,8 @@
 	     anchored, so the centre is +size/2). -->
 	<Graphics zIndex={1} draw={drawSalt} />
 	</Container>
+	</Container>
+	{/if}
 	<Container x={potShake.x} y={potShake.y} zIndex={2}>
 	<Sprite
 		key="specialPot"

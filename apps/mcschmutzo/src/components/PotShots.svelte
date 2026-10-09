@@ -54,6 +54,7 @@
 			}
 			while (sunk < v.shots.length && ts - start - FADE - sunk * STAGGER >= POP + FLY) {
 				potState.mult = v.shots[sunk].after ?? v.target;
+				potState.splash = { id: start + sunk, steps: v.shots[sunk].steps };
 				context.eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_pot_pop', forcePlay: true });
 				sunk++;
 			}
@@ -126,7 +127,8 @@
 				const ny = (1 - e2) ** 2 * c.y + 2 * (1 - e2) * e2 * apex + e2 * e2 * ty;
 				const ang = Math.atan2(ny - y, nx - x);
 				blob = { x, y, r: r0 * (1 - 0.15 * e), sy: 1.25 + 0.3 * Math.sin(Math.PI * q), a: Math.min(1, q * 8), ang };
-			} else if (t >= POP + FLY && t < SHOT_MS) {
+			} else if (t >= POP + FLY && t < SHOT_MS && !potState.html) {
+				// (an HTML pot is drawn over the canvas: it plays the landing itself — potState.splash)
 				const q = (t - POP - FLY) / SINK;
 				// sinks into the soup: squashes into the surface and goes under
 				blob = { x: tx, y: ty + r0 * 0.85 * q, r: r0 * 0.85, sy: 1 - 0.65 * q, a: 1 - q, ang: 0 };

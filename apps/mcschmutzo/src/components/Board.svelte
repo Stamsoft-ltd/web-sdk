@@ -21,6 +21,7 @@
 	import BoardContainer from './BoardContainer.svelte';
 	import BoardMask from './BoardMask.svelte';
 	import BoardBase from './BoardBase.svelte';
+	import { startIdleSpotlight } from '../game/idleSpotlight.svelte';
 
 	const context = getContext();
 
@@ -37,9 +38,24 @@
 				context.stateGameDerived.enhancedBoard.stop();
 				return;
 			}
+			// Teasing reels (the scatter frame) are `noStop` — a plain stop can't touch them, so Space /
+			// tap did nothing until the frame played out. A skip snaps them too (forceStop), in every
+			// round. A forced snap skips the reel's onSpinFinishing, so it never reports its landing —
+			// report it here (the thud, and reelLanded, so a second press can't latch a stop onto the
+			// next spin).
+			const forced: number[] = [];
 			context.stateGame.board.forEach((reel, i) => {
-				if (reel.reelState.motion !== 'stopped' || !reelLanded[i]) reel.stop();
+				if (reel.reelState.motion === 'stopped' && reelLanded[i]) return;
+				reel.forceStop();
+				forced.push(i);
 			});
+			if (forced.length)
+				setTimeout(() => {
+					for (const i of forced) {
+						const reel = context.stateGame.board[i];
+						if (reel.reelState.motion === 'stopped' && !reelLanded[i]) reel.onReelStopping();
+					}
+				}, 0);
 		},
 		boardSettle: ({ board }) => context.stateGameDerived.enhancedBoard.settle(board),
 		boardShow: () => (show = true),
@@ -58,6 +74,9 @@
 	});
 
 	context.stateGameDerived.enhancedBoard.readyToSpinEffect();
+
+	// At rest, one random symbol at a time comes alive (game/idleSpotlight).
+	$effect(() => startIdleSpotlight(context));
 
 	// Win focus: dim the non-winning cells while win lines are on show (game/winFocus).
 	$effect(() => {

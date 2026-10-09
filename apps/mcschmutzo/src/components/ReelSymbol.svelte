@@ -8,6 +8,7 @@
 	import { potState } from '../game/potState.svelte';
 	import { BOARD_DIMENSIONS, scatterLandRate } from '../game/constants';
 	import { focusAlpha, teaseAlpha } from '../game/winFocus.svelte';
+	import { idleSpotlight } from '../game/idleSpotlight.svelte';
 	import type { ReelSymbol } from '../game/stateGame.svelte';
 
 	type Props = {
@@ -68,6 +69,8 @@
 			win.path.some((p) => p.reel === props.reelIndex && p.row === (props.symbolIndex ?? -1) - 1),
 		),
 	);
+	// the board at rest: this cell's turn to come alive (game/idleSpotlight)
+	const spotlight = $derived(idleSpotlight.key === `${props.reelIndex}:${props.symbolIndex}`);
 </script>
 
 {#if symbolInfo && rawSymbol}
@@ -85,6 +88,7 @@
 			state={props.reelSymbol.symbolState}
 			{rawSymbol}
 			{winning}
+			{spotlight}
 			{landedAt}
 			winDelay={props.reelIndex * WIN_STAGGER_MS}
 			landBoost={1 + 0.15 * (Math.min(Math.max(scatterOrdinal, 1), 5) - 1)}

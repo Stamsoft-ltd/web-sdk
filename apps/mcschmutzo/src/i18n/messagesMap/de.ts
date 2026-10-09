@@ -16,11 +16,11 @@ export default {
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
 	'CARD CHANCE TITLE': 'Extra-Chance',
-	'CARD CHANCE DESC': 'Erhöhe die Chance, den Bonus zu erreichen.',
+	'CARD CHANCE DESC': 'Aktiviere es, um die Chance auf eine Bonusrunde *3-fach* zu erhöhen.',
 	'CARD FEATURE TITLE': 'Lock-Feature-Spin',
 	'CARD FEATURE DESC': 'Garantiert einen gewinnbringenden Spin und startet Lock & Re-Spin.',
 	'CARD DEALIT DESC': 'Betritt den Normal-Bonus mit drei Scattern.',
-	'CARD ALLIN DESC': 'Betritt den Super-Bonus mit vier Scattern.',
+	'CARD ALLIN DESC': 'Betritt den Super-Bonus mit *vier* Scattern.',
 	'CONFIRM TEXT': '%mode% für %cost% kaufen?',
 	'NORMAL BONUS': 'Normal-Bonus',
 	'SUPER BONUS': 'Super-Bonus',
@@ -62,9 +62,9 @@ export default {
 	INFO: 'INFO',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': "WILLKOMMEN BEI McSCHMUTZO",
+	'SPLASH C1 TITLE': "WILLKOMMEN BEI SCHMUTZO",
 	'SPLASH C1 BODY': "Gewinne bleiben stehen und drehen erneut, bis der Grill voll ist.",
-	'SPLASH C2 TITLE': "3\nLECKERE\nFEATURES",
+	'SPLASH C2 TITLE': "3\nEINZIGARTIGE\nBONI",
 	'SPLASH C2 BODY 1': "Lock & Re-Spin",
 	'SPLASH C2 BODY 2': "Dreh das Bonusrad",
 	'SPLASH C2 BODY 3': "Steigere den Multiplikator",

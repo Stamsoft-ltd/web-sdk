@@ -17,6 +17,12 @@ export function createEnhanceBoardSpin<TReel extends Reel<any, any>>({
 		board: TRawSymbol[][];
 		anticipation: number[];
 		paddingPositions?: number[];
+		/**
+		 * Opt-in, per reel: true = this reel has nothing left to wait for, so it stops TOGETHER with
+		 * the reel before it (same spin type and padding) instead of one more stagger after it — e.g.
+		 * the reels after a long anticipation once the outcome is already decided.
+		 */
+		stopWithPrevious?: boolean[];
 	};
 
 	async function spin<RevealEvent extends BaseRevealEvent>({
@@ -52,10 +58,13 @@ export function createEnhanceBoardSpin<TReel extends Reel<any, any>>({
 			return globalSpinType;
 		};
 
+		let previousSpinType: ReturnType<typeof getSpinType> = globalSpinType;
 		board.reduce((previousPaddingSize, reel, reelIndex) => {
 			const noStop = globalHasAnticipation && reelIndex >= firstAnticipatedReelIndex;
 			const isAnticipated = (revealEvent.anticipation?.[reelIndex] || 0) > 0;
-			const spinType = getSpinType({ noStop, isAnticipated });
+			const withPrevious = reelIndex > 0 && !!revealEvent.stopWithPrevious?.[reelIndex];
+			const spinType = withPrevious ? previousSpinType : getSpinType({ noStop, isAnticipated });
+			previousSpinType = spinType;
 			const symbols = revealEvent.board[reelIndex] as TRawSymbol[];
 			const paddingReel = paddingBoard?.[reelIndex];
 			const paddingPosition = revealEvent?.paddingPositions?.[reelIndex];
@@ -69,6 +78,8 @@ export function createEnhanceBoardSpin<TReel extends Reel<any, any>>({
 				// @ts-ignore Ignored because paddingPosition is not required by createCascadingReel
 				paddingPosition,
 				previousPaddingSize,
+				// @ts-ignore Ignored because samePaddingAsPrevious is not supported by createCascadingReel
+				samePaddingAsPrevious: withPrevious,
 				onSpinFinishing: () => {
 					reel.onReelStopping();
 					const nextReelIndex = reelIndex + 1;

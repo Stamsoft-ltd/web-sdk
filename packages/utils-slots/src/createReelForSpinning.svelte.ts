@@ -430,6 +430,8 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 		paddingReel: TRawSymbol[];
 		onSpinFinishing: () => void;
 		previousPaddingSize: number;
+		/** Stop together with the previous reel (same padding) instead of one stagger after it. */
+		samePaddingAsPrevious?: boolean;
 	}) => {
 		reelState.spinType = prepareToSpinOptions.spinType;
 
@@ -446,7 +448,9 @@ export function createReelForSpinning<TRawSymbol extends object, TSymbolState ex
 			anticipated: prepareToSpinOptions.previousPaddingSize + anticipatedPaddingSize(),
 		};
 
-		paddingSize = GET_PADDING_SIZE_MAP[prepareToSpinOptions.spinType];
+		paddingSize = prepareToSpinOptions.samePaddingAsPrevious
+			? prepareToSpinOptions.previousPaddingSize
+			: GET_PADDING_SIZE_MAP[prepareToSpinOptions.spinType];
 
 		return paddingSize;
 	};

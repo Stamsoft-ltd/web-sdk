@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Container, Sprite } from 'pixi-svelte';
+	import { Container, Graphics, Sprite } from 'pixi-svelte';
 
 	import { getContext } from '../game/context';
 	import { chefMood, chefPose, idleSnicker, setChefMood } from '../game/chefMood.svelte';
@@ -77,7 +77,7 @@
 		let raf = 0;
 		const loop = (ts: number) => {
 			clock = ts;
-			idleSnicker(ts);
+			if (!props.freegame) idleSnicker(ts);
 			raf = requestAnimationFrame(loop);
 		};
 		raf = requestAnimationFrame(loop);
@@ -111,14 +111,17 @@
 		return { dy: body.h * 0.75 * (1 - back), sy };
 	});
 
-	// Body: a slow breath + weight shift, the mood offsets, the entrance.
+	// Body: a slow breath + weight shift, the mood offsets, the entrance. In free games every win
+	// fires a mood, and the board chef's hops / laughing bounces (made for a full figure) read as a
+	// jittery up-and-down on this small bust behind the pot — so there they are damped well down.
+	const moodK = $derived(props.freegame ? 0.3 : 1);
 	const pose = $derived.by(() => {
 		const breathe = Math.sin(clock / 580);
-		const sy = (1 + 0.006 * breathe) * react.sy * enter.sy;
-		const sx = (1 - 0.002 * breathe) * react.sx / Math.sqrt(enter.sy);
+		const sy = (1 + 0.006 * breathe) * (1 + (react.sy - 1) * moodK) * enter.sy;
+		const sx = ((1 - 0.002 * breathe) * (1 + (react.sx - 1) * moodK)) / Math.sqrt(enter.sy);
 		return {
-			x: footX + react.dx * body.w,
-			y: footY + react.dy * body.h + enter.dy,
+			x: footX + react.dx * moodK * body.w,
+			y: footY + react.dy * moodK * body.h + enter.dy,
 			sx,
 			sy,
 			// the whole bust leans a touch with the head's moods (no separate head layer at this size)
@@ -133,9 +136,85 @@
 		if (u > 1) return 0;
 		return amp * Math.exp(-2.4 * u) * Math.sin(u * 2 * Math.PI * n);
 	};
-	const handRot = $derived(
-		(props.freegame ? waggle(clock + 700, 2600, 900, 0.11, 3) : waggle(clock, 2800, 950, 0.058, 2.6)) + react.propRot,
-	);
+	// Free games: he salts the soup the way a hand does it — the shaker held over the pot, a slow sway,
+	// and every few seconds two unhurried up-down jerks of the hand (the shaker tipping a touch with
+	// each); on a win he lifts it a little higher and shakes it faster. Small turns about the elbow
+	// only (a big swing pulled the forearm off his sleeve); the jerk is the hand moving, not turning.
+	const CHEER_MS: Partial<Record<string, number>> = { win: 1200, bigWin: 1900, hugeWin: 2700 };
+	let cheer: [number, number] = [-1e9, 0];
+	$effect(() => {
+		const dur = CHEER_MS[chefMood.mood];
+		if (dur) cheer = [chefMood.at, dur];
+	});
+	const smooth = (x: number) => x * x * (3 - 2 * x);
+	const salt = (t: number) => {
+		const ms = t - cheer[0];
+		const dur = cheer[1];
+		// cheer: up by 0 → 1 over 250 ms, held, back down over the last 400 ms
+		const up = ms >= 0 && ms <= dur ? Math.min(smooth(Math.min(1, ms / 250)), smooth(Math.min(1, (dur - ms) / 400))) : 0;
+		// salting: 2 jerks over 900 ms every 3.6 s (all the time, ~2 a second, while cheering) —
+		// quicker jerks read as the hand trembling
+		const u = (t % 3600) / 900;
+		const jerk = up > 0 ? Math.abs(Math.sin(t / 150)) * up : u < 1 ? Math.abs(Math.sin(u * Math.PI * 2)) : 0;
+		return {
+			rot: 0.02 * Math.sin(t / 950) + 0.035 * jerk + 0.12 * up,
+			dy: -0.05 * jerk - 0.04 * up,
+		};
+	};
+	const hand2 = $derived.by(() => {
+		if (!props.freegame) return { rot: waggle(clock, 2800, 1100, 0.05, 1.5) + react.propRot, dy: 0 };
+		const s = salt(clock);
+		return { rot: Math.max(-0.04, Math.min(0.17, s.rot + react.propRot * 0.15)), dy: s.dy * hand.h };
+	});
+
+	// Salt: each jerk of the shaker throws a puff of grains out of its cap (the holes, measured on the
+	// hand texture at (0.72, 0.51), face down-right), falling into the soup — as LandscapeChef's.
+	// Drawn in this container, so they leave from the cap wherever the hand is.
+	const CAP = { u: 0.72, v: 0.51 };
+	const PUFF_MS = 800;
+	const handRotAt = (t: number) => {
+		const s = salt(t);
+		return { rot: Math.max(-0.04, Math.min(0.17, s.rot)), dy: s.dy * hand.h };
+	};
+	const capAt = (t: number) => {
+		const { rot, dy } = handRotAt(t);
+		const lx = (CAP.u - hand.px) * hand.w;
+		const ly = (CAP.v - hand.py) * hand.h;
+		return { x: hand.x + lx * Math.cos(rot) - ly * Math.sin(rot), y: hand.y + dy + lx * Math.sin(rot) + ly * Math.cos(rot) };
+	};
+	const puffTimes = (t: number) => {
+		const out: number[] = [];
+		// the two jerks of every 3.6 s beat peak 225 / 675 ms in (salt)
+		for (const base of [Math.floor(t / 3600) * 3600, Math.floor(t / 3600) * 3600 - 3600])
+			for (const off of [225, 675]) if (t - (base + off) >= 0 && t - (base + off) < PUFF_MS) out.push(base + off);
+		// a cheer shakes all the time (a jerk every 150π ms)
+		const [at, dur] = cheer;
+		const step = 150 * Math.PI;
+		for (let p = at + 250; p < at + dur - 400; p += step) if (t - p >= 0 && t - p < PUFF_MS) out.push(p);
+		return out;
+	};
+	const drawSalt = (g: any) => {
+		if (!props.freegame) return;
+		// one design px of the board frame (380.17 wide in the design)
+		const s = frame.w / 380;
+		for (const p of puffTimes(clock)) {
+			const age = (clock - p) / 1000;
+			const from = capAt(p);
+			for (let i = 0; i < 14; i++) {
+				const r1 = ((i * 37 + Math.floor(p)) % 17) / 17;
+				const r2 = ((i * 53 + Math.floor(p) * 3) % 13) / 13;
+				// out of the cap (down-right) and down into the pot, spreading a little
+				const vx = (2 + 12 * r1) * s;
+				const vy = (6 + 10 * r2) * s;
+				const x = from.x + vx * age;
+				const y = from.y + vy * age + 0.5 * 220 * s * age * age;
+				const a = Math.max(0, 1 - (age * 1000) / PUFF_MS);
+				const r = (1.5 + 1 * r2) * s;
+				g.circle(x, y, r + 0.8 * s).fill({ color: 0x3a2d22, alpha: 0.9 * a });
+				g.circle(x, y, r).fill({ color: 0xffffff, alpha: a });
+			}
+		}
+	};
 </script>
 
 <Container x={pose.x} y={pose.y} scale={{ x: pose.sx, y: pose.sy }} rotation={pose.rot} zIndex={-0.2}>
@@ -143,11 +222,13 @@
 	<Sprite
 		key={hand.key}
 		x={hand.x}
-		y={hand.y}
+		y={hand.y + hand2.dy}
 		anchor={{ x: hand.px, y: hand.py }}
 		width={hand.w}
 		height={hand.h}
-		rotation={handRot}
+		rotation={hand2.rot}
 	/>
 	<Sprite key="mobileBody" x={-body.w / 2} y={-body.h} width={body.w} height={body.h} />
+	<!-- salt falling from the shaker's cap (in front of him, into the pot) -->
+	<Graphics draw={drawSalt} />
 </Container>

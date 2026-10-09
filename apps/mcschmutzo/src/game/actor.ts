@@ -8,6 +8,7 @@ import type { Bet } from './typesBookEvent';
 import { stateXstateDerived } from './stateXstate';
 import { playBet, convertTorResumableBet } from './utils';
 import { beginReelSpin, stateGame, stateGameDerived } from './stateGame.svelte';
+import { RELEASE_HOLD_MS, releaseLocks } from './lockRelease.svelte';
 import config from './config';
 import type { RawSymbol } from './types';
 import { roundFlowState, finalWinBookAmount } from '../state/roundFlow.svelte';
@@ -27,6 +28,9 @@ const primaryMachines = createPrimaryMachines<Bet>({
 		if (lastRevealEvent) stateGameDerived.enhancedBoard.settle(lastRevealEvent.board);
 	},
 	onNewGameStart: async () => {
+		// the last round's locked cells let go as the reels start (handed back to their reels, which
+		// carry them away) — before the board snapshot, so an error restores them as plain symbols
+		const released = releaseLocks();
 		boardBeforeSpin = stateGameDerived.boardRaw();
 		stateGame.paylineWins = [];
 		if ((stateBet.isTurbo && stateXstateDerived.isAutoBetting()) || stateBet.isSpaceHold) return;
@@ -35,6 +39,8 @@ const primaryMachines = createPrimaryMachines<Bet>({
 		stateGame.winCountUp = null;
 		stateGame.pendingStop = false;
 		stateGame.awaitingFirstReveal = true;
+		// let the locked boxes go in place first: the reels start once they've faded off
+		if (released) await new Promise((r) => setTimeout(r, stateBet.isTurbo ? RELEASE_HOLD_MS / 2 : RELEASE_HOLD_MS));
 		beginReelSpin();
 		await stateGameDerived.enhancedBoard.preSpin({
 			paddingBoard: config.paddingReels[stateGame.gameType],

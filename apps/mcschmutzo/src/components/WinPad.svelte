@@ -44,7 +44,9 @@
 	// Measured on the rendered plaque → text lands dead-centre in the red field. Big-win amount box
 	// (winBoxAmount) keeps its own smaller lift.
 	const amountX = $derived(boxOnly ? boxW * -0.002 : 0);
-	const amountY = $derived(boxOnly ? boxH * -0.053 : -boxH * 0.008);
+	// winBoxAmountCut's red panel spans 326–684 of its 1024 px (centre 0.68% above the sprite's); the
+	// big amount is anchored on its ink centre (Win.svelte), so it goes straight there.
+	const amountY = $derived(boxOnly ? boxH * -0.053 : -boxH * 0.0068);
 
 	// The amount plaque comes alive: it pops in (elastic, with a little tilt that settles), then breathes
 	// gently; a light glint sweeps across its red panel now and then; and on the sauced plaque the

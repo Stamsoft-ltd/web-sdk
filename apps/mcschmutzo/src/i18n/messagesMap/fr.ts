@@ -16,11 +16,11 @@ export default {
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
 	'CARD CHANCE TITLE': 'Chance Extra',
-	'CARD CHANCE DESC': "Augmente les chances d'atteindre le bonus.",
+	'CARD CHANCE DESC': "Activez pour multiplier par *3* la chance de déclencher un tour bonus.",
 	'CARD FEATURE TITLE': 'Tour Verrouillage',
 	"CARD FEATURE DESC": "Garantit un tour gagnant et lance Verrouillage & Re-Tour.",
 	'CARD DEALIT DESC': 'Accédez au Bonus Normal avec trois scatters.',
-	'CARD ALLIN DESC': 'Accédez au Super Bonus avec quatre scatters.',
+	'CARD ALLIN DESC': 'Accédez au Super Bonus avec *quatre* scatters.',
 	'CONFIRM TEXT': 'Acheter %mode% pour %cost% ?',
 	'NORMAL BONUS': 'Bonus Normal',
 	'SUPER BONUS': 'Super Bonus',
@@ -62,9 +62,9 @@ export default {
 	INFO: 'INFO',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': "BIENVENUE CHEZ McSCHMUTZO",
+	'SPLASH C1 TITLE': "BIENVENUE CHEZ SCHMUTZO",
 	'SPLASH C1 BODY': "Les gains se verrouillent et relancent jusqu'à remplir le grill.",
-	'SPLASH C2 TITLE': "3\nFONCTIONS\nSAVOUREUSES",
+	'SPLASH C2 TITLE': "3\nBONUS\nUNIQUES",
 	'SPLASH C2 BODY 1': "Verrouillage & Re-Spin",
 	'SPLASH C2 BODY 2': "Tourne la Roue Bonus",
 	'SPLASH C2 BODY 3': "Fais grimper le Multiplicateur",

@@ -16,11 +16,11 @@ export default {
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
 	'CARD CHANCE TITLE': 'Ekstra Şans',
-	'CARD CHANCE DESC': 'Bonusa ulaşma şansını artır.',
+	'CARD CHANCE DESC': 'Bonus turunu tetikleme şansını *3 kat* artırmak için etkinleştir.',
 	'CARD FEATURE TITLE': 'Kilitli Özellik Dönüşü',
 	'CARD FEATURE DESC': 'Kazançlı bir dönüş garantiler ve Kilitle & Yeniden Döndür özelliğini başlatır.',
 	'CARD DEALIT DESC': 'Üç scatter ile Normal Bonusa gir.',
-	'CARD ALLIN DESC': 'Dört scatter ile Süper Bonusa gir.',
+	'CARD ALLIN DESC': '*Dört* scatter ile Süper Bonusa gir.',
 	'CONFIRM TEXT': '%mode% modunu %cost% karşılığında satın al?',
 	'NORMAL BONUS': 'Normal Bonus',
 	'SUPER BONUS': 'Süper Bonus',
@@ -62,9 +62,9 @@ export default {
 	INFO: 'BİLGİ',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': "McSCHMUTZO'YA HOŞ GELDİNİZ",
+	'SPLASH C1 TITLE': "SCHMUTZO'YA HOŞ GELDİNİZ",
 	'SPLASH C1 BODY': "Kazançlar yerine kilitlenir ve ızgara dolana kadar yeniden döner.",
-	'SPLASH C2 TITLE': "3\nLEZZETLİ\nÖZELLİK",
+	'SPLASH C2 TITLE': "3\nEŞSİZ\nBONUS",
 	'SPLASH C2 BODY 1': "Kilitle ve Yeniden Döndür",
 	'SPLASH C2 BODY 2': "Bonus Çarkını Çevir",
 	'SPLASH C2 BODY 3': "Çarpanı Büyüt",

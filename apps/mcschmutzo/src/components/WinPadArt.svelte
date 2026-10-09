@@ -69,6 +69,14 @@
 		return 1 + c3 * (x - 1) ** 3 + c1 * (x - 1) ** 2;
 	};
 
+	// The stars sit in the middle of the banner's ears: the ear's rivets (measured on all five banners)
+	// are at 16% in (top + bottom) and 5% in (the outer one), at mid-height, so its centre is 11% in
+	// → ±0.39 × the banner width (0.70·w) from the middle, at the banner's own centre height. Sized to
+	// clear the rivets as it twinkles.
+	const STAR_X = 0.39 * 0.7;
+	const STAR_Y = 0.013;
+	const STAR_W = 0.06;
+
 	type L = { id: string; key: string; x: number; y: number; w: number; h: number; a: number; rot: number };
 	const anim = $derived.by(() => {
 		const w = W;
@@ -88,8 +96,8 @@
 
 		const back: L[] = [];
 		back.push({ id: 'banner', key: bannerKey, x: 0, y: 0.015 * w * winS, w: 0.70 * w * winS * bannerSx, h: (0.70 * w / bannerAR) * winS * bannerSy, a: winA, rot: 0 });
-		back.push({ id: 'starL', key: 'winStar', x: -0.245 * w * winS, y: 0.03 * w * winS, w: 0.072 * w * winS * twinkle, h: (0.072 * w / 1.03) * winS * twinkle, a: winA, rot: starRot });
-		back.push({ id: 'starR', key: 'winStar', x: 0.245 * w * winS, y: 0.03 * w * winS, w: 0.072 * w * winS * twinkle2, h: (0.072 * w / 1.03) * winS * twinkle2, a: winA, rot: -starRot });
+		back.push({ id: 'starL', key: 'winStar', x: -STAR_X * w * winS, y: STAR_Y * w * winS, w: STAR_W * w * winS * twinkle, h: (STAR_W * w / 1.03) * winS * twinkle, a: winA, rot: starRot });
+		back.push({ id: 'starR', key: 'winStar', x: STAR_X * w * winS, y: STAR_Y * w * winS, w: STAR_W * w * winS * twinkle2, h: (STAR_W * w / 1.03) * winS * twinkle2, a: winA, rot: -starRot });
 
 		// Title: both words are STAMPED onto the banner — they come down from 1.7× (accelerating, fading
 		// in), hit at HIT_MS, squash wide + flat and spring back. Then they breathe together.
@@ -128,8 +136,8 @@
 			return Math.exp(-(((p - 0.5) * 7) ** 2)) * 0.85 * winA;
 		};
 		const glints: L[] = [
-			{ id: 'gL', key: 'winStar', x: -0.245 * w * winS, y: 0.03 * w * winS, w: 0.083 * w * winS * twinkle, h: (0.083 * w / 1.03) * winS * twinkle, a: glint(0), rot: starRot },
-			{ id: 'gR', key: 'winStar', x: 0.245 * w * winS, y: 0.03 * w * winS, w: 0.083 * w * winS * twinkle2, h: (0.083 * w / 1.03) * winS * twinkle2, a: glint(1100), rot: -starRot },
+			{ id: 'gL', key: 'winStar', x: -STAR_X * w * winS, y: STAR_Y * w * winS, w: STAR_W * 1.15 * w * winS * twinkle, h: (STAR_W * 1.15 * w / 1.03) * winS * twinkle, a: glint(0), rot: starRot },
+			{ id: 'gR', key: 'winStar', x: STAR_X * w * winS, y: STAR_Y * w * winS, w: STAR_W * 1.15 * w * winS * twinkle2, h: (STAR_W * 1.15 * w / 1.03) * winS * twinkle2, a: glint(1100), rot: -starRot },
 		];
 
 		// Real burger symbol, BEHIND the plaque. It ASSEMBLES slice-by-slice ONCE (H1_ASSEMBLE land

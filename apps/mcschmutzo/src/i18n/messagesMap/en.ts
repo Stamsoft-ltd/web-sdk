@@ -3,11 +3,11 @@ export default {
 
 	// ── Buy-bonus modal (cards + confirm) ────────────────────────────────────────────────────────
 	'CARD CHANCE TITLE': 'Extra Chance',
-	'CARD CHANCE DESC': 'Increase the chance of reaching the bonus.',
+	'CARD CHANCE DESC': 'Activate to increase *3 times* the chance of triggering a bonus round.',
 	'CARD FEATURE TITLE': 'Lock Feature Spin',
 	'CARD FEATURE DESC': 'Guarantees a winning spin and starts Lock & Re-Spin.',
 	'CARD DEALIT DESC': 'Enter the Normal Bonus with three scatters.',
-	'CARD ALLIN DESC': 'Enter the Super Bonus with four scatters.',
+	'CARD ALLIN DESC': 'Enter the Super Bonus with *four* scatters.',
 	'CONFIRM TEXT': 'Buy %mode% for %cost%?',
 	'CONFIRM ACTIVATE TEXT': 'Activate %mode%? Each spin costs %cost%.',
 	'NORMAL BONUS': 'Normal Bonus',
@@ -55,9 +55,9 @@ export default {
 	INFO: 'INFO',
 
 	// ── Splash intro cards ───────────────────────────────────────────────────────────────────────
-	'SPLASH C1 TITLE': "WELCOME\nTO\nMcSCHMUTZO",
+	'SPLASH C1 TITLE': "WELCOME\nTO\nSCHMUTZO",
 	'SPLASH C1 BODY': "Wins lock in place and re-spin until the grill is full.",
-	'SPLASH C2 TITLE': "3\nTASTY\nFEATURES",
+	'SPLASH C2 TITLE': "3\nUNIQUE\nBONUSES",
 	'SPLASH C2 BODY 1': "Lock & Re-Spin",
 	'SPLASH C2 BODY 2': "Spin the Bonus Wheel",
 	'SPLASH C2 BODY 3': "Grow the Multiplier",
