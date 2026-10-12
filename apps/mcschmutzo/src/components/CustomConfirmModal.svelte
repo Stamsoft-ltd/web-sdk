@@ -14,7 +14,8 @@
 	import PopupScrews from './PopupScrews.svelte';
 	// Reusable two-action confirm dialog (Figma 8888:27021 / 8888:23219): the screwed-down diner
 	// frame, a red header with the title, a cream body with a sauce splat either side, and a dark
-	// (cancel) + red (confirm) button. Used for the buy-bonus confirm and the unfinished-round prompt.
+	// (cancel) + red (confirm) button. Used for the buy-bonus confirm, the unfinished-round prompt and
+	// the error dialog (CustomErrorModal: one button, or none and persistent when the error is fatal).
 	type Props = {
 		title: string;
 		message: string;
@@ -22,34 +23,44 @@
 		amount?: string;
 		/** Small line under the amount, for languages whose sentence goes on after the amount. */
 		after?: string;
-		/** Left / secondary (dark) button. */
-		cancelLabel: string;
-		/** Right / primary (red) button. */
-		confirmLabel: string;
-		oncancel: () => void;
-		onconfirm: () => void;
-		/** ✕ / backdrop dismiss. Defaults to oncancel when omitted. */
+		/** Left / secondary (dark) button; left out when there is no label. */
+		cancelLabel?: string;
+		/** Right / primary (red) button; left out when there is no label. */
+		confirmLabel?: string;
+		oncancel?: () => void;
+		onconfirm?: () => void;
+		/** ✕ / backdrop dismiss. Defaults to oncancel (then onconfirm) when omitted. */
 		onclose?: () => void;
+		/** No ✕ and no backdrop dismiss: the dialog stays until the game goes away. */
+		persistent?: boolean;
 	};
 	const props: Props = $props();
-	const dismiss = () => (props.onclose ?? props.oncancel)();
+	const hasActions = $derived(!!props.cancelLabel || !!props.confirmLabel);
+	// Long copy (the error sentences) steps down a size so it stays inside the cream body.
+	const isLong = $derived(!props.amount && props.message.length > 60);
+	const dismiss = () => {
+		if (props.persistent) return;
+		(props.onclose ?? props.oncancel ?? props.onconfirm)?.();
+	};
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 <div class="cf-backdrop" in:fade|global={{ duration: 220 }} out:fade|global={{ duration: 200 }} onclick={dismiss}></div>
 
-<button
-	in:fade|global={{ duration: 220, delay: 200 }}
-	out:fade|global={{ duration: 120 }}
-	class="cf-close"
-	type="button"
-	style={`background-image:url('${closeArt}')`}
-	onclick={dismiss}
-	aria-label={i18nDerived.translate('CLOSE')}
-></button>
+{#if !props.persistent}
+	<button
+		in:fade|global={{ duration: 220, delay: 200 }}
+		out:fade|global={{ duration: 120 }}
+		class="cf-close"
+		type="button"
+		style={`background-image:url('${closeArt}')`}
+		onclick={dismiss}
+		aria-label={i18nDerived.translate('CLOSE')}
+	></button>
+{/if}
 
 <div class="cf-root" in:popIn|global out:popOut|global role="dialog" aria-modal="true">
-	<div class="cf-popup" class:cf-popup--amount={props.amount}>
+	<div class="cf-popup" class:cf-popup--amount={props.amount} class:cf-popup--bare={!hasActions} class:cf-popup--long={isLong}>
 		<div class="cf-body"></div>
 		<div class="cf-head"></div>
 		<img class="cf-frame" src={frameArt} alt="" draggable="false" />
@@ -72,14 +83,20 @@
 			{#if props.amount && props.after}<p class="cf-after">{props.after}</p>{/if}
 		</div>
 
-		<div class="cf-actions">
-			<button class="cf-btn cf-btn--secondary" type="button" onclick={props.oncancel}>
-				{props.cancelLabel}
-			</button>
-			<button class="cf-btn cf-btn--primary" type="button" onclick={props.onconfirm}>
-				{props.confirmLabel}
-			</button>
-		</div>
+		{#if hasActions}
+			<div class="cf-actions">
+				{#if props.cancelLabel}
+					<button class="cf-btn cf-btn--secondary" type="button" onclick={props.oncancel}>
+						{props.cancelLabel}
+					</button>
+				{/if}
+				{#if props.confirmLabel}
+					<button class="cf-btn cf-btn--primary" type="button" onclick={props.onconfirm}>
+						{props.confirmLabel}
+					</button>
+				{/if}
+			</div>
+		{/if}
 	</div>
 </div>
 
@@ -207,6 +224,10 @@
 		gap: calc(6 * var(--u));
 		text-align: center;
 	}
+	/* No buttons (a fatal error): the message takes their room too. */
+	.cf-popup--bare .cf-copy {
+		height: calc(265 * var(--u));
+	}
 	.cf-row {
 		display: flex;
 		align-items: center;
@@ -235,6 +256,12 @@
 		line-height: 1.33;
 		letter-spacing: calc(0.78 * var(--u));
 		text-wrap: balance;
+	}
+	.cf-popup--long .cf-message {
+		max-width: calc(380 * var(--u));
+		font-size: calc(20 * var(--u));
+		line-height: 1.3;
+		letter-spacing: calc(0.5 * var(--u));
 	}
 	.cf-popup--amount .cf-message {
 		max-width: none;

@@ -37,6 +37,7 @@
 	import FeatureOverlay from './FeatureOverlay.svelte';
 	import PaylineOverlay from './PaylineOverlay.svelte';
 	import HudHtml from './HudHtml.svelte';
+	import CustomErrorModal from './CustomErrorModal.svelte';
 	import SplashIntro from './SplashIntro.svelte';
 	import PotShots from './PotShots.svelte';
 	import { boardLogoScreenRect } from '../game/boardLogo';
@@ -334,6 +335,9 @@
 <Modals>
 	{#snippet version()}
 		<GameVersion version="0.1.0" />
+	{/snippet}
+	{#snippet error()}
+		<CustomErrorModal />
 	{/snippet}
 </Modals>
 

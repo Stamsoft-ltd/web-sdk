@@ -34,6 +34,17 @@ const revealHasFollowUp = (bookEvent: BookEvent, bookEvents: BookEvent[]) => {
 	}
 	return false;
 };
+// A win that sets off Lock & Re-spin is provisional: the re-spins grow it, and the book reports the
+// real total again after lockRespinEnd. The spin that triggers the lock and the re-spins in between
+// show no win amount, no win lines and leave the WIN readout alone; only that final winInfo is shown.
+const winStartsLockRespin = (bookEvent: BookEvent, bookEvents: BookEvent[]) => {
+	const at = bookEvents.findIndex((event) => event.index === bookEvent.index);
+	for (const event of bookEvents.slice(at + 1)) {
+		if (event.type === 'lockRespinStart') return true;
+		if (event.type === 'reveal' || event.type === 'setWin' || event.type === 'freeSpinEnd') return false;
+	}
+	return false;
+};
 // Win beat: after the win lines light up, the winners pulse and the rest dim (Symbol / winFocus)
 // before anything else happens — the win screen, or the lock & re-spin that follows a win.
 const WIN_BEAT_MS = 520;
@@ -253,6 +264,10 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 			await hold(followUp ? RESPIN_LOCK_HOLD_MS : RESPIN_LANDED_HOLD_MS);
 	},
 	winInfo: async (bookEvent: BookEventOfType<'winInfo'>, { bookEvents }: BookEventContext) => {
+		if (winStartsLockRespin(bookEvent, bookEvents)) {
+			stateGame.paylineWins = [];
+			return;
+		}
 		// When a win screen presents this amount next (setWin), it counts the readout up itself;
 		// setting it here would show the final value before the count-up starts.
 		const at = bookEvents.findIndex((event) => event.index === bookEvent.index);

@@ -13,12 +13,18 @@
 
 	type Props = {
 		version: Snippet;
+		/** A game's own error dialog, in place of the generic NOTIFICATION box (ModalError). */
+		error?: Snippet;
 	};
 
 	const props: Props = $props();
 </script>
 
-<ModalError />
+{#if props.error}
+	{@render props.error()}
+{:else}
+	<ModalError />
+{/if}
 <ModalBetMenu />
 <ModalBuyBonus />
 <ModalBuyBonusConfirm />
