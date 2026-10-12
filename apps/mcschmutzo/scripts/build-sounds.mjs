@@ -12,7 +12,9 @@
  *
  *   node scripts/build-sounds.mjs
  *
- * Requires ffmpeg + ffprobe on PATH (the OGG uses ffmpeg's native vorbis encoder: `-strict -2`).
+ * Requires ffmpeg + ffprobe on PATH, built with libvorbis + libmp3lame. (The OGG used to come from
+ * ffmpeg's native `vorbis` encoder, which ignores -b:a: asked for 160k it wrote 218 kbps, 2.5 MB.
+ * libvorbis -q:a 4 is ~128 kbps — 2026-10-09 size pass.)
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync } from 'node:fs';
@@ -94,8 +96,8 @@ writeFileSync(list, parts.map((p) => `file '${p}'`).join('\n'));
 const combined = join(tmpDir, 'combined.wav');
 ffmpeg(['-f', 'concat', '-safe', '0', '-i', list, '-ar', String(SR), '-ac', '2', combined]);
 mkdirSync(outDir, { recursive: true });
-ffmpeg(['-i', combined, '-b:a', '160k', join(outDir, 'sounds.mp3')]);
-ffmpeg(['-i', combined, '-c:a', 'vorbis', '-strict', '-2', '-b:a', '160k', join(outDir, 'sounds.ogg')]);
+ffmpeg(['-i', combined, '-c:a', 'libmp3lame', '-b:a', '128k', join(outDir, 'sounds.mp3')]);
+ffmpeg(['-i', combined, '-c:a', 'libvorbis', '-q:a', '4', join(outDir, 'sounds.ogg')]);
 writeFileSync(
 	join(outDir, 'sounds.json'),
 	JSON.stringify({ sprite, src: ['./assets/audio/sounds.ogg', './assets/audio/sounds.mp3'], config }),

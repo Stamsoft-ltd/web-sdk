@@ -10,9 +10,9 @@
 	const frameArt = ap('/assets/mcschmutzo/popup/rules-frame.svg');
 	const tabArt = ap('/assets/mcschmutzo/popup/rules-tab.svg');
 
-	const TOTAL_PAGES = 7;
+	const TOTAL_PAGES = 8;
 	// Each page's title, shown in the frame's red header (outside the scrolling page).
-	const PAGE_TITLES = ['OVERVIEW', 'PAYTABLE', 'FEATURES', 'WAYS TO WIN', 'FEATURE BUY', 'GENERAL INFO', 'USER INTERFACE GUIDE'];
+	const PAGE_TITLES = ['OVERVIEW', 'PAYTABLE', 'FEATURES', 'WAYS TO WIN', 'WIN LINES', 'FEATURE BUY', 'GENERAL INFO', 'USER INTERFACE GUIDE'];
 
 	const symArt = (name: string) => ap(`/assets/mcschmutzo/symbols/${name === 'S' ? 'S_scatter' : name}.webp`);
 
@@ -31,11 +31,11 @@
 	const scatter4Art = ap('/assets/mcschmutzo/tutorial/scatter-4.svg');
 	const freeGamesArt = ap('/assets/mcschmutzo/tutorial/free-games-arrow.webp');
 
-	// Page 6 (general info) icons.
+	// Page 7 (general info) icons.
 	const reloadArt = ap('/assets/mcschmutzo/tutorial/reload.webp');
 	const scalesArt = ap('/assets/mcschmutzo/tutorial/scales.webp');
 
-	// Page 7 (user interface guide) — the design's icon-button set (self-contained SVGs:
+	// Page 8 (user interface guide) — the design's icon-button set (self-contained SVGs:
 	// dark disc + #605554 border + white glyph, so they match the HUD 1:1).
 	const uiIcon = (n: string) => ap(`/assets/mcschmutzo/ui-icons/${n}`);
 	// label/desc are i18n keys (translated in the markup).
@@ -66,7 +66,25 @@
 	const formatRtp = (rtp: number) => `${(rtp * 100).toFixed(2)}%`;
 	const GAME_RTP = formatRtp(config.rtp);
 
-	// Page 5 (feature buy) — every selectable bet mode. Titles reuse the buy-menu's own keys (R-04);
+	// Page 5 (win lines) — every line from config.paylines (the supplied 50-line table; row per reel,
+	// 0 = top), drawn as a 5×5 board: the line's cells shaded, a red dot on each, joined in reel order.
+	// Shown ten at a time behind the 1-10 … 41-50 tabs.
+	const LINE_ROWS = config.numRows[0];
+	const LINE_REELS = config.numReels;
+	const WIN_LINES = Object.entries(config.paylines)
+		.map(([id, rows]) => ({ id: Number(id), rows: rows as number[] }))
+		.sort((a, b) => a.id - b.id);
+	const LINES_PER_TAB = 10;
+	const LINE_TABS = Array.from({ length: Math.ceil(WIN_LINES.length / LINES_PER_TAB) }, (_, i) => {
+		const lines = WIN_LINES.slice(i * LINES_PER_TAB, (i + 1) * LINES_PER_TAB);
+		return { label: `${lines[0].id}-${lines[lines.length - 1].id}`, lines };
+	});
+	// Board geometry in SVG units: 5 cells + 4 gaps = 100.
+	const LINE_CELL = 18;
+	const LINE_STEP = 20.5;
+	const lineCenter = (i: number) => i * LINE_STEP + LINE_CELL / 2;
+
+	// Page 6 (feature buy) — every selectable bet mode. Titles reuse the buy-menu's own keys (R-04);
 	// body is an i18n key; cost (× base bet) and RTP are read from config.betModes.
 	type BetModeKey = keyof typeof config.betModes;
 	const FEATURE_BUYS: { title: string; body: string; mode: BetModeKey }[] = [
@@ -113,6 +131,7 @@
 	const props: Props = $props();
 
 	let page = $state(1);
+	let lineTab = $state(0);
 
 	// Scroll cue: a page whose content runs past the bottom gets a soft fade on its lower edge and a
 	// bouncing chevron above the pager (tap to scroll) — so a half-visible line reads as "more below",
@@ -318,6 +337,53 @@
 				</div>
 			</div>
 		{:else if page === 5}
+			<div class="tu-page wl-page" use:scrollCue>
+				<div class="wl-grid">
+					{#each LINE_TABS[lineTab].lines as line (line.id)}
+						<div class="wl-item">
+							<span class="wl-num">{line.id}</span>
+							<svg class="wl-board" viewBox="-3 -3 106 106" aria-label={`${i18nDerived.translate('WIN LINES')} ${line.id}`}>
+								<rect class="wl-frame" x="-3" y="-3" width="106" height="106" rx="5" />
+								{#each Array(LINE_ROWS) as _, row}
+									{#each Array(LINE_REELS) as __, reel}
+										<rect
+											class="wl-cell"
+											class:wl-cell--on={line.rows[reel] === row}
+											x={reel * LINE_STEP}
+											y={row * LINE_STEP}
+											width={LINE_CELL}
+											height={LINE_CELL}
+											rx="2"
+										/>
+									{/each}
+								{/each}
+								<polyline
+									class="wl-path"
+									points={line.rows.map((row, reel) => `${lineCenter(reel)},${lineCenter(row)}`).join(' ')}
+								/>
+								{#each line.rows as row, reel}
+									<circle class="wl-dot" cx={lineCenter(reel)} cy={lineCenter(row)} r="6.4" />
+								{/each}
+							</svg>
+						</div>
+					{/each}
+				</div>
+				<div class="wl-tabs" role="tablist">
+					{#each LINE_TABS as tab, i}
+						<button
+							class="wl-tab"
+							class:wl-tab--on={i === lineTab}
+							type="button"
+							role="tab"
+							aria-selected={i === lineTab}
+							onclick={() => (lineTab = i)}
+						>
+							{tab.label}
+						</button>
+					{/each}
+				</div>
+			</div>
+		{:else if page === 6}
 			<div class="tu-page" use:scrollCue>
 
 				<div class="fb-grid">
@@ -335,7 +401,7 @@
 					{/each}
 				</div>
 			</div>
-		{:else if page === 6}
+		{:else if page === 7}
 			<div class="tu-page" use:scrollCue>
 
 				<div class="gi-grid">
@@ -364,7 +430,7 @@
 					</div>
 				</div>
 			</div>
-		{:else if page === 7}
+		{:else if page === 8}
 			<div class="tu-page" use:scrollCue>
 
 				<div class="ug-grid">
@@ -868,7 +934,116 @@
 		gap: clamp(8px, 1.5vmin, 16px);
 	}
 
-	/* Page 5 — feature buy. Four equal cost cards; cost chip + RTP pinned to the card bottom. */
+	/* Page 5 — win lines. Ten 5×5 boards (5 across, 2 down) behind the 1-10 … 41-50 tabs. Each
+	   board is an SVG, so it stays crisp at any popup size. */
+	/* Size container, so the boards can be sized off the page's height: two rows of boards plus the
+	   tabs fit without scrolling wherever the height allows. On short landscape screens the boards
+	   keep 72% of the width instead (readable), and the page scrolls. */
+	.wl-page {
+		container-type: size;
+		justify-content: center;
+	}
+	.wl-grid {
+		/* 2 rows of square boards (+ badge overhang + row gap) and the tabs take the page height:
+		   width ≈ 2.5 × (height left for the boards) + the 4 column gaps. */
+		width: min(
+			100%,
+			max(72%, calc((100cqh - clamp(64px, 11vmin, 110px)) * 2.4 + 4 * clamp(10px, 2.4vmin, 30px)))
+		);
+		margin-top: clamp(4px, 1vmin, 12px);
+		display: grid;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+		gap: clamp(12px, 2.6vmin, 30px) clamp(10px, 2.4vmin, 30px);
+	}
+	.wl-item {
+		--wl-badge: clamp(22px, 4.6vmin, 44px);
+		position: relative;
+		min-width: 0;
+		/* The number badge sits on the board's top-left corner: inset by 3/4 of its size, it overlaps
+		   only the frame, never the first cell (whose dot it would hide). */
+		padding: calc(var(--wl-badge) * 0.75) 0 0 calc(var(--wl-badge) * 0.75);
+	}
+	.wl-board {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+	.wl-frame {
+		fill: #5a4532;
+	}
+	.wl-cell {
+		fill: #fbebc8;
+		stroke: #8b6d47;
+		stroke-width: 0.8;
+	}
+	.wl-cell--on {
+		fill: #e3bf7d;
+		stroke: #5a4532;
+		stroke-width: 1.2;
+	}
+	.wl-path {
+		fill: none;
+		stroke: #b1190a;
+		stroke-width: 1.8;
+		stroke-linejoin: round;
+		stroke-linecap: round;
+	}
+	.wl-dot {
+		fill: #d9271a;
+		stroke: #7d0f05;
+		stroke-width: 1;
+	}
+	.wl-num {
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: 1;
+		display: grid;
+		place-items: center;
+		width: var(--wl-badge);
+		aspect-ratio: 1;
+		border-radius: 50%;
+		background: #b1190a;
+		box-shadow:
+			0 0 0 2px #f9dca6,
+			0 2px 4px rgba(0, 0, 0, 0.35);
+		color: #fff;
+		font-family: 'Luckiest Guy', 'Bowlby One SC', sans-serif;
+		font-size: clamp(0.72rem, 2.1vmin, 1.25rem);
+		line-height: 1;
+		/* Luckiest Guy sits high in its box */
+		padding-top: 0.12em;
+		box-sizing: border-box;
+	}
+	.wl-tabs {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: clamp(6px, 1.2vmin, 12px);
+		margin-top: clamp(10px, 2vmin, 22px);
+	}
+	.wl-tab {
+		min-width: clamp(56px, 10vmin, 120px);
+		padding: clamp(4px, 0.9vmin, 9px) clamp(10px, 1.8vmin, 20px);
+		border-radius: 999px;
+		border: 2px solid #beaa8c;
+		background: #fee3b2;
+		color: #3a2a1a;
+		font-family: 'Nunito', sans-serif;
+		font-weight: 800;
+		font-size: clamp(0.8rem, 1.9vmin, 1.15rem);
+		cursor: pointer;
+	}
+	.wl-tab--on {
+		border-color: #7d0f05;
+		background: #b1190a;
+		color: #fff;
+	}
+	.wl-tab:hover:not(.wl-tab--on) {
+		filter: brightness(1.04);
+	}
+
+	/* Page 6 — feature buy. Four equal cost cards; cost chip + RTP pinned to the card bottom. */
 	.fb-grid {
 		width: 100%;
 		margin-top: clamp(12px, 2.4vmin, 26px);
@@ -929,7 +1104,7 @@
 		font-size: clamp(0.72rem, 1.5vmin, 0.95rem);
 	}
 
-	/* Page 6 — general info. Two titled sections (icon + heading, then body). */
+	/* Page 7 — general info. Two titled sections (icon + heading, then body). */
 	.gi-grid {
 		width: 100%;
 		margin-top: clamp(14px, 2.6vmin, 28px);
@@ -989,7 +1164,7 @@
 		margin-bottom: 0;
 	}
 
-	/* Page 7 — user interface guide. Icon-left reference rows (design), 2-up on desktop.
+	/* Page 8 — user interface guide. Icon-left reference rows (design), 2-up on desktop.
 	   Each row is a board, matching the Buy Bonus cards. */
 	/* Desktop / landscape: plain icon-above-description columns — no card frame. (Mobile portrait
 	   restores the bordered icon-left rows in the narrow media query below.) */
@@ -1225,7 +1400,7 @@
 		.tu-guy {
 			width: clamp(170px, 22%, 230px);
 		}
-		/* FEATURE BUY (page 5) — taller cards + larger title/body/cost/RTP. */
+		/* FEATURE BUY (page 6) — taller cards + larger title/body/cost/RTP. */
 		.fb-card {
 			padding: clamp(18px, 2.6vmin, 30px) clamp(18px, 2.2vmin, 26px);
 		}
@@ -1243,7 +1418,7 @@
 		.fb-rtp {
 			font-size: clamp(0.82rem, 1.7vmin, 1.05rem);
 		}
-		/* GENERAL INFO (page 6) — roomier cards, bigger icon + type. */
+		/* GENERAL INFO (page 7) — roomier cards, bigger icon + type. */
 		.gi-card {
 			padding: clamp(22px, 3vmin, 40px) clamp(24px, 3vmin, 44px);
 		}
@@ -1256,7 +1431,7 @@
 		.gi-body {
 			font-size: clamp(0.92rem, 2vmin, 1.24rem);
 		}
-		/* USER INTERFACE GUIDE (page 7, the last page) — larger icon buttons + labels. */
+		/* USER INTERFACE GUIDE (page 8, the last page) — larger icon buttons + labels. */
 		.ug-btn {
 			width: clamp(48px, 6.2vmin, 72px);
 			height: clamp(48px, 6.2vmin, 72px);
@@ -1318,6 +1493,45 @@
 		}
 		.ug-text {
 			align-items: flex-start;
+		}
+	}
+
+	/* WIN LINES on a portrait phone: two boards per row, scrolling, with the range tabs on top so
+	   they are reachable without scrolling past ten boards. */
+	@media (max-width: 680px) and (orientation: portrait) {
+		.wl-page {
+			container-type: normal;
+			justify-content: flex-start;
+		}
+		.wl-grid {
+			width: 100%;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+		.wl-tabs {
+			order: -1;
+			flex-wrap: nowrap;
+			gap: 5px;
+			margin: 0 0 clamp(4px, 1vmin, 10px);
+		}
+		.wl-tab {
+			min-width: 0;
+			padding: 4px 9px;
+			font-size: clamp(0.7rem, 3.4vw, 0.9rem);
+		}
+	}
+
+	/* WIN LINES on short landscape screens (phones, Popout S): tighter spacing so the tabs fit. */
+	@media (orientation: landscape) and (max-height: 500px) {
+		.wl-grid {
+			margin-top: 0;
+			row-gap: clamp(6px, 1.8vmin, 12px);
+		}
+		.wl-tabs {
+			margin-top: clamp(4px, 1.2vmin, 8px);
+		}
+		.wl-tab {
+			padding: 2px 10px;
+			font-size: clamp(0.66rem, 2.6vmin, 0.85rem);
 		}
 	}
 

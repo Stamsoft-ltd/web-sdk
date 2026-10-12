@@ -102,6 +102,7 @@
 	import CustomBuyBonusModal from './CustomBuyBonusModal.svelte';
 	import CustomAutoSpinModal from './CustomAutoSpinModal.svelte';
 	import CustomConfirmModal from './CustomConfirmModal.svelte';
+	import ReplayWindow from './ReplayWindow.svelte';
 	import CustomTutorialModal from './CustomTutorialModal.svelte';
 	import LogoHtml from './LogoHtml.svelte';
 	import { potState } from '../game/potState.svelte';
@@ -530,19 +531,6 @@
 	const replayPromptVisible = $derived(
 		isReplay && canInteract && !roundFlowState.replayLoading && context.stateGame.winDim === 0,
 	);
-	const replayPromptText = $derived(
-		roundFlowState.replayHasPlayed ? i18nDerived.playAgain() : i18nDerived.startReplay(),
-	);
-	// Sits just above the visible control bar (desktop bar / portrait controls), else low.
-	let replayPromptBottom = $state('clamp(14px, 3.5vh, 34px)');
-	$effect(() => {
-		if (!replayPromptVisible) return;
-		layoutType;
-		const raf = requestAnimationFrame(() => {
-			replayPromptBottom = continueBottom('clamp(14px, 3.5vh, 34px)');
-		});
-		return () => cancelAnimationFrame(raf);
-	});
 
 	const stepBet = (direction: -1 | 1, { playSound = true } = {}) => {
 		if (isReplay) return;
@@ -1475,10 +1463,11 @@
 	<p class="win-continue" style={`bottom:${winContBottom}`}>{i18nDerived.translate('PRESS TO CONTINUE')}&nbsp;→</p>
 {/if}
 
-<!-- Replay start / restart prompt (same look as the win screens' PRESS TO CONTINUE). The spin
-     control, Space, or (touch layouts) a tap on the board starts it. -->
-{#if replayPromptVisible}
-	<p class="win-continue" style={`bottom:${replayPromptBottom}`}>{replayPromptText}&nbsp;→</p>
+<!-- Replay summary window (mode, base bet, cost multiplier, total cost, payout multiplier, total
+     win) with the START REPLAY button. Up whenever the replay is idle; the spin control and Space
+     still start it too. -->
+{#if replayPromptVisible && !stateModal.modal}
+	<ReplayWindow onstart={startReplay} />
 {/if}
 
 <style>

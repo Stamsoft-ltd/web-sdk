@@ -6,6 +6,7 @@
 	import PressPlayLoader from '../components/PressPlayLoader.svelte';
 	import SocialI18nSync from '../components/SocialI18nSync.svelte';
 	import { setContext } from '../game/context';
+	import { installFrameLoopGuard } from '../lib/frameLoopGuard';
 
 	import messagesMap from '../i18n/messagesMap';
 
@@ -13,6 +14,7 @@
 
 	const props: Props = $props();
 
+	installFrameLoopGuard();
 	setContext();
 </script>
 

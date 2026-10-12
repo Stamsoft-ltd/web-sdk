@@ -40,6 +40,13 @@ export const socialOverridesEn: Record<string, string> = {
 		'While active, every spin is played for the amount shown below and has an increased chance of triggering the Free Games. All other game mechanics remain unchanged. It stays active until it is deactivated.',
 	'INFO FB2 BODY':
 		'While active, every spin is played for the amount shown below and is guaranteed to be a winning spin that starts the Lock & Re-Spin feature. It stays active until it is deactivated.',
+	// Replay window (summary card)
+	'BET REPLAY': 'Game Replay',
+	'BASE BET': 'Base Play Amount',
+	'COST MULTIPLIER': 'Play Multiplier',
+	'TOTAL BET COST': 'Total Play',
+	'PAYOUT MULTIPLIER': 'Win Multiplier',
+	'REPLAY DISCLAIMER': 'This is a replay of a previous game round. No plays will be made.',
 	'INFO INTERRUPTED BODY 2':
 		'All valid plays and potential wins remain active until the round is fully completed.',
 

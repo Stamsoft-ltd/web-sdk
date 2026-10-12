@@ -53,30 +53,75 @@ const handleRequestBet = async ({ onError }: { onError: () => void }) => {
 	}
 };
 
+// /wallet/end-round settles a round the RGS is still holding (every bonus, and every winning spin).
+// It used to be tried exactly once with the failure swallowed: one dropped or stalled request at the
+// end of a bonus left the round open on the RGS while the game went idle as if all was well, and
+// every play after that was refused ("player already has an active bet") — the game looked dead
+// until it was closed and reopened (authenticate resumes the open round). Now a failed or stalled
+// end-round is retried, and if it still hasn't gone through, the next play settles it first.
+const END_ROUND_ATTEMPTS = 3;
+const END_ROUND_RETRY_DELAY_MS = 1000; // grows per attempt: 1s, 2s
+const END_ROUND_TIMEOUT_MS = 10000; // a request with no answer by then counts as failed
+let isEndRoundPending = false;
+
+const withTimeout = <T>(promise: Promise<T>, ms: number) =>
+	new Promise<T>((resolve, reject) => {
+		const timer = setTimeout(
+			() => reject({ error: 'Timeout', message: `No response from /wallet/end-round within ${ms}ms` }),
+			ms,
+		);
+		promise.then(
+			(value) => {
+				clearTimeout(timer);
+				resolve(value);
+			},
+			(error) => {
+				clearTimeout(timer);
+				reject(error);
+			},
+		);
+	});
+
+const requestEndRoundOnce = async () => {
+	const data = await withTimeout(
+		requestEndRound({
+			sessionID: stateUrlDerived.sessionID(),
+			rgsUrl: stateUrlDerived.rgsUrl(),
+		}),
+		END_ROUND_TIMEOUT_MS,
+	);
+
+	if (data?.error) {
+		throw data;
+	}
+
+	if (data?.balance?.amount !== undefined) {
+		return data;
+	}
+
+	throw {
+		error: 'Empty amount in data.balance',
+		message: JSON.stringify({ data }),
+	};
+};
+
 const handleRequestEndRound = async () => {
 	if (stateUrlDerived.replay()) return;
 
-	try {
-		const data = await requestEndRound({
-			sessionID: stateUrlDerived.sessionID(),
-			rgsUrl: stateUrlDerived.rgsUrl(),
-		});
-
-		if (data?.error) {
-			throw data;
-		}
-
-		if (data?.balance?.amount !== undefined) {
+	isEndRoundPending = true;
+	for (let attempt = 1; attempt <= END_ROUND_ATTEMPTS; attempt++) {
+		try {
+			const data = await requestEndRoundOnce();
+			isEndRoundPending = false;
 			return data;
-		} else {
-			throw {
-				error: 'Empty amount in data.balance',
-				message: JSON.stringify({ data }),
-			};
+		} catch (error) {
+			console.error(`end-round attempt ${attempt}/${END_ROUND_ATTEMPTS} failed`, error);
+			if (attempt < END_ROUND_ATTEMPTS) {
+				await new Promise((resolve) => setTimeout(resolve, END_ROUND_RETRY_DELAY_MS * attempt));
+			}
 		}
-	} catch (error) {
-		console.error(error);
 	}
+	// Still open on the RGS (isEndRoundPending stays set): newGame settles it before the next play.
 };
 
 const handleUpdateBalance = ({ balanceAmountFromApi }: { balanceAmountFromApi: number }) => {
@@ -195,6 +240,14 @@ function createPrimaryMachines<TBet extends BaseBet>(options: Options<TBet>) {
 	// newGame
 	const newGame = fromPromise(async () => {
 		markRoundStart();
+		// The previous round could not be settled (see handleRequestEndRound): settle it now, or the
+		// RGS refuses this play because that round is still active. Its balance (with that round's
+		// win) is what this play is checked and debited against. If it still fails, the play goes
+		// ahead anyway and its own error (if any) is shown — the next try settles it again.
+		if (isEndRoundPending) {
+			const settled = await handleRequestEndRound();
+			if (settled?.balance) handleUpdateBalance({ balanceAmountFromApi: settled.balance.amount });
+		}
 		if (!stateBetDerived.isBetCostAvailable()) {
 			failInsufficientFunds(onNewGameError);
 		}
