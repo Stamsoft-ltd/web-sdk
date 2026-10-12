@@ -1,0 +1,17 @@
+{
+	"referenceBranch": "feature/veggie-salad-v1",
+	"referenceCommit": "3d719a197",
+	"referenceCheckout": "/private/tmp/web-sdk-veggie-reference",
+	"bookFixtures": {
+		"feature.json": "171a8818c8f455ddd78a378b1e4edaf02d36c1914cd58e6db72f586870130f2d",
+		"normal.json": "5d2bf9d9fc85e958f8eac12aeafdec70e617ff8bb163e059e4f6cd8e1e8170d5",
+		"base.json": "6908a6d169408e6fa496df7f69cea10d4553a25145bbf04ebbabadaa4323edcb",
+		"mystery.json": "1de08a5e14e29f55b5554f682aa186a888b41baa2d09c4b0cbf600d8cc3e75a9",
+		"super.json": "6b07914b36c9c4abf0c5d739bec412cb54710657fc3c7c7c5900960dc1d8b721"
+	},
+	"currencyReference": "packages/utils-shared/currency.ts",
+	"localeReference": "apps/veggie-salad/src/i18n/messagesMap/magneticCommon",
+	"bookUnitsPerBaseBet": 100,
+	"walletUnitsPerCurrency": 1000000,
+	"previewSelection": "sequential fixtures, not weighted sampling"
+}

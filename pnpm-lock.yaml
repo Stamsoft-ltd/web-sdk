@@ -1017,6 +1017,28 @@ importers:
         specifier: workspace:*
         version: link:../../packages/eslint-config-custom
 
+  apps/split-party:
+    dependencies:
+      '@lingui/core':
+        specifier: 5.2.0
+        version: 5.2.0(@lingui/babel-plugin-lingui-macro@5.2.0(babel-plugin-macros@3.1.0)(typescript@5.8.3))(babel-plugin-macros@3.1.0)
+      rgs-requests:
+        specifier: workspace:*
+        version: link:../../packages/rgs-requests
+      svelte:
+        specifier: 5.20.5
+        version: 5.20.5
+    devDependencies:
+      '@sveltejs/vite-plugin-svelte':
+        specifier: 5.0.3
+        version: 5.0.3(svelte@5.20.5)(vite@6.2.0(@types/node@24.0.13)(jiti@1.21.7)(sass-embedded@1.89.2))
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+      vite:
+        specifier: 6.2.0
+        version: 6.2.0(@types/node@24.0.13)(jiti@1.21.7)(sass-embedded@1.89.2)
+
   apps/scatter:
     dependencies:
       '@lingui/core':

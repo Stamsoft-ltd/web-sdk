@@ -1,0 +1,24 @@
+{
+	"name": "split-party",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite --host 127.0.0.1 --port 3021",
+		"build": "vite build",
+		"preview": "vite preview --host 127.0.0.1 --port 3021",
+		"test": "node scripts/test.mjs",
+		"mock-rgs": "node scripts/mock-rgs.mjs",
+		"check": "tsc -p tsconfig.json"
+	},
+	"dependencies": {
+		"svelte": "5.20.5",
+		"@lingui/core": "5.2.0",
+		"rgs-requests": "workspace:*"
+	},
+	"devDependencies": {
+		"vite": "6.2.0",
+		"@sveltejs/vite-plugin-svelte": "5.0.3",
+		"typescript": "5.8.3"
+	}
+}
