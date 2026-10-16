@@ -1,0 +1,553 @@
+{
+  "skeleton": {
+    "spine": "4.2.74",
+    "x": -120,
+    "y": -120,
+    "width": 240,
+    "height": 240
+  },
+  "bones": [
+    {
+      "name": "root"
+    },
+    {
+      "name": "impact",
+      "parent": "root",
+      "x": 0,
+      "y": -72
+    },
+    {
+      "name": "body",
+      "parent": "impact",
+      "x": 0,
+      "y": 72
+    },
+    {
+      "name": "portal-root",
+      "parent": "root",
+      "x": 0,
+      "y": -14
+    },
+    {
+      "name": "portal-vortex",
+      "parent": "portal-root",
+      "x": 0,
+      "y": 0
+    },
+    {
+      "name": "portal-rim",
+      "parent": "portal-root",
+      "x": 0,
+      "y": 0
+    }
+  ],
+  "slots": [
+    {
+      "name": "portal-vortex",
+      "bone": "portal-vortex",
+      "attachment": "portal-vortex",
+      "color": "ffffff00"
+    },
+    {
+      "name": "portal-rim",
+      "bone": "portal-rim",
+      "attachment": "portal-rim",
+      "color": "ffffff00"
+    },
+    {
+      "name": "body",
+      "bone": "body",
+      "attachment": "body"
+    }
+  ],
+  "skins": [
+    {
+      "name": "default",
+      "attachments": {
+        "body": {
+          "body": {
+            "path": "BLUE_GEM-art",
+            "width": 139.3846153846154,
+            "height": 144
+          }
+        },
+        "portal-vortex": {
+          "portal-vortex": {
+            "path": "portal-vortex",
+            "width": 88,
+            "height": 86.28348504551366
+          }
+        },
+        "portal-rim": {
+          "portal-rim": {
+            "path": "portal-rim",
+            "width": 128,
+            "height": 125.45590062111802
+          }
+        }
+      }
+    }
+  ],
+  "animations": {
+    "setup": {
+      "bones": {
+        "impact": {
+          "scale": [
+            {
+              "time": 0,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        }
+      }
+    },
+    "idle": {
+      "bones": {
+        "body": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 2.4,
+              "x": 0,
+              "y": 0.6
+            },
+            {
+              "time": 4.8,
+              "x": 0,
+              "y": 0
+            }
+          ]
+        }
+      }
+    },
+    "land": {
+      "bones": {
+        "impact": {
+          "scale": [
+            {
+              "time": 0,
+              "x": 0.94,
+              "y": 1.09
+            },
+            {
+              "time": 0.024,
+              "x": 1.28,
+              "y": 0.68
+            },
+            {
+              "time": 0.038,
+              "x": 1.28,
+              "y": 0.68
+            },
+            {
+              "time": 0.066,
+              "x": 0.9,
+              "y": 1.13
+            },
+            {
+              "time": 0.094,
+              "x": 1.05,
+              "y": 0.95
+            },
+            {
+              "time": 0.12,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        }
+      },
+      "events": [
+        {
+          "time": 0,
+          "name": "contact"
+        },
+        {
+          "time": 0.12,
+          "name": "settled"
+        }
+      ]
+    },
+    "paying": {
+      "bones": {
+        "body": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.19,
+              "value": 5
+            },
+            {
+              "time": 0.38,
+              "value": 0
+            },
+            {
+              "time": 0.5700000000000001,
+              "value": -5
+            },
+            {
+              "time": 0.76,
+              "value": 0
+            }
+          ],
+          "scale": [
+            {
+              "time": 0,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 0.18,
+              "x": 1.07,
+              "y": 0.97
+            },
+            {
+              "time": 0.38,
+              "x": 1.025,
+              "y": 1.04
+            },
+            {
+              "time": 0.56,
+              "x": 0.98,
+              "y": 1.02
+            },
+            {
+              "time": 0.76,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        }
+      }
+    },
+    "remove": {
+      "bones": {
+        "body": {
+          "scale": [
+            {
+              "time": 0,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 0.12,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 0.18,
+              "x": 0.99,
+              "y": 0.99
+            },
+            {
+              "time": 0.25,
+              "x": 0.96,
+              "y": 0.96
+            },
+            {
+              "time": 0.33,
+              "x": 0.91,
+              "y": 0.91
+            },
+            {
+              "time": 0.41,
+              "x": 0.84,
+              "y": 0.84
+            },
+            {
+              "time": 0.49,
+              "x": 0.74,
+              "y": 0.74
+            },
+            {
+              "time": 0.57,
+              "x": 0.62,
+              "y": 0.62
+            },
+            {
+              "time": 0.64,
+              "x": 0.49,
+              "y": 0.49
+            },
+            {
+              "time": 0.7,
+              "x": 0.37,
+              "y": 0.37
+            },
+            {
+              "time": 0.75,
+              "x": 0.26,
+              "y": 0.26
+            },
+            {
+              "time": 0.79,
+              "x": 0.17,
+              "y": 0.17
+            },
+            {
+              "time": 0.82,
+              "x": 0.1,
+              "y": 0.1
+            },
+            {
+              "time": 0.845,
+              "x": 0.045,
+              "y": 0.045
+            },
+            {
+              "time": 0.86,
+              "x": 0.001,
+              "y": 0.001
+            }
+          ],
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.12,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.25,
+              "x": 2,
+              "y": -1
+            },
+            {
+              "time": 0.41,
+              "x": 3,
+              "y": -3
+            },
+            {
+              "time": 0.57,
+              "x": 2,
+              "y": -6
+            },
+            {
+              "time": 0.7,
+              "x": 1,
+              "y": -10
+            },
+            {
+              "time": 0.86,
+              "x": 0,
+              "y": -14
+            }
+          ],
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.12,
+              "value": 0
+            },
+            {
+              "time": 0.28,
+              "value": 62.27976795192808
+            },
+            {
+              "time": 0.49,
+              "value": 181.64932319312356
+            },
+            {
+              "time": 0.595,
+              "value": 272.47398478968535
+            },
+            {
+              "time": 0.7,
+              "value": 363.2986463862471
+            },
+            {
+              "time": 0.86,
+              "value": 518.9980662660673
+            }
+          ]
+        },
+        "portal-root": {
+          "scale": [
+            {
+              "time": 0,
+              "x": 0.001,
+              "y": 0.001
+            },
+            {
+              "time": 0.09,
+              "x": 1.08,
+              "y": 0.94
+            },
+            {
+              "time": 0.18,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 0.5,
+              "x": 0.98,
+              "y": 1.03
+            },
+            {
+              "time": 0.82,
+              "x": 1.02,
+              "y": 0.98
+            },
+            {
+              "time": 0.87,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 0.9,
+              "x": 0.35,
+              "y": 0.35
+            },
+            {
+              "time": 0.93,
+              "x": 0.001,
+              "y": 0.001
+            },
+            {
+              "time": 1,
+              "x": 0.001,
+              "y": 0.001
+            }
+          ],
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 1,
+              "x": 0,
+              "y": 0
+            }
+          ]
+        },
+        "portal-vortex": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.3,
+              "value": 42.36834882502444
+            },
+            {
+              "time": 0.7,
+              "value": 141.22782941674814
+            },
+            {
+              "time": 1,
+              "value": 204.7803526542848
+            }
+          ]
+        },
+        "portal-rim": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.18,
+              "value": -4
+            },
+            {
+              "time": 0.5,
+              "value": 3
+            },
+            {
+              "time": 0.87,
+              "value": 0
+            },
+            {
+              "time": 1,
+              "value": 0
+            }
+          ]
+        }
+      },
+      "slots": {
+        "body": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 1
+            },
+            {
+              "time": 0.845,
+              "value": 1
+            },
+            {
+              "time": 0.86,
+              "value": 0
+            },
+            {
+              "time": 1,
+              "value": 0
+            }
+          ]
+        },
+        "portal-vortex": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.04,
+              "value": 1
+            },
+            {
+              "time": 0.92,
+              "value": 1
+            },
+            {
+              "time": 1,
+              "value": 0
+            }
+          ]
+        },
+        "portal-rim": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.04,
+              "value": 1
+            },
+            {
+              "time": 0.92,
+              "value": 1
+            },
+            {
+              "time": 1,
+              "value": 0
+            }
+          ]
+        }
+      }
+    }
+  },
+  "events": {
+    "contact": {},
+    "settled": {}
+  }
+}

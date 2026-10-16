@@ -1,0 +1,11 @@
+{
+  "beforeBytes": 33474462,
+  "afterBytes": 33474462,
+  "removedBytes": 0,
+  "removedFiles": 0,
+  "runtimeAssets": 175,
+  "sourceFiles": 99,
+  "runtimeAssetSha256": "b1faf6085c07621c792f2ba1166594cd4d8584d8ce1430f30067e8161447dff5",
+  "policy": "Generated assets only; all referenced files verified byte-identical or exact PNG scanline/metadata-equivalent before pruning. JS/CSS/HTML and source assets untouched.",
+  "execute": false
+}

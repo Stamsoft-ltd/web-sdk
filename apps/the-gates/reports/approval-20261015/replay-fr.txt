@@ -1,0 +1,54 @@
+- main:
+  - img "The Gates"
+  - img "Press Play"
+  - region "The Gates game":
+    - status: Cascades 0/3. Multiplicateur 1×.
+    - img "6 columns, 5 rows. Pay anywhere."
+  - button "Menu"
+  - button "Bonus" [disabled]:
+    - generic: Bonus
+  - button "Tourner" [disabled]
+  - 'button "Vitesse: Normale"'
+  - button "Jeu automatique" [disabled]
+  - button "Mise de base −" [disabled]:
+  - button "Mise de base +" [disabled]:
+  - generic: Solde
+  - strong:
+    - generic: €0.00
+  - generic: Gain
+  - strong:
+    - generic: €0.00
+  - generic: Mise
+  - strong:
+    - generic: €5.00
+  - generic: THE GATES | 22:52
+  - generic: Replay
+- dialog "Replay":
+  - generic: The Gates
+  - heading "Replay" [level=2]
+  - term: Mode
+  - definition: Super bonus
+  - term: Event
+  - definition: "54"
+  - term: Base bet
+  - definition:
+    - generic: €5.00
+  - generic: Based on base bet
+  - term: Coût total
+  - definition:
+    - generic: €1,500.00
+  - text: Cost multiplier
+  - strong: 300×
+  - term: Payout multiplier
+  - definition:
+    - generic: 46.55×
+  - generic: Based on base bet
+  - term: Gain total
+  - definition:
+    - generic: €232.75
+  - generic: Recorded result
+  - generic: Game 0_0_the_gates
+  - generic: Version v8
+  - button "Play replay" [active]:
+    - generic: Play replay
+  - paragraph: Recorded round only. No new wager or balance change.

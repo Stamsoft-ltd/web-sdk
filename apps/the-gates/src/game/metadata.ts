@@ -1,6 +1,6 @@
 import { stateMeta } from 'state-shared';
 import { COSTS, type Mode } from './contract';
-export function initMetadata() {
+export function initMetadata(translate: (key: string) => string = (key) => key) {
 	stateMeta.betModeMeta = Object.fromEntries(
 		Object.entries(COSTS).map(([mode, cost]) => [
 			mode,
@@ -14,9 +14,11 @@ export function initMetadata() {
 				maxWin: 25000,
 				assets: { icon: '', volatility: '', button: '', dialogImage: '', dialogVolatility: '' },
 				text: {
-					title: mode,
-					dialog: mode,
-					button: 'PLAY',
+					title: translate(mode),
+					dialog: translate(`${mode} DESC`),
+					button: translate(
+						mode === 'BASE' ? 'PLAY' : ['CHANCE', 'FEATURE'].includes(mode) ? 'ACTIVATE' : 'BUY',
+					),
 					tickerIdle: 'THE GATES',
 					tickerSpin: 'THE GATES',
 				},

@@ -1,0 +1,65 @@
+{
+  "gates-qa-kwd": {
+    "balance": 123456776500,
+    "requests": [
+      {
+        "path": "/wallet/authenticate",
+        "sessionID": "gates-qa-kwd",
+        "language": "de"
+      },
+      {
+        "path": "/wallet/play",
+        "mode": "BASE",
+        "currency": "KWD",
+        "sessionID": "gates-qa-kwd",
+        "amount": 25000
+      },
+      {
+        "path": "/wallet/end-round",
+        "sessionID": "gates-qa-kwd"
+      },
+      {
+        "path": "/bet/event",
+        "sessionID": "gates-qa-kwd",
+        "event": "1"
+      }
+    ],
+    "round": null
+  },
+  "gates-qa-resume": {
+    "balance": 123456801500,
+    "requests": [
+      {
+        "path": "/wallet/authenticate",
+        "sessionID": "gates-qa-resume",
+        "language": "en"
+      },
+      {
+        "path": "/wallet/end-round",
+        "sessionID": "gates-qa-resume"
+      },
+      {
+        "path": "/bet/event",
+        "sessionID": "gates-qa-resume",
+        "event": "1"
+      }
+    ],
+    "round": null
+  },
+  "gates-qa-social": {
+    "balance": 123456789000,
+    "requests": [
+      {
+        "path": "/wallet/authenticate",
+        "sessionID": "gates-qa-social",
+        "language": "es"
+      },
+      {
+        "path": "/wallet/authenticate",
+        "sessionID": "gates-qa-social",
+        "language": "es"
+      }
+    ],
+    "round": null
+  }
+}

@@ -1,0 +1,30 @@
+../wins/wild-banner.png
+size: 2380,951
+filter: Linear,Linear
+pma: false
+banner
+  bounds: 0,0,2380,951
+
+../wins/wild-horn-2.png
+size: 747,498
+filter: Linear,Linear
+pma: false
+horn-left
+  bounds: 0,0,747,498
+horn-right
+  bounds: 0,0,747,498
+
+../wins/wild-title.png
+size: 1732,893
+filter: Linear,Linear
+pma: false
+title
+  bounds: 0,0,1732,893
+
+../wins/wild-crown.png
+size: 458,388
+filter: Linear,Linear
+pma: false
+crown
+  bounds: 0,0,458,388
+

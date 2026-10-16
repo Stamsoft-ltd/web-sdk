@@ -1,0 +1,677 @@
+const assetPathPrefix = "./assets/the-gates/figma-20261013";
+const imgChatGptImageSep292026At112535Am1 = `${assetPathPrefix}/a0263.png`;
+const imgChatGptImageSep292026At105434Am1 = `${assetPathPrefix}/36954.png`;
+const imgRectangle354 = `${assetPathPrefix}/78f83.png`;
+const imgRectangle355 = `${assetPathPrefix}/f6355.png`;
+const imgRectangle356 = `${assetPathPrefix}/25449.png`;
+const imgRectangle436 = `${assetPathPrefix}/1866a.png`;
+const imgChatGptImageSep302026At013914Pm2 = `${assetPathPrefix}/b1808.png`;
+const imgChatGptImageSep292026At112213Am1 = `${assetPathPrefix}/5bb47.png`;
+const imgChatGptImageSep302026At021901Pm1 = `${assetPathPrefix}/139ce.png`;
+const imgChatGptImageSep302026At014750Pm1 = `${assetPathPrefix}/fcef2.png`;
+const imgOrnateGoldenBlueGameUiPanel2 = `${assetPathPrefix}/d883a.png`;
+const imgChatGptImageSep292026At111111Am3 = `${assetPathPrefix}/044e7.png`;
+const imgRectangle437 = `${assetPathPrefix}/37673.png`;
+const imgRectangle435 = `${assetPathPrefix}/68caf.png`;
+const imgRectangle438 = `${assetPathPrefix}/98971.png`;
+const imgGroup = `${assetPathPrefix}/11cd1.svg`;
+const imgGroup1 = `${assetPathPrefix}/ee395.svg`;
+const imgSvg = `${assetPathPrefix}/afa46.svg`;
+const imgGroup256 = `${assetPathPrefix}/cd320.svg`;
+const imgGroup258 = `${assetPathPrefix}/407f5.svg`;
+const imgGroup266 = `${assetPathPrefix}/c14a9.svg`;
+const imgVector = `${assetPathPrefix}/0dcc4.svg`;
+const imgGroup257 = `${assetPathPrefix}/3031a.svg`;
+const imgVector1 = `${assetPathPrefix}/627a9.svg`;
+const imgGroup259 = `${assetPathPrefix}/58549.svg`;
+
+export default function BaseGame() {
+  return (
+    <div className="bg-[#172537] relative size-full" data-node-id="11152:9987" data-name="Base game">
+      <div className="absolute blur-[3px] h-[688px] left-[-3px] top-0 w-[1209px]" data-node-id="11152:9988" data-name="ChatGPT Image Sep 29, 2026 at 11_25_35 AM 1">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep292026At112535Am1} />
+      </div>
+      <div className="absolute contents inset-[3.73%_1.86%_91.94%_90.67%]" data-node-id="11152:9989" data-name="Group">
+        <div className="absolute inset-[5.18%_1.86%_92.67%_92.34%]" data-node-id="11152:9990" data-name="Group">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup} />
+        </div>
+        <div className="absolute inset-[3.73%_8.01%_91.94%_90.67%]" data-node-id="11152:10000" data-name="Group">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup1} />
+        </div>
+      </div>
+      <div className="absolute h-[101px] left-[23px] top-[20px] w-[178px]" data-node-id="11152:10004" data-name="ChatGPT Image Sep 29, 2026 at 10_54_34 AM 1">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep292026At105434Am1} />
+      </div>
+      <div className="absolute border-5 border-[#021d42] border-solid inset-[83.28%_1.67%_1.34%_2.5%] rounded-[32px]" data-node-id="11152:10006">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[32px] size-full" src={imgRectangle354} />
+      </div>
+      <div className="absolute border-2 border-black border-solid inset-[84.93%_2.75%_3.13%_3.58%] rounded-[26px]" data-node-id="11152:10007">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full" src={imgRectangle355} />
+      </div>
+      <div className="absolute content-stretch flex gap-[51px] items-center left-[289px] top-[585px]" data-node-id="11152:10008">
+        <div className="[word-break:break-word] content-stretch flex flex-col gap-[8px] items-start leading-[0] not-italic px-[6.667px] relative shrink-0 uppercase" data-node-id="11152:10009">
+          <div className="flex flex-col font-['Inter:Bold'] font-bold justify-center relative shrink-0 text-[#fde10f] text-[10px] tracking-[2px] w-[62.495px]" data-node-id="11152:10010">
+            <p className="leading-[15px]">Balance</p>
+          </div>
+          <div className="bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center relative shrink-0 text-[20px] text-[transparent] text-center text-shadow-[0px_1.962px_3.924px_rgba(2,2,88,0.41)] tracking-[1.2551px] whitespace-nowrap" data-node-id="11152:10011" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 63 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.1293e-14 0.85263 -5.7998 -0.0000012395 31.615 9.4737)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+            <p className="leading-[17.93px]">$1.00</p>
+          </div>
+        </div>
+        <div className="border-r border-solid border-white content-stretch flex flex-col h-[49px] items-start pr-[48px] relative shrink-0 w-px" data-node-id="11152:10012" data-name="VerticalBorder" />
+        <div className="[word-break:break-word] content-stretch flex flex-col gap-[8px] items-start leading-[0] not-italic px-[6.667px] relative shrink-0 uppercase" data-node-id="11152:10013">
+          <div className="flex flex-col font-['Inter:Bold'] font-bold justify-center relative shrink-0 text-[#fde10f] text-[10px] tracking-[2px] w-[62.495px]" data-node-id="11152:10014">
+            <p className="leading-[15px]">WIN</p>
+          </div>
+          <div className="bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center relative shrink-0 text-[20px] text-[transparent] text-center text-shadow-[0px_1.962px_3.924px_rgba(2,2,88,0.41)] tracking-[1.2551px] whitespace-nowrap" data-node-id="11152:10015" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 63 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.1293e-14 0.85263 -5.7998 -0.0000012395 31.615 9.4737)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+            <p className="leading-[17.93px]">$1.00</p>
+          </div>
+        </div>
+        <div className="border-r border-solid border-white content-stretch flex flex-col h-[49px] items-start pr-[48px] relative shrink-0 w-px" data-node-id="11152:10016" data-name="VerticalBorder" />
+        <div className="content-stretch flex gap-[10px] h-[49px] items-center relative shrink-0" data-node-id="11152:10017">
+          <div className="content-stretch flex h-[40px] items-center justify-center relative shrink-0 w-[26px]" data-node-id="11152:10018" data-name="Bet">
+            <div className="relative shrink-0 size-[24px]" data-node-id="I11152:10018;2503:4361" data-name="SVG">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgSvg} />
+            </div>
+          </div>
+          <div className="[word-break:break-word] content-stretch flex flex-col gap-[8px] items-start leading-[0] not-italic px-[6.667px] relative shrink-0 uppercase" data-node-id="11152:10019">
+            <div className="flex flex-col font-['Inter:Bold'] font-bold justify-center relative shrink-0 text-[#fde10f] text-[10px] tracking-[2px] w-[62.495px]" data-node-id="11152:10020">
+              <p className="leading-[15px]">BET</p>
+            </div>
+            <div className="bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center relative shrink-0 text-[20px] text-[transparent] text-center text-shadow-[0px_1.962px_3.924px_rgba(2,2,88,0.41)] tracking-[1.2551px] whitespace-nowrap" data-node-id="11152:10021" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 63 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.1293e-14 0.85263 -5.7998 -0.0000012395 31.615 9.4737)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+              <p className="leading-[17.93px]">$1.00</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute contents left-[780px] top-[582px]" data-node-id="11152:10022">
+        <div className="absolute left-[780px] size-[57px] top-[582px]" data-node-id="11152:10023">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup256} />
+        </div>
+        <div className="absolute contents inset-[90.75%_31.83%_8.38%_66.5%]" data-node-id="11152:10027">
+          <div className="absolute bg-[#021d42] inset-[90.75%_31.83%_8.38%_66.5%] rounded-[20px]" data-node-id="11152:10028" />
+          <div className="absolute inset-[90.92%_31.93%_8.55%_66.6%] rounded-[20px]" data-node-id="11152:10029" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 17.647 3.5294' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(3.1632e-15 0.16718 -1.6246 -2.4304e-7 8.8557 1.8576)'><stop stop-color='rgba(255,255,255,1)' offset='0.58654'/><stop stop-color='rgba(173,213,245,0.5)' offset='1'/></radialGradient></defs></svg>\"), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" }} />
+        </div>
+      </div>
+      <div className="absolute contents left-[54px] top-[582px]" data-node-id="11152:10030">
+        <div className="absolute left-[54px] size-[57px] top-[582px]" data-node-id="11152:10031">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup256} />
+        </div>
+        <div className="absolute contents inset-[89.55%_92.25%_7.46%_6.08%]" data-node-id="11152:10035">
+          <div className="absolute bg-[#021d42] inset-[89.55%_92.25%_9.57%_6.08%] rounded-[20px]" data-node-id="11152:10036" />
+          <div className="absolute inset-[89.73%_92.35%_9.75%_6.18%] rounded-[20px]" data-node-id="11152:10037" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 17.647 3.5294' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(3.1632e-15 0.16718 -1.6246 -2.4304e-7 8.8557 1.8576)'><stop stop-color='rgba(255,255,255,1)' offset='0.58654'/><stop stop-color='rgba(173,213,245,0.5)' offset='1'/></radialGradient></defs></svg>\"), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" }} />
+          <div className="absolute bg-[#021d42] inset-[90.61%_92.25%_8.52%_6.08%] rounded-[20px]" data-node-id="11152:10038" />
+          <div className="absolute bg-[#021d42] inset-[91.66%_92.25%_7.46%_6.08%] rounded-[20px]" data-node-id="11152:10039" />
+          <div className="absolute inset-[90.78%_92.35%_8.69%_6.18%] rounded-[20px]" data-node-id="11152:10040" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 17.647 3.5294' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(3.1632e-15 0.16718 -1.6246 -2.4304e-7 8.8557 1.8576)'><stop stop-color='rgba(255,255,255,1)' offset='0.58654'/><stop stop-color='rgba(173,213,245,0.5)' offset='1'/></radialGradient></defs></svg>\"), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" }} />
+          <div className="absolute inset-[91.83%_92.35%_7.64%_6.18%] rounded-[20px]" data-node-id="11152:10041" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 17.647 3.5294' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(3.1632e-15 0.16718 -1.6246 -2.4304e-7 8.8557 1.8576)'><stop stop-color='rgba(255,255,255,1)' offset='0.58654'/><stop stop-color='rgba(173,213,245,0.5)' offset='1'/></radialGradient></defs></svg>\"), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" }} />
+        </div>
+      </div>
+      <div className="absolute contents inset-[2.99%_18.08%_19.76%_18.42%]" data-node-id="11152:10042">
+        <div className="absolute border-[#021d42] border-[5.109px] border-solid inset-[2.99%_18.08%_19.76%_18.42%] rounded-[32.698px]" data-node-id="11152:10043">
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[32.698px] size-full" src={imgRectangle356} />
+        </div>
+        <div className="absolute bg-[#0d223f] border-[4.087px] border-black border-solid inset-[5.23%_19.38%_22%_19.8%] rounded-[18.392px]" data-node-id="11152:10044" />
+      </div>
+      <div className="absolute contents left-[119px] top-[579px]" data-node-id="11152:10045">
+        <div className="absolute contents left-[119px] top-[579px]" data-node-id="11152:10046">
+          <div className="absolute bg-[#021d42] border border-black border-solid h-[62px] left-[119px] rounded-[31px] top-[579px] w-[148px]" data-node-id="11152:10047" />
+          <div className="absolute h-[52px] left-[124px] rounded-[26px] top-[584px] w-[138px]" data-node-id="11152:10048">
+            <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full" src={imgRectangle436} />
+          </div>
+          <div className="absolute bg-gradient-to-b border-2 border-black border-solid from-[#f22f24] h-[44px] left-[128px] rounded-[22px] shadow-[0px_0px_2px_0px_#fd6404] to-[#d80203] top-[588px] w-[130px]" data-node-id="11152:10049" />
+        </div>
+        <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] left-[194.5px] not-italic text-[17.659px] text-[transparent] text-center text-shadow-[0px_1.962px_3.924px_rgba(2,2,88,0.41)] top-[610px] tracking-[1.2551px] uppercase whitespace-nowrap" data-node-id="11152:10050" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 69 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.2368e-14 0.85263 -6.3522 -0.0000012395 34.626 9.4737)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+          <p className="leading-[17.93px]">BONUS</p>
+        </div>
+      </div>
+      <div className="absolute contents left-[846px] top-[582px]" data-node-id="11152:10051">
+        <div className="absolute left-[846px] size-[57px] top-[582px]" data-node-id="11152:10052">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup258} />
+        </div>
+      </div>
+      <div className="absolute left-[1034px] size-[57px] top-[582px]" data-node-id="11152:10064">
+        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup266} />
+      </div>
+      <div className="absolute contents left-[1098px] top-[582px]" data-node-id="11152:10070">
+        <div className="absolute left-[1098px] size-[57px] top-[582px]" data-node-id="11152:10071">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup256} />
+        </div>
+        <div className="absolute content-stretch flex flex-col gap-[4px] inset-[89.1%_5.08%_7.03%_92.83%] items-center" data-node-id="11152:10075">
+          <div className="h-[14.882px] relative shrink-0 w-[15.934px]" data-node-id="11152:10076" data-name="Vector">
+            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVector} />
+          </div>
+          <div className="content-stretch flex flex-col items-center relative shrink-0 w-full" data-node-id="11152:10077">
+            <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[7.302px] text-[transparent] text-center text-shadow-[0px_0.716px_1.433px_rgba(2,2,88,0.41)] tracking-[0.4582px] uppercase w-full" data-node-id="11152:10078" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 25 7' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(4.4812e-15 0.33158 -2.3015 -4.8202e-7 12.546 3.6842)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+              <p className="leading-[6.546px]">AUTO</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute left-[909px] size-[117px] top-[549px]" data-node-id="11152:10079">
+        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup257} />
+      </div>
+      <div className="absolute h-[59.363px] left-[937px] top-[579px] w-[58.08px]" data-node-id="11152:10083" data-name="Vector">
+        <div className="absolute inset-[-3.31%_-6.76%_-9.92%_-6.76%]">
+          <img alt="" className="block max-w-none size-full" src={imgVector1} />
+        </div>
+      </div>
+      <div className="-translate-x-1/2 absolute contents left-[calc(50%+0.21px)] top-[36.11px]" data-node-id="11152:10084" data-name="символи">
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[241px] rounded-[8px] to-[#0a2540] top-[36.11px] w-[117.355px]" data-node-id="11152:10085" data-name="Symbols pad" />
+        <div className="absolute h-[77.862px] left-[264.28px] top-[44.39px] w-[77.354px]" data-node-id="11152:10086" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 2">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[288.93%] left-[-11.48%] max-w-none top-[-35.5%] w-[581.64%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[241px] rounded-[8px] to-[#0a2540] top-[133.53px] w-[117.355px]" data-node-id="11152:10087" data-name="Symbols pad" />
+        <div className="absolute contents left-[241px] top-[230.85px]" data-node-id="11152:10088">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(254,196,26,0.31)] border-solid from-[#0b192c] h-[94.457px] left-[241px] rounded-[8px] to-[#0b192c] top-[230.85px] via-1/2 via-[rgba(142,118,34,0.5)] w-[117.355px]" data-node-id="11152:10089" data-name="Symbols pad" />
+          <div className="absolute inset-[35.83%_71.63%_52.38%_21.65%]" data-node-id="11152:10090" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 5">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[264.78%] left-[-303.51%] max-w-none top-[-29.25%] w-[518.71%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[241px] top-[328.16px]" data-node-id="11152:10091">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(255,255,255,0.47)] border-solid from-[#0b192c] h-[94.457px] left-[241px] rounded-[8px] to-[#0b192c] top-[328.16px] via-1/2 via-[rgba(154,106,106,0.55)] w-[117.355px]" data-node-id="11152:10092" data-name="Symbols pad" />
+          <div className="absolute inset-[51.04%_71.19%_38.91%_21.3%]" data-node-id="11152:10093" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 13">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[345.14%] left-[-409.01%] max-w-none top-[-54.86%] w-[515.7%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[241px] top-[425.48px]" data-node-id="11152:10094">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(82,135,212,0.45)] border-solid from-[#0b192c] h-[94.457px] left-[241px] rounded-[8px] to-[#0b192c] top-[425.48px] via-1/2 via-[#3864b0] w-[117.355px]" data-node-id="11152:10095" data-name="Symbols pad" />
+          <div className="absolute inset-[64.54%_71.14%_22.69%_21.12%]" data-node-id="11152:10096" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 3">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[262.43%] left-[-92.37%] max-w-none top-[-31.07%] w-[483.38%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[361.21px] top-[133.53px]" data-node-id="11152:10097">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(152,86,44,0.68)] border-solid from-[#0b192c] h-[94.457px] left-[361.21px] rounded-[8px] to-[#0b192c] top-[133.53px] via-1/2 via-[#8b4715] w-[117.355px]" data-node-id="11152:10098" data-name="Symbols pad" />
+          <div className="absolute inset-[20.65%_61.38%_66.86%_31.46%]" data-node-id="11152:10099" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 8">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[260.88%] left-[-101.72%] max-w-none top-[-131.47%] w-[508.31%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[361.21px] top-[230.85px]" data-node-id="11152:10100">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(254,180,59,0.3)] border-solid from-[#0b192c] h-[94.457px] left-[361.21px] rounded-[8px] to-[#0b192c] top-[230.85px] via-1/2 via-[rgba(254,142,38,0.48)] w-[117.355px]" data-node-id="11152:10101" data-name="Symbols pad" />
+          <div className="absolute inset-[36.32%_61.61%_52.12%_31.45%] shadow-[0px_0px_18.848px_0px_#dc7d16]" data-node-id="11152:10102" data-name="ChatGPT Image Sep 29, 2026 at 11_22_13 AM 1">
+            <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep292026At112213Am1} />
+          </div>
+        </div>
+        <div className="absolute contents left-[361.21px] top-[328.16px]" data-node-id="11152:10104">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(82,135,212,0.45)] border-solid from-[#0b192c] h-[94.457px] left-[361.21px] rounded-[8px] to-[#0b192c] top-[328.16px] via-1/2 via-[#3864b0] w-[117.355px]" data-node-id="11152:10105" data-name="Symbols pad" />
+          <div className="absolute inset-[50.02%_61.12%_37.21%_31.14%]" data-node-id="11152:10106" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 3">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[262.43%] left-[-92.37%] max-w-none top-[-31.07%] w-[483.38%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[361.21px] top-[425.48px]" data-node-id="11152:10107">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(254,180,59,0.3)] border-solid from-[#0b192c] h-[94.457px] left-[361.21px] rounded-[8px] to-[#0b192c] top-[425.48px] via-1/2 via-[rgba(254,142,38,0.48)] w-[117.355px]" data-node-id="11152:10108" data-name="Symbols pad" />
+          <div className="absolute inset-[65.37%_61.61%_23.07%_31.45%] shadow-[0px_0px_18.848px_0px_#dc7d16]" data-node-id="11152:10109" data-name="ChatGPT Image Sep 29, 2026 at 11_22_13 AM 1">
+            <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep292026At112213Am1} />
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[481.43px] rounded-[8px] to-[#0a2540] top-[36.21px] w-[117.355px]" data-node-id="11152:10111" data-name="Symbols pad" />
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[481.43px] rounded-[8px] to-[#0a2540] top-[133.53px] w-[117.355px]" data-node-id="11152:10112" data-name="Symbols pad" />
+        <div className="absolute contents left-[477px] top-[226px]" data-node-id="11152:10113">
+          <div className="absolute contents left-[477px] top-[226px]" data-node-id="11152:10114">
+            <div className="absolute contents left-[481.07px] top-[229.48px]" data-node-id="11152:10115">
+              <div className="absolute bg-[#f6c523] border-3 border-black border-solid h-[95.663px] left-[481.07px] rounded-[8px] top-[229.48px] w-[116.929px]" data-node-id="11152:10116" data-name="Symbols pad" />
+            </div>
+            <div className="absolute contents left-[486.39px] top-[234.88px]" data-node-id="11152:10117">
+              <div className="absolute bg-[#0147b4] border-[1.431px] border-black border-solid h-[85.05px] left-[486.39px] rounded-[8px] top-[234.88px] w-[106.299px]" data-node-id="11152:10118" data-name="Symbols pad" />
+            </div>
+            <div className="absolute flex inset-[33.73%_50.04%_50.57%_39.75%] items-center justify-center" data-node-id="11152:10119" style={{ containerType: "size" }}>
+              <div className="flex-none h-[hypot(-0.903916cqw,98.7689cqh)] rotate-[0.61deg] w-[hypot(99.0961cqw,1.23111cqh)]">
+                <div className="relative shadow-[0px_0px_24px_0px_#071e35] size-full" data-name="ChatGPT Image Sep 30, 2026 at 02_19_01 PM 1">
+                  <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep302026At021901Pm1} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[481.43px] rounded-[8px] to-[#0a2540] top-[328.16px] w-[117.355px]" data-node-id="11152:10120" data-name="Symbols pad" />
+        <div className="absolute contents left-[481.43px] top-[425.48px]" data-node-id="11152:10121">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(152,86,44,0.68)] border-solid from-[#0b192c] h-[94.457px] left-[481.43px] rounded-[8px] to-[#0b192c] top-[425.48px] via-1/2 via-[#8b4715] w-[117.355px]" data-node-id="11152:10122" data-name="Symbols pad" />
+          <div className="absolute inset-[64.22%_51.36%_23.29%_41.48%]" data-node-id="11152:10123" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 8">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[260.88%] left-[-101.72%] max-w-none top-[-131.47%] w-[508.31%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[601.64px] top-[36.21px]" data-node-id="11152:10124">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(254,196,26,0.31)] border-solid from-[#0b192c] h-[94.457px] left-[601.64px] rounded-[8px] to-[#0b192c] top-[36.21px] via-1/2 via-[rgba(142,118,34,0.5)] w-[117.355px]" data-node-id="11152:10125" data-name="Symbols pad" />
+          <div className="absolute inset-[6.78%_41.57%_81.43%_51.71%]" data-node-id="11152:10126" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 5">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[264.78%] left-[-303.51%] max-w-none top-[-29.25%] w-[518.71%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[601.64px] rounded-[8px] to-[#0a2540] top-[133.53px] w-[117.355px]" data-node-id="11152:10127" data-name="Symbols pad" />
+        <div className="absolute contents left-[601.64px] top-[230.85px]" data-node-id="11152:10128">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(152,86,44,0.68)] border-solid from-[#0b192c] h-[94.457px] left-[601.64px] rounded-[8px] to-[#0b192c] top-[230.85px] via-1/2 via-[#8b4715] w-[117.355px]" data-node-id="11152:10129" data-name="Symbols pad" />
+          <div className="absolute inset-[35.17%_41.34%_52.34%_51.5%]" data-node-id="11152:10130" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 8">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[260.88%] left-[-101.72%] max-w-none top-[-131.47%] w-[508.31%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[601.64px] rounded-[8px] to-[#0a2540] top-[328.16px] w-[117.355px]" data-node-id="11152:10131" data-name="Symbols pad" />
+        <div className="absolute contents left-[601.64px] top-[425.48px]" data-node-id="11152:10132">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(82,135,212,0.45)] border-solid from-[#0b192c] h-[94.457px] left-[601.64px] rounded-[8px] to-[#0b192c] top-[425.48px] via-1/2 via-[#3864b0] w-[117.355px]" data-node-id="11152:10133" data-name="Symbols pad" />
+          <div className="absolute inset-[64.54%_41.08%_22.69%_51.17%]" data-node-id="11152:10134" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 3">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[262.43%] left-[-92.37%] max-w-none top-[-31.07%] w-[483.38%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[721.86px] top-[36.21px]" data-node-id="11152:10135">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(255,255,255,0.47)] border-solid from-[#0b192c] h-[94.457px] left-[721.86px] rounded-[11.45px] to-[#0b192c] top-[36.21px] via-1/2 via-[rgba(154,106,106,0.55)] w-[117.355px]" data-node-id="11152:10136" data-name="Symbols pad" />
+          <div className="absolute inset-[7.62%_31.1%_82.33%_61.38%]" data-node-id="11152:10137" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 13">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[345.14%] left-[-409.01%] max-w-none top-[-54.86%] w-[515.7%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[721.86px] rounded-[8px] to-[#0a2540] top-[133.53px] w-[117.355px]" data-node-id="11152:10138" data-name="Symbols pad" />
+        <div className="absolute contents left-[721.86px] top-[230.85px]" data-node-id="11152:10139">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(254,196,26,0.31)] border-solid from-[#0b192c] h-[94.457px] left-[721.86px] rounded-[8px] to-[#0b192c] top-[230.85px] via-1/2 via-[rgba(142,118,34,0.5)] w-[117.355px]" data-node-id="11152:10140" data-name="Symbols pad" />
+          <div className="absolute inset-[35.83%_31.55%_52.38%_61.73%]" data-node-id="11152:10141" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 5">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[264.78%] left-[-303.51%] max-w-none top-[-29.25%] w-[518.71%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[721.86px] rounded-[8px] to-[#0a2540] top-[328.16px] w-[117.355px]" data-node-id="11152:10142" data-name="Symbols pad" />
+        <div className="absolute contents left-[721.86px] top-[425.48px]" data-node-id="11152:10143">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(255,255,255,0.47)] border-solid from-[#0b192c] h-[94.457px] left-[721.86px] rounded-[8px] to-[#0b192c] top-[425.48px] via-1/2 via-[rgba(154,106,106,0.55)] w-[117.355px]" data-node-id="11152:10144" data-name="Symbols pad" />
+          <div className="absolute inset-[65.53%_31.48%_24.91%_61.38%]" data-node-id="11152:10145" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 13">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[345.14%] left-[-409.01%] max-w-none top-[-54.86%] w-[515.7%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[842.07px] rounded-[12px] to-[#0a2540] top-[36.21px] w-[117.355px]" data-node-id="11152:10146" data-name="Symbols pad" />
+        <div className="absolute contents left-[842.07px] top-[133.53px]" data-node-id="11152:10147">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(254,180,59,0.3)] border-solid from-[#0b192c] h-[94.457px] left-[842.07px] rounded-[8px] to-[#0b192c] top-[133.53px] via-1/2 via-[rgba(254,142,38,0.48)] w-[117.355px]" data-node-id="11152:10148" data-name="Symbols pad" />
+          <div className="absolute inset-[20.44%_21.11%_65.41%_70.99%]" data-node-id="11152:10149" data-name="ChatGPT Image Sep 30, 2026 at 01_47_50 PM 1">
+            <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep302026At014750Pm1} />
+          </div>
+        </div>
+        <div className="absolute contents left-[842.07px] top-[230.85px]" data-node-id="11152:10151">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(152,86,44,0.68)] border-solid from-[#0b192c] h-[94.457px] left-[842.07px] rounded-[8px] to-[#0b192c] top-[230.85px] via-1/2 via-[#8b4715] w-[117.355px]" data-node-id="11152:10152" data-name="Symbols pad" />
+          <div className="absolute inset-[35.25%_21.39%_52.25%_71.45%]" data-node-id="11152:10153" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 8">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[260.88%] left-[-101.72%] max-w-none top-[-131.47%] w-[508.31%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[842.07px] top-[328.16px]" data-node-id="11152:10154">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(254,196,26,0.31)] border-solid from-[#0b192c] h-[94.457px] left-[842.07px] rounded-[8px] to-[#0b192c] top-[328.16px] via-1/2 via-[rgba(142,118,34,0.5)] w-[117.355px]" data-node-id="11152:10155" data-name="Symbols pad" />
+          <div className="absolute inset-[50.15%_21.46%_38.06%_71.82%]" data-node-id="11152:10156" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 5">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[264.78%] left-[-303.51%] max-w-none top-[-29.25%] w-[518.71%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[842px] rounded-[8px] to-[#0a2540] top-[425px] w-[117.355px]" data-node-id="11152:10157" data-name="Symbols pad" />
+        <div className="absolute h-[77.543px] left-[858.53px] top-[46.61px] w-[76.562px]" data-node-id="11152:10158" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 13">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[280.7%] left-[-228.85%] max-w-none top-[-34.81%] w-[568.59%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[77.543px] left-[501.54px] top-[44.39px] w-[76.562px]" data-node-id="11152:10159" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 12">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[280.7%] left-[-228.85%] max-w-none top-[-34.81%] w-[568.59%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[76.549px] left-[501.54px] top-[141.95px] w-[77.556px]" data-node-id="11152:10161" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 17">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[291.78%] left-[-233.44%] max-w-none top-[-151.64%] w-[575.97%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[76.549px] left-[620.17px] top-[141.95px] w-[77.556px]" data-node-id="11152:10162" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 18">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[291.78%] left-[-233.44%] max-w-none top-[-151.64%] w-[575.97%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[79.603px] left-[739.9px] top-[334.86px] w-[81.159px]" data-node-id="11152:10163" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 21">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[288.93%] left-[-337.06%] max-w-none top-[-149.51%] w-[566.77%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[79.603px] left-[739.9px] top-[141.96px] w-[81.159px]" data-node-id="11152:10164" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 19">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[288.93%] left-[-337.06%] max-w-none top-[-149.51%] w-[566.77%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[79.603px] left-[860px] top-[433px] w-[81.159px]" data-node-id="11152:10165" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 23">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[288.93%] left-[-337.06%] max-w-none top-[-149.51%] w-[566.77%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[79.603px] left-[493.78px] top-[334.86px] w-[81.159px]" data-node-id="11152:10166" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 22">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[288.93%] left-[-337.06%] max-w-none top-[-149.51%] w-[566.77%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[76.299px] left-[623.49px] top-[337.08px] w-[73.364px]" data-node-id="11152:10167" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 14">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[284.29%] left-[-10.67%] max-w-none top-[-145.83%] w-[591.33%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[76.299px] left-[267.61px] top-[141.95px] w-[73.364px]" data-node-id="11152:10168" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 16">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[284.29%] left-[-10.67%] max-w-none top-[-145.83%] w-[591.33%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute contents left-[361.53px] top-[36.11px]" data-node-id="11152:10171">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(82,135,212,0.45)] border-solid from-[#0b192c] h-[94.457px] left-[361.53px] rounded-[8px] to-[#0b192c] top-[36.11px] via-1/2 via-[#3864b0] w-[117.355px]" data-node-id="11152:10172" data-name="Symbols pad" />
+          <div className="absolute inset-[5.96%_61.27%_81.26%_30.99%]" data-node-id="11152:10173" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 3">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[262.43%] left-[-92.37%] max-w-none top-[-31.07%] w-[483.38%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="-translate-x-1/2 -translate-y-1/2 absolute bg-[rgba(0,0,0,0.6)] h-[672px] left-[calc(50%+1px)] overflow-clip top-1/2 w-[1202px]" data-node-id="11152:10175">
+        <div className="absolute content-stretch flex flex-col items-center left-[101.29px] top-[17.85px] w-[998.417px]" data-node-id="11284:148963">
+          <div className="content-stretch flex flex-col items-start mb-[-12px] relative shrink-0 w-full" data-node-id="11152:10177">
+            <div className="content-stretch flex items-center relative shrink-0" data-node-id="11152:10178">
+              <div className="h-[290px] mr-[-10.791px] relative shrink-0 w-[340px]" data-node-id="11284:148833">
+                <div className="absolute h-[310px] left-[-0.29px] top-[0.15px] w-[340px]" data-node-id="11284:148834" data-name="Ornate Golden-Blue Game UI Panel 2">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute h-[122.81%] left-[-8.07%] max-w-none top-[-12.19%] w-[115.87%]" src={imgOrnateGoldenBlueGameUiPanel2} />
+                  </div>
+                </div>
+                <div className="absolute content-stretch flex flex-col gap-[7px] items-center left-[38px] top-[45px] w-[263px]" data-node-id="11284:148835">
+                  <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] min-w-full not-italic relative shrink-0 text-[23.545px] text-[transparent] text-center text-shadow-[0px_1.962px_6.867px_rgba(14,2,68,0.7)] tracking-[1.2551px] uppercase w-[min-content]" data-node-id="11284:148836" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 263 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(7.5318e-7 1.5632 -44.389 0.0000021335 131.98 9.4737)'><stop stop-color='rgba(250,210,4,1)' offset='0.34135'/><stop stop-color='rgba(248,169,4,1)' offset='0.50601'/><stop stop-color='rgba(246,128,3,1)' offset='0.67067'/><stop stop-color='rgba(243,86,3,1)' offset='0.83534'/><stop stop-color='rgba(241,45,2,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                    <p className="leading-[17.93px]">EXTRA CHANCE</p>
+                  </div>
+                  <div className="[word-break:break-word] font-['Poppins:Black'] h-[38px] leading-[0] min-w-full not-italic relative shrink-0 text-[11.773px] text-center text-white tracking-[0.3532px] w-[min-content]" data-node-id="11284:148837">
+                    <p className="leading-[normal] mb-0">Activate to increase 3 times the chance of trigger a bonus round</p>
+                    <p className="leading-[normal]">​</p>
+                  </div>
+                  <div className="relative shrink-0 size-[51.014px]" data-node-id="11284:148838" data-name="ChatGPT Image Sep 29, 2026 at 11_11_11 AM 3">
+                    <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep292026At111111Am3} />
+                  </div>
+                  <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0" data-node-id="11284:148839">
+                    <div className="bg-[#011f69] border-[#011a64] border-[1.962px] border-solid col-1 content-stretch flex h-[32.374px] items-center justify-center ml-0 mt-0 px-[21.516px] py-[10.758px] relative rounded-[41.204px] row-1 w-[130.479px]" data-node-id="11284:148840" data-name="Button">
+                      <div className="content-stretch flex items-center justify-end relative shrink-0 w-[103.991px]" data-node-id="11284:148841">
+                        <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[11.773px] text-[transparent] text-center text-shadow-[0px_0.872px_1.744px_rgba(2,2,88,0.5)] tracking-[0.5578px] uppercase whitespace-nowrap" data-node-id="11284:148842" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 38 8' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(6.8114e-15 0.37895 -3.4983 -5.5088e-7 19.069 4.2105)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                          <p className="leading-[7.969px]">2.00$</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-b border-[#011a64] border-[1.962px] border-solid col-1 content-stretch flex from-[#118ee4] h-[32.374px] items-center justify-center ml-0 mt-0 px-[21.516px] py-[10.758px] relative rounded-[41.204px] row-1 to-[#0271d0] w-[70.635px]" data-node-id="11284:148845" data-name="Button">
+                      <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[11.773px] text-[transparent] text-center text-shadow-[0px_0.872px_1.744px_rgba(2,2,88,0.5)] tracking-[0.5578px] uppercase whitespace-nowrap" data-node-id="11284:148846" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 38 8' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(6.8114e-15 0.37895 -3.4983 -5.5088e-7 19.069 4.2105)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                        <p className="leading-[7.969px]">300 x</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="h-[57px] relative shrink-0 w-[230px]" data-node-id="11284:148849">
+                    <div className="absolute contents left-0 top-0" data-node-id="11284:148850">
+                      <div className="absolute contents left-0 top-0" data-node-id="11284:148851">
+                        <div className="absolute bg-[#021d42] border border-black border-solid h-[57px] left-0 rounded-[31px] top-0 w-[230px]" data-node-id="11284:148852" />
+                        <div className="absolute h-[50.92px] left-[3.77px] rounded-[26px] top-[3.04px] w-[222.459px]" data-node-id="11284:148853">
+                          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full" src={imgRectangle437} />
+                        </div>
+                        <div className="absolute border-2 border-black border-solid h-[40.452px] left-[13.99px] rounded-[22px] shadow-[0px_0px_2px_0px_#fd6404] top-[8.27px] w-[202.027px]" data-node-id="11284:148854">
+                          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[22px] size-full" src={imgRectangle435} />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] left-[120.5px] not-italic text-[17.659px] text-[transparent] text-center text-shadow-[0px_1.962px_3.924px_rgba(2,2,88,0.38)] top-[28px] tracking-[1.2551px] uppercase whitespace-nowrap" data-node-id="11284:148855" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 95 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.7029e-14 0.85263 -8.7458 -0.0000012395 47.673 9.4737)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                      <p className="leading-[17.93px]">ACTIVATE</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="h-[290px] mr-[-10.791px] relative shrink-0 w-[340px]" data-node-id="11284:148964">
+                <div className="absolute h-[310px] left-[-0.29px] top-[0.15px] w-[340px]" data-node-id="11284:148965" data-name="Ornate Golden-Blue Game UI Panel 2">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute h-[122.81%] left-[-8.07%] max-w-none top-[-12.19%] w-[115.87%]" src={imgOrnateGoldenBlueGameUiPanel2} />
+                  </div>
+                </div>
+                <div className="absolute content-stretch flex flex-col gap-[7px] items-center left-[38px] top-[45px] w-[263px]" data-node-id="11284:148966">
+                  <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] min-w-full not-italic relative shrink-0 text-[23.545px] text-[transparent] text-center text-shadow-[0px_1.962px_6.867px_rgba(14,2,68,0.7)] tracking-[1.2551px] uppercase w-[min-content]" data-node-id="11284:148967" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 263 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(7.5318e-7 1.5632 -44.389 0.0000021335 131.98 9.4737)'><stop stop-color='rgba(250,210,4,1)' offset='0.34135'/><stop stop-color='rgba(248,169,4,1)' offset='0.50601'/><stop stop-color='rgba(246,128,3,1)' offset='0.67067'/><stop stop-color='rgba(243,86,3,1)' offset='0.83534'/><stop stop-color='rgba(241,45,2,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                    <p className="leading-[17.93px]">EXTRA CHANCE</p>
+                  </div>
+                  <div className="[word-break:break-word] font-['Poppins:Black'] h-[38px] leading-[0] min-w-full not-italic relative shrink-0 text-[11.773px] text-center text-white tracking-[0.3532px] w-[min-content]" data-node-id="11284:148968">
+                    <p className="leading-[normal] mb-0">Activate to increase 3 times the chance of trigger a bonus round</p>
+                    <p className="leading-[normal]">​</p>
+                  </div>
+                  <div className="relative shrink-0 size-[51.014px]" data-node-id="11284:148969" data-name="ChatGPT Image Sep 29, 2026 at 11_11_11 AM 3">
+                    <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep292026At111111Am3} />
+                  </div>
+                  <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0" data-node-id="11284:148970">
+                    <div className="bg-[#011f69] border-[#011a64] border-[1.962px] border-solid col-1 content-stretch flex h-[32.374px] items-center justify-center ml-0 mt-0 px-[21.516px] py-[10.758px] relative rounded-[41.204px] row-1 w-[130.479px]" data-node-id="11284:148971" data-name="Button">
+                      <div className="content-stretch flex items-center justify-end relative shrink-0 w-[103.991px]" data-node-id="11284:148972">
+                        <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[11.773px] text-[transparent] text-center text-shadow-[0px_0.872px_1.744px_rgba(2,2,88,0.5)] tracking-[0.5578px] uppercase whitespace-nowrap" data-node-id="11284:148973" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 38 8' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(6.8114e-15 0.37895 -3.4983 -5.5088e-7 19.069 4.2105)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                          <p className="leading-[7.969px]">2.00$</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-b border-[#011a64] border-[1.962px] border-solid col-1 content-stretch flex from-[#118ee4] h-[32.374px] items-center justify-center ml-0 mt-0 px-[21.516px] py-[10.758px] relative rounded-[41.204px] row-1 to-[#0271d0] w-[70.635px]" data-node-id="11284:148976" data-name="Button">
+                      <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[11.773px] text-[transparent] text-center text-shadow-[0px_0.872px_1.744px_rgba(2,2,88,0.5)] tracking-[0.5578px] uppercase whitespace-nowrap" data-node-id="11284:148977" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 38 8' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(6.8114e-15 0.37895 -3.4983 -5.5088e-7 19.069 4.2105)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                        <p className="leading-[7.969px]">300 x</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="h-[57px] relative shrink-0 w-[230px]" data-node-id="11284:148980">
+                    <div className="absolute contents left-0 top-0" data-node-id="11284:148981">
+                      <div className="absolute contents left-0 top-0" data-node-id="11284:148982">
+                        <div className="absolute bg-[#021d42] border border-black border-solid h-[57px] left-0 rounded-[31px] top-0 w-[230px]" data-node-id="11284:148983" />
+                        <div className="absolute h-[50.92px] left-[3.77px] rounded-[26px] top-[3.04px] w-[222.459px]" data-node-id="11284:148984">
+                          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full" src={imgRectangle437} />
+                        </div>
+                        <div className="absolute border-2 border-black border-solid h-[40.452px] left-[13.99px] rounded-[22px] shadow-[0px_0px_2px_0px_#fd6404] top-[8.27px] w-[202.027px]" data-node-id="11284:148985">
+                          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[22px] size-full" src={imgRectangle435} />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] left-[120.5px] not-italic text-[17.659px] text-[transparent] text-center text-shadow-[0px_1.962px_3.924px_rgba(2,2,88,0.38)] top-[28px] tracking-[1.2551px] uppercase whitespace-nowrap" data-node-id="11284:148986" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 95 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.7029e-14 0.85263 -8.7458 -0.0000012395 47.673 9.4737)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                      <p className="leading-[17.93px]">ACTIVATE</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="h-[290px] relative shrink-0 w-[340px]" data-node-id="11284:148990">
+                <div className="absolute h-[310px] left-[-0.29px] top-[0.15px] w-[340px]" data-node-id="11284:148991" data-name="Ornate Golden-Blue Game UI Panel 2">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute h-[122.81%] left-[-8.07%] max-w-none top-[-12.19%] w-[115.87%]" src={imgOrnateGoldenBlueGameUiPanel2} />
+                  </div>
+                </div>
+                <div className="absolute content-stretch flex flex-col gap-[7px] items-center left-[38px] top-[45px] w-[263px]" data-node-id="11284:148992">
+                  <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] min-w-full not-italic relative shrink-0 text-[23.545px] text-[transparent] text-center text-shadow-[0px_1.962px_6.867px_rgba(14,2,68,0.7)] tracking-[1.2551px] uppercase w-[min-content]" data-node-id="11284:148993" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 263 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(7.5318e-7 1.5632 -44.389 0.0000021335 131.98 9.4737)'><stop stop-color='rgba(250,210,4,1)' offset='0.34135'/><stop stop-color='rgba(248,169,4,1)' offset='0.50601'/><stop stop-color='rgba(246,128,3,1)' offset='0.67067'/><stop stop-color='rgba(243,86,3,1)' offset='0.83534'/><stop stop-color='rgba(241,45,2,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                    <p className="leading-[17.93px]">EXTRA CHANCE</p>
+                  </div>
+                  <div className="[word-break:break-word] font-['Poppins:Black'] h-[38px] leading-[0] min-w-full not-italic relative shrink-0 text-[11.773px] text-center text-white tracking-[0.3532px] w-[min-content]" data-node-id="11284:148994">
+                    <p className="leading-[normal] mb-0">Activate to increase 3 times the chance of trigger a bonus round</p>
+                    <p className="leading-[normal]">​</p>
+                  </div>
+                  <div className="relative shrink-0 size-[51.014px]" data-node-id="11284:148995" data-name="ChatGPT Image Sep 29, 2026 at 11_11_11 AM 3">
+                    <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep292026At111111Am3} />
+                  </div>
+                  <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0" data-node-id="11284:148996">
+                    <div className="bg-[#011f69] border-[#011a64] border-[1.962px] border-solid col-1 content-stretch flex h-[32.374px] items-center justify-center ml-0 mt-0 px-[21.516px] py-[10.758px] relative rounded-[41.204px] row-1 w-[130.479px]" data-node-id="11284:148997" data-name="Button">
+                      <div className="content-stretch flex items-center justify-end relative shrink-0 w-[103.991px]" data-node-id="11284:148998">
+                        <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[11.773px] text-[transparent] text-center text-shadow-[0px_0.872px_1.744px_rgba(2,2,88,0.5)] tracking-[0.5578px] uppercase whitespace-nowrap" data-node-id="11284:148999" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 38 8' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(6.8114e-15 0.37895 -3.4983 -5.5088e-7 19.069 4.2105)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                          <p className="leading-[7.969px]">2.00$</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-b border-[#011a64] border-[1.962px] border-solid col-1 content-stretch flex from-[#118ee4] h-[32.374px] items-center justify-center ml-0 mt-0 px-[21.516px] py-[10.758px] relative rounded-[41.204px] row-1 to-[#0271d0] w-[70.635px]" data-node-id="11284:149002" data-name="Button">
+                      <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[11.773px] text-[transparent] text-center text-shadow-[0px_0.872px_1.744px_rgba(2,2,88,0.5)] tracking-[0.5578px] uppercase whitespace-nowrap" data-node-id="11284:149003" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 38 8' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(6.8114e-15 0.37895 -3.4983 -5.5088e-7 19.069 4.2105)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                        <p className="leading-[7.969px]">300 x</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="h-[57px] relative shrink-0 w-[230px]" data-node-id="11284:149006">
+                    <div className="absolute contents left-0 top-0" data-node-id="11284:149007">
+                      <div className="absolute contents left-0 top-0" data-node-id="11284:149008">
+                        <div className="absolute bg-[#021d42] border border-black border-solid h-[57px] left-0 rounded-[31px] top-0 w-[230px]" data-node-id="11284:149009" />
+                        <div className="absolute h-[50.92px] left-[3.77px] rounded-[26px] top-[3.04px] w-[222.459px]" data-node-id="11284:149010">
+                          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full" src={imgRectangle437} />
+                        </div>
+                        <div className="absolute border-2 border-black border-solid h-[40.452px] left-[13.99px] rounded-[22px] shadow-[0px_0px_2px_0px_#fd6404] top-[8.27px] w-[202.027px]" data-node-id="11284:149011">
+                          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[22px] size-full" src={imgRectangle435} />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] left-[120.5px] not-italic text-[17.659px] text-[transparent] text-center text-shadow-[0px_1.962px_3.924px_rgba(2,2,88,0.38)] top-[28px] tracking-[1.2551px] uppercase whitespace-nowrap" data-node-id="11284:149012" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 95 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.7029e-14 0.85263 -8.7458 -0.0000012395 47.673 9.4737)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                      <p className="leading-[17.93px]">ACTIVATE</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="content-stretch flex flex-col items-start relative shrink-0" data-node-id="11152:10290">
+            <div className="content-stretch flex items-center relative shrink-0" data-node-id="11152:10291">
+              <div className="h-[290px] mr-[-10.791px] relative shrink-0 w-[340px]" data-node-id="11284:149068">
+                <div className="absolute h-[310px] left-[-0.29px] top-[0.15px] w-[340px]" data-node-id="11284:149069" data-name="Ornate Golden-Blue Game UI Panel 2">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute h-[122.81%] left-[-8.07%] max-w-none top-[-12.19%] w-[115.87%]" src={imgOrnateGoldenBlueGameUiPanel2} />
+                  </div>
+                </div>
+                <div className="absolute content-stretch flex flex-col gap-[7px] items-center left-[38px] top-[45px] w-[263px]" data-node-id="11284:149070">
+                  <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] min-w-full not-italic relative shrink-0 text-[23.545px] text-[transparent] text-center text-shadow-[0px_1.962px_6.867px_rgba(14,2,68,0.7)] tracking-[1.2551px] uppercase w-[min-content]" data-node-id="11284:149071" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 263 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(7.5318e-7 1.5632 -44.389 0.0000021335 131.98 9.4737)'><stop stop-color='rgba(250,210,4,1)' offset='0.34135'/><stop stop-color='rgba(248,169,4,1)' offset='0.50601'/><stop stop-color='rgba(246,128,3,1)' offset='0.67067'/><stop stop-color='rgba(243,86,3,1)' offset='0.83534'/><stop stop-color='rgba(241,45,2,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                    <p className="leading-[17.93px]">EXTRA CHANCE</p>
+                  </div>
+                  <div className="[word-break:break-word] font-['Poppins:Black'] h-[38px] leading-[0] min-w-full not-italic relative shrink-0 text-[11.773px] text-center text-white tracking-[0.3532px] w-[min-content]" data-node-id="11284:149072">
+                    <p className="leading-[normal] mb-0">Activate to increase 3 times the chance of trigger a bonus round</p>
+                    <p className="leading-[normal]">​</p>
+                  </div>
+                  <div className="relative shrink-0 size-[51.014px]" data-node-id="11284:149073" data-name="ChatGPT Image Sep 29, 2026 at 11_11_11 AM 3">
+                    <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep292026At111111Am3} />
+                  </div>
+                  <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0" data-node-id="11284:149074">
+                    <div className="bg-[#011f69] border-[#011a64] border-[1.962px] border-solid col-1 content-stretch flex h-[32.374px] items-center justify-center ml-0 mt-0 px-[21.516px] py-[10.758px] relative rounded-[41.204px] row-1 w-[130.479px]" data-node-id="11284:149075" data-name="Button">
+                      <div className="content-stretch flex items-center justify-end relative shrink-0 w-[103.991px]" data-node-id="11284:149076">
+                        <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[11.773px] text-[transparent] text-center text-shadow-[0px_0.872px_1.744px_rgba(2,2,88,0.5)] tracking-[0.5578px] uppercase whitespace-nowrap" data-node-id="11284:149077" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 38 8' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(6.8114e-15 0.37895 -3.4983 -5.5088e-7 19.069 4.2105)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                          <p className="leading-[7.969px]">2.00$</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-b border-[#011a64] border-[1.962px] border-solid col-1 content-stretch flex from-[#118ee4] h-[32.374px] items-center justify-center ml-0 mt-0 px-[21.516px] py-[10.758px] relative rounded-[41.204px] row-1 to-[#0271d0] w-[70.635px]" data-node-id="11284:149080" data-name="Button">
+                      <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[11.773px] text-[transparent] text-center text-shadow-[0px_0.872px_1.744px_rgba(2,2,88,0.5)] tracking-[0.5578px] uppercase whitespace-nowrap" data-node-id="11284:149081" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 38 8' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(6.8114e-15 0.37895 -3.4983 -5.5088e-7 19.069 4.2105)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                        <p className="leading-[7.969px]">300 x</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="h-[57px] relative shrink-0 w-[230px]" data-node-id="11284:149084">
+                    <div className="absolute contents left-0 top-0" data-node-id="11284:149085">
+                      <div className="absolute contents left-0 top-0" data-node-id="11284:149086">
+                        <div className="absolute bg-[#021d42] border border-black border-solid h-[57px] left-0 rounded-[31px] top-0 w-[230px]" data-node-id="11284:149087" />
+                        <div className="absolute h-[50.92px] left-[3.77px] rounded-[26px] top-[3.04px] w-[222.459px]" data-node-id="11284:149088">
+                          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full" src={imgRectangle437} />
+                        </div>
+                        <div className="absolute border-2 border-black border-solid h-[40.452px] left-[13.99px] rounded-[22px] shadow-[0px_0px_2px_0px_#fd6404] top-[8.27px] w-[202.027px]" data-node-id="11284:149089">
+                          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[22px] size-full" src={imgRectangle435} />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] left-[120.5px] not-italic text-[17.659px] text-[transparent] text-center text-shadow-[0px_1.962px_3.924px_rgba(2,2,88,0.38)] top-[28px] tracking-[1.2551px] uppercase whitespace-nowrap" data-node-id="11284:149090" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 95 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.7029e-14 0.85263 -8.7458 -0.0000012395 47.673 9.4737)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                      <p className="leading-[17.93px]">ACTIVATE</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="h-[290px] relative shrink-0 w-[340px]" data-node-id="11284:149094">
+                <div className="absolute h-[310px] left-[-0.29px] top-[0.15px] w-[340px]" data-node-id="11284:149095" data-name="Ornate Golden-Blue Game UI Panel 2">
+                  <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <img alt="" className="absolute h-[122.81%] left-[-8.07%] max-w-none top-[-12.19%] w-[115.87%]" src={imgOrnateGoldenBlueGameUiPanel2} />
+                  </div>
+                </div>
+                <div className="absolute content-stretch flex flex-col gap-[7px] items-center left-[38px] top-[45px] w-[263px]" data-node-id="11284:149096">
+                  <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] min-w-full not-italic relative shrink-0 text-[23.545px] text-[transparent] text-center text-shadow-[0px_1.962px_6.867px_rgba(14,2,68,0.7)] tracking-[1.2551px] uppercase w-[min-content]" data-node-id="11284:149097" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 263 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(7.5318e-7 1.5632 -44.389 0.0000021335 131.98 9.4737)'><stop stop-color='rgba(250,210,4,1)' offset='0.34135'/><stop stop-color='rgba(248,169,4,1)' offset='0.50601'/><stop stop-color='rgba(246,128,3,1)' offset='0.67067'/><stop stop-color='rgba(243,86,3,1)' offset='0.83534'/><stop stop-color='rgba(241,45,2,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                    <p className="leading-[17.93px]">EXTRA CHANCE</p>
+                  </div>
+                  <div className="[word-break:break-word] font-['Poppins:Black'] h-[38px] leading-[0] min-w-full not-italic relative shrink-0 text-[11.773px] text-center text-white tracking-[0.3532px] w-[min-content]" data-node-id="11284:149098">
+                    <p className="leading-[normal] mb-0">Activate to increase 3 times the chance of trigger a bonus round</p>
+                    <p className="leading-[normal]">​</p>
+                  </div>
+                  <div className="relative shrink-0 size-[51.014px]" data-node-id="11284:149099" data-name="ChatGPT Image Sep 29, 2026 at 11_11_11 AM 3">
+                    <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep292026At111111Am3} />
+                  </div>
+                  <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0" data-node-id="11284:149100">
+                    <div className="bg-[#011f69] border-[#011a64] border-[1.962px] border-solid col-1 content-stretch flex h-[32.374px] items-center justify-center ml-0 mt-0 px-[21.516px] py-[10.758px] relative rounded-[41.204px] row-1 w-[130.479px]" data-node-id="11284:149101" data-name="Button">
+                      <div className="content-stretch flex items-center justify-end relative shrink-0 w-[103.991px]" data-node-id="11284:149102">
+                        <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[11.773px] text-[transparent] text-center text-shadow-[0px_0.872px_1.744px_rgba(2,2,88,0.5)] tracking-[0.5578px] uppercase whitespace-nowrap" data-node-id="11284:149103" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 38 8' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(6.8114e-15 0.37895 -3.4983 -5.5088e-7 19.069 4.2105)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                          <p className="leading-[7.969px]">2.00$</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="bg-gradient-to-b border-[#011a64] border-[1.962px] border-solid col-1 content-stretch flex from-[#118ee4] h-[32.374px] items-center justify-center ml-0 mt-0 px-[21.516px] py-[10.758px] relative rounded-[41.204px] row-1 to-[#0271d0] w-[70.635px]" data-node-id="11284:149106" data-name="Button">
+                      <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[11.773px] text-[transparent] text-center text-shadow-[0px_0.872px_1.744px_rgba(2,2,88,0.5)] tracking-[0.5578px] uppercase whitespace-nowrap" data-node-id="11284:149107" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 38 8' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(6.8114e-15 0.37895 -3.4983 -5.5088e-7 19.069 4.2105)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                        <p className="leading-[7.969px]">300 x</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="h-[57px] relative shrink-0 w-[230px]" data-node-id="11284:149110">
+                    <div className="absolute contents left-0 top-0" data-node-id="11284:149111">
+                      <div className="absolute contents left-0 top-0" data-node-id="11284:149112">
+                        <div className="absolute bg-[#021d42] border border-black border-solid h-[57px] left-0 rounded-[31px] top-0 w-[230px]" data-node-id="11284:149113" />
+                        <div className="absolute h-[50.92px] left-[3.77px] rounded-[26px] top-[3.04px] w-[222.459px]" data-node-id="11284:149114">
+                          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full" src={imgRectangle437} />
+                        </div>
+                        <div className="absolute border-2 border-black border-solid h-[40.452px] left-[13.99px] rounded-[22px] shadow-[0px_0px_2px_0px_#fd6404] top-[8.27px] w-[202.027px]" data-node-id="11284:149115">
+                          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[22px] size-full" src={imgRectangle435} />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] left-[120.5px] not-italic text-[17.659px] text-[transparent] text-center text-shadow-[0px_1.962px_3.924px_rgba(2,2,88,0.38)] top-[28px] tracking-[1.2551px] uppercase whitespace-nowrap" data-node-id="11284:149116" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 95 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.7029e-14 0.85263 -8.7458 -0.0000012395 47.673 9.4737)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                      <p className="leading-[17.93px]">ACTIVATE</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="-translate-x-1/2 absolute contents left-[calc(50%-1.5px)] top-[577px]" data-node-id="11152:10366">
+          <div className="absolute contents left-[471px] top-[577px]" data-node-id="11152:10367">
+            <div className="absolute contents left-[471px] top-[577px]" data-node-id="11152:10368">
+              <div className="absolute border border-black border-solid h-[85px] left-[471px] rounded-[24px] top-[577px] w-[257px]" data-node-id="11152:10369">
+                <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[24px] size-full" src={imgRectangle438} />
+              </div>
+              <div className="absolute bg-[#0a244a] border-2 border-black border-solid h-[75px] left-[476px] rounded-[22px] shadow-[0px_0px_2px_0px_#fd6404] top-[582px] w-[246px]" data-node-id="11152:10370" />
+            </div>
+            <div className="-translate-x-1/2 -translate-y-1/2 absolute content-stretch flex items-center left-[calc(50%-2.1px)] top-[calc(50%+280.5px)]" data-node-id="11152:10371" data-name="Container">
+              <div className="content-stretch flex items-center relative shrink-0" data-node-id="11152:10372" data-name="Container">
+                <div className="content-stretch flex flex-col gap-[4px] items-start relative shrink-0" data-node-id="11152:10373" data-name="Container">
+                  <div className="content-stretch flex flex-col items-center relative shrink-0 w-full" data-node-id="11152:10374" data-name="Container">
+                    <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[12px] text-[transparent] text-center text-shadow-[0px_1.962px_3.924px_rgba(2,2,88,0.38)] tracking-[1.2551px] uppercase whitespace-nowrap" data-node-id="11152:10375" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 27 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(4.8397e-15 0.85263 -2.4856 -0.0000012395 13.549 9.4737)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                      <p className="leading-[17.93px]">BET</p>
+                    </div>
+                  </div>
+                  <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[22.66px] text-[transparent] text-center text-shadow-[0px_1.962px_3.924px_rgba(2,2,88,0.38)] tracking-[1.2551px] uppercase whitespace-nowrap" data-node-id="11152:10376" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 70 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.2547e-14 0.85263 -6.4443 -0.0000012395 35.128 9.4737)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                    <p className="leading-[17.93px]">$1.00</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="absolute contents left-[487px] top-[591px]" data-node-id="11152:10377">
+            <div className="absolute left-[487px] size-[57px] top-[591px]" data-node-id="11152:10378">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup256} />
+            </div>
+            <div className="absolute contents inset-[91.82%_56.18%_7.31%_42.15%]" data-node-id="11152:10382">
+              <div className="absolute bg-[#021d42] inset-[91.82%_56.18%_7.31%_42.15%] rounded-[20px]" data-node-id="11152:10383" />
+              <div className="absolute inset-[91.99%_56.28%_7.48%_42.25%] rounded-[20px]" data-node-id="11152:10384" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 17.706 3.5294' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(3.1738e-15 0.16718 -1.63 -2.4304e-7 8.8853 1.8576)'><stop stop-color='rgba(255,255,255,1)' offset='0.58654'/><stop stop-color='rgba(173,213,245,0.5)' offset='1'/></radialGradient></defs></svg>\"), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" }} />
+            </div>
+          </div>
+          <div className="absolute contents left-[652px] top-[591px]" data-node-id="11152:10385">
+            <div className="absolute left-[652px] size-[57px] top-[591px]" data-node-id="11152:10386">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup259} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

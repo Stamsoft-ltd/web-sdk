@@ -1,0 +1,24 @@
+- main:
+  - img "The Gates"
+  - img "Press Play"
+  - region "The Gates game":
+    - status: Tumbles 0/3. Multiplier 1×.
+    - img "6 columns, 5 rows. Pay anywhere."
+  - button "Menu"
+  - button "Bonus":
+    - generic: Bonus
+  - button "Spin"
+  - 'button "Speed: Normal"'
+  - button "Autoplay"
+  - button "Base bet −"
+  - button "Base bet +"
+  - generic: Balance
+  - strong:
+    - generic: $1,001.75
+  - generic: Win
+  - strong:
+    - generic: $3.50
+  - generic: Bet
+  - strong:
+    - generic: $1.75
+  - generic: THE GATES | 07:31

@@ -1,0 +1,56 @@
+{
+  "date": "2026-10-14",
+  "branch": "feature/the-gates",
+  "types": "pass",
+  "tests": {
+    "passed": 209,
+    "failed": 0
+  },
+  "build": "pass",
+  "runtimePackage": {
+    "bytes": 34621343,
+    "assets": 127,
+    "sourceFiles": 80
+  },
+  "nativeIntegrity": {
+    "files": 78,
+    "status": "pass"
+  },
+  "arrowSha256": "677084b38bf96480e1e3ee67719643c253d823a3975869aa96dc1de25307b121",
+  "visualPreviewSizes": [
+    [
+      1200,
+      840
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      844,
+      390
+    ]
+  ],
+  "checked": [
+    "portrait landing without Pause",
+    "centred SVG bet glyphs",
+    "mobile gold rims and padded Bonus",
+    "autoplay 1000 then 900 step",
+    "rules 3 equal-aspect geometry",
+    "rules 6 nine-sliced frames",
+    "Sweet/Epic/Mythic/Legendary inward trumpet overlap",
+    "bonus entry portal",
+    "summary portal retraction",
+    "short bonus cycle returns to base"
+  ],
+  "deferred": {
+    "wildTrumpet": "User approved deferral pending clean designer banner"
+  },
+  "limitations": [
+    "No live RGS wagers/acceptance",
+    "No full real-device coverage",
+    "Final extra narrow/card sweep interrupted by browser tab connection",
+    "New legal copy uses English fallback where untranslated"
+  ],
+  "browserViewportRestored": true
+}

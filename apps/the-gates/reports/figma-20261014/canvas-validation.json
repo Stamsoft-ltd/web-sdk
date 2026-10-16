@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-14",
+  "branch": "feature/the-gates",
+  "checks": {
+    "unitTests": {
+      "pass": 192,
+      "fail": 0
+    },
+    "typescript": "pass",
+    "productionBuild": "pass",
+    "gitDiffCheck": "pass",
+    "nativeArtIntegrity": "78 original PNGs/hash/geometry/provenance verified"
+  },
+  "canvas": {
+    "selector": "main .gpu-surface > canvas.game-canvas[data-testid=\"game-canvas\"]",
+    "count": 1,
+    "placement": "permanent, never reparented into modal",
+    "portraitCSSBounds": {
+      "x": 0,
+      "y": 0,
+      "width": 390,
+      "height": 844
+    },
+    "matchingMainBounds": true,
+    "legacySceneImageOrPanelOrCellDOMCount": 0,
+    "DPRCap": 2
+  },
+  "browserQA": {
+    "mode": "dev-only scripted preview; no RGS wagers, autoplay Start intentionally disabled",
+    "viewports": [
+      "1200x840",
+      "844x390",
+      "390x844"
+    ],
+    "bonus": "GPU title and 15-spin award, no Continue/copy/button, no blur, HUD button opacity1 and visually undimmed, automatic exit observed",
+    "wins": [
+      "sweet",
+      "wild",
+      "epic",
+      "mythic",
+      "legendary"
+    ],
+    "winPortrait": "all art remains inside390x844; HUD fullyopaque; one fullgamecanvas",
+    "confirmationLandscape": {
+      "modalTop": 61.1,
+      "modalBottom": 328.89,
+      "footerTop": 259.89,
+      "footerBottom": 307.89,
+      "closeButtonCount": 0
+    },
+    "autoplayLandscape": {
+      "modalTop": 52.63,
+      "modalBottom": 337.37,
+      "startTop": 268.37,
+      "startBottom": 316.37
+    },
+    "autoplayInteractions": "fast/instant exclusive; earned bonusoptin; slider100\u219295; no automatic feature purchase",
+    "rules": "gamecornerX atx788y12size44\u00d744 on844\u00d7390; visiblepinnednavigation; Escape dismissal verified",
+    "resume": "compactkey/note/Continue, noX"
+  },
+  "rendererOwnership": {
+    "pixi": [
+      "mainbackground",
+      "Gateslogo",
+      "in-gamePressPlaybrand",
+      "boardframe/pads/symbols/mask",
+      "sidepanels and counters",
+      "boardhint/inlinewins",
+      "gates/rewards/portals",
+      "winandbonusart/coins/amounts/counts",
+      "landingvisuals",
+      "loadinggraphics/progress"
+    ],
+    "html": [
+      "HUDcontrolsandamounts",
+      "menus/forms/modals",
+      "staticmodal/paytableicons",
+      "invisibleaccessibility/layout/inputtargets",
+      "loadingbranding",
+      "HUDsession/legal/devmetadata"
+    ]
+  },
+  "packaging": {
+    "runtimeAssets": 126,
+    "bytes": 34593406,
+    "originalNativePngsMutated": false
+  },
+  "residuals": [
+    "LiveRGS/autoplaywagersnotexercised; previewonly.",
+    "NoFPSbenchmark/noFPSclaim.",
+    "ExistingoptionalPUBLIC_* envexport warnings and >500kBchunknotice remain; buildsuccessful.",
+    "Finalbrowserautomation stopped responding after QA; nativeChrome reportednoWindowsAvailable. Keyboardwrapfinalprobe and viewportresetconfirmation unavailable; priorEscapedismissal and allresponsivevisualcheckscompleted."
+  ]
+}

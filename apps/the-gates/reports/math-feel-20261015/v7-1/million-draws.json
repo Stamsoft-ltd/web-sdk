@@ -1,0 +1,65 @@
+{
+  "method": "1M independent weighted finite-library round draws per mode, NumPy PCG64 seed 20261015; normal-approximation CI, not 20M+ sign-off or independent live RGS verification",
+  "modes": {
+    "BASE": {
+      "sampledRounds": 1000000,
+      "exactLookupRtp": 0.9609999999999983,
+      "sampledRtp": 0.9130250999999998,
+      "standardError": 0.02105515275333398,
+      "normalApprox95PctCI": [
+        0.8717570006034652,
+        0.9542931993965345
+      ]
+    },
+    "CHANCE": {
+      "sampledRounds": 1000000,
+      "exactLookupRtp": 0.960999999999999,
+      "sampledRtp": 0.9336225249999998,
+      "standardError": 0.022919037141641684,
+      "normalApprox95PctCI": [
+        0.8887012122023821,
+        0.9785438377976174
+      ]
+    },
+    "FEATURE": {
+      "sampledRounds": 1000000,
+      "exactLookupRtp": 0.9609999999999996,
+      "sampledRtp": 0.9603978299999999,
+      "standardError": 0.0006484701381191821,
+      "normalApprox95PctCI": [
+        0.9591268285292863,
+        0.9616688314707135
+      ]
+    },
+    "BONUS": {
+      "sampledRounds": 1000000,
+      "exactLookupRtp": 0.9609999999999995,
+      "sampledRtp": 0.9614564930000002,
+      "standardError": 0.0010027226368477117,
+      "normalApprox95PctCI": [
+        0.9594911566317788,
+        0.9634218293682217
+      ]
+    },
+    "SUPER": {
+      "sampledRounds": 1000000,
+      "exactLookupRtp": 0.9610000000000052,
+      "sampledRtp": 0.9604309680000002,
+      "standardError": 0.0013744632466458878,
+      "normalApprox95PctCI": [
+        0.9577370200365742,
+        0.9631249159634261
+      ]
+    },
+    "MYSTERY": {
+      "sampledRounds": 1000000,
+      "exactLookupRtp": 0.960999999999995,
+      "sampledRtp": 0.9571756762500002,
+      "standardError": 0.003153527208287792,
+      "normalApprox95PctCI": [
+        0.9509947629217561,
+        0.9633565895782443
+      ]
+    }
+  }
+}

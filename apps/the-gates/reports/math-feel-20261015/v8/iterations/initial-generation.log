@@ -1,0 +1,272 @@
+zero: 128/2,000 candidates
+zero: 256/2,000 candidates
+zero: 384/2,000 candidates
+zero: 512/2,000 candidates
+zero: 640/2,000 candidates
+zero: 768/2,000 candidates
+zero: 896/2,000 candidates
+zero: 1,024/2,000 candidates
+zero: 1,152/2,000 candidates
+zero: 1,280/2,000 candidates
+zero: 1,408/2,000 candidates
+zero: 1,536/2,000 candidates
+zero: 1,664/2,000 candidates
+zero: 1,792/2,000 candidates
+zero: 1,920/2,000 candidates
+zero: 2,000/2,000 candidates
+zero: rejected candidate attempts {}
+normal: 128/2,000 candidates
+normal: 256/2,000 candidates
+normal: 384/2,000 candidates
+normal: 512/2,000 candidates
+normal: 640/2,000 candidates
+normal: 768/2,000 candidates
+normal: 896/2,000 candidates
+normal: 1,024/2,000 candidates
+normal: 1,152/2,000 candidates
+normal: 1,280/2,000 candidates
+normal: 1,408/2,000 candidates
+normal: 1,536/2,000 candidates
+normal: 1,664/2,000 candidates
+normal: 1,792/2,000 candidates
+normal: 1,920/2,000 candidates
+normal: 2,000/2,000 candidates
+normal: rejected candidate attempts {}
+super: 128/2,000 candidates
+super: 256/2,000 candidates
+super: 384/2,000 candidates
+super: 512/2,000 candidates
+super: 640/2,000 candidates
+super: 768/2,000 candidates
+super: 896/2,000 candidates
+super: 1,024/2,000 candidates
+super: 1,152/2,000 candidates
+super: 1,280/2,000 candidates
+super: 1,408/2,000 candidates
+super: 1,536/2,000 candidates
+super: 1,664/2,000 candidates
+super: 1,792/2,000 candidates
+super: 1,920/2,000 candidates
+super: 2,000/2,000 candidates
+super: rejected candidate attempts {}
+hidden: 128/2,000 candidates
+hidden: 256/2,000 candidates
+hidden: 384/2,000 candidates
+hidden: 512/2,000 candidates
+hidden: 640/2,000 candidates
+hidden: 768/2,000 candidates
+hidden: 896/2,000 candidates
+hidden: 1,024/2,000 candidates
+hidden: 1,152/2,000 candidates
+hidden: 1,280/2,000 candidates
+hidden: 1,408/2,000 candidates
+hidden: 1,536/2,000 candidates
+hidden: 1,664/2,000 candidates
+hidden: 1,792/2,000 candidates
+hidden: 1,920/2,000 candidates
+hidden: 2,000/2,000 candidates
+hidden: rejected candidate attempts {}
+base: 128/2,000 candidates
+base: 256/2,000 candidates
+base: 384/2,000 candidates
+base: 512/2,000 candidates
+base: 640/2,000 candidates
+base: 768/2,000 candidates
+base: 896/2,000 candidates
+base: 1,024/2,000 candidates
+base: 1,152/2,000 candidates
+base: 1,280/2,000 candidates
+base: 1,408/2,000 candidates
+base: 1,536/2,000 candidates
+base: 1,664/2,000 candidates
+base: 1,792/2,000 candidates
+base: 1,920/2,000 candidates
+base: 2,000/2,000 candidates
+base: rejected candidate attempts {'base_without_win': 144}
+BASE: 10,000 books; weighted RTP 96.1000000000%; non-tenth payout mass 17.499692%
+zero: 128/2,000 candidates
+zero: 256/2,000 candidates
+zero: 384/2,000 candidates
+zero: 512/2,000 candidates
+zero: 640/2,000 candidates
+zero: 768/2,000 candidates
+zero: 896/2,000 candidates
+zero: 1,024/2,000 candidates
+zero: 1,152/2,000 candidates
+zero: 1,280/2,000 candidates
+zero: 1,408/2,000 candidates
+zero: 1,536/2,000 candidates
+zero: 1,664/2,000 candidates
+zero: 1,792/2,000 candidates
+zero: 1,920/2,000 candidates
+zero: 2,000/2,000 candidates
+zero: rejected candidate attempts {}
+normal: 128/2,000 candidates
+normal: 256/2,000 candidates
+normal: 384/2,000 candidates
+normal: 512/2,000 candidates
+normal: 640/2,000 candidates
+normal: 768/2,000 candidates
+normal: 896/2,000 candidates
+normal: 1,024/2,000 candidates
+normal: 1,152/2,000 candidates
+normal: 1,280/2,000 candidates
+normal: 1,408/2,000 candidates
+normal: 1,536/2,000 candidates
+normal: 1,664/2,000 candidates
+normal: 1,792/2,000 candidates
+normal: 1,920/2,000 candidates
+normal: 2,000/2,000 candidates
+normal: rejected candidate attempts {}
+super: 128/2,000 candidates
+super: 256/2,000 candidates
+super: 384/2,000 candidates
+super: 512/2,000 candidates
+super: 640/2,000 candidates
+super: 768/2,000 candidates
+super: 896/2,000 candidates
+super: 1,024/2,000 candidates
+super: 1,152/2,000 candidates
+super: 1,280/2,000 candidates
+super: 1,408/2,000 candidates
+super: 1,536/2,000 candidates
+super: 1,664/2,000 candidates
+super: 1,792/2,000 candidates
+super: 1,920/2,000 candidates
+super: 2,000/2,000 candidates
+super: rejected candidate attempts {}
+hidden: 128/2,000 candidates
+hidden: 256/2,000 candidates
+hidden: 384/2,000 candidates
+hidden: 512/2,000 candidates
+hidden: 640/2,000 candidates
+hidden: 768/2,000 candidates
+hidden: 896/2,000 candidates
+hidden: 1,024/2,000 candidates
+hidden: 1,152/2,000 candidates
+hidden: 1,280/2,000 candidates
+hidden: 1,408/2,000 candidates
+hidden: 1,536/2,000 candidates
+hidden: 1,664/2,000 candidates
+hidden: 1,792/2,000 candidates
+hidden: 1,920/2,000 candidates
+hidden: 2,000/2,000 candidates
+hidden: rejected candidate attempts {}
+base: 128/2,000 candidates
+base: 256/2,000 candidates
+base: 384/2,000 candidates
+base: 512/2,000 candidates
+base: 640/2,000 candidates
+base: 768/2,000 candidates
+base: 896/2,000 candidates
+base: 1,024/2,000 candidates
+base: 1,152/2,000 candidates
+base: 1,280/2,000 candidates
+base: 1,408/2,000 candidates
+base: 1,536/2,000 candidates
+base: 1,664/2,000 candidates
+base: 1,792/2,000 candidates
+base: 1,920/2,000 candidates
+base: 2,000/2,000 candidates
+base: rejected candidate attempts {'base_without_win': 150}
+CHANCE: 10,000 books; weighted RTP 96.1000000000%; non-tenth payout mass 17.598755%
+feature: 128/10,000 candidates
+feature: 256/10,000 candidates
+feature: 384/10,000 candidates
+feature: 512/10,000 candidates
+feature: 640/10,000 candidates
+feature: 768/10,000 candidates
+feature: 896/10,000 candidates
+feature: 1,024/10,000 candidates
+feature: 1,152/10,000 candidates
+feature: 1,280/10,000 candidates
+feature: 1,408/10,000 candidates
+feature: 1,536/10,000 candidates
+feature: 1,664/10,000 candidates
+feature: 1,792/10,000 candidates
+feature: 1,920/10,000 candidates
+feature: 2,048/10,000 candidates
+feature: 2,176/10,000 candidates
+feature: 2,304/10,000 candidates
+feature: 2,432/10,000 candidates
+feature: 2,560/10,000 candidates
+feature: 2,688/10,000 candidates
+feature: 2,816/10,000 candidates
+feature: 2,944/10,000 candidates
+feature: 3,072/10,000 candidates
+feature: 3,200/10,000 candidates
+feature: 3,328/10,000 candidates
+feature: 3,456/10,000 candidates
+feature: 3,584/10,000 candidates
+feature: 3,712/10,000 candidates
+feature: 3,840/10,000 candidates
+feature: 3,968/10,000 candidates
+feature: 4,096/10,000 candidates
+feature: 4,224/10,000 candidates
+feature: 4,352/10,000 candidates
+feature: 4,480/10,000 candidates
+feature: 4,608/10,000 candidates
+feature: 4,736/10,000 candidates
+feature: 4,864/10,000 candidates
+feature: 4,992/10,000 candidates
+feature: 5,120/10,000 candidates
+feature: 5,248/10,000 candidates
+feature: 5,376/10,000 candidates
+feature: 5,504/10,000 candidates
+feature: 5,632/10,000 candidates
+feature: 5,760/10,000 candidates
+feature: 5,888/10,000 candidates
+feature: 6,016/10,000 candidates
+feature: 6,144/10,000 candidates
+feature: 6,272/10,000 candidates
+feature: 6,400/10,000 candidates
+feature: 6,528/10,000 candidates
+feature: 6,656/10,000 candidates
+feature: 6,784/10,000 candidates
+feature: 6,912/10,000 candidates
+feature: 7,040/10,000 candidates
+feature: 7,168/10,000 candidates
+feature: 7,296/10,000 candidates
+feature: 7,424/10,000 candidates
+feature: 7,552/10,000 candidates
+feature: 7,680/10,000 candidates
+feature: 7,808/10,000 candidates
+feature: 7,936/10,000 candidates
+feature: 8,064/10,000 candidates
+feature: 8,192/10,000 candidates
+feature: 8,320/10,000 candidates
+feature: 8,448/10,000 candidates
+feature: 8,576/10,000 candidates
+feature: 8,704/10,000 candidates
+feature: 8,832/10,000 candidates
+feature: 8,960/10,000 candidates
+feature: 9,088/10,000 candidates
+feature: 9,216/10,000 candidates
+feature: 9,344/10,000 candidates
+feature: 9,472/10,000 candidates
+feature: 9,600/10,000 candidates
+feature: 9,728/10,000 candidates
+feature: 9,856/10,000 candidates
+feature: 9,984/10,000 candidates
+feature: 10,000/10,000 candidates
+feature: rejected candidate attempts {}
+Traceback (most recent call last):
+  File "/private/tmp/gates-v8-work/run.py", line 414, in <module>
+    main()
+    ~~~~^^
+  File "/private/tmp/gates-v8-work/run.py", line 380, in main
+    weights, fits[mode] = build_mode_weights(mode, pools)
+                          ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/private/tmp/gates-v8-work/run.py", line 293, in build_mode_weights
+    output["feature"], fits["feature"] = fit_weights(
+                                         ~~~~~~~~~~~^
+        pools["feature"], groups["feature"], MODE_TARGET_MEANS[mode])
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/gates-v8-work/run.py", line 41, in fit_weights
+    return (fit_gate_weights if any(r.get("rewardMetrics") for r in records) else fit_experience_weights)(records,total,target,atom_cap=cap)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/gates-v8-work/gate_weights.py", line 70, in fit_gate_weights
+    report=check_reward_contract(list(zip(records,weights)))
+  File "/private/tmp/gates-v8-work/reward_contract.py", line 69, in check_reward_contract
+    raise RuntimeError(f'{label}: V8 reward contract failed: {name}: {float(value/total):.9g}')
+RuntimeError: pool: V8 reward contract failed: hidden gates upper: 3.531e-10

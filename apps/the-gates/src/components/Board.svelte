@@ -1,76 +1,105 @@
 <script lang="ts">
+	import { t } from '../i18n';
 	import { runtime } from '../game/playback.svelte';
-	import { cellMotion } from '../game/motion';
+	import { presentedReward } from '../game/rewardDelivery';
 	import { posKey } from '../game/contract';
-	import Symbol from './Symbol.svelte';
-	const winning = $derived(new Set(runtime.game.wins.flatMap((w) => w.positions.map(posKey))));
-	const celebrating = $derived(['winning', 'gate'].includes(runtime.phase));
-	const removed = $derived(new Set(runtime.removed.map(posKey)));
-	const sticky = $derived(new Set(runtime.game.sticky.map(posKey)));
+	import { artTier } from '../game/art';
+	import { stateBet } from 'state-shared';
+	import { formatExactWinAmount as formatWinAmount } from 'utils-shared/currency';
+	import { useGpu } from '../game/gpuContext';
+	import type { createGpuBoard } from '../game/gpuBoard';
+	let { paused = false, mobile = false }: { paused?: boolean; mobile?: boolean } = $props();
+	const gpu = useGpu();
+	let host = $state<HTMLElement>(),
+		ready = $state(false);
+	let renderer = $state.raw<ReturnType<typeof createGpuBoard>>();
+	$effect(() => {
+		const engine = gpu.engine,
+			element = host;
+		if (!engine || !element) return;
+		let dead = false,
+			owned: ReturnType<typeof createGpuBoard> | undefined;
+		void import('../game/gpuBoard')
+			.then(({ createGpuBoard }) => {
+				if (dead) return;
+				owned = createGpuBoard(
+					engine,
+					element,
+					(value) => {
+						ready = value;
+					},
+					(error) => {
+						gpu.error = String(error);
+					},
+				);
+				renderer = owned;
+			})
+			.catch((error) => {
+				if (!dead) gpu.error = String(error);
+			});
+		const observer = new ResizeObserver(() => {
+			owned?.resize();
+		});
+		observer.observe(element);
+		return () => {
+			dead = true;
+			observer.disconnect();
+			owned?.destroy();
+			renderer = undefined;
+		};
+	});
+	$effect(() => {
+		const target = renderer;
+		if (!target) return;
+		const shown = presentedReward(runtime.game, runtime.rewardDelivery);
+		target.update({
+			scatterCelebration: runtime.scatterCelebration
+				? { ...runtime.scatterCelebration, keys: [...runtime.scatterCelebration.keys] }
+				: null,
+			wins: $state.snapshot(runtime.game.wins),
+			multiplier: shown.multiplier,
+			multiplierActive: shown.multiplierActive,
+			formatAmount: (amount: number) =>
+				formatWinAmount(stateBet.currency, (stateBet.wageredBetAmount * amount) / 100),
+			board: $state.snapshot(shown.board),
+			offsets: $state.snapshot(runtime.game.fallOffsets),
+			sticky: shown.sticky.map(posKey),
+			winning: runtime.game.wins.flatMap((w) => w.positions.map(posKey)),
+			removed: runtime.removed.map(posKey),
+			phase: runtime.phase,
+			wave: { ...runtime.wave },
+			startedAt: runtime.waveStartedAt,
+			roundId: runtime.roundId,
+			revealId: runtime.game.revealId,
+			palette: artTier(
+				runtime.sceneTierOverride ? runtime.sceneTierOverride.tier : runtime.game.tier,
+			),
+			reduced: runtime.reduced,
+			paused: paused || (gpu.presenting && !runtime.scatterCelebration),
+			mobile,
+		});
+	});
 </script>
 
-<div class="board-shell" class:gate-flash={runtime.phase === 'gate'}>
-	<span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span
-		class="corner br"
-	></span>
-	<div class="runes" aria-hidden="true">ᚷ · ᛟ · ᚹ · ᚠ · ᛞ · ᚷ · ᛟ · ᚹ · ᚠ · ᛞ</div>
-	<div
-		class="board"
-		role="img"
-		aria-label="6 columns, 5 rows. Pay anywhere."
-		data-testid="board"
-		data-phase={runtime.phase}
-		data-skipped={runtime.skipRequested}
-		data-wave-speed={runtime.wave.speed}
-		class:spinning={runtime.phase === 'spinning'}
-	>
-		{#each runtime.game.board as col, reel}<div class="reel">
-				{#each col as cell, row}
-					{@const key = `${reel}:${row}`}
-					{@const offset = runtime.game.fallOffsets[reel][row]}
-					{@const motion = cellMotion(runtime.wave, reel, row, offset)}
-					<div
-						class="cell"
-						class:winning={celebrating && winning.has(key)}
-						class:removing={removed.has(key)}
-						class:sticky={sticky.has(key)}
-						class:key-symbol={cell?.name === 'KEY'}
-						data-symbol={cell?.name ?? 'EMPTY'}
-					>
-						{#if sticky.has(key)}<div class="symbol-motion">
-								<Symbol
-									name="WILD"
-									decorative
-									animated={!runtime.reduced}
-									paying={celebrating && winning.has(key)}
-									seed={reel * 5 + row}
-								/>
-							</div>
-						{:else}{#key runtime.game.revealId}<div
-									class="symbol-motion"
-									class:drop={runtime.phase === 'dropping' && offset !== 0}
-									style={`--motion-delay:${motion.delay}ms;--motion-duration:${motion.duration}ms;--drop:${motion.offset}%;--impact-delay:${motion.delay + motion.duration}ms;--impact-duration:${motion.impact}ms;`}
-								>
-									{#if cell}<Symbol
-											name={cell.name}
-											decorative
-											animated={!runtime.reduced}
-											paying={celebrating && winning.has(key)}
-											seed={reel * 5 + row}
-											ash={runtime.phase === 'removing' && removed.has(key)
-												? {
-														startedAt: runtime.waveStartedAt,
-														delay: motion.delay,
-														duration: motion.duration,
-														seed: `${runtime.roundId}:${runtime.game.revealId}:${key}`,
-													}
-												: undefined}
-										/>{/if}
-								</div>{/key}{/if}
-						{#if cell?.name === 'WILD'}<span class="symbol-tag">WILD</span>{/if}
-					</div>
-				{/each}
-			</div>{/each}
-	</div>
-	<div class="runes bottom" aria-hidden="true">◆ ━━━━━━━━━ ◆ ━━━━━━━━━ ◆</div>
-</div>
+<!-- One layout/accessibility host only. Frame, reels, pads and symbols are Pixi nodes. -->
+<div
+	class="gpu-board-host"
+	bind:this={host}
+	role="img"
+	aria-label={t('BOARD DESCRIPTION')}
+	aria-busy={!ready}
+	data-testid="board"
+	data-phase={runtime.phase}
+	data-renderer={ready ? 'pixi-webgl' : 'loading'}
+	data-gpu-tiles={ready ? 30 : 0}
+></div>
+
+<style>
+	.gpu-board-host {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		pointer-events: none;
+	}
+</style>

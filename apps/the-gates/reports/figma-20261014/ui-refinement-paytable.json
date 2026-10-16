@@ -1,0 +1,47 @@
+{
+  "date": "2026-10-14",
+  "scope": [
+    "Denser bounded coin fountain behind native win-title layer",
+    "Bonus headings opaque yellow with continuous stroke; menu icon fit viewport",
+    "HUD menu above board; thicker dark HUD/control contours",
+    "Remove ready/speed/cost HUD captions; Feature amount uses 20x cost in yellow; Disable caption",
+    "Responsive seven-page rules modal with reused native components; verified named paytable"
+  ],
+  "paytable": {
+    "source": "User supplied table, checked against ../math-sdk/games/0_0_the_gates/math_targets.py PAYTABLE and frontend contract.ts PAYS",
+    "symbols": 10,
+    "values": 30,
+    "result": "all match",
+    "mathChanged": false,
+    "artMappingChanged": false,
+    "figmaDiscrepancy": "Figma ranks Eye/Coin and Orb/Letter differently; authoritative runtime mapping preserved; visible symbol names disambiguate"
+  },
+  "validation": {
+    "testsPassed": 148,
+    "testsFailed": 0,
+    "typescript": "PASS (tsc scope; Svelte runtime also checked in browser)",
+    "build": "PASS",
+    "package": "PASS",
+    "diffWhitespace": "PASS",
+    "freshBrowserErrors": 0,
+    "boardNonEmptyCells": 30,
+    "desktopRules": "all seven pages fit 999x486 content region without internal overflow at 1200x840",
+    "portraitPaytable": "390x844, 289px client/scroll width; page body scrolls vertically, navigation fixed",
+    "landscapeMenu": "844x390, inside screen, painted above board, no stretched bottom constraint",
+    "productionPackageBytes": 34902752
+  },
+  "qaFix": "Restored SYMBOLS import used by idle board initialization; fresh load verifies all 30 cells and no ReferenceError.",
+  "screenshots": [
+    "hud-board-menu-verified.png",
+    "paytable-verified.png",
+    "paytable-portrait.png",
+    "win-coins-title-origin.png",
+    "rules-ui-guide.png",
+    "hud-menu-landscape.png"
+  ],
+  "residualRisks": [
+    "Real RGS wagering/publication not exercised; browser QA uses explicitly scripted no-money preview.",
+    "No measured FPS guarantee; coin count is bounded and shares cached texture/shared animation clock.",
+    "Rules use responsive general design style per user direction, not exact fixed-pixel Figma geometry."
+  ]
+}

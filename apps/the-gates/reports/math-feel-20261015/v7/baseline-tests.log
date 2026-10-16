@@ -1,0 +1,23 @@
+.............EF..........
+======================================================================
+ERROR: test_sample_provenance_matches_mode_seed (test_recovery.RecoveryTests.test_sample_provenance_matches_mode_seed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/simeonhristov/Documents/GitHub/math-sdk/games/0_0_the_gates/test_recovery.py", line 67, in test_sample_provenance_matches_mode_seed
+    check_sample(book,'BONUS',123)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+TypeError: check_sample() missing 1 required positional argument: 'seed'
+
+======================================================================
+FAIL: test_scale_grows_with_candidate_count_and_divides_groups (test_recovery.RecoveryTests.test_scale_grows_with_candidate_count_and_divides_groups)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/simeonhristov/Documents/GitHub/math-sdk/games/0_0_the_gates/test_recovery.py", line 25, in test_scale_grows_with_candidate_count_and_divides_groups
+    self.assertEqual(scale,100000000 if mode in ('BASE','CHANCE') else 200000000 if mode=='MYSTERY' else 500000000)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1000000000 != 200000000
+
+----------------------------------------------------------------------
+Ran 25 tests in 3.877s
+
+FAILED (failures=1, errors=1)

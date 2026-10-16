@@ -1,0 +1,45 @@
+const assetPathPrefix = "./assets/the-gates/figma-20261013";
+const imgGlossyBlueGameBadgeEmblem1 = `${assetPathPrefix}/d7111.png`;
+const imgGlossyBlueGemGoldBadge4 = `${assetPathPrefix}/61f00.png`;
+const imgGlossyGoldenTheWordmark1 = `${assetPathPrefix}/a8485.png`;
+const imgGlossyGoldenGatesWordmark1 = `${assetPathPrefix}/0f6e5.png`;
+
+export default function Group314() {
+  return (
+    <div className="contents relative size-full" data-node-id="11284:149415">
+      <div className="absolute h-[446.439px] left-[302px] top-[-33px] w-[595.252px]" data-node-id="11284:149416" data-name="Glossy Blue Game Badge Emblem 1">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgGlossyBlueGameBadgeEmblem1} />
+      </div>
+      <div className="absolute h-[111.887px] left-[302px] top-[151.45px] w-[111.888px]" data-node-id="11284:149417" data-name="Glossy Blue Gem Gold Badge 4">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <img alt="" className="absolute left-0 max-w-none size-full top-0" src={imgGlossyBlueGemGoldBadge4} />
+        </div>
+      </div>
+      <div className="absolute h-[111.887px] left-[786.11px] top-[150.89px] w-[111.888px]" data-node-id="11284:149418" data-name="Glossy Blue Gem Gold Badge 5">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <img alt="" className="absolute left-0 max-w-none size-full top-0" src={imgGlossyBlueGemGoldBadge4} />
+        </div>
+      </div>
+      <div className="absolute left-[549.35px] size-[102.561px] top-[21.3px]" data-node-id="11284:149419" data-name="Glossy Blue Gem Gold Badge 8">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <img alt="" className="absolute left-0 max-w-none size-full top-0" src={imgGlossyBlueGemGoldBadge4} />
+        </div>
+      </div>
+      <div className="absolute h-[79.761px] left-[501.41px] top-[86.64px] w-[197.616px]" data-node-id="11284:149420" data-name="Glossy Golden THE Wordmark 1">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <img alt="" className="absolute h-[139.44%] left-0 max-w-none top-[-19.72%] w-full" src={imgGlossyGoldenTheWordmark1} />
+        </div>
+      </div>
+      <div className="absolute h-[146.228px] left-[387.3px] top-[156.43px] w-[425.398px]" data-node-id="11284:149421" data-name="Glossy Golden GATES Wordmark 1">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <img alt="" className="absolute h-[163.72%] left-0 max-w-none top-[-31.1%] w-full" src={imgGlossyGoldenGatesWordmark1} />
+        </div>
+      </div>
+      <div className="absolute h-[99.545px] left-[549.35px] top-[250.55px] w-[99.544px]" data-node-id="11284:149422" data-name="Glossy Blue Gem Gold Badge 7">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <img alt="" className="absolute left-0 max-w-none size-full top-0" src={imgGlossyBlueGemGoldBadge4} />
+        </div>
+      </div>
+    </div>
+  );
+}

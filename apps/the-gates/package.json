@@ -5,9 +5,16 @@
 	"license": "MIT",
 	"scripts": {
 		"dev": "vite dev --host --port 3020",
-		"build": "vite build",
+		"dev:https": "GATES_HTTPS=1 vite dev --host localhost --port 3020 --strictPort",
+		"build": "vite build && node --experimental-strip-types tools/package-assets.mjs --execute && node --experimental-strip-types tools/optimize-build-assets.mjs",
+		"build:full": "vite build",
+		"audit:bundle": "node --experimental-strip-types tools/package-assets.mjs",
 		"preview": "vite preview",
-		"test": "node --experimental-strip-types --test tests/*.test.mjs"
+		"verify:assets": "node tools/verify-figma-assets.mjs",
+		"build:motion": "node --experimental-strip-types tools/build-figma-motion.mjs && node tools/build-figma-motion-preview.mjs",
+		"test": "node --experimental-strip-types --test tests/*.test.mjs",
+		"audit:assets": "node --experimental-strip-types tools/clean-assets.mjs",
+		"optimize:build-assets": "node --experimental-strip-types tools/optimize-build-assets.mjs"
 	},
 	"type": "module",
 	"devDependencies": {
@@ -30,6 +37,8 @@
 		"components-ui-html": "workspace:*",
 		"utils-shared": "workspace:*",
 		"utils-xstate": "workspace:*",
-		"utils-bet": "workspace:*"
+		"utils-bet": "workspace:*",
+		"pixi.js": "8.8.1",
+		"@esotericsoftware/spine-pixi-v8": "4.2.74"
 	}
 }

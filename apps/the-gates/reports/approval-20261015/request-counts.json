@@ -1,0 +1,32 @@
+{
+  "USD-win": {
+    "/wallet/authenticate": 1,
+    "/wallet/play": 1,
+    "/bet/event": 16,
+    "/wallet/end-round": 1
+  },
+  "USD-loss": {
+    "/wallet/authenticate": 1,
+    "/wallet/play": 2,
+    "/bet/event": 2
+  },
+  "USD-resume": {
+    "/wallet/authenticate": 1,
+    "/wallet/end-round": 1
+  },
+  "USD-resume-v2": {
+    "/wallet/authenticate": 1,
+    "/wallet/end-round": 1
+  },
+  "USD-endfail": {
+    "/wallet/authenticate": 2,
+    "/wallet/play": 1,
+    "/wallet/end-round": 1
+  },
+  "XSC-zero": {
+    "/wallet/authenticate": 2
+  },
+  "XGC-zero": {
+    "/wallet/authenticate": 1
+  }
+}

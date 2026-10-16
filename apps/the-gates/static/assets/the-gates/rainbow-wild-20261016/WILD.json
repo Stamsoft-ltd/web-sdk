@@ -1,0 +1,102 @@
+{
+  "skeleton": {
+    "spine": "4.2.74",
+    "x": -140,
+    "y": -140,
+    "width": 280,
+    "height": 280
+  },
+  "bones": [
+    {
+      "name": "root"
+    },
+    {
+      "name": "body",
+      "parent": "root"
+    }
+  ],
+  "slots": [
+    {
+      "name": "body",
+      "bone": "body",
+      "attachment": "rainbow-wild"
+    }
+  ],
+  "skins": [
+    {
+      "name": "default",
+      "attachments": {
+        "body": {
+          "rainbow-wild": {
+            "width": 260,
+            "height": 260
+          }
+        }
+      }
+    }
+  ],
+  "animations": {
+    "setup": {},
+    "idle": {
+      "bones": {
+        "body": {
+          "scale": [
+            {
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 1,
+              "x": 1.025,
+              "y": 1.025
+            },
+            {
+              "time": 2,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        }
+      }
+    },
+    "paying": {
+      "bones": {
+        "body": {
+          "scale": [
+            {
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 0.2,
+              "x": 1.09,
+              "y": 1.09
+            },
+            {
+              "time": 0.45,
+              "x": 1,
+              "y": 1
+            }
+          ],
+          "rotate": [
+            {
+              "value": 0
+            },
+            {
+              "time": 0.15,
+              "value": -4
+            },
+            {
+              "time": 0.3,
+              "value": 4
+            },
+            {
+              "time": 0.45,
+              "value": 0
+            }
+          ]
+        }
+      }
+    }
+  }
+}

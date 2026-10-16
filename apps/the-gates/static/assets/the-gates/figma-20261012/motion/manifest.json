@@ -1,0 +1,553 @@
+{
+  "version": 1,
+  "spine": "4.2.74",
+  "status": "Standalone motion authoring; NOT integrated with game or final Figma layout",
+  "symbols": [
+    {
+      "name": "GUARDIAN_MASK",
+      "atlas": "symbols",
+      "singleBitmap": true
+    },
+    {
+      "name": "SUN_MEDALLION",
+      "atlas": "symbols",
+      "singleBitmap": true
+    },
+    {
+      "name": "SACRED_EYE",
+      "atlas": "symbols",
+      "singleBitmap": true
+    },
+    {
+      "name": "RUNE_CHALICE",
+      "atlas": "symbols",
+      "singleBitmap": true
+    },
+    {
+      "name": "CRYSTAL_ORB",
+      "atlas": "symbols",
+      "singleBitmap": true
+    },
+    {
+      "name": "RED_GEM",
+      "atlas": "symbols",
+      "singleBitmap": true
+    },
+    {
+      "name": "BLUE_GEM",
+      "atlas": "symbols",
+      "singleBitmap": true
+    },
+    {
+      "name": "GREEN_GEM",
+      "atlas": "symbols",
+      "singleBitmap": true
+    },
+    {
+      "name": "PURPLE_GEM",
+      "atlas": "symbols",
+      "singleBitmap": true
+    },
+    {
+      "name": "AMBER_GEM",
+      "atlas": "symbols",
+      "singleBitmap": true
+    },
+    {
+      "name": "KEY",
+      "atlas": "symbols",
+      "singleBitmap": true
+    }
+  ],
+  "wins": [
+    {
+      "name": "win-sweet",
+      "atlas": "win-sweet",
+      "tier": "sweet",
+      "crownAnchor": {
+        "letter": "first E",
+        "u": 0.535,
+        "v": 0.09
+      },
+      "independentSlots": [
+        "banner",
+        "horn-left",
+        "horn-right",
+        "title",
+        "amount",
+        "crown"
+      ],
+      "notes": []
+    },
+    {
+      "name": "win-wild",
+      "atlas": "win-wild",
+      "tier": "wild",
+      "crownAnchor": {
+        "letter": "D",
+        "u": 0.746,
+        "v": 0.127
+      },
+      "independentSlots": [
+        "banner",
+        "horn-left",
+        "horn-right",
+        "title",
+        "amount",
+        "crown"
+      ],
+      "notes": [
+        "Clean plaque; independent mirrored trumpets tuck behind title."
+      ]
+    },
+    {
+      "name": "win-epic",
+      "atlas": "win-epic",
+      "tier": "epic",
+      "crownAnchor": {
+        "letter": "P",
+        "u": 0.449,
+        "v": 0.093
+      },
+      "independentSlots": [
+        "banner",
+        "horn-left",
+        "horn-right",
+        "title",
+        "amount",
+        "crown"
+      ],
+      "notes": []
+    },
+    {
+      "name": "win-mythic",
+      "atlas": "win-mythic",
+      "tier": "mythic",
+      "crownAnchor": {
+        "letter": "T",
+        "u": 0.49,
+        "v": 0.173
+      },
+      "independentSlots": [
+        "banner",
+        "horn-left",
+        "horn-right",
+        "title",
+        "amount",
+        "crown"
+      ],
+      "notes": []
+    },
+    {
+      "name": "win-legendary",
+      "atlas": "win-legendary",
+      "tier": "legendary",
+      "crownAnchor": {
+        "letter": "N",
+        "u": 0.507,
+        "v": 0.107
+      },
+      "independentSlots": [
+        "banner",
+        "horn-left",
+        "horn-right",
+        "title",
+        "amount",
+        "crown"
+      ],
+      "notes": []
+    }
+  ],
+  "bonuses": [
+    {
+      "name": "bonus-normal",
+      "atlas": "bonus-normal"
+    },
+    {
+      "name": "bonus-super",
+      "atlas": "bonus-super"
+    },
+    {
+      "name": "bonus-hidden",
+      "atlas": "bonus-hidden"
+    }
+  ],
+  "gates": [
+    {
+      "name": "gate-normal",
+      "atlas": "gate-normal",
+      "tier": "normal",
+      "group": "gates",
+      "leaf": "gates/normal-leaf-original.png",
+      "portal": "normal-portal-layers-v1.png",
+      "portalSha256": "2250797e958dd7f4ed0e82a9239cdec17f97b3e9104fdec8cb6e7163902c9ad7",
+      "palette": [
+        "purple",
+        "hot pink",
+        "gold"
+      ],
+      "mirroredRight": true,
+      "reward": "Dynamic authoritative reward only; workbench text is explicitly a demo"
+    },
+    {
+      "name": "gate-super",
+      "atlas": "gate-super",
+      "tier": "super",
+      "group": "gates",
+      "leaf": "gates/super-leaf-original.png",
+      "portal": "super-portal-layers-v1.png",
+      "portalSha256": "1adabc9c431f065778e31b4a10194699af8b4743eebf89d6165520dbb9af8e66",
+      "palette": [
+        "royal blue",
+        "white",
+        "gold"
+      ],
+      "mirroredRight": true,
+      "reward": "Dynamic authoritative reward only; workbench text is explicitly a demo"
+    },
+    {
+      "name": "gate-hidden",
+      "atlas": "gate-hidden",
+      "tier": "hidden",
+      "group": "gates",
+      "leaf": "gates/hidden-leaf-original.png",
+      "portal": "hidden-portal-layers-v1.png",
+      "portalSha256": "688c1eaa458335c42448ec1df147d01152441f17eb1d0de23090ff7edddf0bef",
+      "palette": [
+        "ruby red",
+        "cream",
+        "gold"
+      ],
+      "mirroredRight": true,
+      "reward": "Dynamic authoritative reward only; workbench text is explicitly a demo"
+    }
+  ],
+  "gateCycle": {
+    "impact": 0.36,
+    "openStart": 0.58,
+    "opened": 1.02,
+    "rewardStart": 1.1,
+    "rewardHoldEnd": 1.85,
+    "rewardGone": 2.02,
+    "finished": 2.18,
+    "rewardHoldMs": 750,
+    "impactShake": "stage bone only; runtime camera wiring pending",
+    "sequence": "slide in \u2192 crash + little shake \u2192 slide open + reward spins/grows out \u2192 upright readable reward \u2192 reward removed \u2192 portal closes",
+    "source": "intact native leaf used twice; right side mirrored, never clipped reference-only leaves"
+  },
+  "gateSparks": {
+    "count": 12,
+    "centralFlash": true,
+    "source": "cartoon-impact-spark-v1.png",
+    "sha256": "c7d62cf0dfbfad5f9ab0b008237434f7ba20b92e0bf2f1b444dd4e3d057dd0d3",
+    "emission": "eventId-seeded launch from seam at collision only; all gone before reopening"
+  },
+  "landing": {
+    "scaleX": 1.28,
+    "scaleY": 0.68,
+    "reboundX": 0.9,
+    "reboundY": 1.13,
+    "pivot": "visible alpha floor",
+    "durationMs": 120
+  },
+  "portalVariants": {
+    "normal": {
+      "path": "normal-portal-layers-v1.png",
+      "sha256": "2250797e958dd7f4ed0e82a9239cdec17f97b3e9104fdec8cb6e7163902c9ad7",
+      "palette": [
+        "purple",
+        "hot pink",
+        "gold"
+      ],
+      "provenance": "normal-provenance.json",
+      "symbolAtlas": "symbols-normal"
+    },
+    "super": {
+      "path": "super-portal-layers-v1.png",
+      "sha256": "1adabc9c431f065778e31b4a10194699af8b4743eebf89d6165520dbb9af8e66",
+      "palette": [
+        "royal blue",
+        "white",
+        "gold"
+      ],
+      "provenance": "super-provenance.json",
+      "symbolAtlas": "symbols-super"
+    },
+    "hidden": {
+      "path": "hidden-portal-layers-v1.png",
+      "sha256": "688c1eaa458335c42448ec1df147d01152441f17eb1d0de23090ff7edddf0bef",
+      "palette": [
+        "ruby red",
+        "cream",
+        "gold"
+      ],
+      "provenance": "hidden-provenance.json",
+      "symbolAtlas": "symbols-hidden"
+    }
+  },
+  "removal": {
+    "kind": "cartoon-mini-portal",
+    "layers": [
+      "portal-vortex",
+      "portal-rim",
+      "body"
+    ],
+    "defaultTier": "normal",
+    "provenance": "normal-provenance.json",
+    "source": "normal-portal-layers-v1.png",
+    "sha256": "2250797e958dd7f4ed0e82a9239cdec17f97b3e9104fdec8cb6e7163902c9ad7",
+    "seed": "eventId + symbol/cell identity; cosmetic only"
+  },
+  "animations": {
+    "symbols": [
+      "setup",
+      "idle",
+      "land",
+      "paying",
+      "remove"
+    ],
+    "presentations": [
+      "setup",
+      "enter",
+      "idle",
+      "exit"
+    ],
+    "gates": [
+      "setup",
+      "idle",
+      "cycle"
+    ]
+  },
+  "timings": {
+    "landMs": 120,
+    "fastScale": 1.5,
+    "turboScale": 3,
+    "removeMs": 1000,
+    "symbolGoneMs": 860,
+    "winEnterMs": 900,
+    "bonusEnterMs": 750
+  },
+  "sourceAssets": [
+    {
+      "path": "symbols/pharaoh.png",
+      "sha256": "7fb4c005ec71f1c369661780dd78050702c42b2d26a4b95ba524e52e610f6dfe",
+      "nodeId": null
+    },
+    {
+      "path": "symbols/coin.png",
+      "sha256": "2bf3b76d427476d6e82cb421f36d215f7e1f12d8f51e2894e11fe9bedcba9b5e",
+      "nodeId": null
+    },
+    {
+      "path": "symbols/eye.png",
+      "sha256": "52e854374e1dc1d88e63d151e30bfb3867f2ee2eecc7a5b6c04a8fceedc7ed66",
+      "nodeId": null
+    },
+    {
+      "path": "symbols/letter.png",
+      "sha256": "4fc32777ba5981d90286f097108f4e8fe19218dd615ea8d1ca06567176b8be59",
+      "nodeId": null
+    },
+    {
+      "path": "symbols/orb.png",
+      "sha256": "9323fad30dde99c6d82d8141d7d27449f684b0b792f559dd833bb04c8fc734e3",
+      "nodeId": null
+    },
+    {
+      "path": "symbols/red-gem.png",
+      "sha256": "fa126e65ab04de6db9eea08b922188f02deef74f6d54ab046c36ff4a7fe13e2a",
+      "nodeId": null
+    },
+    {
+      "path": "symbols/blue-gem.png",
+      "sha256": "3b0ab06c07620d2842947b8870589684425eb41b77773310642b10d28316b2b7",
+      "nodeId": null
+    },
+    {
+      "path": "symbols/green-gem.png",
+      "sha256": "33a5f5829ca7d6652d52752bc575b601b5bad021c0272801e2ec6aac8b659f83",
+      "nodeId": null
+    },
+    {
+      "path": "symbols/purple-gem.png",
+      "sha256": "a512d9ac5c3dfab41983444fc2825f90099cd120e740a08fb6d3a9ce40ef6cd8",
+      "nodeId": null
+    },
+    {
+      "path": "symbols/gold-gem.png",
+      "sha256": "07baa4951452d7ec76b8bbb485600c218a2c38b53df0b74efa57f045790e520b",
+      "nodeId": null
+    },
+    {
+      "path": "symbols/key-original.png",
+      "sha256": "ea7dc4213aa49171679be67ae0ba2c4f1552c061ea2191e014d9a3aab40b3f06",
+      "nodeId": "11255:62227"
+    },
+    {
+      "path": "wins/sweet-banner.png",
+      "sha256": "1820d740b189daad87f32c108e6f820fdefaf60681c2633f96b5dd5e8e3c0086",
+      "nodeId": "11145:5151"
+    },
+    {
+      "path": "wins/sweet-horn-1.png",
+      "sha256": "96e94d4384f55e349d057f919bf5eda66bf143f0b7fa7e812fcf082142e90ab2",
+      "nodeId": "11145:5589"
+    },
+    {
+      "path": "wins/sweet-horn-2.png",
+      "sha256": "3650242b57685bae949112a33a3dd4cfa70781e1f88137087221c3e4efe49db1",
+      "nodeId": "11145:5633"
+    },
+    {
+      "path": "wins/sweet-title.png",
+      "sha256": "3f59f11e98e78f4bf353f2ae2636556acddaed4d9dd5b6109c7079947df70aae",
+      "nodeId": "11152:7562"
+    },
+    {
+      "path": "wins/sweet-crown.png",
+      "sha256": "587bf32640c5ca2ac62d6253ee5c9f65f9cff78ce6ddd1fda5662dcb8c0bf04b",
+      "nodeId": "11145:5914"
+    },
+    {
+      "path": "wins/wild-banner.png",
+      "sha256": "85c841e0ae4727aa63e2a143805a55d1b8721e2a20ceda815405f7720d0a35c4",
+      "nodeId": "11145:4261"
+    },
+    {
+      "path": "wins/wild-horn-2.png",
+      "sha256": "64ccbb420f1929e1621b9f80a6748f1a4d2a775f610d9a3ed1c4ae7bc90fc105",
+      "nodeId": "11145:5372"
+    },
+    {
+      "path": "wins/wild-title.png",
+      "sha256": "bedf7eacfae5ff5c7a7f378a16bb996f49c311de998974b20157495eaf15543f",
+      "nodeId": "11145:1810"
+    },
+    {
+      "path": "wins/wild-crown.png",
+      "sha256": "717d7ed54240b3018ad5454fda1cf21f8e4f2d52396ae217762c50528e1cfce0",
+      "nodeId": "11145:5677"
+    },
+    {
+      "path": "wins/epic-banner.png",
+      "sha256": "27de30c2d2380eb0a005c509247b2c52085d56cde2bdb17b5b77924ee423ee62",
+      "nodeId": "11145:4971"
+    },
+    {
+      "path": "wins/epic-horn-2.png",
+      "sha256": "58af099c69b1c77c38538af90ed31921824b76661d6250451c2a9ed93912516a",
+      "nodeId": "11234:37548"
+    },
+    {
+      "path": "wins/epic-horn-1.png",
+      "sha256": "61f90814a29b4fa92edb2a74c77a40dbae69a6e63615b5f23403aafef77beb03",
+      "nodeId": "11145:5545"
+    },
+    {
+      "path": "wins/epic-title.png",
+      "sha256": "ecd65d0c6090e52482a97f1e7b1dd84794b83f2296860e809aa9aa9bfc1129f3",
+      "nodeId": "11234:37621"
+    },
+    {
+      "path": "wins/epic-crown.png",
+      "sha256": "17f4368ed1c56d56f761577d6962e229b799539dffd4467ca243223784d4ecda",
+      "nodeId": "11234:37591"
+    },
+    {
+      "path": "wins/mythic-banner.png",
+      "sha256": "3be1ffee023b9122b16ee16359e9abedd85f65871d2e96e6c0440ee8b0283b9c",
+      "nodeId": "11145:3693"
+    },
+    {
+      "path": "wins/mythic-horn-1.png",
+      "sha256": "7bac6ff5f4b54e6a8740ac990b6faeabb7a9f9a127b5c111d9c145b4776a8ecd",
+      "nodeId": "11145:2905"
+    },
+    {
+      "path": "wins/mythic-horn-2.png",
+      "sha256": "eb101fa497939be6bc6a9cdfc01b7be833189109e1e37444484a93d44de1b0cf",
+      "nodeId": "11232:18560"
+    },
+    {
+      "path": "wins/mythic-title.png",
+      "sha256": "8fc600fd6bcde9b9d4d575eaa487a898f383d3a322b07d0e8b4502073f0b3849",
+      "nodeId": "11145:3932"
+    },
+    {
+      "path": "wins/mythic-crown.png",
+      "sha256": "2084c3bc6d70ee63126c8c4e607406b5642916119bbc6ce82b13bb71c1a7f582",
+      "nodeId": "11145:4220"
+    },
+    {
+      "path": "wins/legendary-banner.png",
+      "sha256": "a0fc3748827303a02bf6fcc5755fd20c69303868944ca606226e1964783b0f28",
+      "nodeId": "11145:4704"
+    },
+    {
+      "path": "wins/legendary-horn-1.png",
+      "sha256": "94f148570108c42f743311bfc19581150f9a631757e068065c3aa937e27ee6ce",
+      "nodeId": "11145:5458"
+    },
+    {
+      "path": "wins/legendary-horn-2.png",
+      "sha256": "57d593c526d87377fb968ee4117a0e11a67253744c0cf7e9a31a86ae89ee9a5d",
+      "nodeId": "11145:5415"
+    },
+    {
+      "path": "wins/legendary-title.png",
+      "sha256": "78e37629f2c48fcca5b703061e21958cd58ecee733bd63a5bbaa2fe379ebe2a2",
+      "nodeId": "11145:4882"
+    },
+    {
+      "path": "wins/legendary-crown.png",
+      "sha256": "f38b75bd1e4053dec9f26eef10e0b611dc3592dc9dbc8e41d33aa6749d0b0be5",
+      "nodeId": "11145:5756"
+    },
+    {
+      "path": "bonus/normal-title.png",
+      "sha256": "66203b586fbcd67c8c58db19b2e2e16a79a9f877792b3ed2b46054a3190d6cdc",
+      "nodeId": "11145:2148"
+    },
+    {
+      "path": "panels/bonus-counter-blank.png",
+      "sha256": "e987eaaa80fa0e336a756cfa9117a70612bcee190530a1b01f3202602c77a260",
+      "nodeId": "11284:149363"
+    },
+    {
+      "path": "bonus/super-title.png",
+      "sha256": "53dba5f3877edcd0c1c1296dcada98119c3930a7d12bc1ce5a5ab1f838bd573b",
+      "nodeId": "11145:2648"
+    },
+    {
+      "path": "bonus/hidden-title.png",
+      "sha256": "3af584cd805aec40afbd0f4961d3cab10f38b8a4c372e45e8501c33714c759f1",
+      "nodeId": "11145:2491"
+    },
+    {
+      "path": "gates/normal-leaf-original.png",
+      "sha256": "57bbc6c6236ee97ab1d082bee0de1c8a6929abb32e49b0e02a71f62b8bffe95f",
+      "nodeId": "11232:28699"
+    },
+    {
+      "path": "gates/super-leaf-original.png",
+      "sha256": "cd53db386e017c84d07875ab39171dd45a459e97cd4e079231243171b63a2463",
+      "nodeId": "11232:26346"
+    },
+    {
+      "path": "gates/hidden-leaf-original.png",
+      "sha256": "2a0200aabaec2df868ff86c5c40a1fbb8a40c18c0ee1c9c2c40d70fa340f2a0d",
+      "nodeId": "11232:18603"
+    }
+  ],
+  "pending": [
+    "Native symbol PNGs flattened: landing/pay poses deform intact bitmap, not independently rigged facets/faces",
+    "Bonus end/MAX WIN artwork and final screen geometry still pending"
+  ],
+  "integration": {
+    "landing": "reveal movement completion \u2192 land once \u2192 idle; do not restart on speed/skip change",
+    "paying": "cascadeWin positions only; never infer wins visually",
+    "removal": "tumbleRemove \u2192 portal opens behind full-size source \u2192 slow continuous shrink/twist inward \u2192 tiny source disappears \u2192 portal shrinks uniformly closed in 60ms; canonical 1000ms, runtime Normal 820ms / Fast 500ms / Turbo 180ms; seed eventId + cell/symbol; no shards",
+    "presentation": "enter once \u2192 idle \u2192 exit on existing dismissal; amounts/counts remain localized dynamic UI",
+    "reducedMotion": "clear tracks + setToSetupPose + setup animation; no looping or squash"
+  }
+}

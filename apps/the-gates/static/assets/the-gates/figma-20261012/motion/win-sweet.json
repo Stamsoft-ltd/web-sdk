@@ -1,0 +1,754 @@
+{
+  "skeleton": {
+    "spine": "4.2.74",
+    "x": -500,
+    "y": -360,
+    "width": 1000,
+    "height": 720
+  },
+  "bones": [
+    {
+      "name": "root"
+    },
+    {
+      "name": "celebration",
+      "parent": "root",
+      "x": 0,
+      "y": 0,
+      "scaleX": 0.82,
+      "scaleY": 0.82
+    },
+    {
+      "name": "banner",
+      "parent": "celebration",
+      "x": 0,
+      "y": 30
+    },
+    {
+      "name": "horn-left",
+      "parent": "celebration",
+      "x": -175,
+      "y": 112,
+      "rotation": -15
+    },
+    {
+      "name": "horn-right",
+      "parent": "celebration",
+      "x": 175,
+      "y": 112,
+      "rotation": 15
+    },
+    {
+      "name": "title",
+      "parent": "celebration",
+      "x": 0,
+      "y": 45
+    },
+    {
+      "name": "amount",
+      "parent": "celebration",
+      "x": 0,
+      "y": -150
+    },
+    {
+      "name": "crown",
+      "parent": "title",
+      "x": 17.46097922848666,
+      "y": 141.4220528154495
+    }
+  ],
+  "slots": [
+    {
+      "name": "banner",
+      "bone": "banner",
+      "attachment": "banner"
+    },
+    {
+      "name": "horn-left",
+      "bone": "horn-left",
+      "attachment": "horn-left"
+    },
+    {
+      "name": "horn-right",
+      "bone": "horn-right",
+      "attachment": "horn-right"
+    },
+    {
+      "name": "title",
+      "bone": "title",
+      "attachment": "title"
+    },
+    {
+      "name": "amount",
+      "bone": "amount"
+    },
+    {
+      "name": "crown",
+      "bone": "crown",
+      "attachment": "crown"
+    }
+  ],
+  "skins": [
+    {
+      "name": "default",
+      "attachments": {
+        "banner": {
+          "banner": {
+            "path": "banner",
+            "width": 700,
+            "height": 279.6143250688705
+          }
+        },
+        "horn-left": {
+          "horn-left": {
+            "path": "horn-left",
+            "width": 170,
+            "height": 113.33333333333333
+          }
+        },
+        "horn-right": {
+          "horn-right": {
+            "path": "horn-right",
+            "width": 170,
+            "height": 113.33333333333333
+          }
+        },
+        "title": {
+          "title": {
+            "path": "title",
+            "width": 430,
+            "height": 252.57459505541348
+          }
+        },
+        "crown": {
+          "crown": {
+            "path": "crown",
+            "width": 125,
+            "height": 102.37388724035608
+          }
+        }
+      }
+    }
+  ],
+  "animations": {
+    "enter": {
+      "bones": {
+        "celebration": {
+          "scale": [
+            {
+              "time": 0,
+              "x": 0.72,
+              "y": 0.72
+            },
+            {
+              "time": 0.15,
+              "x": 0.92,
+              "y": 0.92
+            },
+            {
+              "time": 0.32,
+              "x": 1.045,
+              "y": 1.045
+            },
+            {
+              "time": 0.5,
+              "x": 0.985,
+              "y": 0.985
+            },
+            {
+              "time": 0.68,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        },
+        "banner": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": -55
+            },
+            {
+              "time": 0,
+              "x": 0,
+              "y": -55
+            },
+            {
+              "time": 0.22,
+              "x": 0,
+              "y": 11
+            },
+            {
+              "time": 0.38,
+              "x": 0,
+              "y": -3
+            },
+            {
+              "time": 0.5,
+              "x": 0,
+              "y": 0
+            }
+          ]
+        },
+        "horn-left": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": -55
+            },
+            {
+              "time": 0.06,
+              "x": 0,
+              "y": -55
+            },
+            {
+              "time": 0.28,
+              "x": 0,
+              "y": 11
+            },
+            {
+              "time": 0.44,
+              "x": 0,
+              "y": -3
+            },
+            {
+              "time": 0.56,
+              "x": 0,
+              "y": 0
+            }
+          ]
+        },
+        "horn-right": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": -55
+            },
+            {
+              "time": 0.12,
+              "x": 0,
+              "y": -55
+            },
+            {
+              "time": 0.33999999999999997,
+              "x": 0,
+              "y": 11
+            },
+            {
+              "time": 0.5,
+              "x": 0,
+              "y": -3
+            },
+            {
+              "time": 0.62,
+              "x": 0,
+              "y": 0
+            }
+          ]
+        },
+        "title": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": -55
+            },
+            {
+              "time": 0.12,
+              "x": 0,
+              "y": -55
+            },
+            {
+              "time": 0.33999999999999997,
+              "x": 0,
+              "y": 11
+            },
+            {
+              "time": 0.5,
+              "x": 0,
+              "y": -3
+            },
+            {
+              "time": 0.62,
+              "x": 0,
+              "y": 0
+            }
+          ]
+        },
+        "crown": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": -30
+            },
+            {
+              "time": 0.19,
+              "x": 0,
+              "y": -30
+            },
+            {
+              "time": 0.44,
+              "x": 0,
+              "y": 42
+            },
+            {
+              "time": 0.66,
+              "x": 0,
+              "y": -5
+            },
+            {
+              "time": 0.78,
+              "x": 0,
+              "y": 3
+            },
+            {
+              "time": 0.9,
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.19,
+              "value": 0
+            },
+            {
+              "time": 0.44,
+              "value": -7
+            },
+            {
+              "time": 0.66,
+              "value": 3
+            },
+            {
+              "time": 0.9,
+              "value": 0
+            }
+          ]
+        },
+        "amount": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": -55
+            },
+            {
+              "time": 0.24,
+              "x": 0,
+              "y": -55
+            },
+            {
+              "time": 0.45999999999999996,
+              "x": 0,
+              "y": 11
+            },
+            {
+              "time": 0.62,
+              "x": 0,
+              "y": -3
+            },
+            {
+              "time": 0.74,
+              "x": 0,
+              "y": 0
+            }
+          ]
+        }
+      },
+      "slots": {
+        "banner": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.12,
+              "value": 1
+            }
+          ]
+        },
+        "horn-left": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.06,
+              "value": 0
+            },
+            {
+              "time": 0.18,
+              "value": 1
+            }
+          ]
+        },
+        "horn-right": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.12,
+              "value": 0
+            },
+            {
+              "time": 0.24,
+              "value": 1
+            }
+          ]
+        },
+        "title": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.12,
+              "value": 0
+            },
+            {
+              "time": 0.24,
+              "value": 1
+            }
+          ]
+        },
+        "crown": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.19,
+              "value": 0
+            },
+            {
+              "time": 0.31,
+              "value": 1
+            }
+          ]
+        },
+        "amount": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.24,
+              "value": 0
+            },
+            {
+              "time": 0.36,
+              "value": 1
+            }
+          ]
+        }
+      }
+    },
+    "idle": {
+      "bones": {
+        "title": {
+          "scale": [
+            {
+              "time": 0,
+              "x": 1,
+              "y": 1
+            },
+            {
+              "time": 1.4,
+              "x": 1.018,
+              "y": 1.018
+            },
+            {
+              "time": 2.8,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        },
+        "crown": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 1.4,
+              "x": 0,
+              "y": 5
+            },
+            {
+              "time": 2.8,
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.7,
+              "value": 2
+            },
+            {
+              "time": 1.4,
+              "value": 0
+            },
+            {
+              "time": 2.0999999999999996,
+              "value": -2
+            },
+            {
+              "time": 2.8,
+              "value": 0
+            }
+          ]
+        },
+        "horn-left": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.7,
+              "value": -5
+            },
+            {
+              "time": 1.4,
+              "value": 0
+            },
+            {
+              "time": 2.0999999999999996,
+              "value": 5
+            },
+            {
+              "time": 2.8,
+              "value": 0
+            }
+          ]
+        },
+        "horn-right": {
+          "rotate": [
+            {
+              "time": 0,
+              "value": 0
+            },
+            {
+              "time": 0.7,
+              "value": 5
+            },
+            {
+              "time": 1.4,
+              "value": 0
+            },
+            {
+              "time": 2.0999999999999996,
+              "value": -5
+            },
+            {
+              "time": 2.8,
+              "value": 0
+            }
+          ]
+        }
+      }
+    },
+    "exit": {
+      "bones": {
+        "banner": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.2,
+              "x": 0,
+              "y": 25
+            }
+          ]
+        },
+        "horn-left": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.2,
+              "x": 0,
+              "y": 25
+            }
+          ]
+        },
+        "horn-right": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.2,
+              "x": 0,
+              "y": 25
+            }
+          ]
+        },
+        "title": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.2,
+              "x": 0,
+              "y": 25
+            }
+          ]
+        },
+        "crown": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.2,
+              "x": 0,
+              "y": 25
+            }
+          ]
+        },
+        "amount": {
+          "translate": [
+            {
+              "time": 0,
+              "x": 0,
+              "y": 0
+            },
+            {
+              "time": 0.2,
+              "x": 0,
+              "y": 25
+            }
+          ]
+        }
+      },
+      "slots": {
+        "banner": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 1
+            },
+            {
+              "time": 0.2,
+              "value": 0
+            }
+          ]
+        },
+        "horn-left": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 1
+            },
+            {
+              "time": 0.2,
+              "value": 0
+            }
+          ]
+        },
+        "horn-right": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 1
+            },
+            {
+              "time": 0.2,
+              "value": 0
+            }
+          ]
+        },
+        "title": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 1
+            },
+            {
+              "time": 0.2,
+              "value": 0
+            }
+          ]
+        },
+        "crown": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 1
+            },
+            {
+              "time": 0.2,
+              "value": 0
+            }
+          ]
+        },
+        "amount": {
+          "alpha": [
+            {
+              "time": 0,
+              "value": 1
+            },
+            {
+              "time": 0.2,
+              "value": 0
+            }
+          ]
+        }
+      }
+    },
+    "setup": {
+      "bones": {
+        "celebration": {
+          "scale": [
+            {
+              "time": 0,
+              "x": 1,
+              "y": 1
+            }
+          ]
+        }
+      }
+    }
+  }
+}

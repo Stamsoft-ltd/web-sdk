@@ -1,0 +1,1352 @@
+[
+  {
+    "file": "apps/the-gates/src/style.css",
+    "before": 35793,
+    "after": 25233,
+    "removed": [
+      {
+        "selector": ".mode-strip",
+        "dead": [
+          "mode-strip"
+        ]
+      },
+      {
+        "selector": ".mode-strip > span",
+        "dead": [
+          "mode-strip"
+        ]
+      },
+      {
+        "selector": ".left-hud",
+        "dead": [
+          "left-hud"
+        ]
+      },
+      {
+        "selector": ".eyebrow",
+        "dead": [
+          "eyebrow"
+        ]
+      },
+      {
+        "selector": ".meter-panel",
+        "dead": [
+          "meter-panel"
+        ]
+      },
+      {
+        "selector": ".meter-orbs",
+        "dead": [
+          "meter-orbs"
+        ]
+      },
+      {
+        "selector": ".meter-orbs > span",
+        "dead": [
+          "meter-orbs"
+        ]
+      },
+      {
+        "selector": ".meter-orbs > .lit",
+        "dead": [
+          "meter-orbs"
+        ]
+      },
+      {
+        "selector": ".meter-panel p",
+        "dead": [
+          "meter-panel"
+        ]
+      },
+      {
+        "selector": ".multiplier-panel",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".multiplier-value",
+        "dead": [
+          "multiplier-value"
+        ]
+      },
+      {
+        "selector": ".multiplier-value em",
+        "dead": [
+          "multiplier-value"
+        ]
+      },
+      {
+        "selector": ".gold-divider",
+        "dead": [
+          "gold-divider"
+        ]
+      },
+      {
+        "selector": ".multiplier-panel > span",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".free-spins > span",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".max-plaque > span",
+        "dead": [
+          "max-plaque"
+        ]
+      },
+      {
+        "selector": ".multiplier-panel > b",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".max-plaque strong",
+        "dead": [
+          "max-plaque"
+        ]
+      },
+      {
+        "selector": ".free-spins",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".free-spins strong",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".free-spins strong small",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".free-spins > small",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".board-caption",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".board-caption b",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".gate-flash",
+        "dead": [
+          "gate-flash"
+        ]
+      },
+      {
+        "selector": ".ambient",
+        "dead": [
+          "ambient"
+        ]
+      },
+      {
+        "selector": ".ambient i",
+        "dead": [
+          "ambient"
+        ]
+      },
+      {
+        "selector": ".modal-actions",
+        "dead": [
+          "modal-actions"
+        ]
+      },
+      {
+        "selector": ".pay-symbol",
+        "dead": [
+          "pay-symbol"
+        ]
+      },
+      {
+        "selector": ".pay-symbol > .symbol",
+        "dead": [
+          "pay-symbol"
+        ]
+      },
+      {
+        "selector": ".pay-symbol > span",
+        "dead": [
+          "pay-symbol"
+        ]
+      },
+      {
+        "selector": ".celebration-glyph",
+        "dead": [
+          "celebration-glyph"
+        ]
+      },
+      {
+        "selector": ".celebration-glyph svg",
+        "dead": [
+          "celebration-glyph"
+        ]
+      },
+      {
+        "selector": ".loading-screen",
+        "dead": [
+          "loading-screen"
+        ]
+      },
+      {
+        "selector": ".loading-screen",
+        "dead": [
+          "loading-screen"
+        ]
+      },
+      {
+        "selector": ".loading-line",
+        "dead": [
+          "loading-line"
+        ]
+      },
+      {
+        "selector": ".loading-line::after",
+        "dead": [
+          "loading-line"
+        ]
+      },
+      {
+        "selector": ".reduced .ambient",
+        "dead": [
+          "ambient"
+        ]
+      },
+      {
+        "selector": ".ambient",
+        "dead": [
+          "ambient"
+        ]
+      },
+      {
+        "selector": ".brand-spacer",
+        "dead": [
+          "brand-spacer"
+        ]
+      },
+      {
+        "selector": ".card-door",
+        "dead": [
+          "card-door"
+        ]
+      },
+      {
+        "selector": ".left-hud",
+        "dead": [
+          "left-hud"
+        ]
+      },
+      {
+        "selector": ".multiplier-value",
+        "dead": [
+          "multiplier-value"
+        ]
+      },
+      {
+        "selector": ".meter-orbs",
+        "dead": [
+          "meter-orbs"
+        ]
+      },
+      {
+        "selector": ".left-hud",
+        "dead": [
+          "left-hud"
+        ]
+      },
+      {
+        "selector": ".left-hud > div",
+        "dead": [
+          "left-hud"
+        ]
+      },
+      {
+        "selector": ".meter-panel",
+        "dead": [
+          "meter-panel"
+        ]
+      },
+      {
+        "selector": ".multiplier-panel",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".meter-panel p",
+        "dead": [
+          "meter-panel"
+        ]
+      },
+      {
+        "selector": ".multiplier-panel > span",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".multiplier-panel > b",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".gold-divider",
+        "dead": [
+          "gold-divider"
+        ]
+      },
+      {
+        "selector": ".stage-content > .gate-space",
+        "dead": [
+          "gate-space"
+        ]
+      },
+      {
+        "selector": ".brand-spacer",
+        "dead": [
+          "brand-spacer"
+        ]
+      },
+      {
+        "selector": ".mode-strip",
+        "dead": [
+          "mode-strip"
+        ]
+      },
+      {
+        "selector": ".mode-strip > span",
+        "dead": [
+          "mode-strip"
+        ]
+      },
+      {
+        "selector": ".stage-content > .gate-space",
+        "dead": [
+          "gate-space"
+        ]
+      },
+      {
+        "selector": ".left-hud",
+        "dead": [
+          "left-hud"
+        ]
+      },
+      {
+        "selector": ".left-hud > div",
+        "dead": [
+          "left-hud"
+        ]
+      },
+      {
+        "selector": ".left-hud > .max-plaque",
+        "dead": [
+          "left-hud",
+          "max-plaque"
+        ]
+      },
+      {
+        "selector": ".left-hud > .free-spins",
+        "dead": [
+          "left-hud",
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".eyebrow",
+        "dead": [
+          "eyebrow"
+        ]
+      },
+      {
+        "selector": ".multiplier-panel",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".multiplier-value",
+        "dead": [
+          "multiplier-value"
+        ]
+      },
+      {
+        "selector": ".multiplier-value em",
+        "dead": [
+          "multiplier-value"
+        ]
+      },
+      {
+        "selector": ".meter-orbs",
+        "dead": [
+          "meter-orbs"
+        ]
+      },
+      {
+        "selector": ".meter-orbs > span",
+        "dead": [
+          "meter-orbs"
+        ]
+      },
+      {
+        "selector": ".max-plaque > span",
+        "dead": [
+          "max-plaque"
+        ]
+      },
+      {
+        "selector": ".free-spins > span",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".free-spins > small",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".max-plaque strong",
+        "dead": [
+          "max-plaque"
+        ]
+      },
+      {
+        "selector": ".free-spins",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".free-spins strong",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".free-spins strong small",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".board-caption",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".pay-symbol",
+        "dead": [
+          "pay-symbol"
+        ]
+      },
+      {
+        "selector": ".pay-symbol > span",
+        "dead": [
+          "pay-symbol"
+        ]
+      },
+      {
+        "selector": ".mode-strip",
+        "dead": [
+          "mode-strip"
+        ]
+      },
+      {
+        "selector": ".stage-content > .gate-space",
+        "dead": [
+          "gate-space"
+        ]
+      },
+      {
+        "selector": ".board-caption",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".multiplier-value",
+        "dead": [
+          "multiplier-value"
+        ]
+      },
+      {
+        "selector": ".mode-strip",
+        "dead": [
+          "mode-strip"
+        ]
+      },
+      {
+        "selector": ".left-hud",
+        "dead": [
+          "left-hud"
+        ]
+      },
+      {
+        "selector": ".meter-panel",
+        "dead": [
+          "meter-panel"
+        ]
+      },
+      {
+        "selector": ".meter-panel p",
+        "dead": [
+          "meter-panel"
+        ]
+      },
+      {
+        "selector": ".multiplier-panel > span",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".multiplier-panel > b",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".gold-divider",
+        "dead": [
+          "gold-divider"
+        ]
+      },
+      {
+        "selector": ".meter-orbs",
+        "dead": [
+          "meter-orbs"
+        ]
+      },
+      {
+        "selector": ".meter-orbs > span",
+        "dead": [
+          "meter-orbs"
+        ]
+      },
+      {
+        "selector": ".eyebrow",
+        "dead": [
+          "eyebrow"
+        ]
+      },
+      {
+        "selector": ".multiplier-panel",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".multiplier-value",
+        "dead": [
+          "multiplier-value"
+        ]
+      },
+      {
+        "selector": ".max-plaque strong",
+        "dead": [
+          "max-plaque"
+        ]
+      },
+      {
+        "selector": ".max-plaque > span",
+        "dead": [
+          "max-plaque"
+        ]
+      },
+      {
+        "selector": ".board-caption",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".gate-space",
+        "dead": [
+          "gate-space"
+        ]
+      },
+      {
+        "selector": ".presentation .celebration-glyph",
+        "dead": [
+          "celebration-glyph"
+        ]
+      },
+      {
+        "selector": ".presentation .celebration-glyph svg",
+        "dead": [
+          "celebration-glyph"
+        ]
+      },
+      {
+        "selector": ".presentation .celebration-glyph",
+        "dead": [
+          "celebration-glyph"
+        ]
+      },
+      {
+        "selector": ".free-spins",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".free-spins > span",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".free-spins > small",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".free-spins strong",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".free-spins strong small",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".mode-strip",
+        "dead": [
+          "mode-strip"
+        ]
+      },
+      {
+        "selector": ".board-heading",
+        "dead": [
+          "board-heading"
+        ]
+      },
+      {
+        "selector": ".board-heading .wordmark",
+        "dead": [
+          "board-heading"
+        ]
+      },
+      {
+        "selector": ".board-heading .wordmark > span",
+        "dead": [
+          "board-heading"
+        ]
+      },
+      {
+        "selector": ".board-heading .wordmark h1",
+        "dead": [
+          "board-heading"
+        ]
+      },
+      {
+        "selector": ".bonus-mode-label",
+        "dead": [
+          "bonus-mode-label"
+        ]
+      },
+      {
+        "selector": ".board-heading",
+        "dead": [
+          "board-heading"
+        ]
+      },
+      {
+        "selector": ".board-heading .wordmark h1",
+        "dead": [
+          "board-heading"
+        ]
+      },
+      {
+        "selector": ".board-heading",
+        "dead": [
+          "board-heading"
+        ]
+      },
+      {
+        "selector": ".board-heading .wordmark > span",
+        "dead": [
+          "board-heading"
+        ]
+      },
+      {
+        "selector": ".board-heading .wordmark h1",
+        "dead": [
+          "board-heading"
+        ]
+      },
+      {
+        "selector": ".stage-content > .gate-space",
+        "dead": [
+          "gate-space"
+        ]
+      },
+      {
+        "selector": ".board-heading",
+        "dead": [
+          "board-heading"
+        ]
+      },
+      {
+        "selector": ".board-heading .wordmark h1",
+        "dead": [
+          "board-heading"
+        ]
+      },
+      {
+        "selector": ".board-heading .wordmark > span",
+        "dead": [
+          "board-heading"
+        ]
+      },
+      {
+        "selector": ".stage-content > .gate-space",
+        "dead": [
+          "gate-space"
+        ]
+      },
+      {
+        "selector": ".left-hud",
+        "dead": [
+          "left-hud"
+        ]
+      },
+      {
+        "selector": ".left-hud > div",
+        "dead": [
+          "left-hud"
+        ]
+      },
+      {
+        "selector": ".left-hud > .max-plaque",
+        "dead": [
+          "left-hud",
+          "max-plaque"
+        ]
+      },
+      {
+        "selector": ".left-hud > .free-spins",
+        "dead": [
+          "left-hud",
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".meter-panel",
+        "dead": [
+          "meter-panel"
+        ]
+      },
+      {
+        "selector": ".meter-panel p",
+        "dead": [
+          "meter-panel"
+        ]
+      },
+      {
+        "selector": ".multiplier-panel > span",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".multiplier-panel > b",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".gold-divider",
+        "dead": [
+          "gold-divider"
+        ]
+      },
+      {
+        "selector": ".multiplier-panel",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".multiplier-value",
+        "dead": [
+          "multiplier-value"
+        ]
+      },
+      {
+        "selector": ".meter-orbs",
+        "dead": [
+          "meter-orbs"
+        ]
+      },
+      {
+        "selector": ".meter-orbs > span",
+        "dead": [
+          "meter-orbs"
+        ]
+      },
+      {
+        "selector": ".board-heading",
+        "dead": [
+          "board-heading"
+        ]
+      },
+      {
+        "selector": ".board-heading .wordmark h1",
+        "dead": [
+          "board-heading"
+        ]
+      },
+      {
+        "selector": ".board-heading .wordmark > span",
+        "dead": [
+          "board-heading"
+        ]
+      },
+      {
+        "selector": ".board-caption",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".left-hud",
+        "dead": [
+          "left-hud"
+        ]
+      },
+      {
+        "selector": ".inline-win",
+        "dead": [
+          "inline-win"
+        ]
+      },
+      {
+        "selector": ".inline-win-art",
+        "dead": [
+          "inline-win-art"
+        ]
+      },
+      {
+        "selector": ".inline-win .win-amount",
+        "dead": [
+          "inline-win"
+        ]
+      },
+      {
+        "selector": ".bonus-award",
+        "dead": [
+          "bonus-award"
+        ]
+      },
+      {
+        "selector": ".drop.authored-drop",
+        "dead": [
+          "authored-drop"
+        ]
+      }
+    ]
+  },
+  {
+    "file": "apps/the-gates/src/figma.css",
+    "before": 57764,
+    "after": 50560,
+    "removed": [
+      {
+        "selector": ".figma-scene",
+        "dead": [
+          "figma-scene"
+        ]
+      },
+      {
+        "selector": ".figma-layout .board-caption",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".figma-layout .board-caption b",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".figma-layout .left-hud",
+        "dead": [
+          "left-hud"
+        ]
+      },
+      {
+        "selector": ".figma-layout .meter-panel",
+        "dead": [
+          "meter-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout .multiplier-panel",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout .multiplier-panel",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout .meter-panel::before",
+        "dead": [
+          "meter-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout .multiplier-panel::before",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout .meter-panel::after",
+        "dead": [
+          "meter-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout .multiplier-panel::after",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout .eyebrow",
+        "dead": [
+          "eyebrow"
+        ]
+      },
+      {
+        "selector": ".figma-layout .meter-orbs",
+        "dead": [
+          "meter-orbs"
+        ]
+      },
+      {
+        "selector": ".figma-layout .meter-orbs > span",
+        "dead": [
+          "meter-orbs"
+        ]
+      },
+      {
+        "selector": ".figma-layout .meter-orbs > span.lit",
+        "dead": [
+          "meter-orbs"
+        ]
+      },
+      {
+        "selector": ".figma-layout .multiplier-value",
+        "dead": [
+          "multiplier-value"
+        ]
+      },
+      {
+        "selector": ".figma-layout .multiplier-value em",
+        "dead": [
+          "multiplier-value"
+        ]
+      },
+      {
+        "selector": ".figma-layout .meter-panel p",
+        "dead": [
+          "meter-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout .multiplier-panel > span",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout .multiplier-panel > b",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout .gold-divider",
+        "dead": [
+          "gold-divider"
+        ]
+      },
+      {
+        "selector": ".figma-layout .max-plaque",
+        "dead": [
+          "max-plaque"
+        ]
+      },
+      {
+        "selector": ".figma-layout .free-spins",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".figma-layout .free-spins strong",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".figma-layout .free-spins span",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".figma-layout .inline-win",
+        "dead": [
+          "inline-win"
+        ]
+      },
+      {
+        "selector": ".figma-layout .inline-win .win-amount",
+        "dead": [
+          "inline-win"
+        ]
+      },
+      {
+        "selector": ".figma-layout .inline-win-art",
+        "dead": [
+          "inline-win-art"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait .figma-scene",
+        "dead": [
+          "figma-scene"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait .meter-panel",
+        "dead": [
+          "meter-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait .multiplier-panel",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait .multiplier-panel",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait .free-spins",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait .free-spins strong",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait .board-caption",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait .inline-win",
+        "dead": [
+          "inline-win"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait .inline-win .win-amount",
+        "dead": [
+          "inline-win"
+        ]
+      },
+      {
+        "selector": ".cartoon-modal .modal-actions",
+        "dead": [
+          "modal-actions"
+        ]
+      },
+      {
+        "selector": ".cartoon-modal .modal-actions > button",
+        "dead": [
+          "modal-actions"
+        ]
+      },
+      {
+        "selector": ".loading-screen",
+        "dead": [
+          "loading-screen"
+        ]
+      },
+      {
+        "selector": ".loading-screen::before",
+        "dead": [
+          "loading-screen"
+        ]
+      },
+      {
+        "selector": ".cartoon-modal .modal-actions",
+        "dead": [
+          "modal-actions"
+        ]
+      },
+      {
+        "selector": ".figma-layout .meter-panel",
+        "dead": [
+          "meter-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout .multiplier-panel",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout.compact .figma-scene",
+        "dead": [
+          "figma-scene"
+        ]
+      },
+      {
+        "selector": ".figma-layout.compact .board-caption",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".figma-layout.compact .meter-panel",
+        "dead": [
+          "meter-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout.compact .multiplier-panel",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout.compact .multiplier-panel",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout.compact .free-spins",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".figma-layout.compact .free-spins strong",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".figma-layout.compact .inline-win",
+        "dead": [
+          "inline-win"
+        ]
+      },
+      {
+        "selector": ".figma-layout.compact .inline-win .win-amount",
+        "dead": [
+          "inline-win"
+        ]
+      },
+      {
+        "selector": ".figma-layout.compact .board-caption",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".figma-layout.compact .board-caption b",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".figma-layout .studio-wordmark",
+        "dead": [
+          "studio-wordmark"
+        ]
+      },
+      {
+        "selector": ".figma-layout .studio-icon",
+        "dead": [
+          "studio-icon"
+        ]
+      },
+      {
+        "selector": ".game-backdrop",
+        "dead": [
+          "game-backdrop"
+        ]
+      },
+      {
+        "selector": ".figma-layout .board-caption",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".figma-layout .board-caption b",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".loading-screen",
+        "dead": [
+          "loading-screen"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait .board-caption",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait .free-spins",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait .free-spins strong",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait .free-spins > small",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait.bonus-play .multiplier-panel",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait.bonus-play .multiplier-panel::before",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait.bonus-play .multiplier-panel::after",
+        "dead": [
+          "multiplier-panel"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait.bonus-play .multiplier-value",
+        "dead": [
+          "multiplier-value"
+        ]
+      },
+      {
+        "selector": ".figma-layout.compact .board-caption",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".figma-layout.compact .free-spins",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".figma-layout.compact .free-spins strong",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".spin-award",
+        "dead": [
+          "spin-award"
+        ]
+      },
+      {
+        "selector": ".figma-layout .free-spins strong",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".figma-layout .board-caption b",
+        "dead": [
+          "board-caption"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait .free-spins strong",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".figma-layout.portrait .free-spins > small",
+        "dead": [
+          "free-spins"
+        ]
+      },
+      {
+        "selector": ".cartoon-modal .modal-actions > button",
+        "dead": [
+          "modal-actions"
+        ]
+      }
+    ]
+  }
+]

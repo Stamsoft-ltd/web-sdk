@@ -1,0 +1,13 @@
+(node:85418) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "beforeBytes": 36592584,
+  "afterBytes": 36397669,
+  "removedBytes": 194915,
+  "removedFiles": 11,
+  "runtimeAssets": 174,
+  "sourceFiles": 97,
+  "runtimeAssetSha256": "cfc97ed84a082be45bcfa25b1c1dd19e05a45a2c85002ad2f8b89e3610ba963d",
+  "policy": "Generated assets only; all referenced files verified byte-identical or exact PNG scanline/metadata-equivalent before pruning. JS/CSS/HTML and source assets untouched.",
+  "execute": false
+}

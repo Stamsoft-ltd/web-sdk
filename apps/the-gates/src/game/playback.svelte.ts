@@ -1,18 +1,41 @@
+import { bonusScatterKeys, SCATTER_CELEBRATION_MS } from './scatterCelebration';
+import { playGameSound, stopGameSounds } from './audio';
+import { TUMBLE_FLIGHT_MS, TUMBLE_ARRIVAL_MS, tumbleFlightTiming } from './tumbleFlight';
+import {
+	bonusTransitionDuration,
+	BONUS_SCENE_SWITCH_MS,
+	bonusEntryBoundary,
+	type BonusTransition,
+} from './bonusTransition';
 import { stateBet, stateConfig, stateUrlDerived } from 'state-shared';
+import { createRewardDelivery, type RewardDelivery } from './rewardDelivery';
+import { autoplaySettings } from './autoplaySettings.svelte';
 import { requestEndEvent } from 'rgs-requests';
 import { initialState, reduceEvent, restorePrefix } from './reducer';
-import { TIMING, bonusEntryHold, waitForDismissal, waitForTarget } from './presentation';
+import { loadRig } from './spine';
+import { loadAssetImage } from './imageAssets';
+import { ART_ROOT, MOTION_ROOT, artTier } from './art';
+import {
+	TIMING,
+	bonusEntryHold,
+	gateSelectionHold,
+	waitForDismissal,
+	waitForTarget,
+} from './presentation';
 import { selectedSpeed, speedFactor } from './uiPolicy';
-import { showsAnyWin, winTiming } from './winPresentation';
+import { winTiming, winTier } from './winPresentation';
 import { cellMotion, type Wave } from './motion';
 import type { Speed } from './uiPolicy';
-import type { Bet, BookEvent, Position } from './contract';
+import type { Bet, BookEvent, Position, Tier } from './contract';
 
 export const runtime = $state({
+	scatterCelebration: null as null | { keys: string[]; startedAt: number; duration: number },
 	game: initialState(),
 	roundId: 'preview',
 	busy: false,
 	phase: 'idle',
+	bonusTransition: null as BonusTransition | null,
+	sceneTierOverride: null as { tier: Tier | null } | null,
 	removed: [] as Position[],
 	overlay: null as null | {
 		kind: 'bonus' | 'summary' | 'win' | 'cap';
@@ -29,6 +52,11 @@ export const runtime = $state({
 	startedAt: 0,
 	skipRequested: false,
 	waveStartedAt: 0,
+	spinTotalBefore: 0,
+	gateSpeedFactor: 1,
+	gateStartedAt: -1,
+	gateRewardStartedAt: null as number | null,
+	rewardDelivery: null as RewardDelivery | null,
 	wave: { speed: 'normal', kind: 'spin', cut: null, tail: 130 } as Wave,
 });
 let previewRound = 0;
@@ -83,6 +111,12 @@ function waveDuration() {
 	}
 	return runtime.reduced ? Math.min(100, end) : end + 24;
 }
+export function arriveGateReward(id: string, index: number) {
+	const delivery = runtime.rewardDelivery;
+	if (!delivery || delivery.id !== id || delivery.arrived.includes(index)) return false;
+	delivery.arrived = [...delivery.arrived, index];
+	return true;
+}
 export function continuePresentation() {
 	if (runtime.counting) {
 		runtime.finishCount = true;
@@ -91,14 +125,23 @@ export function continuePresentation() {
 	acknowledge?.();
 }
 export function cancelPlayback() {
+	runtime.scatterCelebration = null;
+	stopGameSounds();
+	runtime.bonusTransition = null;
+	runtime.sceneTierOverride = null;
 	active?.abort();
 	acknowledge?.();
 	active = null;
 	runtime.busy = false;
 	runtime.waiting = false;
 	runtime.overlay = null;
+	runtime.rewardDelivery = null;
 }
 export function resetRound() {
+	runtime.scatterCelebration = null;
+	runtime.bonusTransition = null;
+	runtime.sceneTierOverride = null;
+	runtime.rewardDelivery = null;
 	runtime.game = { ...initialState(), board: runtime.game.board };
 	runtime.phase = 'idle';
 	runtime.skipRequested = false;
@@ -146,8 +189,14 @@ async function present(
 async function presentWin(amount: number, signal: AbortSignal) {
 	const timing = winTiming(amount, runtime.skipRequested ? 6 : speedFactor(currentSpeed()));
 	runtime.overlay = { kind: 'win', amount, countMs: timing.countMs };
-	await present(signal, timing.holdMs);
-	runtime.overlay = null;
+	const cue = winTier(amount)?.key;
+	if (cue) playGameSound(cue, { group: 'win' });
+	try {
+		await present(signal, timing.holdMs);
+	} finally {
+		stopGameSounds('win');
+		runtime.overlay = null;
+	}
 }
 export function restoreBet(bet: Bet) {
 	runtime.roundId = String(bet.betID ?? bet.roundID ?? 'book');
@@ -177,25 +226,144 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 			signal,
 		);
 	const waitMotion = () => waitForTarget(waveDuration, signal);
+	let selectionStartedAt: number | null = null;
+	let pendingBonus: Extract<BookEvent, { type: 'freeSpinTrigger' }> | null = null;
+	const transition = async (kind: 'entry' | 'exit', tier: Tier) => {
+		const reduced = runtime.reduced;
+		const factor = speedFactor(currentSpeed());
+		runtime.bonusTransition = { kind, startedAt: performance.now(), reduced, speedFactor: factor };
+		const closedAt = reduced ? BONUS_SCENE_SWITCH_MS.reduced : BONUS_SCENE_SWITCH_MS[kind];
+		await delay(closedAt / factor, signal);
+		// Change scenery only while the leaves cover it. Reducer/result untouched.
+		runtime.sceneTierOverride = { tier: kind === 'entry' ? tier : null };
+		await delay((bonusTransitionDuration(kind, reduced) - closedAt) / factor, signal);
+		runtime.bonusTransition = null;
+	};
+	let scatterCelebrated = false;
+	const celebrateScatters = async () => {
+		if (scatterCelebrated) return;
+		const keys = bonusScatterKeys(runtime.game.board);
+		if (keys.length >= 3) {
+			scatterCelebrated = true;
+			const duration = runtime.reduced
+				? SCATTER_CELEBRATION_MS.reduced
+				: SCATTER_CELEBRATION_MS[currentSpeed()];
+			runtime.scatterCelebration = { keys, startedAt: performance.now(), duration };
+			playGameSound('key');
+		}
+	};
+	const enterBonus = async () => {
+		if (!pendingBonus) return;
+		const e = pendingBonus;
+		pendingBonus = null;
+
+		runtime.overlay = { kind: 'bonus', tier: e.tier, spins: e.totalFs };
+		await transition('entry', e.tier);
+		playGameSound('bonus', { group: 'win' });
+		await present(signal, undefined, TIMING.overlayGuard);
+		runtime.scatterCelebration = null;
+		runtime.overlay = null;
+		stopGameSounds('win');
+		runtime.sceneTierOverride = null;
+	};
 
 	try {
 		for (const e of events) {
 			if (signal.aborted) break;
+			if (pendingBonus && bonusEntryBoundary(e)) await enterBonus();
+			if (e.type === 'reveal' && !runtime.reduced) {
+				// Resolve symbol textures before starting gravity/contact clocks on cold loads.
+				const tier = artTier(
+					runtime.sceneTierOverride ? runtime.sceneTierOverride.tier : runtime.game.tier,
+				);
+				const names = new Set(e.board.flat().flatMap((cell) => (cell ? [cell.name] : [])));
+				await Promise.all(
+					Array.from(names, (name) =>
+						(name === 'WILD'
+							? loadRig(name, 'symbols')
+							: loadRig(name, `symbols-${tier}`, MOTION_ROOT)
+						).catch((error) => console.warn('Symbol animation unavailable:', name, error)),
+					),
+				);
+				if (signal.aborted) break;
+			}
 			if (e.type === 'tumbleRemove') {
 				runtime.removed = e.positions;
 				beginWave('remove');
 				runtime.phase = 'removing';
 				await waitMotion();
+				// Keep the late portal payout readable before the reducer clears winning cells.
+				await wait(320, 70);
 			}
 			if (e.type === 'freeSpinTrigger') {
-				await waitForTarget(
-					() => bonusEntryHold(currentSpeed(), runtime.reduced, runtime.skipRequested),
-					signal,
-				);
+				// Decode before starting the guarded bonus intro: cold asset loads must not eat its read time.
+				await Promise.all([
+					loadAssetImage(`${ART_ROOT}backgrounds/${artTier(e.tier)}-original.png`),
+					loadRig(`bonus-${artTier(e.tier)}`, `bonus-${artTier(e.tier)}`, MOTION_ROOT),
+					loadRig(`gate-${artTier(e.tier)}`, `gate-${artTier(e.tier)}`, MOTION_ROOT),
+					waitForTarget(
+						() => bonusEntryHold(currentSpeed(), runtime.reduced, runtime.skipRequested),
+						signal,
+					),
+				]);
+				if (signal.aborted) break;
 			}
+			if (e.type === 'freeSpinEnd') {
+				await Promise.all([
+					loadRig(`bonus-${artTier(e.tier)}`, `bonus-${artTier(e.tier)}`, MOTION_ROOT),
+					loadRig(`gate-${artTier(e.tier)}`, `gate-${artTier(e.tier)}`, MOTION_ROOT),
+				]);
+				if (signal.aborted) break;
+			}
+			if (e.type === 'gateOpen') {
+				// Decode before starting the visible clock: never jump into a late closed pose.
+				const tier = artTier(
+					runtime.sceneTierOverride ? runtime.sceneTierOverride.tier : runtime.game.tier,
+				);
+				try {
+					await loadRig(`gate-${tier}`, `gate-${tier}`, MOTION_ROOT);
+				} catch (error) {
+					console.warn('Gate animation unavailable:', error);
+				}
+				if (signal.aborted) break;
+				if (runtime.game.wins.length) {
+					// Complete the third selected-symbol beat before doors obscure the board.
+					// Resume at gateOpen has no local clock: replay this presentation-only beat.
+					// Do not pre-remove cells: upcoming sticky awards determine actual removals.
+					runtime.phase = 'winning';
+					playGameSound('cascade');
+					await waitForTarget(
+						() =>
+							gateSelectionHold(runtime.reduced, runtime.skipRequested) /
+							speedFactor(currentSpeed()),
+						signal,
+						selectionStartedAt ?? performance.now(),
+					);
+				}
+				runtime.gateSpeedFactor = speedFactor(currentSpeed());
+				runtime.gateStartedAt = performance.now();
+				runtime.gateRewardStartedAt = null;
+			}
+			if (e.type === 'gateReward') {
+				if (e.reward.kind === 'stickyWild') await loadRig('WILD', 'symbols');
+				if (signal.aborted) break;
+				runtime.gateRewardStartedAt = performance.now();
+				runtime.rewardDelivery = createRewardDelivery(
+					e,
+					runtime.game,
+					runtime.gateRewardStartedAt,
+					runtime.roundId,
+				);
+				if (runtime.rewardDelivery) runtime.rewardDelivery.speedFactor = runtime.gateSpeedFactor;
+			}
+			if (e.type === 'freeSpinTrigger') runtime.sceneTierOverride = { tier: runtime.game.tier };
+			if (e.type === 'spinStart') runtime.spinTotalBefore = runtime.game.total;
 			runtime.game = reduceEvent(runtime.game, e);
 			switch (e.type) {
 				case 'spinStart':
+					playGameSound('spin');
+					runtime.sceneTierOverride = null;
+					selectionStartedAt = null;
 					runtime.skipRequested = false;
 					beginWave('exit');
 					runtime.phase = 'spinning';
@@ -203,10 +371,17 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 					await waitMotion();
 					break;
 				case 'reveal':
+					selectionStartedAt = null;
 					beginWave(e.cascadeIndex === 0 ? 'spin' : 'tumble');
 					runtime.phase = 'dropping';
 					runtime.removed = [];
 					await waitMotion();
+					if (
+						!runtime.game.tier &&
+						bonusScatterKeys(e.board).length >= 3 &&
+						events.some((event) => event.type === 'freeSpinTrigger')
+					)
+						await celebrateScatters();
 					runtime.phase = 'idle';
 					if (!demo && !stateUrlDerived.replay())
 						try {
@@ -220,28 +395,39 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 						}
 					break;
 				case 'cascadeWin':
+					playGameSound('cascade');
+					selectionStartedAt = performance.now();
 					runtime.phase = 'winning';
 					await wait(TIMING.winHighlight, 100, 1.45);
 					break;
 				case 'gateProgress':
-					await wait(TIMING.progress, 60, 1.35);
+					await wait(
+						TIMING.progress,
+						runtime.reduced
+							? 60
+							: tumbleFlightTiming(currentSpeed()).flight +
+									tumbleFlightTiming(currentSpeed()).arrival,
+						1.35,
+					);
 					break;
 				case 'gateOpen':
 					runtime.phase = 'gate';
 					await wait(
-						runtime.reduced ? 150 : TIMING.gateOpen,
-						runtime.reduced ? 150 : TIMING.gateOpen,
+						runtime.reduced ? 100 : TIMING.gateOpen / runtime.gateSpeedFactor,
+						runtime.reduced ? 100 : TIMING.gateOpen / runtime.gateSpeedFactor,
 					);
 					break;
 				case 'gateReward':
-					await wait(TIMING.gateReward, 700);
+					// Spin out while doors open, then readable 1.8s hold + delivery/arrival at every speed.
+					await delay(runtime.reduced ? 150 : TIMING.gateReward / runtime.gateSpeedFactor, signal);
+					runtime.rewardDelivery = null;
 					break;
 				case 'tumbleRemove':
 					await wait(40, 40);
 					break;
 				case 'spinWin':
 					runtime.phase = 'settling';
-					if (runtime.game.freeSpin > 0 && showsAnyWin(e.amount) && !runtime.game.capped)
+					if (runtime.game.freeSpin > 0 && winTier(e.amount) && !runtime.game.capped)
 						await presentWin(e.amount, signal);
 					else if (e.amount) await wait(TIMING.settle, 80, 1.4);
 					break;
@@ -251,42 +437,48 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 					stateBet.winBookEventAmount = e.amount;
 					break;
 				case 'freeSpinTrigger':
-					stateBet.autoSpinsCounter = 0;
+					if (!autoplaySettings.continueOnBonus) stateBet.autoSpinsCounter = 0;
 					stateBet.isTurbo = false;
 					stateBet.isSuperTurbo = false;
-					runtime.overlay = { kind: 'bonus', tier: e.tier, spins: e.totalFs };
-					await present(
-						signal,
-						undefined,
-						runtime.reduced ? TIMING.overlayGuard : TIMING.bonusGuard,
-					);
-					runtime.overlay = null;
+					pendingBonus = e;
 					break;
 				case 'freeSpinEnd':
 					runtime.overlay = { kind: 'summary', tier: e.tier, amount: e.amount };
-					await present(signal, TIMING.winAutoClose);
+					playGameSound('summary', { group: 'win' });
+					await present(signal);
+					stopGameSounds('win');
+					playGameSound('retract');
+					await transition('exit', e.tier);
 					runtime.overlay = null;
 					break;
 				case 'maxWin':
 					runtime.overlay = { kind: 'cap', amount: e.amount };
+					playGameSound('legendary', { group: 'win' });
 					await present(signal, TIMING.capAutoClose);
+					stopGameSounds('win');
 					runtime.overlay = null;
 					break;
 			}
 		}
+		if (pendingBonus) await enterBonus();
 		const remaining =
 			stateConfig.jurisdiction.minimumRoundDuration * 1000 -
 			(performance.now() - runtime.startedAt);
 		if (!demo && remaining > 0) await delay(remaining, signal);
 		if (
-			showsAnyWin(runtime.game.total) &&
+			winTier(runtime.game.total) &&
 			!events.some((e) => e.type === 'freeSpinEnd') &&
 			!runtime.game.capped
 		) {
 			await presentWin(runtime.game.total, signal);
 		}
 	} finally {
+		runtime.scatterCelebration = null;
+		runtime.bonusTransition = null;
+		stopGameSounds();
+		if (signal.aborted) runtime.sceneTierOverride = null;
 		runtime.busy = false;
+		runtime.rewardDelivery = null;
 		runtime.skipRequested = false;
 		runtime.phase = 'idle';
 		runtime.removed = [];

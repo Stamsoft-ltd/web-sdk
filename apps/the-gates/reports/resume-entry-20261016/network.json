@@ -1,0 +1,54 @@
+[
+  {
+    "time": 1792103929.606103,
+    "method": "POST",
+    "path": "/wallet/authenticate",
+    "body": {
+      "sessionID": "USD-resume-entry-20261016",
+      "language": "en"
+    }
+  },
+  {
+    "time": 1792103972.6238232,
+    "method": "POST",
+    "path": "/wallet/end-round",
+    "body": {
+      "sessionID": "USD-resume-entry-20261016"
+    }
+  },
+  {
+    "time": 1792103998.768022,
+    "method": "POST",
+    "path": "/wallet/authenticate",
+    "body": {
+      "sessionID": "USD-resume-entry-portrait-20261016",
+      "language": "en"
+    }
+  },
+  {
+    "time": 1792104009.2185578,
+    "method": "POST",
+    "path": "/wallet/end-round",
+    "body": {
+      "sessionID": "USD-resume-entry-portrait-20261016"
+    }
+  },
+  {
+    "time": 1792104010.044245,
+    "method": "POST",
+    "path": "/bet/event",
+    "body": {
+      "sessionID": "USD-resume-entry-portrait-20261016",
+      "event": "1"
+    }
+  },
+  {
+    "time": 1792104013.065996,
+    "method": "POST",
+    "path": "/bet/event",
+    "body": {
+      "sessionID": "USD-resume-entry-portrait-20261016",
+      "event": "5"
+    }
+  }
+]

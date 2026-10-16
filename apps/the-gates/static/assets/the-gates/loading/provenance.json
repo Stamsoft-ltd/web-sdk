@@ -1,0 +1,10 @@
+{
+  "source": "origin/feature/veggie-salad-v1",
+  "commit": "4090ad935",
+  "component": "PixelLoadingScreen.svelte",
+  "assets": [
+    "press_play_p.webp",
+    "press_play_wordmark.webp"
+  ],
+  "badge": "Procedural grey badge, red progress fill; original Veggie geometry."
+}

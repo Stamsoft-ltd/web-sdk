@@ -1,0 +1,69 @@
+{
+  "date": "2026-10-14",
+  "source": {
+    "beforeFiles": 284,
+    "beforeBytes": 138636718,
+    "removedFiles": 150,
+    "removedBytes": 109168123,
+    "afterFiles": 134,
+    "afterBytes": 29451328,
+    "remainingUnused": 0
+  },
+  "deployment": {
+    "beforeBytes": 34621343,
+    "afterBytes": 28901052,
+    "runtimeAssets": 122
+  },
+  "encoding": {
+    "policy": "Only PNG IDAT zlib recompression in build output; original scanlines and every non-IDAT chunk verified identical. Static originals untouched.",
+    "pngFiles": 70,
+    "changedFiles": 62,
+    "beforeBytes": 28616069,
+    "afterBytes": 25880410,
+    "savedBytes": 2735659
+  },
+  "bundle": [
+    {
+      "file": "_app/env.js",
+      "bytes": 19,
+      "gzip": 39,
+      "brotli": 23
+    },
+    {
+      "file": "_app/immutable/assets/style.CYSKRJ5W.css",
+      "bytes": 74285,
+      "gzip": 14994,
+      "brotli": 13050
+    },
+    {
+      "file": "_app/immutable/assets/style.dtsdo8ci.css",
+      "bytes": 73565,
+      "gzip": 14929,
+      "brotli": 12983
+    },
+    {
+      "file": "_app/immutable/bundle.ygQRY_oJ.js",
+      "bytes": 1063837,
+      "gzip": 326241,
+      "brotli": 268293
+    },
+    {
+      "file": "index.html",
+      "bytes": 1139386,
+      "gzip": 342952,
+      "brotli": 281256
+    }
+  ],
+  "validation": {
+    "tests": 204,
+    "passed": 204,
+    "typecheck": "pass",
+    "nativeAssetVerification": "51 PNGs + font; geometry, byte counts, SHA-256, provenance pass",
+    "motionRebuild": "pass",
+    "productionBuild": "pass",
+    "packagedClosure": "pass",
+    "sourceClosure": "no unused files",
+    "preview": "Desktop/390x844 portrait; one Pixi canvas, 30 GPU tiles; console errors []",
+    "liveRgs": "not exercised"
+  }
+}

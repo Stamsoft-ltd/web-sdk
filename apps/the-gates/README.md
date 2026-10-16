@@ -1,8 +1,91 @@
-# The Gates — UI v1
+# The Gates
 
 New app on `feature/the-gates`, based on `feature/veggie-salad-v1`.
-Original temple and symbol art; no reference-image assets or Veggie game rules reused.
-Svelte 5 DOM/CSS renderer: thirty cells, no hidden Pixi canvas or duplicate renderer.
+Native game art and authored Spine/Pixi effects; acquisition/provenance records retained.
+Hybrid renderer: a base Pixi 8 WebGL canvas plus a transparent presentation canvas for
+main background/logo, 30 retained symbol/pad tiles, Spine portals/gates,
+win/bonus art/count/amounts, side counters, pooled win coins, landing visuals and loading progress; Svelte HTML
+HUD, forms, accessibility labels and dialogs. Book playback remains authoritative.
+The demand renderer stops while idle and hidden; no per-symbol canvas/ticker.
+DPR is capped at 2. The full-game canvas stays mounted below the HTML HUD.
+Gates/portals/celebrations render above it on the transparent presentation canvas;
+both share one demand clock and decoded assets. Neither is reparented into a native dialog. The board remains a retained GPU underlay; no HTML snapshot/fallback.
+Frame, mask, pads, symbols and tile geometry all live in Pixi. `Board.svelte` holds
+one empty layout/accessibility host, not per-cell/reel DOM nodes. Static menu and
+paytable icons remain intentional HTML UI, not duplicate gameplay fallbacks.
+Landing HTML targets are invisible input/accessibility only; loading visuals/branding are Pixi.
+HTML owns the semantic loading progressbar and bonus acknowledgement hints.
+App/observers/jobs/listeners/textures are disposed on unmount.
+The gate-completing third win gets a full 1300ms readable selection before the gate
+clock begins (350ms explicit skip; 150ms reduced motion). Reward/removal book order
+stays authoritative. Mobile HUD uses a single derived capsule border and heavier
+spin outline; desktop controls share one centerline. Disabled controls keep opacity 1.
+
+### Gate reward delivery
+
+No persistent “Match 8+ symbols” caption or landing copy is rendered. Rules still
+explain the verified match tiers. Gate rewards use the same shared Pixi canvas:
+
+- +N× / N× → multiplier value; extra/retrigger spins → free-spin counter.
+- Sticky Wild → one staggered flight per authoritative board position.
+- Readable portal hold 1800ms; curved flight 720ms (100ms reduced motion),
+  ≤232ms cell staggering, then a 300ms arrival ring. All finish within the
+  shared 1300ms outro barrier before the next reward/removal.
+- Panel values/cells visually settle on their own arrival. Reducer awards,
+  backend event order and amounts are unchanged. Cancellation clears only the
+  presentation snapshot; stale/duplicate arrivals cannot replay sounds.
+- Cached, local audio uses one gesture-unlocked WebAudio context, independent SFX/music
+  mute buses, hidden-page guards and bounded voices. No external audio host.
+- Live GPU target coordinates are recomputed on resize; owners remove targets on teardown.
+  The rainbow sticky-Wild rig follows authoritative positions and cluster-colored highlights.
+
+### Renderer ownership (current)
+
+| Visible component                                                         | Renderer                                         |
+| ------------------------------------------------------------------------- | ------------------------------------------------ |
+| Main background, Gates logo, in-game Press Play mark                      | Pixi sprites                                     |
+| Board frame, mask, pads, all 30 symbols, portal/removal effects           | Pixi + native Spine                              |
+| Tumbles/progress, multiplier, free-spin/total-win counters, cluster wins  | Pixi graphics/text                               |
+| Gates/rewards, celebration titles/trumpets/plaques/coins                  | Pixi + native Spine                              |
+| Celebration amounts/counts and bonus free-spin award                      | Pixi text                                        |
+| Landing/splash background, logo, cards, symbols, text and continue prompt | Pixi; invisible HTML input/accessibility targets |
+| Loading graphics/progress                                                 | Pixi; semantic HTML progressbar only             |
+| HUD controls, balance/bet/win values, settings/menu                       | HTML/Svelte                                      |
+| Buy/confirm/resume/rules/autoplay/error/replay modals                     | HTML/Svelte; static or Pixi icon content         |
+| Accessibility text/layout anchors, diagnostic/session/legal metadata      | Non-visual HTML / HTML metadata                  |
+
+`main .gpu-surface > canvas.game-canvas[data-testid="game-canvas"]` is the
+permanent base WebGL surface; a transparent sibling canvas handles presentations above HUD. Empty `role="img"`/layout divs are semantic anchors,
+not image renderers or HTML board fallbacks. Pixi scene objects live in the GPU
+scene graph, not as DOM nodes.
+
+Bonus entry and summary require explicit tap/click/Enter/Space after their transition guard.
+Both show a white, slowly pulsing “Tap anywhere to continue” hint (static with reduced motion). Presentations darken the GPU scene with no blur; the HTML HUD remains at
+full opacity. Win tiers scale the complete assembly and trumpets progressively;
+trumpet tips render behind the title, and Legendary's title is fitted smaller.
+Confirmation dialogs retain one description/price and Back/OK; no close X.
+Buy/rules close controls sit at the game corner. Autoplay has exclusive speed
+switches, a bounded count slider and explicit Start/Stop controls. The bonus switch
+only continues **earned** bonuses (off by default), never purchases a feature.
+Existing jurisdiction, funds, session and error stops remain authoritative; optional loss/single-win
+thresholds are disabled. Presentation-only changes do not alter payouts or books.
+
+### Platform / localization
+
+Shared `Authenticate`, RGS primary machines and replay adapters remain in use.
+Authenticated bet levels and wallet currency are server-owned; stepping follows
+those levels, including sub-cent amounts. Wallet API units (1e6) remain separate
+from book payout units (100). Missing jurisdiction flags receive safe defaults;
+server restrictions and social mode cannot be disabled by URL settings.
+
+`src/i18n/draftCatalogs.ts` contains AI-generated UI drafts for all configured
+non-English locales plus Bulgarian. These are **not native-reviewed**. Common HUD,
+modal, navigation and feature-card copy is translated; long-form rules/legal text
+still falls back to canonical English (existing Bulgarian rules retained).
+Social UI labels use native play/win wording. Unreviewed wagering-related long copy
+uses English social terminology rather than leaking gambling words into social UI.
+Currency formatting retains ISO metadata, social currencies and final-amount
+precision. No live-RGS / native-linguist / jurisdiction release sign-off is implied.
 
 ## Run
 
@@ -16,19 +99,89 @@ pnpm --filter the-gates test
 pnpm --filter the-gates build
 ```
 
+### Secure launcher / mixed-content warnings
+
+Use HTTPS when embedding in the HTTPS launcher. Do not use the HTTP dev URL there:
+the browser may upgrade HTTP image requests to HTTPS, or block insecure resources.
+
+Stop the existing server on port 3020, then run from the repository root:
+
+```sh
+pnpm --filter the-gates dev:https
+# Launcher Local Testing URL: https://localhost:3020/
+# Standalone art preview: https://localhost:3020/?preview=true
+```
+
+Keep existing launcher query parameters; change only the game URL scheme to HTTPS.
+Asset paths remain relative, so images, CSS, fonts and Spine atlas pages use the
+game's secure origin. HMR uses the same TLS server. Port conflicts fail instead of
+silently moving to another port. This command does not change production builds.
+
+The default certificate is the repository's existing **self-signed localhost-only**
+mock-RGS certificate. It must already be trusted by your browser. If the browser
+shows a certificate warning, stop and configure a trusted local certificate rather
+than disabling security or bypassing the warning. No trust store is changed by this command.
+Use your already trusted certificate/key pair instead:
+
+```sh
+GATES_TLS_CERT=/absolute/path/localhost-cert.pem \
+GATES_TLS_KEY=/absolute/path/localhost-key.pem \
+pnpm --filter the-gates dev:https
+```
+
+Do not point a production RGS session at a mock backend to resolve asset warnings.
+This fixes mixed transport; frame-time/interaction performance still needs live profiling.
+
+### Repeated-asset / interaction audit
+
+Append `&assetAudit=1` to an existing **dev** game URL (or `?assetAudit=1` if no query
+exists). This works with normal authentication as well as art preview. No session
+data, asset URLs or RGS calls are collected or transmitted. The readout samples the
+750 ms after a button click; a burst of clicks is grouped into one sample.
+
+After startup finishes, a non-spin speed/bet button should show zero loader image
+starts, zero loader fetches and no symbol remounts. Opening a previously unseen
+dialog can legitimately load its art. Resource timing reports distinguish actual
+transferred bytes, cache hits and unknown/blocked timing; a warning alone is not
+proof of a download. A spin can legitimately change symbols, tiers and overlays.
+
+Preloads, Spine atlas pages and coin effects now share a canonical decoded-image
+cache. Successful and failed loads are retained for the page lifetime. Interactions
+do not automatically retry failed assets; use explicit Reload/Retry after resolving
+an unavailable asset or server. Production never mounts the audit observers.
+
+### Upload packaging / performance
+
+`pnpm --filter the-gates build` now validates a runtime asset dependency closure,
+then removes unused art **only from generated `apps/the-gates/build`** and losslessly recompresses PNG IDAT chunks. Upload that
+folder as before. Unused pre-Figma exports/pipeline were explicitly retired; retained native source exports and provenance remain in `static`.
+Retained files must match their source bytes or exact lossless PNG scanlines/metadata. Missing
+or stale required files fail the build; no partial pruning occurs on validation failure.
+
+```sh
+pnpm --filter the-gates build       # optimized upload package
+pnpm --filter the-gates audit:bundle # read-only package validation/size report
+pnpm --filter the-gates build:full  # unpruned output for acquisition/debug work
+```
+
+Static references are collected from the active app import graph. Dynamic symbol,
+gate, bonus and win families are explicitly seeded in `tools/package-assets.mjs`;
+atlas page dependencies and font licenses are retained. Update those seeds/tests
+when adding a new dynamic art family. Existing inline JS/CSS delivery is unchanged.
+
+Numeric fitting shares bounded font/pattern metrics and one measurement canvas.
+Changing text no longer recreates its resize/font listeners. Font-load events
+invalidate cached metrics. Canvas resize writes occur only when dimensions change.
+Closed gates do not decode their full-screen art at startup; playback still prewarms
+it before starting the visible gate clock. No payout rules or animation times changed.
+
 `?preview=true` works **only in development**. Scripted UI fixtures, no randomness,
 no real wagers, no wallet accounting, no claimed mathematical validity. Mystery's
 preview deliberately demonstrates Hidden; this is NOT its selection probability.
 Production requires the normal launcher parameters (`sessionID`, `rgs_url`, etc.).
 Replay uses the inherited `replay=true&game=...&version=...&mode=...&event=...&amount=...` contract.
 
-For repeatable browser smoke tests, supply an installed Playwright module and
-start the dev server first:
-
-```sh
-PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \
-  node --experimental-strip-types apps/the-gates/tests/browser.mjs
-```
+Browser QA uses the local development preview and public QA fixture below. Obsolete HTML-grid/per-symbol-canvas browser scripts were retired with their renderer.
 
 ## Implemented
 
@@ -51,17 +204,17 @@ PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \
 
 ## Animation contract
 
-| Event                 |                             Normal timing | Result                                                      |
-| --------------------- | ----------------------------------------: | ----------------------------------------------------------- |
-| spinStart / reveal    | Geometry-driven; normal exit + drop <520 ms | Bottom-first gravity, per-cell distance, landing impact |
-| cascadeWin            |                                    360 ms | Highlight all supplied winning positions; raw subtotal only |
-| gateProgress          |                                     80 ms | One step per winning grid                                   |
-| gateOpen              |                                  1,100 ms | Heavy inward rotation, thick edges and shadows              |
-| gateReward            |                                  1,050 ms | Ordered value / Wild / extra-spin reward                    |
-| tumbleRemove          |                          190 ms + jitter + 40 ms | Exact supplied cells disappear before next reveal           |
-| spinWin               |                                    280 ms | Settled amount, not client-recomputed winnings              |
-| bonus intro / summary | 120 ms guard; summary auto-close 1,800 ms | Intro Continue; summary count-up and auto-close             |
-| maxWin                |        120 ms guard + 2,400 ms auto-close | Authoritative cap; dismissible                              |
+| Event                 |                               Normal timing | Result                                                      |
+| --------------------- | ------------------------------------------: | ----------------------------------------------------------- |
+| spinStart / reveal    | Geometry-driven; normal exit + drop <520 ms | Bottom-first gravity, per-cell distance, landing impact     |
+| cascadeWin            |                                      360 ms | Highlight all supplied winning positions; raw subtotal only |
+| gateProgress          |                                       80 ms | One step per winning grid                                   |
+| gateOpen              |                                    1,100 ms | Heavy inward rotation, thick edges and shadows              |
+| gateReward            |                                    1,050 ms | Ordered value / Wild / extra-spin reward                    |
+| tumbleRemove          |                     190 ms + jitter + 40 ms | Exact supplied cells disappear before next reveal           |
+| spinWin               |                                      280 ms | Settled amount, not client-recomputed winnings              |
+| bonus intro / summary |   120 ms guard; summary auto-close 1,800 ms | Intro Continue; summary count-up and auto-close             |
+| maxWin                |          120 ms guard + 2,400 ms auto-close | Authoritative cap; dismissible                              |
 
 Quick mode never skips entry scatters, events, rewards or acknowledgement.
 Reduced motion removes spatial effects but retains minimum text-reading times.
@@ -74,7 +227,7 @@ Unmount cancels waits and acknowledgement, stops actor/autoplay and removes list
 - Browser suite uses **mocked** RGS only. It does not validate the live backend or math.
 - Shared baseline `Authenticate.svelte` still has four Svelte/TypeScript diagnostics:
   `stateConfig` lacks declared min/max/step/default bet fields. No game-local diagnostics.
-  Shared `GameInfoCarousel` also produces 17 existing unused-selector warnings.
+  Unused shared carousel compilation is avoided through narrow component/catalog imports.
 - Generated math books, weighting/simulation, live RGS acceptance of 0.25× increments,
   and release/compliance sign-off remain pending. User runs math generation/validation.
 - No audio has been authored. Full locale translations and final art/UX review pending.
@@ -90,269 +243,51 @@ Unmount cancels waits and acknowledgement, stops actor/autoplay and removes list
 `components/`: new game shell, atlas sprites, board, accessible dialogs.
 `state/gatesStake.svelte.ts`: adapted replay support; corrected buy prices and
 book-derived payout multiple to avoid mixing RGS/book scales.
-`static/assets/the-gates/provenance.json`: exact original image-generation prompts.
+`static/assets/the-gates/figma-20261012/asset-manifest.json`: retained native acquisition hashes/provenance.
+`reports/asset-source-cleanup.json`: deleted-file byte counts and hashes.
 
 Math source contract: `../math-sdk/games/0_0_the_gates/EVENT_CONTRACT.md`
 (from repository parent). Math source and upstream RGS validator were not changed
 in this UI phase; no math generation or validation executed.
 
-### UI revision — 2026-09-22
+### Local platform QA (no real wallet)
 
-- Larger board; shared studio HUD order: utilities/features, balance/win/bet,
-  stepper/spin/speed/auto. Tumble-win panel retained.
-- Horizontal five-card feature menu, swipeable on narrow screens. 2× Chance
-  activates directly; 20× Feature and 100/300/400× buys confirm. Active toggles
-  deactivate directly without another purchase dialog.
-- Approved door textures retained. Four generated complete environments:
-  `static/assets/the-gates/scene-{base,normal,super,hidden}.png`.
-  Each includes its **sculpted frame and generated open chamber**; no CSS frame.
-  `TempleGate.svelte` positions closed leaves in the same image coordinate system
-  as the aperture. Responsive layouts crop/transform that whole world together.
-  Source opening registration: x1130..1340, y213..700, 1536×1024 canvas.
-- Art generated with built-in imagegen; full prompts in `provenance.json`.
-- Standard reveals 520 ms, refill 330 ms, highlights 480 ms, removal 230 + 40 ms,
-  gate opening 1100 ms (all speeds; 150 ms reduced-motion), rewards 1050 ms (700 ms floor), settle 450 ms.
-  Fast/Turbo shorten spatial animations and waits by 2×/3×, subject to exposure floors. Gate weight and reward reading times stay protected.
-- Win/bonus/max-win Continue becomes available after **120 ms**. Ordinary wins
-  auto-close 1800 ms later; max wins 2400 ms later. Bonus intro requires
-  acknowledgement; bonus summaries count up and auto-close after 1800 ms. Dismissing presentation never skips book events or round floors.
-- Dialog scroll stays inside the modal; root scrolling locked while open.
-  Presentation layouts compact on short screens; Continue has stable reserved space.
+`node --experimental-strip-types tools/qa-rgs.mjs` starts a loopback-only fixture
+on port 3044. With dev server on 3020, use
+`?sessionID=gates-qa-kwd&rgs_url=127.0.0.1:3044&lang=de` (no `preview=true`).
+Other public fixture IDs: `gates-qa-social`, `gates-qa-resume`.
+The fixture rejects all other sessions and non-local origins. Never pass a real
+session, live wallet or production RGS credentials to it. Its outcomes are hand-
+authored contract probes, not validated math. Stop the fixture after QA.
 
-### Studio mechanisms revision
+### Latest responsive polish
 
-- Press Play logo copied unchanged from Veggie Salad; incorrect Stamsoft mark removed.
-- Same exclusive flags/cycle as Veggie Salad: Normal → Fast → Turbo → Normal.
-  Respect `disabledTurbo` and `disabledSuperTurbo`; bonus entry resets both flags.
-- Space prevents focused HUD-button activation and requests a spin instead.
-  Form fields and other dialogs retain native keyboard interaction. No held-key
-  duplicate wagers and no scatter/event skipping.
-- Fixed-height dynamic viewport shell reserves HUD/header/status first; a
-  ResizeObserver fits only the gameplay content in the remainder. HUD stays full-size.
-- Win celebration appears only for **strictly greater than 10× base stake**.
-  <=10× payouts still settle and display in HUD. Bonus-end summaries remain regardless
-  of payout, avoiding loss of bonus completion feedback.
-- Svelte `Tween` + `cubicOut`, matching Veggie's counter mechanism: 1050 ms count-up,
-  reduced-motion instant final value. First Continue/Space during counting snaps to
-  total over 120 ms; next dismisses. Timed auto-dismiss does not require input.
-- Doors retain approved artwork and background registration, now with 3D backs,
-  thick edges/top surfaces and changing shadows. 1100 ms slow-start inward swing.
-- KEY caption removed, actual KEY symbol retained; WILD caption unchanged.
+Task log and verification: [`reports/UI-REFINEMENTS-2026-10-14.md`](reports/UI-REFINEMENTS-2026-10-14.md).
+Mobile board uses equal-inset Pixi Graphics gold/orange rim; HTML HUD keeps opaque disabled controls and independent touch targets. Autoplay detents reach 1000, optional loss/single-win thresholds are disabled using shared Infinity sentinels (mandatory stops unchanged). Rules use fixed-aspect cards, original nine-sliced legal frames and supplied arrow artwork. Bonus intro waits for entry settlement, then uses native doors/portal; summary reverses into portal before doors restore base scenery. Presentation-only scene override never changes reducer outcomes. Wild trumpet alignment deferred by user until clean banner art arrives.
 
-### Tumble / live-speed revision
+### Asset cleanup / build encoding
 
-- Reused Veggie Salad's gravity (`sqrt(distance)`), bottom-first stagger, no-fade
-  drop, squash/bounce landing and trapdoor exit. Tuned for 6×5; normal exit **plus**
-  drop fits the previous 520 ms drop budget. Survivor positions remain still.
-- Space during playback fast-forwards the current spin's tumbles, never jumps to
-  a final result. Active waits re-evaluate every <=24 ms; in-flight cells finish
-  within a 130 ms tail (or earlier). Already-landed cells never restart.
-- Skip resets at each new spin, including free spins. Operator `disabledSlamstop`
-  and `disabledSpacebar` restrictions still apply. Gate opening/reward reading
-  floors, scatter reveals, bonus acknowledgement and minimum round time remain.
-- Normal → Fast → Turbo remains available during bonus playback. Faster selection
-  accelerates the current motion wave; slower selection takes effect on the next
-  wave to avoid rewinding cells. Selected speed survives the per-spin skip reset.
-  Wagers stay locked; overlays/dialogs retain focus and temporarily lock speed.
-- `game/motion.ts` supplies both CSS timing and event barriers. No separate CSS
-  quick/turbo durations that could end a phase before its animation completes.
+See [`reports/ASSET-CLEANUP-2026-10-14.md`](reports/ASSET-CLEANUP-2026-10-14.md) for before/after measurements.
 
-### Board / logo layout revision
+- `pnpm --filter the-gates audit:assets`: read-only runtime + current-authoring source audit.
+- `node --experimental-strip-types tools/clean-assets.mjs --execute`: **explicit destructive cleanup**, never automatic on ordinary builds. Saves deletion hashes first; excludes all runtime/current-authoring dependencies and licenses. Do not run against unregistered future asset families.
+- `pnpm --filter the-gates build`: validates/prunes generated output, then dependency-free PNG IDAT recompression. Original pixels, palette, filters, metadata and acquisition PNG bytes remain unchanged. Build encoding details: `build/asset-encoding.json`.
+- `pnpm --filter the-gates audit:bundle`: accepts unchanged bytes or verified exact PNG scanline/non-IDAT equivalence; refuses altered images.
+- `pnpm --filter the-gates build:motion`: current native rigs + optional workbench. Canvas2D preview adapter resides under `tools/`, not production gameplay. Legacy renderer/shard/fire/win asset authoring is retired; Wild's current atlas/rig stays intact.
 
-- Larger board allocation; removed old viewport-height width caps. Existing stage
-  fit still reserves the full HUD before scaling gameplay.
-- Removed visible Base game strip. Smaller logo belongs to `board-area`, centered
-  on the board rather than the viewport; bonus tier labels remain beneath it.
-- Studio branding no longer consumes a desktop header row. Portrait keeps a small
-  branding row; compact phones reclaim gate-placeholder height for the symbols.
-- Narrow landscape explicitly assigns the board its own flexible grid column.
-- Layout regression covers 16 viewport sizes: centered logo, frame clearance,
-  board minimum size, studio/HUD clearance and no page scrolling.
+The shared inline-bundle delivery contract is unchanged; no unmeasured FPS claim or lossy artwork changes.
 
-### Verification snapshot — latest source
+## Release preparation — 2026-10-16
 
-- Production build passed; **29 unit tests passed** (reducer, live timers, abort
-  cleanup, gravity/stagger/skip-tail, timing budget, speeds/restrictions, >10× panels).
-  TypeScript passed. Svelte check retains four inherited shared-auth errors and
-  17 inherited carousel CSS warnings; no game-local diagnostics.
-- Final mock-RGS browser runs passed: live skip, all three bonus speeds, per-spin
-  skip reset, operator restrictions, unchanged ordered reveals/payout and exactly
-  one play/end-round. Final pacing profile verified, not just the earlier build.
-- Studio mechanism suite passed: Press Play, focused-button Space, KEY caption,
-  >10× threshold, count-up/snap/auto-close and 14 HUD viewport sizes.
-- All three bonus skins passed six intro + six summary layouts each (36 checks),
-  win/cap early dismissal and asset checks; no page errors or layout findings.
-  Previous overlay teardown bug is now browser-verified fixed.
-- Production wallet/replay smoke passed: fractional payout, wallet units and replay
-  with no wallet requests.
-- Browser scripts: `browser-motion.mjs` (live skip / bonus speeds), `browser.mjs`
-  (dev/full, or production wallet/replay with `GATES_PRODUCTION=1`),
-  `browser-presentations.mjs` (bonus layouts), `browser-studio-mechanisms.mjs`
-  (interaction/counting/HUD), `browser-layout-audit.mjs` (16 board/logo/HUD layouts).
-  Supply `PLAYWRIGHT_MODULE` and optionally `GATES_ORIGIN`; production defaults
-  to port 3022, dev scripts to 3020. Tests use fake outcomes, no real wagers.
-- Live resume, non-default operator integration and production-host/subpath smoke
-  remain release checks. No math source or generated books changed in this UI phase.
+- All four HUD/buy-menu bet +/− controls step once on press, then repeat after 350ms at 80ms
+  intervals. Release/cancel/blur/hidden/disable/unmount stops repeat; bounds/locks are rechecked.
+- Autoplay stop reasons map to allowlisted localized/social-safe text, never raw actor keys.
+- Gates opts into exact settled-win/replay precision (up to 8 decimals); normal wallets and other
+  titles retain their prior currency formatting policy.
+- Source cleanup preserves runtime/authoring/license dependencies. Build removes non-runtime
+  exports and recompresses PNGs losslessly; no resolution/art changes.
 
-### Left HUD spacing revision
-
-- Desktop/landscape tumble count, multiplier and tumble-win stack now center in
-  the actual screen-edge-to-board gap, including the stage's responsive scale.
-  Board/logo placement and portrait's above-board HUD stay unchanged.
-- Layout regression adds equal-gap assertions and the supplied 2366×1046 viewport.
-- Build and TypeScript passed. Browser rerun now passed all 17 viewports, including
-  equal left-HUD gaps and the supplied 2366×1046 viewport.
-
-### Tiered wins (2026-09-22)
-
-- Exact base-bet thresholds: **10x <= win <20x** is Win + amount over the board,
-  no modal/shade/coins. Under 10x stays in the HUD. **20/50/100/200/500x** start
-  Sweet/Wild/Epic/Mythic/Legendary screens respectively, inclusive lower bounds.
-- Original Gates temple plaques and engraved sun-eye gold coin generated with
-  built-in image generation; no Veggie visual assets. Reuses timing/fountain
-  mechanics only. Tier colors and live count-up; title art updated below.
-  One bounded canvas, max 150 coins, DPR capped at 2; teardown cancels RAF/observer.
-  Reduced motion removes coins/rays. No second Pixi renderer or math-side effects.
-- Normal count/hold timings match Veggie (2.5s/5s up to 6s/8.5s), shortened by
-  Fast/Turbo/skip. Continue/Space available after the same 120ms input guard:
-  first finishes count, second dismisses. All screens auto-close.
-- Bonus winning spins also get the applicable tier before advancing; final bonus
-  summary stays separate. No duplicate total-win screen after bonus completion.
-- Browser tier regression passed 12 boundaries, visible coin pixels, all five
-  tiers, inline-only lower wins, reduced motion, bonus spin celebration, 4 layouts
-  and one wager/settlement per round. Screenshots checked desktop/mobile/landscape.
-  All six PNGs also check opaque middle/lower rows in Chromium, preventing silent
-  top-strip-only decode regressions. Exports preserve every generated RGBA pixel.
-- Unit suite: 31 passing. Build + TypeScript pass. Only the existing four shared
-  auth errors / 17 carousel warnings remain in Svelte check.
-
-### Illustrated bonus / win presentations
-
-- Normal, Super and Hidden entry screens now have distinct original illustrated
-  crests. Bonus end uses a new winged-sun crest, live total, tier-colored aura and
-  bounded coin fountain. Generic dialog header/gate icon removed from these screens.
-- All five win tiers use sculpted gold lettering images over the existing Gates
-  plaques. Inline 10–<20x WIN and Maximum Win also use original lettering art.
-  Thresholds, timings, skip/count-up and wallet behavior unchanged.
-- English headings are baked into art, not ordinary HTML text. Accessible names,
-  supporting labels and controls retain existing localization. Counts and currency
-  amounts remain dynamic. Full generation prompts and provenance are in
-  `static/assets/the-gates/presentation-art-provenance.json`.
-- 31 unit tests, production build and TypeScript pass. Browser checks pass all
-  12 tier boundaries, new title sprites, coins, reduced motion, bonus spin wins,
-  36 bonus entry/end viewport combinations and early win/max-win dismissal.
-  No missing assets, page errors or layout findings. Svelte check still reports
-  only the existing 4 shared auth errors and 17 shared carousel warnings.
-
-### Speed pacing revision
-
-- Normal board motion slowed ~13% for readable drops/tumbles. Fast keeps the prior
-  normal feel; Turbo unchanged. Speed cycle and live mid-round switching unchanged.
-
-### Layered Spine animation (4.2.74)
-
-- New image-generated component atlases: symbol settings/inserts, face/crown,
-  eye/frame, bowl/stem, orb/base; flame base/tongues/plume; bonus wings, socket,
-  jewel, plaque and title. Keys remain static and unlabeled. No math changes.
-- Official `@esotericsoftware/spine-core` evaluates exported JSON bones, slots,
-  animation blending and mesh deformation. Canvas2D adapter draws regions and
-  textured mesh triangles. This is not a CSS animation of a flattened symbol.
-  Eleven symbol rigs each have idle/paying tracks; five gems share their mechanic.
-- Four background clean plates keep the existing architecture and door registration.
-  Flames use 12 distinct burning-contour frames per palette, evaluated by Spine
-  attachment tracks. Two complementary crossfade slots and a coal-bed layer keep
-  light output steady. Bases register to measured coal-bed centers; no rigid sway,
-  scale or rotation tracks. Door occlusion remains correct.
-- Ambient tracks: base cyan runes, normal gold ornament pulses, super emerald
-  inlays, hidden red branching fissures. Separate hand-traced transparent energy
-  layers fade on staggered six-second Spine tracks; no full-screen brightness flash.
-- Win plaques and lettering have separate Spine bones. Bonus entry/end rigs add
-  separate wings, crest and gem. Entrance queues idle; count-up, skip guards,
-  thresholds and auto-dismiss are unchanged. Existing approved CSS 3D door leaves,
-  CSS travel/shake and procedural coins/dust remain; not every UI effect is Spine.
-- One shared 30fps animation clock, capped pixel density, cached atlases/rig data,
-  hidden-tab pause and teardown cleanup. Reduced motion freezes symbol/presentation
-  poses and removes ambient canvas, dust and motes. Failed asset loads retain
-  static originals. Canvas2D avoids one WebGL context per board cell.
-- Coins are 3x former desktop size (mobile bounded). Gate dust uses round ID +
-  `eventId` (book index fallback), with independent X/Y, left/right drift, rotation,
-  size, 0–780ms delays and 1.05–2.15s lifetimes. Same seed gives same replay.
-- Left-to-right reveal/tumble columns use 50/24/10ms Normal/Fast/Turbo offsets.
-  Live Space skip and mid-bonus speed switching retain event order and settlement.
-
-Assets and rebuild:
-
-```sh
-# From apps/the-gates
-python3 tools/measure-spine-art.py # only when source PNGs change
-node tools/build-spine.mjs
-PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs node tools/rasterize-spine.mjs
-node --experimental-strip-types --test tests/*.test.mjs
-```
-
-`static/assets/the-gates/spine/` contains 28 Spine JSON rigs, atlas files,
-PNG source layers, editable `energy.svg`, and `provenance.json` with full built-in
-image_gen prompts and original paths. `build-spine.mjs` is the editable rig source.
-These are importable Spine 4.2 JSON exports, not binary `.spine` editor projects.
-Retain `SPINE-LICENSE.txt`; release requires the studio's appropriate Spine license.
-The Canvas2D adapter currently supports region/mesh attachments and normal/additive
-blend modes used by these rigs; it is not a general-purpose Spine renderer.
-
-Validation: 46 unit tests pass, including official-runtime rig parsing, independent
-paying tracks, flame frame transitions/loop seams, mode pulse staggering, concentric sun/bonus pivots, HD source resolution and queued
-presentation transitions. Mocked browser motion and dedicated Spine checks pass.
-TypeScript passes. Svelte check retains four pre-existing shared auth errors and
-17 shared carousel warnings. Low-end-device FPS/thermal profiling and final art
-approval remain release QA.
-
-### Burn / registration / HD refinement
-
-- Fire no longer sways a fixed cutout. Three 12-frame burn atlases morph the actual
-  contour through Spine attachment/alpha tracks; crossfade brightness stays fixed.
-- Sun face/rays and bonus gem/socket register to measured artwork landmarks,
-  rather than atlas bounding-box centers. Rotation cannot orbit the central insert.
-- Bonus lettering and plaque use standalone ~2K images (formerly 330–400px cells).
-  Text fits the black writing well with equal side margins; Canvas uses up to DPR2
-  and high-quality downsampling. Original layered wings/crest remain independent.
-- Sources, alpha/baseline measurements and built-in generation prompts:
-  `spine/art-layout.json`, `spine/refinement-provenance.json`.
-
-### Paying-symbol ash removal
-
-- `symbolAsh.ts` snapshots the current layered Spine pose, chars its actual pixels,
-  then crumbles it into 100 small, staggered flakes. Tiny surviving material glints
-  disappear with the ash. An ephemeral Spine 4.2 rig drives independent flake bones and
-  original/charred texture slots; no generic smoke sprite over an intact symbol.
-- Only `tumbleRemove.positions` trigger it; sticky wilds are excluded. Presentation
-  randomness is seeded by round/reveal/cell, with no outcome RNG or math changes.
-- Uses the 280/190/70ms Normal/Fast/Turbo removal duration and live wave
-  deadline. Space and speed changes shorten the same effect without restarting it.
-  Reduced motion retains simple removal; missing rigs retain the static fallback.
-- No new raster downloads, timers or tickers. Two temporary RGBA textures per
-  removed symbol, approximately `8 * canvasWidth * canvasHeight` bytes, plus rig/canvas
-  overhead; references are released at the next reveal/unmount. At 280x280 backing
-  pixels this is ~0.6 MiB/symbol (~18 MiB for all 30). At most 100 flakes/symbol,
-  sampled on the existing shared 30fps clock. Real-device FPS impact not profiled.
-- Regression coverage: `symbolAsh.test.mjs`, `browser-ash.mjs` (three speeds,
-  source-pixel breakup, removal-only scope, cleanup, Space skip, reduced motion,
-  unchanged event checkpoints and settlement).
-
-
-### Normal pacing / bonus Info
-
-- Normal exit + full reveal now totals ~1 second. Normal winning highlights last
-  ~522ms, ash removal 280ms, and small-win settling ~392ms. Fast/Turbo profiles and
-  live skip remain unchanged.
-- Before applying a bonus-trigger event, retain the completed entry grid for
-  900ms at Normal, 450ms at Fast/Turbo, or 350ms after explicit skip (150ms reduced
-  motion). This also covers bought bonuses and Mystery selection; no reveal or
-  settlement event is skipped. Entry Spine animation plays at 0.7× speed (~1s),
-  with a 650ms dismissal guard; then the player chooses Continue. Win/summary
-  dismissal timing remains unchanged.
-- Info now describes Normal, Super, Hidden, Mystery, Extra Chance and Feature
-  Spin. Costs derive from the RGS contract. Rules checked against local
-  `math-sdk/games/0_0_the_gates/math_targets.py` and `gates_math.py`; no math edits.
-  New descriptions include English and Bulgarian strings, with existing fallback
-  behavior for other locales. Desktop/mobile scrolling verified.
-- `browser-pacing-info.mjs` checks all three bought entry paths, guards and all six
-  Info sections. Existing speed/skip and settlement regressions remain applicable.
+See [release verification and outstanding gates](reports/release-prep-20261016/README.md).
+This is a production **build**, not publication clearance: music/SFX soundbank rights, native-social
+review, physical-device/art sign-off, full live-RGS replay matrix and Studio max-win-frequency
+acceptance remain open. User explicitly requested retaining approved audio and v8 maths unchanged.

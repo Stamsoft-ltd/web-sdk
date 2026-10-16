@@ -1,0 +1,8 @@
+{
+  "policy": "Only PNG IDAT zlib recompression in build output; original scanlines and every non-IDAT chunk verified identical. Static originals untouched.",
+  "pngFiles": 78,
+  "changedFiles": 69,
+  "beforeBytes": 31206442,
+  "afterBytes": 28232549,
+  "savedBytes": 2973893
+}

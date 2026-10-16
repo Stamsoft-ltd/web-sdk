@@ -1,0 +1,274 @@
+{
+  "library": "../math-sdk/games/0_0_the_gates/.library-v6-sdk-standard-cvar-500k-core-100k-bonuses-build-20260928T153953861637Z",
+  "mode": "SUPER",
+  "basis": "Exact complete local lookup-weighted book census, not live telemetry or a fresh RNG simulation",
+  "books": 100000,
+  "totalWeight": 4000000000000,
+  "rtp": 0.9610000000000001,
+  "topPayoutAtoms": [
+    {
+      "x": 750.0,
+      "probability": 0.31569776
+    },
+    {
+      "x": 0.0,
+      "probability": 0.19698173
+    },
+    {
+      "x": 0.2,
+      "probability": 0.19664223
+    },
+    {
+      "x": 0.25,
+      "probability": 0.19656076
+    },
+    {
+      "x": 169.9,
+      "probability": 0.04464998
+    },
+    {
+      "x": 341.15,
+      "probability": 0.01000196
+    },
+    {
+      "x": 363.1,
+      "probability": 0.00825667
+    },
+    {
+      "x": 387.7,
+      "probability": 0.00665995
+    },
+    {
+      "x": 421.4,
+      "probability": 0.00496147
+    },
+    {
+      "x": 426.6,
+      "probability": 0.00474112
+    },
+    {
+      "x": 446.9,
+      "probability": 0.00397065
+    },
+    {
+      "x": 460.4,
+      "probability": 0.00352892
+    }
+  ],
+  "metrics": {
+    "identicalWinningSetTransitionRate": 0.7313630966674783,
+    "overlapWinningSetTransitionRate": 0.7515188816359762,
+    "newSymbolTransitionRate": 0.2560221485751421,
+    "disjointWinningSetTransitionRate": 0.24848111836402378,
+    "monoSymbolMultiTumbleSpinRate": 0.6227550684062886,
+    "multiSymbolPayingBoardRate": 0.02601141758957172,
+    "meanInitialDistinctSymbols": 9.81431636766031,
+    "meanInitial5to7CountSymbols": 0.08841805727079143,
+    "meanPayingFreeSpins": 1.88197599,
+    "meanFreeSpins": 15.05704823,
+    "onePayingFreeSpinProbability": 0.70958289,
+    "oneWin14BlanksProbability": 0.70943956,
+    "atLeast90PctOnOneFsProbability": 0.71007645,
+    "roundExactly750xProbability": 0.31569776,
+    "one750x14BlanksProbability": 0.31569776
+  },
+  "winningFreeSpinsDistribution": {
+    "0": 0.19698173,
+    "1": 0.70958289,
+    "2": 0.00013526,
+    "3": 0.00012737,
+    "4": 0.00011009,
+    "5": 9.435e-05,
+    "6": 7.577e-05,
+    "7": 5.89e-05,
+    "8": 4.49e-05,
+    "9": 3.351e-05,
+    "10": 0.0066836,
+    "11": 0.01001902,
+    "12": 0.04467047,
+    "13": 0.01001124,
+    "14": 0.00307273,
+    "15": 0.00974432,
+    "16": 0.00854015,
+    "17": 1.156e-05,
+    "18": 8.3e-07,
+    "19": 5.5e-07,
+    "20": 2.2e-07,
+    "21": 1.9e-07,
+    "22": 2.5e-07,
+    "23": 7e-08,
+    "26": 1e-08,
+    "27": 1e-08,
+    "31": 1e-08
+  },
+  "payingSymbolShare": {
+    "AMBER_GEM": 0.1955192081497695,
+    "PURPLE_GEM": 0.2096075653291865,
+    "GUARDIAN_MASK": 0.2609641536089213,
+    "BLUE_GEM": 0.05953458063493244,
+    "CRYSTAL_ORB": 0.04421117145326528,
+    "GREEN_GEM": 0.07375027956170455,
+    "RED_GEM": 0.06596773959611581,
+    "RUNE_CHALICE": 0.01654490101833748,
+    "SUN_MEDALLION": 0.00952321142989196,
+    "SACRED_EYE": 0.06437718921787518
+  },
+  "rawWeightedCounts": {
+    "initialBoards": 64228192920000,
+    "initialDistinctSum": 630355805040000,
+    "initialNear5to7Sum": 5678932040000,
+    "bonusRounds": 4000000000000,
+    "fsCountSum": 60228192920000,
+    "payingFsSum": 7527903960000,
+    "onePayingFs": 2838331560000,
+    "oneWin14Blanks": 2837758240000,
+    "oneSpin90Pct": 2840305800000,
+    "fs750x": 1262794280000,
+    "round750x": 1262791040000,
+    "one750x14Blanks": 1262791040000,
+    "payingBoards": 15238515880000,
+    "simultaneousGroupsSum": 15636977200000,
+    "multiSymbolBoards": 396375400000,
+    "transitions": 7364648920000,
+    "identicalSetTransitions": 5386232440000,
+    "overlapTransitions": 5534672720000,
+    "newSymbolTransitions": 1885513240000,
+    "disjointTransitions": 1829976200000,
+    "multiTumbleSpins": 3799060080000,
+    "monoSymbolChains": 2365883920000
+  },
+  "examples": [
+    {
+      "id": 50,
+      "weight": 1124480000,
+      "payoutX": 750.0,
+      "freeSpinPaysX": [
+        750.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 230,
+      "weight": 1124480000,
+      "payoutX": 750.0,
+      "freeSpinPaysX": [
+        750.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 270,
+      "weight": 1124480000,
+      "payoutX": 750.0,
+      "freeSpinPaysX": [
+        750.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 410,
+      "weight": 1124480000,
+      "payoutX": 750.0,
+      "freeSpinPaysX": [
+        750.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 440,
+      "weight": 1124480000,
+      "payoutX": 750.0,
+      "freeSpinPaysX": [
+        750.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "id": 470,
+      "weight": 1124480000,
+      "payoutX": 750.0,
+      "freeSpinPaysX": [
+        750.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}

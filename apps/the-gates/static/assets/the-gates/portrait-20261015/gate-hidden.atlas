@@ -1,0 +1,23 @@
+hidden-leaf.png
+size: 181,578
+filter: Linear,Linear
+pma: false
+gate-leaf
+  bounds: 0,0,181,578
+
+../portals-20261012/hidden-portal-layers-v1.png
+size: 1774,887
+filter: Linear,Linear
+pma: false
+portal-rim
+  bounds: 40,47,809,789
+portal-vortex
+  bounds: 938,67,767,747
+
+../sparks-20261012/cartoon-impact-spark-v1.png
+size: 1254,1254
+filter: Linear,Linear
+pma: false
+impact-spark
+  bounds: 0,0,1254,1254
+

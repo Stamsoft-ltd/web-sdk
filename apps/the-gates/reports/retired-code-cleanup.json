@@ -1,0 +1,23 @@
+{
+  "reason": "User explicitly requested retirement of pre-Figma pipeline; no active imports. Legacy tests replaced by active native rig/format/progress contracts.",
+  "files": [
+    "apps/the-gates/src/components/BonusInfo.svelte",
+    "apps/the-gates/src/components/CelebrationFlourish.svelte",
+    "apps/the-gates/src/components/GateDust.svelte",
+    "apps/the-gates/src/components/CountUp.svelte",
+    "apps/the-gates/tools/build-spine.mjs",
+    "apps/the-gates/tools/rasterize-spine.mjs",
+    "apps/the-gates/tools/measure-spine-art.py",
+    "apps/the-gates/tools/symbol-particle-rig.mjs",
+    "apps/the-gates/tests/browser-spine.mjs",
+    "apps/the-gates/tests/browser-win-tiers.mjs",
+    "apps/the-gates/tests/browser-motion.mjs",
+    "apps/the-gates/tests/browser.mjs",
+    "apps/the-gates/tests/browser-layout-audit.mjs",
+    "apps/the-gates/tests/browser-pacing-info.mjs",
+    "apps/the-gates/tests/browser-presentations.mjs",
+    "apps/the-gates/tests/browser-ash.mjs",
+    "apps/the-gates/tests/browser-studio-mechanisms.mjs",
+    "apps/the-gates/src/game/canvasSurface.ts"
+  ]
+}

@@ -1,97 +1,130 @@
 <script lang="ts">
+	import { Container, Sprite } from 'pixi.js';
+	import { loadAssetImage } from '../game/imageAssets';
+	import { useGpu } from '../game/gpuContext';
+	import { winCoinFountain, WIN_COIN_ORIGIN_Y } from '../game/winCoins';
 	import { winCoinSize } from '../game/visualRandom';
-	let { tier, reduced = false }: { tier: number; reduced?: boolean } = $props();
-	let canvas = $state<HTMLCanvasElement>();
+	let {
+		tier,
+		reduced = false,
+		origin,
+	}: { tier: number; reduced?: boolean; origin?: HTMLElement } = $props();
+	const gpu = useGpu();
+	let marker = $state<HTMLDivElement>();
 	$effect(() => {
-		const surface = canvas;
-		if (!surface || reduced) return;
-		const context = surface.getContext('2d');
-		if (!context) return;
-		const sprite = new Image();
-		sprite.src = './assets/the-gates/wins/coin.png';
-		let frame = 0,
-			previous = 0,
-			emission = 0;
-		let width = 0,
-			height = 0;
-		const particles: {
-			x: number;
-			y: number;
-			vx: number;
-			vy: number;
-			angle: number;
-			turn: number;
-			size: number;
-			age: number;
-		}[] = [];
-		// Veggie fountain: center launch, gravity return, increasing tier density and spread.
-		// DOM runtime uses one bounded canvas rather than creating a second Pixi renderer.
-		const max = [40, 60, 82, 110, 150][tier];
-		const frequency = [0.15, 0.105, 0.075, 0.052, 0.036][tier];
-		const gravity = 520;
-		const resize = () => {
-			width = surface.clientWidth;
-			height = surface.clientHeight;
-			const dpr = Math.min(2, window.devicePixelRatio || 1);
-			surface.width = Math.round(width * dpr);
-			surface.height = Math.round(height * dpr);
-			context.setTransform(dpr, 0, 0, dpr, 0, 0);
+		const engine = gpu.engine,
+			source = origin,
+			element = marker,
+			level = tier;
+		if (!engine || !element || reduced) return;
+		let dead = false,
+			remove = () => {},
+			width = 0,
+			height = 0,
+			originX = 0,
+			originY = 0;
+		const layout = () => {
+			width = engine.app.screen.width;
+			height = engine.app.screen.height;
+			const canvas = engine.origin,
+				art = source?.getBoundingClientRect();
+			originX = art ? art.left - canvas.left + art.width / 2 : width / 2;
+			originY = art ? art.top - canvas.top + art.height * WIN_COIN_ORIGIN_Y : height / 2;
+			element.dataset.originX = String(originX);
+			element.dataset.originY = String(originY);
 		};
-		const observer = new ResizeObserver(resize);
-		observer.observe(surface);
-		resize();
-		const tick = (now: number) => {
-			const dt = previous ? Math.min((now - previous) / 1000, 0.04) : 0;
-			previous = now;
-			emission += dt;
-			context.clearRect(0, 0, width, height);
-			while (emission >= frequency) {
-				emission -= frequency;
-				if (particles.length >= max || !sprite.complete || !sprite.naturalWidth) continue;
-				const spread = ((22 + tier * 4) * Math.PI) / 180;
-				const angle = (Math.random() - 0.5) * spread;
-				const speed = Math.sqrt(2 * gravity * (height * 0.7 + 100)) * (1 + Math.random() * 0.12);
-				particles.push({
-					x: width / 2,
-					y: height * 0.72,
-					vx: Math.sin(angle) * speed,
-					vy: -Math.cos(angle) * speed,
-					angle: Math.random() * Math.PI,
-					turn: 3 + Math.random() * 5,
-					size: winCoinSize(tier, Math.random(), width),
-					age: 0,
+		const observer = new ResizeObserver(() => {
+			layout();
+			engine.invalidate();
+		});
+		observer.observe(element);
+		if (source) observer.observe(source);
+		void loadAssetImage('./assets/the-gates/win-coin-20261015/coin.png')
+			.then((image) => {
+				if (dead) return;
+				const root = new Container(),
+					texture = engine.texture(image),
+					{ max, frequency, burst } = winCoinFountain(level),
+					gravity = 520;
+				const pool = Array.from({ length: max }, () => {
+					const sprite = new Sprite(texture);
+					sprite.anchor.set(0.5);
+					sprite.visible = false;
+					root.addChild(sprite);
+					return { sprite, x: 0, y: 0, vx: 0, vy: 0, angle: 0, turn: 0, size: 0, age: 0 };
 				});
-			}
-			for (let i = particles.length - 1; i >= 0; i--) {
-				const p = particles[i];
-				p.age += dt;
-				p.x += p.vx * dt;
-				p.vy += gravity * dt;
-				p.y += p.vy * dt;
-				p.angle += p.turn * dt;
-				if (p.age > 8 || p.y > height + p.size) {
-					particles.splice(i, 1);
-					continue;
-				}
-				context.save();
-				context.translate(p.x, p.y);
-				context.rotate(p.angle * 0.25);
-				context.scale(Math.max(0.16, Math.abs(Math.cos(p.angle))), 1);
-				context.drawImage(sprite, -p.size / 2, -p.size / 2, p.size, p.size);
-				context.restore();
-			}
-			frame = requestAnimationFrame(tick);
-		};
-		frame = requestAnimationFrame(tick);
+				const free = pool.map((_, i) => i),
+					active: number[] = [];
+				let emission = frequency * burst;
+				remove = engine.register({
+					root,
+					overlay: element.closest<HTMLElement>('[data-pixi-overlay]'),
+					priority: 10,
+					layout,
+					draw: (delta) => {
+						const dt = Math.min(delta, 0.04);
+						emission += dt;
+						while (emission >= frequency) {
+							emission -= frequency;
+							if (!free.length) continue;
+							const id = free.pop()!,
+								p = pool[id],
+								angle = ((Math.random() - 0.5) * (22 + level * 4) * Math.PI) / 180,
+								speed =
+									Math.sqrt(2 * gravity * (Math.max(100, originY) + 60)) *
+									(1 + Math.random() * 0.12);
+							p.x = originX + (Math.random() - 0.5) * Math.min(width * 0.08, 80);
+							p.y = originY;
+							p.vx = Math.sin(angle) * speed;
+							p.vy = -Math.cos(angle) * speed;
+							p.angle = Math.random() * Math.PI;
+							p.turn = 3 + Math.random() * 5;
+							p.size = winCoinSize(level, Math.random(), width);
+							p.age = 0;
+							p.sprite.visible = true;
+							active.push(id);
+						}
+						for (let i = active.length - 1; i >= 0; i--) {
+							const id = active[i],
+								p = pool[id];
+							p.age += dt;
+							p.x += p.vx * dt;
+							p.vy += gravity * dt;
+							p.y += p.vy * dt;
+							p.angle += p.turn * dt;
+							if (p.age > 8 || p.y > height + p.size) {
+								p.sprite.visible = false;
+								free.push(id);
+								active[i] = active[active.length - 1];
+								active.pop();
+								continue;
+							}
+							p.sprite.position.set(p.x, p.y);
+							p.sprite.rotation = p.angle * 0.25;
+							p.sprite.scale.set(
+								(p.size / image.naturalWidth) * Math.max(0.16, Math.abs(Math.cos(p.angle))),
+								p.size / image.naturalWidth,
+							);
+						}
+						return true;
+					},
+				});
+			})
+			.catch((error) => console.error('Pixi coin art unavailable', error));
 		return () => {
-			cancelAnimationFrame(frame);
+			dead = true;
 			observer.disconnect();
-			particles.length = 0;
+			remove();
 		};
 	});
 </script>
 
-{#if !reduced}<canvas bind:this={canvas} class="win-coins" aria-hidden="true"></canvas>{/if}
+{#if !reduced}<div
+		bind:this={marker}
+		class="win-coins"
+		data-renderer="pixi-webgl"
+		aria-hidden="true"
+	></div>{/if}
 
 <style>
 	.win-coins {
@@ -100,5 +133,6 @@
 		width: 100%;
 		height: 100%;
 		pointer-events: none;
+		z-index: 0;
 	}
 </style>

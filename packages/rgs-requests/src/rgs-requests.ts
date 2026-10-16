@@ -20,10 +20,7 @@ export const requestAuthenticate = async (options: {
 	return data;
 };
 
-export const requestEndRound = async (options: {
-	sessionID: string;
-	rgsUrl: string;
-}) => {
+export const requestEndRound = async (options: { sessionID: string; rgsUrl: string }) => {
 	const data = await rgsFetcher.post({
 		rgsUrl: options.rgsUrl,
 		url: '/wallet/end-round',
@@ -84,7 +81,7 @@ export const requestReplay = async (options: {
 	const data = await rgsFetcher.get({
 		rgsUrl: options.rgsUrl,
 		// @ts-ignore TODO: update the schema.ts
-		url: `/bet/replay/${options.game}/${options.version}/${options.mode}/${options.event}${options.language ? `?language=${encodeURIComponent(options.language)}` : ''}`,
+		url: `/bet/replay/${encodeURIComponent(options.game)}/${encodeURIComponent(options.version)}/${encodeURIComponent(options.mode)}/${encodeURIComponent(options.event)}${options.language ? `?language=${encodeURIComponent(options.language)}` : ''}`,
 	});
 
 	// The replay endpoint isn't in schema.ts yet (see @ts-ignore above), so type the shape by hand.
@@ -95,4 +92,4 @@ export const requestReplay = async (options: {
 		payout?: number;
 		state?: unknown[];
 	} & Record<string, unknown>;
-}
+};

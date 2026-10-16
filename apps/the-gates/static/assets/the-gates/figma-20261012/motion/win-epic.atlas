@@ -1,0 +1,35 @@
+../wins/epic-banner.png
+size: 2864,1144
+filter: Linear,Linear
+pma: false
+banner
+  bounds: 0,0,2864,1144
+
+../wins/epic-horn-2.png
+size: 899,599
+filter: Linear,Linear
+pma: false
+horn-left
+  bounds: 0,0,899,599
+
+../wins/epic-horn-1.png
+size: 899,599
+filter: Linear,Linear
+pma: false
+horn-right
+  bounds: 0,0,899,599
+
+../wins/epic-title.png
+size: 1639,1091
+filter: Linear,Linear
+pma: false
+title
+  bounds: 0,0,1639,1091
+
+../wins/epic-crown.png
+size: 531,436
+filter: Linear,Linear
+pma: false
+crown
+  bounds: 0,0,531,436
+

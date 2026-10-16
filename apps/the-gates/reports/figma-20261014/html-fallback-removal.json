@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-14",
+  "scope": "Remove old gameplay HTML visual fallbacks; approved HTML HUD/forms/modals retained.",
+  "removed": [
+    "30 HTML cell nodes and 6 HTML reel nodes",
+    "hidden duplicate symbol image tree",
+    "HTML desktop board-frame image",
+    "CSS mobile board-frame rendering",
+    "win and bonus fallback images",
+    "gate reward fallback text",
+    "legacy symbol-sheet CSS fallback",
+    "unreferenced Canvas2D TempleAtmosphere component",
+    "58 obsolete board/cell/reel CSS rules"
+  ],
+  "renderer": {
+    "canvasCount": 1,
+    "boardHostChildren": 0,
+    "oldCellReelNodes": 0,
+    "frame": "Pixi Sprite (desktop), Pixi Graphics (mobile)",
+    "geometry": "Pure boardGeometry.ts, no per-cell DOM reads",
+    "overlays": "Same retained GPU board underlay, no HTML snapshot",
+    "loadingFailure": "Explicit graphics error/reload, no alternate gameplay renderer"
+  },
+  "browserChecks": {
+    "desktop": "Board frame and 30 tiles visible; empty board host; zero old grid/frame nodes",
+    "portrait": "390x844 resize; GPU frame + tiles visible",
+    "landscape": "844x390; GPU frame + tiles visible",
+    "win": "One canvas in native dialog; board retained behind art; 0 HTML win images",
+    "bonusSummary": "One canvas, 0 HTML bonus images, 0 board children; native rig reaches idle",
+    "consoleErrors": 0
+  },
+  "verification": {
+    "unitTestsPassed": 169,
+    "unitTestsFailed": 0,
+    "typecheck": "passed",
+    "buildAndAssetClosure": "passed",
+    "contract": "passed",
+    "diffCheck": "passed"
+  },
+  "residualRisks": [
+    "No hardware-mobile GPU frame-time benchmark or WebGL context-loss test.",
+    "Archived browser scripts using legacy DOM animation selectors are not the current renderer QA; not executed."
+  ]
+}

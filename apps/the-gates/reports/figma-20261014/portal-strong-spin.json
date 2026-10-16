@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-14",
+  "change": "Increase symbol suction rotation from 24\u201334 degrees to 420\u2013480 degrees; event-seeded direction retained.",
+  "preserved": [
+    "Full-size neutral hold",
+    "Slow shrink curve",
+    "Rim/vortex below symbol",
+    "Normal/Fast/Turbo timing",
+    "Skip/reduced-motion paths",
+    "Unchanged source images"
+  ],
+  "validation": {
+    "testsPassed": 140,
+    "productionBuild": "PASS",
+    "typescript": "PASS",
+    "diffCheck": "PASS",
+    "browser": "22/22 rigs loaded; zero errors; sampled 500ms rotation visually checked",
+    "runtimeProof": "Official Spine sampled 0\u2192474.15 degrees for spin-proof seed, without shortest-arc reversal",
+    "screenshot": "portal-strong-spin.png"
+  }
+}

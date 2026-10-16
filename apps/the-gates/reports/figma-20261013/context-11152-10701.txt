@@ -1,0 +1,433 @@
+const assetPathPrefix = "./assets/the-gates/figma-20261013";
+const imgChatGptImageSep292026At112535Am1 = `${assetPathPrefix}/a0263.png`;
+const imgChatGptImageSep292026At105434Am1 = `${assetPathPrefix}/36954.png`;
+const imgRectangle354 = `${assetPathPrefix}/78f83.png`;
+const imgRectangle355 = `${assetPathPrefix}/f6355.png`;
+const imgRectangle356 = `${assetPathPrefix}/25449.png`;
+const imgRectangle436 = `${assetPathPrefix}/1866a.png`;
+const imgChatGptImageSep302026At013914Pm2 = `${assetPathPrefix}/b1808.png`;
+const imgChatGptImageSep292026At112213Am1 = `${assetPathPrefix}/5bb47.png`;
+const imgChatGptImageSep302026At021901Pm1 = `${assetPathPrefix}/139ce.png`;
+const imgChatGptImageSep302026At014750Pm1 = `${assetPathPrefix}/fcef2.png`;
+const imgGlossyGoldAndBlueGameUiFrame1 = `${assetPathPrefix}/51301.png`;
+const imgRectangle437 = `${assetPathPrefix}/1adb5.png`;
+const imgRectangle435 = `${assetPathPrefix}/d1e33.png`;
+const imgRectangle438 = `${assetPathPrefix}/4e7e5.png`;
+const imgGroup = `${assetPathPrefix}/11cd1.svg`;
+const imgGroup1 = `${assetPathPrefix}/ee395.svg`;
+const imgSvg = `${assetPathPrefix}/afa46.svg`;
+const imgGroup256 = `${assetPathPrefix}/cd320.svg`;
+const imgGroup258 = `${assetPathPrefix}/407f5.svg`;
+const imgGroup266 = `${assetPathPrefix}/c14a9.svg`;
+const imgVector = `${assetPathPrefix}/0dcc4.svg`;
+const imgGroup257 = `${assetPathPrefix}/3031a.svg`;
+const imgVector1 = `${assetPathPrefix}/627a9.svg`;
+
+export default function BaseGame() {
+  return (
+    <div className="bg-[#172537] relative size-full" data-node-id="11152:10701" data-name="Base game">
+      <div className="absolute blur-[3px] h-[688px] left-[-3px] top-0 w-[1209px]" data-node-id="11152:10702" data-name="ChatGPT Image Sep 29, 2026 at 11_25_35 AM 1">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep292026At112535Am1} />
+      </div>
+      <div className="absolute contents inset-[3.73%_1.86%_91.94%_90.67%]" data-node-id="11152:10703" data-name="Group">
+        <div className="absolute inset-[5.18%_1.86%_92.67%_92.34%]" data-node-id="11152:10704" data-name="Group">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup} />
+        </div>
+        <div className="absolute inset-[3.73%_8.01%_91.94%_90.67%]" data-node-id="11152:10714" data-name="Group">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup1} />
+        </div>
+      </div>
+      <div className="absolute h-[101px] left-[23px] top-[20px] w-[178px]" data-node-id="11152:10718" data-name="ChatGPT Image Sep 29, 2026 at 10_54_34 AM 1">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep292026At105434Am1} />
+      </div>
+      <div className="absolute border-5 border-[#021d42] border-solid inset-[83.28%_1.67%_1.34%_2.5%] rounded-[32px]" data-node-id="11152:10720">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[32px] size-full" src={imgRectangle354} />
+      </div>
+      <div className="absolute border-2 border-black border-solid inset-[84.93%_2.75%_3.13%_3.58%] rounded-[26px]" data-node-id="11152:10721">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full" src={imgRectangle355} />
+      </div>
+      <div className="absolute content-stretch flex gap-[51px] items-center left-[289px] top-[585px]" data-node-id="11152:10722">
+        <div className="[word-break:break-word] content-stretch flex flex-col gap-[8px] items-start leading-[0] not-italic px-[6.667px] relative shrink-0 uppercase" data-node-id="11152:10723">
+          <div className="flex flex-col font-['Inter:Bold'] font-bold justify-center relative shrink-0 text-[#fde10f] text-[10px] tracking-[2px] w-[62.495px]" data-node-id="11152:10724">
+            <p className="leading-[15px]">Balance</p>
+          </div>
+          <div className="bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center relative shrink-0 text-[20px] text-[transparent] text-center text-shadow-[0px_1.962px_3.924px_rgba(2,2,88,0.41)] tracking-[1.2551px] whitespace-nowrap" data-node-id="11152:10725" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 63 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.1293e-14 0.85263 -5.7998 -0.0000012395 31.615 9.4737)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+            <p className="leading-[17.93px]">$1.00</p>
+          </div>
+        </div>
+        <div className="border-r border-solid border-white content-stretch flex flex-col h-[49px] items-start pr-[48px] relative shrink-0 w-px" data-node-id="11152:10726" data-name="VerticalBorder" />
+        <div className="[word-break:break-word] content-stretch flex flex-col gap-[8px] items-start leading-[0] not-italic px-[6.667px] relative shrink-0 uppercase" data-node-id="11152:10727">
+          <div className="flex flex-col font-['Inter:Bold'] font-bold justify-center relative shrink-0 text-[#fde10f] text-[10px] tracking-[2px] w-[62.495px]" data-node-id="11152:10728">
+            <p className="leading-[15px]">WIN</p>
+          </div>
+          <div className="bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center relative shrink-0 text-[20px] text-[transparent] text-center text-shadow-[0px_1.962px_3.924px_rgba(2,2,88,0.41)] tracking-[1.2551px] whitespace-nowrap" data-node-id="11152:10729" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 63 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.1293e-14 0.85263 -5.7998 -0.0000012395 31.615 9.4737)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+            <p className="leading-[17.93px]">$1.00</p>
+          </div>
+        </div>
+        <div className="border-r border-solid border-white content-stretch flex flex-col h-[49px] items-start pr-[48px] relative shrink-0 w-px" data-node-id="11152:10730" data-name="VerticalBorder" />
+        <div className="content-stretch flex gap-[10px] h-[49px] items-center relative shrink-0" data-node-id="11152:10731">
+          <div className="content-stretch flex h-[40px] items-center justify-center relative shrink-0 w-[26px]" data-node-id="11152:10732" data-name="Bet">
+            <div className="relative shrink-0 size-[24px]" data-node-id="I11152:10732;2503:4361" data-name="SVG">
+              <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgSvg} />
+            </div>
+          </div>
+          <div className="[word-break:break-word] content-stretch flex flex-col gap-[8px] items-start leading-[0] not-italic px-[6.667px] relative shrink-0 uppercase" data-node-id="11152:10733">
+            <div className="flex flex-col font-['Inter:Bold'] font-bold justify-center relative shrink-0 text-[#fde10f] text-[10px] tracking-[2px] w-[62.495px]" data-node-id="11152:10734">
+              <p className="leading-[15px]">BET</p>
+            </div>
+            <div className="bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center relative shrink-0 text-[20px] text-[transparent] text-center text-shadow-[0px_1.962px_3.924px_rgba(2,2,88,0.41)] tracking-[1.2551px] whitespace-nowrap" data-node-id="11152:10735" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 63 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.1293e-14 0.85263 -5.7998 -0.0000012395 31.615 9.4737)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+              <p className="leading-[17.93px]">$1.00</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute contents left-[780px] top-[582px]" data-node-id="11152:10736">
+        <div className="absolute left-[780px] size-[57px] top-[582px]" data-node-id="11152:10737">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup256} />
+        </div>
+        <div className="absolute contents inset-[90.75%_31.83%_8.38%_66.5%]" data-node-id="11152:10741">
+          <div className="absolute bg-[#021d42] inset-[90.75%_31.83%_8.38%_66.5%] rounded-[20px]" data-node-id="11152:10742" />
+          <div className="absolute inset-[90.92%_31.93%_8.55%_66.6%] rounded-[20px]" data-node-id="11152:10743" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 17.647 3.5294' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(3.1632e-15 0.16718 -1.6246 -2.4304e-7 8.8557 1.8576)'><stop stop-color='rgba(255,255,255,1)' offset='0.58654'/><stop stop-color='rgba(173,213,245,0.5)' offset='1'/></radialGradient></defs></svg>\"), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" }} />
+        </div>
+      </div>
+      <div className="absolute contents left-[54px] top-[582px]" data-node-id="11152:10744">
+        <div className="absolute left-[54px] size-[57px] top-[582px]" data-node-id="11152:10745">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup256} />
+        </div>
+        <div className="absolute contents inset-[89.55%_92.25%_7.46%_6.08%]" data-node-id="11152:10749">
+          <div className="absolute bg-[#021d42] inset-[89.55%_92.25%_9.57%_6.08%] rounded-[20px]" data-node-id="11152:10750" />
+          <div className="absolute inset-[89.73%_92.35%_9.75%_6.18%] rounded-[20px]" data-node-id="11152:10751" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 17.647 3.5294' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(3.1632e-15 0.16718 -1.6246 -2.4304e-7 8.8557 1.8576)'><stop stop-color='rgba(255,255,255,1)' offset='0.58654'/><stop stop-color='rgba(173,213,245,0.5)' offset='1'/></radialGradient></defs></svg>\"), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" }} />
+          <div className="absolute bg-[#021d42] inset-[90.61%_92.25%_8.52%_6.08%] rounded-[20px]" data-node-id="11152:10752" />
+          <div className="absolute bg-[#021d42] inset-[91.66%_92.25%_7.46%_6.08%] rounded-[20px]" data-node-id="11152:10753" />
+          <div className="absolute inset-[90.78%_92.35%_8.69%_6.18%] rounded-[20px]" data-node-id="11152:10754" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 17.647 3.5294' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(3.1632e-15 0.16718 -1.6246 -2.4304e-7 8.8557 1.8576)'><stop stop-color='rgba(255,255,255,1)' offset='0.58654'/><stop stop-color='rgba(173,213,245,0.5)' offset='1'/></radialGradient></defs></svg>\"), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" }} />
+          <div className="absolute inset-[91.83%_92.35%_7.64%_6.18%] rounded-[20px]" data-node-id="11152:10755" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 17.647 3.5294' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(3.1632e-15 0.16718 -1.6246 -2.4304e-7 8.8557 1.8576)'><stop stop-color='rgba(255,255,255,1)' offset='0.58654'/><stop stop-color='rgba(173,213,245,0.5)' offset='1'/></radialGradient></defs></svg>\"), linear-gradient(90deg, rgb(255, 255, 255) 0%, rgb(255, 255, 255) 100%)" }} />
+        </div>
+      </div>
+      <div className="absolute contents inset-[2.99%_18.08%_19.76%_18.42%]" data-node-id="11152:10756">
+        <div className="absolute border-[#021d42] border-[5.109px] border-solid inset-[2.99%_18.08%_19.76%_18.42%] rounded-[32.698px]" data-node-id="11152:10757">
+          <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[32.698px] size-full" src={imgRectangle356} />
+        </div>
+        <div className="absolute bg-[#0d223f] border-[4.087px] border-black border-solid inset-[5.23%_19.38%_22%_19.8%] rounded-[18.392px]" data-node-id="11152:10758" />
+      </div>
+      <div className="absolute contents left-[119px] top-[579px]" data-node-id="11152:10759">
+        <div className="absolute contents left-[119px] top-[579px]" data-node-id="11152:10760">
+          <div className="absolute bg-[#021d42] border border-black border-solid h-[62px] left-[119px] rounded-[31px] top-[579px] w-[148px]" data-node-id="11152:10761" />
+          <div className="absolute h-[52px] left-[124px] rounded-[26px] top-[584px] w-[138px]" data-node-id="11152:10762">
+            <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[26px] size-full" src={imgRectangle436} />
+          </div>
+          <div className="absolute bg-gradient-to-b border-2 border-black border-solid from-[#f22f24] h-[44px] left-[128px] rounded-[22px] shadow-[0px_0px_2px_0px_#fd6404] to-[#d80203] top-[588px] w-[130px]" data-node-id="11152:10763" />
+        </div>
+        <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] left-[194.5px] not-italic text-[17.659px] text-[transparent] text-center text-shadow-[0px_1.962px_3.924px_rgba(2,2,88,0.41)] top-[610px] tracking-[1.2551px] uppercase whitespace-nowrap" data-node-id="11152:10764" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 69 18' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.2368e-14 0.85263 -6.3522 -0.0000012395 34.626 9.4737)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+          <p className="leading-[17.93px]">BONUS</p>
+        </div>
+      </div>
+      <div className="absolute contents left-[846px] top-[582px]" data-node-id="11152:10765">
+        <div className="absolute left-[846px] size-[57px] top-[582px]" data-node-id="11152:10766">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup258} />
+        </div>
+      </div>
+      <div className="absolute left-[1034px] size-[57px] top-[582px]" data-node-id="11152:10778">
+        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup266} />
+      </div>
+      <div className="absolute contents left-[1098px] top-[582px]" data-node-id="11152:10784">
+        <div className="absolute left-[1098px] size-[57px] top-[582px]" data-node-id="11152:10785">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup256} />
+        </div>
+        <div className="absolute content-stretch flex flex-col gap-[4px] inset-[89.1%_5.08%_7.03%_92.83%] items-center" data-node-id="11152:10789">
+          <div className="h-[14.882px] relative shrink-0 w-[15.934px]" data-node-id="11152:10790" data-name="Vector">
+            <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgVector} />
+          </div>
+          <div className="content-stretch flex flex-col items-center relative shrink-0 w-full" data-node-id="11152:10791">
+            <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] not-italic relative shrink-0 text-[7.302px] text-[transparent] text-center text-shadow-[0px_0.716px_1.433px_rgba(2,2,88,0.41)] tracking-[0.4582px] uppercase w-full" data-node-id="11152:10792" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 25 7' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(4.4812e-15 0.33158 -2.3015 -4.8202e-7 12.546 3.6842)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+              <p className="leading-[6.546px]">AUTO</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="absolute left-[909px] size-[117px] top-[549px]" data-node-id="11152:10793">
+        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup257} />
+      </div>
+      <div className="absolute h-[59.363px] left-[937px] top-[579px] w-[58.08px]" data-node-id="11152:10797" data-name="Vector">
+        <div className="absolute inset-[-3.31%_-6.76%_-9.92%_-6.76%]">
+          <img alt="" className="block max-w-none size-full" src={imgVector1} />
+        </div>
+      </div>
+      <div className="-translate-x-1/2 absolute contents left-[calc(50%+0.21px)] top-[36.11px]" data-node-id="11152:10798" data-name="символи">
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[241px] rounded-[8px] to-[#0a2540] top-[36.11px] w-[117.355px]" data-node-id="11152:10799" data-name="Symbols pad" />
+        <div className="absolute h-[77.862px] left-[264.28px] top-[44.39px] w-[77.354px]" data-node-id="11152:10800" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 2">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[288.93%] left-[-11.48%] max-w-none top-[-35.5%] w-[581.64%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[241px] rounded-[8px] to-[#0a2540] top-[133.53px] w-[117.355px]" data-node-id="11152:10801" data-name="Symbols pad" />
+        <div className="absolute contents left-[241px] top-[230.85px]" data-node-id="11152:10802">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(254,196,26,0.31)] border-solid from-[#0b192c] h-[94.457px] left-[241px] rounded-[8px] to-[#0b192c] top-[230.85px] via-1/2 via-[rgba(142,118,34,0.5)] w-[117.355px]" data-node-id="11152:10803" data-name="Symbols pad" />
+          <div className="absolute inset-[35.83%_71.63%_52.38%_21.65%]" data-node-id="11152:10804" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 5">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[264.78%] left-[-303.51%] max-w-none top-[-29.25%] w-[518.71%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[241px] top-[328.16px]" data-node-id="11152:10805">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(255,255,255,0.47)] border-solid from-[#0b192c] h-[94.457px] left-[241px] rounded-[8px] to-[#0b192c] top-[328.16px] via-1/2 via-[rgba(154,106,106,0.55)] w-[117.355px]" data-node-id="11152:10806" data-name="Symbols pad" />
+          <div className="absolute inset-[51.04%_71.19%_38.91%_21.3%]" data-node-id="11152:10807" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 13">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[345.14%] left-[-409.01%] max-w-none top-[-54.86%] w-[515.7%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[241px] top-[425.48px]" data-node-id="11152:10808">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(82,135,212,0.45)] border-solid from-[#0b192c] h-[94.457px] left-[241px] rounded-[8px] to-[#0b192c] top-[425.48px] via-1/2 via-[#3864b0] w-[117.355px]" data-node-id="11152:10809" data-name="Symbols pad" />
+          <div className="absolute inset-[64.54%_71.14%_22.69%_21.12%]" data-node-id="11152:10810" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 3">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[262.43%] left-[-92.37%] max-w-none top-[-31.07%] w-[483.38%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[361.21px] top-[133.53px]" data-node-id="11152:10811">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(152,86,44,0.68)] border-solid from-[#0b192c] h-[94.457px] left-[361.21px] rounded-[8px] to-[#0b192c] top-[133.53px] via-1/2 via-[#8b4715] w-[117.355px]" data-node-id="11152:10812" data-name="Symbols pad" />
+          <div className="absolute inset-[20.65%_61.38%_66.86%_31.46%]" data-node-id="11152:10813" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 8">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[260.88%] left-[-101.72%] max-w-none top-[-131.47%] w-[508.31%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[361.21px] top-[230.85px]" data-node-id="11152:10814">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(254,180,59,0.3)] border-solid from-[#0b192c] h-[94.457px] left-[361.21px] rounded-[8px] to-[#0b192c] top-[230.85px] via-1/2 via-[rgba(254,142,38,0.48)] w-[117.355px]" data-node-id="11152:10815" data-name="Symbols pad" />
+          <div className="absolute inset-[36.32%_61.61%_52.12%_31.45%] shadow-[0px_0px_18.848px_0px_#dc7d16]" data-node-id="11152:10816" data-name="ChatGPT Image Sep 29, 2026 at 11_22_13 AM 1">
+            <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep292026At112213Am1} />
+          </div>
+        </div>
+        <div className="absolute contents left-[361.21px] top-[328.16px]" data-node-id="11152:10818">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(82,135,212,0.45)] border-solid from-[#0b192c] h-[94.457px] left-[361.21px] rounded-[8px] to-[#0b192c] top-[328.16px] via-1/2 via-[#3864b0] w-[117.355px]" data-node-id="11152:10819" data-name="Symbols pad" />
+          <div className="absolute inset-[50.02%_61.12%_37.21%_31.14%]" data-node-id="11152:10820" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 3">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[262.43%] left-[-92.37%] max-w-none top-[-31.07%] w-[483.38%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[361.21px] top-[425.48px]" data-node-id="11152:10821">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(254,180,59,0.3)] border-solid from-[#0b192c] h-[94.457px] left-[361.21px] rounded-[8px] to-[#0b192c] top-[425.48px] via-1/2 via-[rgba(254,142,38,0.48)] w-[117.355px]" data-node-id="11152:10822" data-name="Symbols pad" />
+          <div className="absolute inset-[65.37%_61.61%_23.07%_31.45%] shadow-[0px_0px_18.848px_0px_#dc7d16]" data-node-id="11152:10823" data-name="ChatGPT Image Sep 29, 2026 at 11_22_13 AM 1">
+            <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep292026At112213Am1} />
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[481.43px] rounded-[8px] to-[#0a2540] top-[36.21px] w-[117.355px]" data-node-id="11152:10825" data-name="Symbols pad" />
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[481.43px] rounded-[8px] to-[#0a2540] top-[133.53px] w-[117.355px]" data-node-id="11152:10826" data-name="Symbols pad" />
+        <div className="absolute contents left-[477px] top-[226px]" data-node-id="11152:10827">
+          <div className="absolute contents left-[477px] top-[226px]" data-node-id="11152:10828">
+            <div className="absolute contents left-[481.07px] top-[229.48px]" data-node-id="11152:10829">
+              <div className="absolute bg-[#f6c523] border-3 border-black border-solid h-[95.663px] left-[481.07px] rounded-[8px] top-[229.48px] w-[116.929px]" data-node-id="11152:10830" data-name="Symbols pad" />
+            </div>
+            <div className="absolute contents left-[486.39px] top-[234.88px]" data-node-id="11152:10831">
+              <div className="absolute bg-[#0147b4] border-[1.431px] border-black border-solid h-[85.05px] left-[486.39px] rounded-[8px] top-[234.88px] w-[106.299px]" data-node-id="11152:10832" data-name="Symbols pad" />
+            </div>
+            <div className="absolute flex inset-[33.73%_50.04%_50.57%_39.75%] items-center justify-center" data-node-id="11152:10833" style={{ containerType: "size" }}>
+              <div className="flex-none h-[hypot(-0.903916cqw,98.7689cqh)] rotate-[0.61deg] w-[hypot(99.0961cqw,1.23111cqh)]">
+                <div className="relative shadow-[0px_0px_24px_0px_#071e35] size-full" data-name="ChatGPT Image Sep 30, 2026 at 02_19_01 PM 1">
+                  <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep302026At021901Pm1} />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[481.43px] rounded-[8px] to-[#0a2540] top-[328.16px] w-[117.355px]" data-node-id="11152:10834" data-name="Symbols pad" />
+        <div className="absolute contents left-[481.43px] top-[425.48px]" data-node-id="11152:10835">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(152,86,44,0.68)] border-solid from-[#0b192c] h-[94.457px] left-[481.43px] rounded-[8px] to-[#0b192c] top-[425.48px] via-1/2 via-[#8b4715] w-[117.355px]" data-node-id="11152:10836" data-name="Symbols pad" />
+          <div className="absolute inset-[64.22%_51.36%_23.29%_41.48%]" data-node-id="11152:10837" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 8">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[260.88%] left-[-101.72%] max-w-none top-[-131.47%] w-[508.31%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[601.64px] top-[36.21px]" data-node-id="11152:10838">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(254,196,26,0.31)] border-solid from-[#0b192c] h-[94.457px] left-[601.64px] rounded-[8px] to-[#0b192c] top-[36.21px] via-1/2 via-[rgba(142,118,34,0.5)] w-[117.355px]" data-node-id="11152:10839" data-name="Symbols pad" />
+          <div className="absolute inset-[6.78%_41.57%_81.43%_51.71%]" data-node-id="11152:10840" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 5">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[264.78%] left-[-303.51%] max-w-none top-[-29.25%] w-[518.71%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[601.64px] rounded-[8px] to-[#0a2540] top-[133.53px] w-[117.355px]" data-node-id="11152:10841" data-name="Symbols pad" />
+        <div className="absolute contents left-[601.64px] top-[230.85px]" data-node-id="11152:10842">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(152,86,44,0.68)] border-solid from-[#0b192c] h-[94.457px] left-[601.64px] rounded-[8px] to-[#0b192c] top-[230.85px] via-1/2 via-[#8b4715] w-[117.355px]" data-node-id="11152:10843" data-name="Symbols pad" />
+          <div className="absolute inset-[35.17%_41.34%_52.34%_51.5%]" data-node-id="11152:10844" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 8">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[260.88%] left-[-101.72%] max-w-none top-[-131.47%] w-[508.31%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[601.64px] rounded-[8px] to-[#0a2540] top-[328.16px] w-[117.355px]" data-node-id="11152:10845" data-name="Symbols pad" />
+        <div className="absolute contents left-[601.64px] top-[425.48px]" data-node-id="11152:10846">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(82,135,212,0.45)] border-solid from-[#0b192c] h-[94.457px] left-[601.64px] rounded-[8px] to-[#0b192c] top-[425.48px] via-1/2 via-[#3864b0] w-[117.355px]" data-node-id="11152:10847" data-name="Symbols pad" />
+          <div className="absolute inset-[64.54%_41.08%_22.69%_51.17%]" data-node-id="11152:10848" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 3">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[262.43%] left-[-92.37%] max-w-none top-[-31.07%] w-[483.38%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[721.86px] top-[36.21px]" data-node-id="11152:10849">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(255,255,255,0.47)] border-solid from-[#0b192c] h-[94.457px] left-[721.86px] rounded-[11.45px] to-[#0b192c] top-[36.21px] via-1/2 via-[rgba(154,106,106,0.55)] w-[117.355px]" data-node-id="11152:10850" data-name="Symbols pad" />
+          <div className="absolute inset-[7.62%_31.1%_82.33%_61.38%]" data-node-id="11152:10851" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 13">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[345.14%] left-[-409.01%] max-w-none top-[-54.86%] w-[515.7%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[721.86px] rounded-[8px] to-[#0a2540] top-[133.53px] w-[117.355px]" data-node-id="11152:10852" data-name="Symbols pad" />
+        <div className="absolute contents left-[721.86px] top-[230.85px]" data-node-id="11152:10853">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(254,196,26,0.31)] border-solid from-[#0b192c] h-[94.457px] left-[721.86px] rounded-[8px] to-[#0b192c] top-[230.85px] via-1/2 via-[rgba(142,118,34,0.5)] w-[117.355px]" data-node-id="11152:10854" data-name="Symbols pad" />
+          <div className="absolute inset-[35.83%_31.55%_52.38%_61.73%]" data-node-id="11152:10855" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 5">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[264.78%] left-[-303.51%] max-w-none top-[-29.25%] w-[518.71%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[721.86px] rounded-[8px] to-[#0a2540] top-[328.16px] w-[117.355px]" data-node-id="11152:10856" data-name="Symbols pad" />
+        <div className="absolute contents left-[721.86px] top-[425.48px]" data-node-id="11152:10857">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(255,255,255,0.47)] border-solid from-[#0b192c] h-[94.457px] left-[721.86px] rounded-[8px] to-[#0b192c] top-[425.48px] via-1/2 via-[rgba(154,106,106,0.55)] w-[117.355px]" data-node-id="11152:10858" data-name="Symbols pad" />
+          <div className="absolute inset-[65.53%_31.48%_24.91%_61.38%]" data-node-id="11152:10859" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 13">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[345.14%] left-[-409.01%] max-w-none top-[-54.86%] w-[515.7%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[842.07px] rounded-[12px] to-[#0a2540] top-[36.21px] w-[117.355px]" data-node-id="11152:10860" data-name="Symbols pad" />
+        <div className="absolute contents left-[842.07px] top-[133.53px]" data-node-id="11152:10861">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(254,180,59,0.3)] border-solid from-[#0b192c] h-[94.457px] left-[842.07px] rounded-[8px] to-[#0b192c] top-[133.53px] via-1/2 via-[rgba(254,142,38,0.48)] w-[117.355px]" data-node-id="11152:10862" data-name="Symbols pad" />
+          <div className="absolute inset-[20.44%_21.11%_65.41%_70.99%]" data-node-id="11152:10863" data-name="ChatGPT Image Sep 30, 2026 at 01_47_50 PM 1">
+            <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgChatGptImageSep302026At014750Pm1} />
+          </div>
+        </div>
+        <div className="absolute contents left-[842.07px] top-[230.85px]" data-node-id="11152:10865">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(152,86,44,0.68)] border-solid from-[#0b192c] h-[94.457px] left-[842.07px] rounded-[8px] to-[#0b192c] top-[230.85px] via-1/2 via-[#8b4715] w-[117.355px]" data-node-id="11152:10866" data-name="Symbols pad" />
+          <div className="absolute inset-[35.25%_21.39%_52.25%_71.45%]" data-node-id="11152:10867" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 8">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[260.88%] left-[-101.72%] max-w-none top-[-131.47%] w-[508.31%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute contents left-[842.07px] top-[328.16px]" data-node-id="11152:10868">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(254,196,26,0.31)] border-solid from-[#0b192c] h-[94.457px] left-[842.07px] rounded-[8px] to-[#0b192c] top-[328.16px] via-1/2 via-[rgba(142,118,34,0.5)] w-[117.355px]" data-node-id="11152:10869" data-name="Symbols pad" />
+          <div className="absolute inset-[50.15%_21.46%_38.06%_71.82%]" data-node-id="11152:10870" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 5">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[264.78%] left-[-303.51%] max-w-none top-[-29.25%] w-[518.71%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+        <div className="absolute bg-gradient-to-b border-[#162131] border-[1.431px] border-solid from-[#16385e] h-[94.457px] left-[842px] rounded-[8px] to-[#0a2540] top-[425px] w-[117.355px]" data-node-id="11152:10871" data-name="Symbols pad" />
+        <div className="absolute h-[77.543px] left-[858.53px] top-[46.61px] w-[76.562px]" data-node-id="11152:10872" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 13">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[280.7%] left-[-228.85%] max-w-none top-[-34.81%] w-[568.59%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[77.543px] left-[501.54px] top-[44.39px] w-[76.562px]" data-node-id="11152:10873" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 12">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[280.7%] left-[-228.85%] max-w-none top-[-34.81%] w-[568.59%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[76.549px] left-[501.54px] top-[141.95px] w-[77.556px]" data-node-id="11152:10875" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 17">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[291.78%] left-[-233.44%] max-w-none top-[-151.64%] w-[575.97%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[76.549px] left-[620.17px] top-[141.95px] w-[77.556px]" data-node-id="11152:10876" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 18">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[291.78%] left-[-233.44%] max-w-none top-[-151.64%] w-[575.97%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[79.603px] left-[739.9px] top-[334.86px] w-[81.159px]" data-node-id="11152:10877" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 21">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[288.93%] left-[-337.06%] max-w-none top-[-149.51%] w-[566.77%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[79.603px] left-[739.9px] top-[141.96px] w-[81.159px]" data-node-id="11152:10878" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 19">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[288.93%] left-[-337.06%] max-w-none top-[-149.51%] w-[566.77%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[79.603px] left-[860px] top-[433px] w-[81.159px]" data-node-id="11152:10879" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 23">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[288.93%] left-[-337.06%] max-w-none top-[-149.51%] w-[566.77%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[79.603px] left-[493.78px] top-[334.86px] w-[81.159px]" data-node-id="11152:10880" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 22">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[288.93%] left-[-337.06%] max-w-none top-[-149.51%] w-[566.77%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[76.299px] left-[623.49px] top-[337.08px] w-[73.364px]" data-node-id="11152:10881" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 14">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[284.29%] left-[-10.67%] max-w-none top-[-145.83%] w-[591.33%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute h-[76.299px] left-[267.61px] top-[141.95px] w-[73.364px]" data-node-id="11152:10882" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 16">
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <img alt="" className="absolute h-[284.29%] left-[-10.67%] max-w-none top-[-145.83%] w-[591.33%]" src={imgChatGptImageSep302026At013914Pm2} />
+          </div>
+        </div>
+        <div className="absolute contents left-[361.53px] top-[36.11px]" data-node-id="11152:10885">
+          <div className="absolute bg-gradient-to-b border-[1.431px] border-[rgba(82,135,212,0.45)] border-solid from-[#0b192c] h-[94.457px] left-[361.53px] rounded-[8px] to-[#0b192c] top-[36.11px] via-1/2 via-[#3864b0] w-[117.355px]" data-node-id="11152:10886" data-name="Symbols pad" />
+          <div className="absolute inset-[5.96%_61.27%_81.26%_30.99%]" data-node-id="11152:10887" data-name="ChatGPT Image Sep 30, 2026 at 01_39_14 PM 3">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[262.43%] left-[-92.37%] max-w-none top-[-31.07%] w-[483.38%]" src={imgChatGptImageSep302026At013914Pm2} />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="-translate-x-1/2 -translate-y-1/2 absolute bg-[rgba(0,0,0,0.6)] h-[672px] left-[calc(50%+1px)] overflow-clip top-1/2 w-[1202px]" data-node-id="11152:10889">
+        <div className="-translate-x-1/2 -translate-y-1/2 absolute h-[470px] left-1/2 top-1/2 w-[841px]" data-node-id="11284:148744">
+          <div className="absolute h-[470px] left-0 top-0 w-[841px]" data-node-id="11284:148745" data-name="Glossy Gold and Blue Game UI Frame 1">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <img alt="" className="absolute h-[169.42%] left-0 max-w-none top-[-29.33%] w-full" src={imgGlossyGoldAndBlueGameUiFrame1} />
+            </div>
+          </div>
+          <div className="-translate-x-1/2 -translate-y-1/2 absolute content-stretch flex flex-col gap-[20.874px] items-center left-[calc(50%+0.04px)] top-[calc(50%+1.94px)] w-[557.07px]" data-node-id="11284:148746">
+            <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] min-w-full not-italic relative shrink-0 text-[46.141px] text-[transparent] text-center text-shadow-[0px_3.56px_12.458px_rgba(14,2,68,0.7)] tracking-[2.2769px] uppercase w-[min-content]" data-node-id="11284:148747" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 557.07 33' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(0.0000015953 2.8658 -94.021 0.0000039115 279.55 17.368)'><stop stop-color='rgba(250,210,4,1)' offset='0.34135'/><stop stop-color='rgba(248,169,4,1)' offset='0.50601'/><stop stop-color='rgba(246,128,3,1)' offset='0.67067'/><stop stop-color='rgba(243,86,3,1)' offset='0.83534'/><stop stop-color='rgba(241,45,2,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+              <p className="leading-[32.528px]">ConFIRM IT ALL</p>
+            </div>
+            <div className="[word-break:break-word] bg-clip-text flex flex-col font-['Titan_One:Regular'] h-[65.916px] justify-center leading-[0] not-italic relative shrink-0 text-[19.4px] text-[transparent] text-center text-shadow-[0px_2.156px_4.311px_rgba(2,2,88,0.41)] tracking-[1.3788px] uppercase w-[271.356px] whitespace-pre-wrap" data-node-id="11284:148748" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 271.36 65.916' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(4.864e-14 3.1224 -24.981 -0.000004539 136.17 34.693)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+              <p className="leading-[19.698px] mb-0">Buy All in for 500.00$</p>
+              <p className="leading-[19.698px] mb-0">​</p>
+              <p className="leading-[19.698px]">​</p>
+            </div>
+            <div className="content-stretch flex gap-[4.998px] items-center relative shrink-0" data-node-id="11284:148749">
+              <div className="h-[71.219px] relative shrink-0 w-[287.376px]" data-node-id="11284:148750">
+                <div className="absolute contents left-0 top-0" data-node-id="11284:148751">
+                  <div className="absolute contents left-0 top-0" data-node-id="11284:148752">
+                    <div className="absolute bg-[#021d42] border-[1.249px] border-black border-solid h-[71.219px] left-0 rounded-[38.733px] top-0 w-[287.376px]" data-node-id="11284:148753" />
+                    <div className="absolute h-[63.623px] left-[4.71px] rounded-[32.486px] top-[3.8px] w-[277.954px]" data-node-id="11284:148754">
+                      <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[32.486px] size-full" src={imgRectangle437} />
+                    </div>
+                    <div className="absolute border-[2.499px] border-black border-solid h-[50.543px] left-[17.48px] rounded-[27.488px] shadow-[0px_0px_2.499px_0px_#fd6404] top-[10.34px] w-[252.425px]" data-node-id="11284:148755">
+                      <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[27.488px] size-full" src={imgRectangle435} />
+                    </div>
+                  </div>
+                </div>
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] left-[149.96px] not-italic text-[22.064px] text-[transparent] text-center text-shadow-[0px_2.452px_4.903px_rgba(2,2,88,0.38)] top-[35.24px] tracking-[1.5682px] uppercase whitespace-nowrap" data-node-id="11284:148756" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 95 23' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(1.7029e-14 1.0895 -8.7458 -0.0000015838 47.673 12.105)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                  <p className="leading-[22.403px]">CANCEL</p>
+                </div>
+              </div>
+              <div className="h-[71.219px] relative shrink-0 w-[287.376px]" data-node-id="11284:148757">
+                <div className="absolute contents left-0 top-0" data-node-id="11284:148758">
+                  <div className="absolute contents left-0 top-0" data-node-id="11284:148759">
+                    <div className="absolute bg-[#021d42] border-[1.249px] border-black border-solid h-[71.219px] left-0 rounded-[38.733px] top-0 w-[287.376px]" data-node-id="11284:148760" />
+                    <div className="absolute h-[63.623px] left-[4.71px] rounded-[32.486px] top-[3.8px] w-[277.954px]" data-node-id="11284:148761">
+                      <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[32.486px] size-full" src={imgRectangle437} />
+                    </div>
+                    <div className="absolute border-[2.499px] border-black border-solid h-[50.543px] left-[17.48px] rounded-[27.488px] shadow-[0px_0px_2.499px_0px_#fd6404] top-[10.34px] w-[252.425px]" data-node-id="11284:148762">
+                      <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none rounded-[27.488px] size-full" src={imgRectangle438} />
+                    </div>
+                  </div>
+                </div>
+                <div className="-translate-x-1/2 -translate-y-1/2 [word-break:break-word] absolute bg-clip-text flex flex-col font-['Titan_One:Regular'] justify-center leading-[0] left-[150.21px] not-italic text-[22.064px] text-[transparent] text-center text-shadow-[0px_2.452px_4.903px_rgba(2,2,88,0.38)] top-[35.24px] tracking-[1.5682px] uppercase whitespace-nowrap" data-node-id="11284:148763" style={{ backgroundImage: "url(\"data:image/svg+xml;utf8,<svg viewBox='0 0 113 23' xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='none'><rect x='0' y='0' height='100%' width='100%' fill='url(%23grad)' opacity='1'/><defs><radialGradient id='grad' gradientUnits='userSpaceOnUse' cx='0' cy='0' r='10' gradientTransform='matrix(2.0255e-14 1.0895 -10.403 -0.0000015838 56.706 12.105)'><stop stop-color='rgba(255,255,255,1)' offset='0.47115'/><stop stop-color='rgba(214,234,250,1)' offset='0.73558'/><stop stop-color='rgba(173,213,245,1)' offset='1'/></radialGradient></defs></svg>\")" }}>
+                  <p className="leading-[22.403px]">CONFIRM</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

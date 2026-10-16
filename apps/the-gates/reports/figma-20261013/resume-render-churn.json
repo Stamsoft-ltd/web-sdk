@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-13",
+  "scope": "Resume dialog and avoidable rendering churn",
+  "changes": [
+    "Dedicated compact resume dialog with visible localized Continue button; pending-round cancellation stays locked.",
+    "Reuse surviving board symbol components instead of remounting every cell on every reveal.",
+    "Replace seeded removal tracks in actor-local animation data without recreating the skeleton.",
+    "Untrack initial canvas resize/draw so visual-state updates do not recreate renderer lifecycle effects.",
+    "Deduplicate animation dataset, travel transform and numeric measurement writes.",
+    "Stop completed travel callbacks, pause covered board idle animations, and omit unused session timers.",
+    "Use CSS wrapping for button labels instead of self-measuring resize feedback."
+  ],
+  "validation": {
+    "tests": { "passed": 121, "failed": 0 },
+    "productionBuild": "PASS",
+    "typescript": "PASS",
+    "gitDiffCheck": "PASS",
+    "browserVisualQA": "BLOCKED: Chrome extension reports User unavailable",
+    "liveFPSProfile": "NOT MEASURED"
+  },
+  "limitations": [
+    "No claim that the entire page was rerendering; identified concrete component remounts and redundant writes.",
+    "Live visual and frame-time verification still required.",
+    "No real bet or pending-round resume transaction executed during validation."
+  ]
+}

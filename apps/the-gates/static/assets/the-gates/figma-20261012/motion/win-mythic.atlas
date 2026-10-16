@@ -1,0 +1,35 @@
+../wins/mythic-banner.png
+size: 3424,1368
+filter: Linear,Linear
+pma: false
+banner
+  bounds: 0,0,3424,1368
+
+../wins/mythic-horn-1.png
+size: 1074,716
+filter: Linear,Linear
+pma: false
+horn-left
+  bounds: 0,0,1074,716
+
+../wins/mythic-horn-2.png
+size: 1074,716
+filter: Linear,Linear
+pma: false
+horn-right
+  bounds: 0,0,1074,716
+
+../wins/mythic-title.png
+size: 2020,1516
+filter: Linear,Linear
+pma: false
+title
+  bounds: 0,0,2020,1516
+
+../wins/mythic-crown.png
+size: 666,571
+filter: Linear,Linear
+pma: false
+crown
+  bounds: 0,0,666,571
+

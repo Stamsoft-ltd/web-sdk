@@ -1,0 +1,79 @@
+{
+  "request": [
+    "Fix landscape landing background magnification and distorted cards",
+    "Portrait one-card carousel with 3-second rotation and swipe",
+    "Larger desktop logo/cards touching plus corner symbols",
+    "Remove intro tagline everywhere"
+  ],
+  "implementation": {
+    "component": "src/components/Welcome.svelte",
+    "presentationHelpers": "src/game/welcome.ts",
+    "background": "Native wide terrace for desktop/landscape; native cloud-castle for portrait. Gameplay background unchanged.",
+    "card": "Native fcdb7.png alpha-bounds viewport 1478x1215; source width117.591%, auto height. No bitmap edits or nonuniform scaling.",
+    "logo": "Existing native logo.png, alpha padding cropped in CSS only",
+    "carousel": "Local component state; 3000ms interval; reset after manual navigation; hover/pause/visibility/reduced-motion guards; cleanup on unmount",
+    "art": "Six existing static symbol PNGs in two corner groups. No Spine/ticker added.",
+    "cleanup": "67 obsolete landing CSS rules removed (~5.1KB source); old tagline string removed"
+  },
+  "verification": {
+    "unitTests": {
+      "passed": 157,
+      "failed": 0
+    },
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "WelcomeCompilerWarnings": 0,
+    "packagedBytes": 35322525,
+    "gitDiffCheck": "passed",
+    "browserViewports": [
+      [
+        320,
+        568
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        667,
+        375
+      ],
+      [
+        844,
+        390
+      ],
+      [
+        1440,
+        900
+      ]
+    ],
+    "portrait": [
+      "One active card and no document scrolling",
+      "First card changed to second after 3.4s observation window",
+      "Pause and dots work",
+      "ArrowRight advances manually",
+      "Browser pointer swipes wrap 3->1 and 1->3"
+    ],
+    "landscape": [
+      "Wide background used instead of portrait source",
+      "All cards and Continue within viewport at667x375",
+      "Measured card ratio ~1.21647 matches native visible frame",
+      "No document scrolling"
+    ],
+    "desktop": {
+      "logoOverlapWithCardsPxAt1440": 55.9609375,
+      "cornerSymbolGroups": 2,
+      "taglinePresent": false
+    },
+    "entry": "Space activates Continue; landing component unmounts; no captured console errors"
+  },
+  "proof": [
+    "landing-desktop-rebuilt.png",
+    "landing-landscape-rebuilt.png",
+    "landing-portrait-carousel.png"
+  ],
+  "limits": [
+    "Local scripted preview, no live money actions",
+    "Swipe tested through browser pointer drags, not physical touch hardware"
+  ]
+}

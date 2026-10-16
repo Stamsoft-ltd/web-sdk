@@ -1,0 +1,149 @@
+{
+  "01-reel-landings": {
+    "seconds": 2.1,
+    "gainDb": 18.35,
+    "integratedLUFS": "-17.98",
+    "truePeakDbTP": "-7.87",
+    "sha256": "bfa91056e527734727c5386620fc56b2f7ac57ae7548ff209e9cb41353e0dc6b"
+  },
+  "02-cascade": {
+    "seconds": 1.6,
+    "gainDb": 17.37,
+    "integratedLUFS": "-17.00",
+    "truePeakDbTP": "-4.96",
+    "sha256": "a1e8423268712a618c46934e847e71d2e53918c701005da75619829b78516dd6"
+  },
+  "03-gate-portal": {
+    "seconds": 2.5,
+    "gainDb": 16.59,
+    "integratedLUFS": "-15.99",
+    "truePeakDbTP": "-4.19",
+    "sha256": "825d5243d6d5f8bc3ae7d14fa6d893092b15ee0ed435b67ff5064d7925a69fc9"
+  },
+  "04-win-fanfare": {
+    "seconds": 3.2,
+    "gainDb": 12.95,
+    "integratedLUFS": "-15.99",
+    "truePeakDbTP": "-4.22",
+    "sha256": "8369b2478b5a5cb878c4bb8de494a0a667e6461d1e0442de396d2427d7f51cd9"
+  },
+  "05-ui-click": {
+    "seconds": 0.45,
+    "gainDb": 30.85,
+    "integratedLUFS": "-17.95",
+    "truePeakDbTP": "-5.79",
+    "sha256": "b512f2621fc482b767aef312dfcfe3f075c1f62abb5628f660b42cb77fd272f1"
+  },
+  "06-spin-start": {
+    "seconds": 0.699977,
+    "gainDb": 22.86,
+    "integratedLUFS": "-17.96",
+    "truePeakDbTP": "-5.68",
+    "sha256": "21eb7ad8967071c8c79cc306d8a91578544515aef253c8c6bb25397388bf6e87"
+  },
+  "07-wisp-arrival": {
+    "seconds": 0.9,
+    "gainDb": 24.24,
+    "integratedLUFS": "-17.00",
+    "truePeakDbTP": "-4.93",
+    "sha256": "11dcac11853d9d08213af0195029b0f9eae3ba6ac22b36b2f91f6728bab381ac"
+  },
+  "08-multiplier-add": {
+    "seconds": 1.1,
+    "gainDb": 26.95,
+    "integratedLUFS": "-16.36",
+    "truePeakDbTP": "-2.00",
+    "sha256": "7b09ea49e7cc914be6399deda378c65b6b600b433e6b378b4a56bc066520b27d"
+  },
+  "09-multiplier-boost": {
+    "seconds": 1.399977,
+    "gainDb": 16.53,
+    "integratedLUFS": "-15.97",
+    "truePeakDbTP": "-7.82",
+    "sha256": "0fe6fcf19a67fd965a1d5ec0232fbdb662374fdb6cb6452a8c9e8d60df64b663"
+  },
+  "10-wild-reward": {
+    "seconds": 1.2,
+    "gainDb": 21.73,
+    "integratedLUFS": "-15.97",
+    "truePeakDbTP": "-6.01",
+    "sha256": "edfdfecde51eae6bb3a4b8ccb89a94b19f766e53111487d325ed7fb5a2ed739d"
+  },
+  "11-extra-spin": {
+    "seconds": 1.0,
+    "gainDb": 24.16,
+    "integratedLUFS": "-15.98",
+    "truePeakDbTP": "-2.74",
+    "sha256": "f09f258da29fbd774b47f2129924cb0b3a1ce5b99a9f3bdd70da91de0d436dd4"
+  },
+  "12-retrigger": {
+    "seconds": 1.8,
+    "gainDb": 19.0,
+    "integratedLUFS": "-16.00",
+    "truePeakDbTP": "-4.10",
+    "sha256": "e54bc4b39d9ab9ef01e1feb1034abcac5793ac96647ddb3fc0270be56daf4063"
+  },
+  "13-bonus-entry": {
+    "seconds": 3.5,
+    "gainDb": 13.05,
+    "integratedLUFS": "-16.00",
+    "truePeakDbTP": "-4.22",
+    "sha256": "3b6a49119a96c797d01f0e5c762527cd77ff426ff196851a34862eff6fd5f974"
+  },
+  "14-bonus-summary": {
+    "seconds": 2.799977,
+    "gainDb": 18.35,
+    "integratedLUFS": "-16.01",
+    "truePeakDbTP": "-5.95",
+    "sha256": "44b9a2f0466c4ad8ba125674bd655731df6e11f191eccaeb499e7b48d1306132"
+  },
+  "15-gate-close": {
+    "seconds": 0.9,
+    "gainDb": 18.11,
+    "integratedLUFS": "-17.06",
+    "truePeakDbTP": "-2.00",
+    "sha256": "a8b15bd370162ea96a4db20288ea8705e5b729e858f0c85e74011d63c6176fa1"
+  },
+  "16-portal-retract": {
+    "seconds": 1.3,
+    "gainDb": 23.73,
+    "integratedLUFS": "-16.00",
+    "truePeakDbTP": "-4.75",
+    "sha256": "a837d6a24c37f53a5cdf5b2307f5d9129958109b01d58284b4f09e0a807d3be3"
+  },
+  "17-key-land": {
+    "seconds": 1.0,
+    "gainDb": 26.69,
+    "integratedLUFS": "-16.99",
+    "truePeakDbTP": "-2.93",
+    "sha256": "7ce70520dfa1ceebdf34c432c5158002fee6bdc02af34cd33aa6cd821b06040e"
+  },
+  "18-win-sweet": {
+    "seconds": 3.2,
+    "gainDb": 16.97,
+    "integratedLUFS": "-15.98",
+    "truePeakDbTP": "-3.76",
+    "sha256": "742f523000e7a291feffa03b3bd9d1a31ca6efa26eeb2eb7a9171650f61a04c7"
+  },
+  "19-win-epic": {
+    "seconds": 3.4,
+    "gainDb": 12.46,
+    "integratedLUFS": "-15.99",
+    "truePeakDbTP": "-4.71",
+    "sha256": "89a1199d276991b84f4192eaa0337d4273ec5e9c332082722962dd59ef1e90c0"
+  },
+  "20-win-mythic": {
+    "seconds": 3.8,
+    "gainDb": 10.89,
+    "integratedLUFS": "-16.00",
+    "truePeakDbTP": "-4.42",
+    "sha256": "5c5ab3ebce9678f1de7d54463b2a4f59151c87788da1d817504c6a554954db43"
+  },
+  "21-win-legendary": {
+    "seconds": 4.2,
+    "gainDb": 9.26,
+    "integratedLUFS": "-16.02",
+    "truePeakDbTP": "-5.55",
+    "sha256": "b1f8233b4dfa12d8b34fc00f3eca74c90077a618af7fcb7b560443aec3d23606"
+  }
+}

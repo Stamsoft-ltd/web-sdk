@@ -1,0 +1,4 @@
+# Native atlas page separators and acquired license notices stay byte-identical.
+# These are data/provenance files, not source-code whitespace defects.
+static/assets/the-gates/**/*.atlas whitespace=-blank-at-eof
+static/fonts/**/OFL.txt whitespace=-blank-at-eol

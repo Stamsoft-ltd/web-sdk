@@ -1,0 +1,21 @@
+{
+  "name": "The Gates hybrid GPU renderer",
+  "hostComponent": "src/components/GpuSurface.svelte",
+  "pixiAdapter": "src/game/gpuRenderer.ts",
+  "lifecycle": {
+    "createOnMount": true,
+    "destroyOnUnmount": true,
+    "detachCanvasOnUnmount": true,
+    "disposeListenersOnUnmount": true
+  },
+  "events": {
+    "bridgeEnabled": true,
+    "unsubscribeOnUnmount": true,
+    "sources": ["Svelte book-state snapshots", "ResizeObserver", "window.resize", "document.visibilitychange", "owned demand requestAnimationFrame"]
+  },
+  "resize": {
+    "observeContainer": true,
+    "rendererResize": true,
+    "respectDevicePixelRatio": true
+  }
+}

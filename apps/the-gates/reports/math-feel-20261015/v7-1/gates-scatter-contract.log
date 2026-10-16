@@ -1,0 +1,20 @@
+test_anywhere_not_adjacency (__main__.GatesContract.test_anywhere_not_adjacency) ... ok
+test_economics (__main__.GatesContract.test_economics) ... ok
+test_every_third_gate_and_whole_spin_multiplier (__main__.GatesContract.test_every_third_gate_and_whole_spin_multiplier) ... ok
+test_exact_paytable (__main__.GatesContract.test_exact_paytable) ... ok
+test_full_rounds_and_determinism (__main__.GatesContract.test_full_rounds_and_determinism) ... ok
+test_gravity_and_sticky_barriers (__main__.GatesContract.test_gravity_and_sticky_barriers) ... ok
+test_hidden_reward_sequence_and_extensions (__main__.GatesContract.test_hidden_reward_sequence_and_extensions) ... ok
+test_max_win_and_gate_rhythm (__main__.GatesContract.test_max_win_and_gate_rhythm) ... ok
+test_multiplier_neutral_and_order (__main__.GatesContract.test_multiplier_neutral_and_order) ... ok
+test_quarter_unit_round_survives (__main__.GatesContract.test_quarter_unit_round_survives) ... ok
+test_replay_audit_rejects_corruption (__main__.GatesContract.test_replay_audit_rejects_corruption) ... ok
+test_scatter_tiers_no_pays (__main__.GatesContract.test_scatter_tiers_no_pays) ... ok
+test_shared_tier_replay_adaptation (__main__.GatesContract.test_shared_tier_replay_adaptation) ... ok
+test_simultaneous_wins_share_wilds (__main__.GatesContract.test_simultaneous_wins_share_wilds) ... ok
+test_weights_positive_rare_fixed_and_target (__main__.GatesContract.test_weights_positive_rare_fixed_and_target) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.344s
+
+OK

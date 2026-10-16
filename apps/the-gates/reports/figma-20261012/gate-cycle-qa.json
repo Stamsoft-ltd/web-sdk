@@ -1,0 +1,69 @@
+{
+  "status": "Three standalone Spine gate cycles authored and previewed; NOT integrated into gameplay",
+  "modes": [
+    "normal",
+    "super",
+    "hidden"
+  ],
+  "sequence": "doors enter from opposite sides \u2192 collide and rebound \u2192 small stage shake \u2192 reopen \u2192 animated portal with demo reward \u2192 brief hold \u2192 reward removed \u2192 portal closes",
+  "timelineSeconds": {
+    "impact": 0.36,
+    "openStart": 0.58,
+    "opened": 1.02,
+    "rewardStart": 1.1,
+    "rewardHoldEnd": 1.85,
+    "rewardGone": 2.02,
+    "finished": 2.18,
+    "rewardHoldMs": 750,
+    "impactShake": "stage bone only; runtime camera wiring pending",
+    "sequence": "slide in \u2192 crash + little shake \u2192 slide open \u2192 rotating portal/reward \u2192 reward removed \u2192 portal closes",
+    "source": "intact native leaf used twice; right side mirrored, never clipped reference-only leaves"
+  },
+  "reward": "Preview textbox only; no generated or modified math outcome. Runtime must supply authoritative reward with localization.",
+  "nativeArt": "Full ready leaf-original PNG per mode; right bone mirrored. No clipped/reference-only art, no source pixel edits.",
+  "motion": "Independent door bones, stage shake, rotating vortex, rocking rim, spring reward scale/fade; cosmetic impact jitter eventId-seeded",
+  "speed": "Movement/outro obey live 1/1.5/3 speed; fixed 750ms full-opacity reward hold remains readable. No restart when speed changes.",
+  "events": [
+    "gateImpact",
+    "gateOpened",
+    "rewardShown",
+    "rewardRemoved",
+    "gateFinished"
+  ],
+  "tests": {
+    "total": 63,
+    "pass": 63,
+    "newGateChecks": 6,
+    "parser": "All 22 art rigs parse in official Spine 4.2.74; exported endpoints finite",
+    "coverage": "offscreen starts, center collision/overlap, settle, mirrored native art, correct layering, deterministic small shake, portal spin/reward timing, all-clear endpoint, protected hold and boundary-crossing clock, ordered one-shot events, cancellation"
+  },
+  "build": "PASS: static adapter exits normally; existing warnings retained",
+  "assetIntegrity": "PASS: native inventory, geometry, SHA-256, font/OFL unchanged",
+  "browser": {
+    "rigsLoaded": "22/22",
+    "errors": 0,
+    "checked": [
+      "collision at 380ms",
+      "all three mode leaves",
+      "reward in portal at 1300ms",
+      "all clear at 2300ms",
+      "live Fast/Turbo controls",
+      "reduced-motion cancellation"
+    ],
+    "observedDrawMs": 2.1,
+    "drawnSurfaces": 8,
+    "scope": "Desktop workbench observation, not a mobile/production benchmark"
+  },
+  "resources": {
+    "sourceTextureUpperBoundMiB": 214.3,
+    "render": "30Hz, visible-canvas culling, hidden-tab pause, maxDPR2, paused/reduced-motion dirty-only draw",
+    "note": "Workbench preloads all tiers. Production must load active tiers on demand."
+  },
+  "screenshots": [
+    "gate-collision-380ms.jpg",
+    "gate-reward-1300ms.jpg"
+  ],
+  "gameRuntimeChanged": false,
+  "mathChanged": false,
+  "preview": "http://127.0.0.1:3021/assets/the-gates/figma-20261012/motion/preview.html"
+}

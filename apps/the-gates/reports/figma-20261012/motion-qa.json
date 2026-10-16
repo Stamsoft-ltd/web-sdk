@@ -1,0 +1,77 @@
+{
+  "status": "Standalone authoring complete; NOT connected to game",
+  "rigs": {
+    "symbols": 11,
+    "winTiers": 5,
+    "bonusEntries": 3,
+    "symbolRemoval": 1,
+    "gateCycles": 3
+  },
+  "tests": {
+    "total": 65,
+    "pass": 65,
+    "newMotionChecks": 19
+  },
+  "officialParser": "Spine core 4.2.74; all 22 current art rigs + retired particle rig parse; finite poses and complete endpoint/event/clock checks",
+  "pngProvenance": "42 intact native PNG references; byte-identical source hashes verified; generated portal audited separately",
+  "browser": "Chrome: 19/19 art rigs loaded, 0 errors; all five crown letter anchors visually checked; removal source + particles at 90ms, source gone at 180ms; pause/inspect scrub works; live Fast/Turbo speed selection and reduced-motion cancellation checked without errors.",
+  "performance": {
+    "preview": "30 Hz; visible-canvas culling; hidden-tab pause; reduced-motion/paused-inspector redraw only on dirty/resize; max DPR2",
+    "nativeTextureUpperBoundMiB": 208.3,
+    "limits": "Desktop workbench observation only, not a mobile/production benchmark. Load only active presentation tier in future game integration; preview preloads all tiers.",
+    "observedDesktopBurstDrawMs": "~5.7\u201310.9 ms for 11 simultaneously visible effects (352 particles); workbench only, not a mobile benchmark",
+    "particleTintCacheKiB": 288
+  },
+  "pending": [
+    "WILD source art unconfirmed; no invented replacement rig",
+    "Native symbol PNGs flattened: landing/pay poses deform intact bitmap, not independently rigged facets/faces",
+    "Wild banner right horn cannot animate independently until Figma separates the child",
+    "Bonus end/MAX WIN artwork and final screen geometry still pending"
+  ],
+  "preview": "http://127.0.0.1:3021/assets/the-gates/figma-20261012/motion/preview.html",
+  "sourcePixelEdits": false,
+  "gameRuntimeChanged": false,
+  "mathChanged": false,
+  "crown": {
+    "anchors": {
+      "sweet": "first E",
+      "wild": "D",
+      "epic": "P",
+      "mythic": "T",
+      "legendary": "N"
+    },
+    "parent": "title bone; visible-alpha center/bottom registration",
+    "timelineMs": {
+      "textContact": 190,
+      "liftPeak": 440,
+      "downOvershoot": 660,
+      "rebound": 780,
+      "settled": 900
+    }
+  },
+  "particles": {
+    "source": "../particles-20261012/crystal-shard-v1.png",
+    "provenance": "../particles-20261012/provenance.json",
+    "count": 32,
+    "durationMs": {
+      "normal": 280,
+      "fast": 187,
+      "turbo": 93
+    },
+    "symbolGoneMs": 160,
+    "spine": "independent bone/slot per shard; seeded delays, radial drift, gravity, rotations, shrink/fade",
+    "seed": "eventId + symbol/cell identity, presentation only",
+    "mask": "birth positions sampled inside actual source alpha; native PNG untouched",
+    "tints": "eight bounded cached 96px render textures; full Spine export supports native slot RGB tint",
+    "status": "RETIRED; not loaded by current preview"
+  },
+  "build": "PASS; static adapter exits normally; existing warnings retained",
+  "screenshots": [
+    "crown-letter-preview.jpg",
+    "particle-breakup-90ms.jpg",
+    "particle-breakup-180ms.jpg"
+  ],
+  "latestGateQA": "gate-cycle-qa.json",
+  "latestSparksLandingQA": "sparks-landing-qa.json",
+  "latestPortalPalettesQA": "portal-palettes-qa.json"
+}

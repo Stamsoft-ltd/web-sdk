@@ -1,0 +1,16 @@
+{
+  "removedScopedRules": 11,
+  "component": "src/components/Rules.svelte",
+  "selectors": [
+    ".overview-details",
+    ".overview-gems",
+    ".overview-gems :global(.symbol)",
+    "dl",
+    "dl > div",
+    "dd",
+    ".rtp",
+    ".rules-caveat",
+    ".next-arrow"
+  ],
+  "basis": "Compiler-confirmed unused scoped selectors only; no matching component markup. Source asset dependency audit has zero unused files; authoring/license provenance intentionally retained."
+}

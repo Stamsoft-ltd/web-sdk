@@ -1,0 +1,12 @@
+{
+  "family": "Titan One",
+  "style": "Regular",
+  "version": "Version 1.001",
+  "file": "apps/the-gates/static/fonts/figma-20261012/TitanOne-Regular.ttf",
+  "bytes": 55712,
+  "sha256": "563ff6de179bbd44bcd7d2a6c448d6dc3bf935834237cf1250e506e65cd86ff1",
+  "source": "https://github.com/google/fonts/tree/main/ofl/titanone",
+  "license": "SIL Open Font License 1.1",
+  "licenseFile": "apps/the-gates/static/fonts/figma-20261012/OFL.txt",
+  "integration": "Not wired into UI; prepared matching font only."
+}

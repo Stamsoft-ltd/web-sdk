@@ -13,12 +13,13 @@ test('exact win boundaries in hundredths of base bet', () => {
 		assert.equal(showsInlineWin(n), false);
 	}
 	for (const n of [1000, 1001, 1999]) {
-		assert.equal(showsAnyWin(n), true);
-		assert.equal(showsInlineWin(n), true);
+		assert.equal(showsAnyWin(n), false);
+		assert.equal(showsInlineWin(n), false);
 		assert.equal(winTier(n), null);
 	}
 	for (const [i, tier] of WIN_TIERS.entries()) {
 		assert.equal(showsInlineWin(tier.minimum), false);
+		assert.equal(showsAnyWin(tier.minimum), true);
 		assert.equal(winTier(tier.minimum)?.key, tier.key);
 		assert.equal(winTier(tier.minimum - 1)?.key ?? null, WIN_TIERS[i - 1]?.key ?? null);
 	}

@@ -1,0 +1,20 @@
+{
+  "reason": "Replaced native Wild with generated rainbow prism rig; no runtime or authoring dependencies remain",
+  "removed": [
+    {
+      "path": "static/assets/the-gates/spine/WILD.json",
+      "bytes": 4995,
+      "sha256": "233b8aa6e4201bc46650acc2ef64c238386790e4c60a1ea6ed565e75bae67604"
+    },
+    {
+      "path": "static/assets/the-gates/spine/symbols.atlas",
+      "bytes": 688,
+      "sha256": "f138f6be5d071fdc37162835ba04f38c9cea7b0eca6d6fa86a4a02f2cf554d99"
+    },
+    {
+      "path": "static/assets/the-gates/spine/symbols.png",
+      "bytes": 1812957,
+      "sha256": "362c91ed30209a15d64a52ec74bf156a35eef3871f85e0d2630ab84f25caa0f3"
+    }
+  ]
+}

@@ -61,7 +61,10 @@ const handleRequestEndRound = async () => {
 			};
 		}
 	} catch (error) {
+		stateBet.autoSpinsCounter = 0;
+		stateModal.modal = { name: 'error', error };
 		console.error(error);
+		throw error;
 	}
 };
 

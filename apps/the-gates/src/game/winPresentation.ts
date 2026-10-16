@@ -9,8 +9,9 @@ export const WIN_TIERS = [
 export function winTier(amount: number) {
 	return WIN_TIERS.findLast((tier) => amount >= tier.minimum) ?? null;
 }
-export const showsInlineWin = (amount: number) => amount >= 1000 && amount < 2000;
-export const showsAnyWin = (amount: number) => amount >= 1000;
+/** Sub-20× wins stay in the HUD/below-board readout, never a board overlay. */
+export const showsInlineWin = (_amount: number) => false;
+export const showsAnyWin = (amount: number) => amount >= 2000;
 export function winTiming(amount: number, factor = 1) {
 	const tier = winTier(amount);
 	return tier
@@ -20,3 +21,6 @@ export function winTiming(amount: number, factor = 1) {
 			}
 		: { countMs: 600, holdMs: 1100 };
 }
+
+/** Tight native art bounds including crown flight and horn overshoot. */
+export const WIN_ART_VIEW = { width: 860, height: 600, offsetY: 20 } as const;

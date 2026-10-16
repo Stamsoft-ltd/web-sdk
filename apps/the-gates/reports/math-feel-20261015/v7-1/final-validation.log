@@ -1,0 +1,7 @@
+BASE: event/weight/package checks PASS; 10,000 books; RTP 96.1000000000%; non-tenth books 2,155
+CHANCE: event/weight/package checks PASS; 10,000 books; RTP 96.1000000000%; non-tenth books 2,151
+FEATURE: event/weight/package checks PASS; 10,000 books; RTP 96.1000000000%; non-tenth books 1,688
+BONUS: event/weight/package checks PASS; 10,000 books; RTP 96.1000000000%; non-tenth books 3,843
+SUPER: event/weight/package checks PASS; 10,000 books; RTP 96.1000000000%; non-tenth books 2,387
+MYSTERY: event/weight/package checks PASS; 10,000 books; RTP 96.1000000000%; non-tenth books 2,776
+The Gates local artifact checks: PASS. Live RGS acceptance and platform risk review remain separate.

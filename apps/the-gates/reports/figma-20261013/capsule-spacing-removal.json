@@ -1,0 +1,23 @@
+{
+  "request": "Frame clearance, reference-highlighted cost capsule, slower detailed symbol shrink",
+  "changes": {
+    "buyMenu": "Original 355x295 cards retained. Outer clearance 24px; pill bottom inset 48px. Symbol/cost stack moves up 10px to retain 9px capsule/action separation and 17px inner-frame clearance in authored coordinates.",
+    "costCapsule": "Centered reference-width capsule, blue highlighted multiplier half, dark monetary half. Runtime COSTS and money values unchanged; screenshot's example 300 X not substituted for real 2x Chance cost.",
+    "captions": "Gold gradient with dark title outline; non-buy modal action area gets additional inner padding.",
+    "removal": "14 Spine body scale keyframes, up from 6. Symbol remains opaque while shrinking to a tiny pose, then portal pinches shut. Canonical rig 620ms; normal/fast/turbo cell playback 520/340/130ms, up from 280/190/70ms.",
+    "assets": "Native PNGs unchanged. 11 symbol rigs and motion preview rebuilt from canonical portal tracks. Existing seeded cosmetic motion, mode palettes and layered rim/vortex retained."
+  },
+  "validation": {
+    "unitTests": "117/117 PASS",
+    "productionBuild": "PASS",
+    "typescript": "PASS",
+    "diffCheck": "PASS",
+    "visualQA": "BLOCKED: Chrome extension user unavailable. No live screenshot or FPS sign-off claimed."
+  },
+  "checks": [
+    "Spine rigs parse, ordered opening/shrink/close completes at every speed, replay cosmetic seed remains deterministic.",
+    "Normal, Fast, Turbo and mid-wave skip scrub full timeline before playback barrier.",
+    "Body scale monotonic after pop; alpha held until final shrink; native source hashes preserved.",
+    "Five cards fit across desktop/portrait/landscape by row capacity and uniform zoom; original outer card dimensions preserved."
+  ]
+}

@@ -93,7 +93,8 @@ export function previewEvents(mode: Mode): BookEvent[] {
 					movements: [],
 				});
 			}
-		const amount = gate ? (bonus === 'hidden' ? 750 : 375) : 0;
+		const scatterAmount = fs === 0 ? ({ 3: 200, 4: 1000, 5: 5000 }[Math.min(keys, 5)] ?? 0) : 0;
+		const amount = (gate ? (bonus === 'hidden' ? 750 : 375) : 0) + scatterAmount;
 		total += amount;
 		add({
 			type: 'spinWin',
@@ -101,6 +102,8 @@ export function previewEvents(mode: Mode): BookEvent[] {
 			rawAmount: gate ? 75 : 0,
 			multiplier: gate ? (bonus === 'hidden' ? 10 : 5) : 1,
 			uncappedAmount: amount,
+			scatterAmount,
+			scatterCount: fs === 0 ? keys : 0,
 			amount,
 			cascades: gate ? 3 : 0,
 			capped: false,
@@ -139,4 +142,179 @@ export function previewEvents(mode: Mode): BookEvent[] {
 	add({ type: 'setWin', amount: total });
 	add({ type: 'finalWin', amount: total });
 	return events;
+}
+
+/** Developer art-review fixtures. Never imported by a production wagering path. */
+export function previewPresentationEvents(key: string | null): BookEvent[] | null {
+	if (key === 'scatter-board') {
+		const board = displayBoard();
+		for (const [reel, row] of [
+			[1, 2],
+			[3, 1],
+			[4, 3],
+		])
+			board[reel][row] = { name: 'KEY' };
+		return [
+			{
+				index: 0,
+				type: 'spinStart',
+				spinId: 0,
+				gameType: 'basegame',
+				tier: null,
+				freeSpin: 0,
+				multiplier: 1,
+				multiplierActive: false,
+				stickyPositions: [],
+			},
+			{
+				index: 1,
+				type: 'reveal',
+				spinId: 0,
+				cascadeIndex: 0,
+				gameType: 'basegame',
+				board,
+				movements: [],
+			},
+			{
+				index: 2,
+				type: 'spinWin',
+				spinId: 0,
+				rawAmount: 0,
+				multiplier: 1,
+				scatterCount: 3,
+				scatterAmount: 200,
+				uncappedAmount: 200,
+				amount: 200,
+				cascades: 0,
+				capped: false,
+			},
+			{ index: 3, type: 'setTotalWin', amount: 200 },
+			{ index: 4, type: 'setWin', amount: 200 },
+			{ index: 5, type: 'finalWin', amount: 200 },
+		];
+	}
+
+	if (
+		key &&
+		['reward-add', 'reward-multiply', 'reward-spins', 'reward-retrigger', 'reward-wild'].includes(
+			key,
+		)
+	) {
+		const events = previewPresentationEvents('gate-super')!;
+		const positions = [
+			{ reel: 2, row: 2 },
+			{ reel: 4, row: 0 },
+			{ reel: 5, row: 4 },
+		];
+		const reward: Extract<BookEvent, { type: 'gateReward' }>['reward'] =
+			key === 'reward-wild'
+				? { kind: 'stickyWild', positions }
+				: key === 'reward-spins'
+					? { kind: 'extraSpin', spinsAdded: 3 }
+					: key === 'reward-retrigger'
+						? { kind: 'retrigger', spinsAdded: 5 }
+						: {
+								kind: key === 'reward-multiply' ? 'multiplyMultiplier' : 'addMultiplier',
+								value: 5,
+							};
+		const multiplier = 'value' in reward ? (reward.kind === 'multiplyMultiplier' ? 5 : 6) : 1;
+		return events.map((event) => {
+			if (event.type === 'gateReward')
+				return {
+					...event,
+					reward,
+					previousMultiplier: 1,
+					multiplier,
+					multiplierActive: 'value' in reward,
+					totalFs: 'spinsAdded' in reward ? 15 + reward.spinsAdded : 15,
+					stickyPositions: reward.kind === 'stickyWild' ? positions : [],
+				};
+			if (event.type === 'spinWin')
+				return {
+					...event,
+					multiplier,
+					amount: event.rawAmount * multiplier + (event.scatterAmount ?? 0),
+					uncappedAmount: event.rawAmount * multiplier + (event.scatterAmount ?? 0),
+				};
+			if (['setTotalWin', 'setWin', 'finalWin'].includes(event.type))
+				return { ...event, amount: 75 * multiplier } as BookEvent;
+			return event;
+		});
+	}
+	if (key === 'bonus-cycle-normal') {
+		// Short entry/one-free-spin/summary choreography; no live wallet/outcome path.
+		const source = previewEvents('BONUS');
+		const firstSpin = source.findIndex((e) => e.type === 'spinStart' && e.freeSpin === 2);
+		return [
+			...source.slice(0, firstSpin - 1),
+			{
+				type: 'freeSpinEnd',
+				tier: 'normal',
+				amount: 0,
+				spinsPlayed: 1,
+				totalSpinsAwarded: 15,
+				capped: false,
+			},
+			{ type: 'finalWin', amount: 0 },
+		].map((e, index) => ({ ...e, index })) as BookEvent[];
+	}
+	if (key === 'intro-normal' || key === 'intro-super' || key === 'intro-hidden') {
+		const mode: Mode =
+			key === 'intro-hidden' ? 'MYSTERY' : key === 'intro-super' ? 'SUPER' : 'BONUS';
+		const source = previewEvents(mode),
+			trigger = source.findIndex((event) => event.type === 'freeSpinTrigger');
+		const events = source.slice(0, trigger + 1);
+		events.push(
+			{ index: events.length, type: 'setWin', amount: 0 },
+			{ index: events.length + 1, type: 'finalWin', amount: 0 },
+		);
+		return events;
+	}
+	if (key === 'gate-normal' || key === 'gate-super' || key === 'gate-hidden') {
+		const mode: Mode = key === 'gate-hidden' ? 'MYSTERY' : key === 'gate-super' ? 'SUPER' : 'BONUS';
+		const source = previewEvents(mode);
+		const first = source.findIndex((e) => e.type === 'spinStart' && e.freeSpin === 15);
+		return source
+			.slice(first)
+			.filter((e) => e.type !== 'freeSpinEnd')
+			.map((e, index) => ({ ...e, index }));
+	}
+
+	const amounts: Record<string, number> = {
+		precision: 20025,
+		plain: 20000,
+		inline: 1500,
+		sweet: 2000,
+		wild: 5000,
+		epic: 10000,
+		mythic: 20000,
+		legendary: 50000,
+		max: 2500000,
+	};
+	if (key && Object.hasOwn(amounts, key)) {
+		const amount = amounts[key];
+		const events: BookEvent[] = [
+			{ index: 0, type: 'setTotalWin', amount },
+			{ index: 1, type: 'setWin', amount },
+		];
+		if (key === 'max') events.push({ index: 2, type: 'maxWin', amount });
+		events.push({ index: events.length, type: 'finalWin', amount });
+		return events;
+	}
+	const tier = key?.startsWith('summary-') ? key.slice(8) : null;
+	if (tier === 'normal' || tier === 'super' || tier === 'hidden')
+		return [
+			{ index: 0, type: 'setTotalWin', amount: 7500 },
+			{
+				index: 1,
+				type: 'freeSpinEnd',
+				tier,
+				amount: 7500,
+				spinsPlayed: 15,
+				totalSpinsAwarded: 15,
+				capped: false,
+			},
+			{ index: 2, type: 'finalWin', amount: 7500 },
+		];
+	return null;
 }

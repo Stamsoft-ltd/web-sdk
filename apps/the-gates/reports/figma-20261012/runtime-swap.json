@@ -1,0 +1,52 @@
+{
+  "scope": "Approved standalone asset/Spine swap into existing layout. NOT an exact Figma screen rebuild.",
+  "branch": "feature/the-gates",
+  "changes": {
+    "symbols": "11 native symbols incl. KEY; native fallback PNGs; official Spine idle/paying/land/remove poses",
+    "wins": "5 native layered titles/banners/horns/crowns; live amounts follow banner bones; cartoon coins",
+    "bonuses": "3 native titles + blank award panel; live spin/amount labels follow award bones",
+    "gates": "3 native leaf pairs + palette-matched portals, seeded seam sparks and shake; authoritative rewards only; multiple rewards do not re-close doors",
+    "backgrounds": "4 native terrace backgrounds, uniform cover; removed old architectural flame overlays"
+  },
+  "fallbacksApproved": {
+    "WILD": "Legacy art/rig retained temporarily",
+    "bonusEnd": "Tier art + localized Bonus Complete",
+    "maxWin": "Legendary art + localized MAX WIN"
+  },
+  "unchanged": [
+    "Math books/generation/RTP",
+    "Authoritative payouts/event ordering",
+    "Replay/wallet scaling/localization/control guards",
+    "HUD and board layout",
+    "Win thresholds/count-up/auto-dismiss rules"
+  ],
+  "timing": "Gate rewards: existing 1050ms normal barrier used at all speeds. 750ms readable hold; authored 330ms outro fit into remaining 300ms. Symbol portal animation scrubbed to existing Normal/Fast/Turbo/skip wave deadlines.",
+  "validation": {
+    "tests": "73/73 PASS",
+    "typescript": "tsc --noEmit PASS (TS sources; separate Svelte type checker unavailable)",
+    "productionBuild": "PASS; existing shared CSS/public-env warnings retained",
+    "assetIntegrity": "78/78 PNG geometry/bytes/SHA/provenance checks PASS; source PNGs untouched",
+    "browser": "Chrome dev-only scripted preview: native board, hidden entry, all 5 win tiers, MAX and bonus-end fallbacks, actual gate reward, complete hidden round; no app errors on clean QA tab",
+    "responsive": "390x844 Hidden intro: viewport/root scroll 390x844; centered award; Continue visible. Desktop 1200x784 popup bounds + scroll fit."
+  },
+  "commands": [
+    "pnpm --filter the-gates verify:assets",
+    "pnpm --filter the-gates build:motion",
+    "pnpm --filter the-gates test",
+    "pnpm --filter the-gates build"
+  ],
+  "reviewUrl": "http://127.0.0.1:3020/?preview=true",
+  "artReview": "Dev preview only: append &artPreview=inline|sweet|wild|epic|mythic|legendary|max|summary-normal|summary-super|summary-hidden; Continue then Spin. No RGS or wallet writes.",
+  "risks": [
+    "Exact Figma layout still blocked by design-context access; HUD/board-frame/logo redesign not claimed.",
+    "WILD / end / MAX art fallbacks are temporary.",
+    "New backgrounds are static; old flame rigs are not compatible with the new architecture.",
+    "Live RGS publish and mobile device performance not tested this pass."
+  ],
+  "evidence": [
+    "runtime-board.png",
+    "runtime-legendary.png",
+    "runtime-hidden-summary.png",
+    "runtime-normal-gate.png"
+  ]
+}

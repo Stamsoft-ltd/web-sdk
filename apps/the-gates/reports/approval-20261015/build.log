@@ -1,0 +1,251 @@
+vite v6.2.0 building SSR bundle for production...
+transforming...
+10:53:42 PM [vite-plugin-svelte] src/components/Rules.svelte:357:1 Unused CSS selector ".overview-details"
+https://svelte.dev/e/css_unused_selector
+355:     text-align: center;
+356:   }
+357:   .overview-details {
+                        ^
+358:     display: flex;
+359:     align-items: center;
+10:53:42 PM [vite-plugin-svelte] src/components/Rules.svelte:364:1 Unused CSS selector ".overview-gems"
+https://svelte.dev/e/css_unused_selector
+362:     padding: 22px 0;
+363:   }
+364:   .overview-gems {
+                     ^
+365:     width: 170px;
+366:     display: grid;
+10:53:42 PM [vite-plugin-svelte] src/components/Rules.svelte:370:1 Unused CSS selector ".overview-gems :global(.symbol)"
+https://svelte.dev/e/css_unused_selector
+368:     transform: rotate(-12deg);
+369:   }
+370:   .overview-gems :global(.symbol) {
+                                      ^
+371:     width: 56px;
+372:     height: 56px;
+10:53:42 PM [vite-plugin-svelte] src/components/Rules.svelte:374:1 Unused CSS selector "dl"
+https://svelte.dev/e/css_unused_selector
+372:     height: 56px;
+373:   }
+374:   dl {
+         ^
+375:     margin: 0;
+376:     text-align: left;
+10:53:42 PM [vite-plugin-svelte] src/components/Rules.svelte:382:1 Unused CSS selector "dl > div"
+https://svelte.dev/e/css_unused_selector
+380:       sans-serif;
+381:   }
+382:   dl > div {
+               ^
+383:     display: flex;
+384:     align-items: center;
+10:53:42 PM [vite-plugin-svelte] src/components/Rules.svelte:388:1 Unused CSS selector "dd"
+https://svelte.dev/e/css_unused_selector
+386:     margin: 18px 0;
+387:   }
+388:   dd {
+         ^
+389:     margin: 0;
+390:     color: #ffdc12;
+10:53:42 PM [vite-plugin-svelte] src/components/Rules.svelte:395:1 Unused CSS selector ".rtp"
+https://svelte.dev/e/css_unused_selector
+393:       system-ui;
+394:   }
+395:   .rtp {
+           ^
+396:     padding: 6px 16px;
+397:     background: #073c9a;
+10:53:42 PM [vite-plugin-svelte] src/components/Rules.svelte:402:1 Unused CSS selector ".rules-caveat"
+https://svelte.dev/e/css_unused_selector
+400:     color: white;
+401:   }
+402:   .rules-caveat {
+                    ^
+403:     color: #c5d8eb;
+404:     font-size: 11px !important;
+10:53:42 PM [vite-plugin-svelte] src/components/Rules.svelte:636:1 Unused CSS selector ".next-arrow"
+https://svelte.dev/e/css_unused_selector
+634:     object-fit: contain;
+635:   }
+636:   .next-arrow {
+                  ^
+637:     transform: rotate(180deg);
+638:   }
+10:53:42 PM [vite-plugin-svelte] src/components/Rules.svelte:665:2 Unused CSS selector ".overview-details"
+https://svelte.dev/e/css_unused_selector
+663:       grid-template-columns: repeat(2, minmax(0, 1fr));
+664:     }
+665:     .overview-details {
+                          ^
+666:       flex-direction: column;
+667:       gap: 10px;
+10:53:42 PM [vite-plugin-svelte] src/components/Rules.svelte:692:2 Unused CSS selector ".overview-details"
+https://svelte.dev/e/css_unused_selector
+690:       margin: 0 auto;
+691:     }
+692:     .overview-details {
+                          ^
+693:       padding: 0;
+694:     }
+
+./assets/the-gates/figma-20261013/f6355.png referenced in ./assets/the-gates/figma-20261013/f6355.png didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+./assets/the-gates/figma-20261012/hud/bonus-button-blank.png referenced in ./assets/the-gates/figma-20261012/hud/bonus-button-blank.png didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+./assets/the-gates/figma-20261013/afa46.svg referenced in ./assets/the-gates/figma-20261013/afa46.svg didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+./assets/the-gates/figma-20261013/d883a.png referenced in ./assets/the-gates/figma-20261013/d883a.png didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+./assets/the-gates/figma-20261013/4e7e5.png referenced in ./assets/the-gates/figma-20261013/4e7e5.png didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+./assets/the-gates/figma-20261013/d1e33.png referenced in ./assets/the-gates/figma-20261013/d1e33.png didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+./assets/the-gates/hud/bonus-mobile.svg referenced in ./assets/the-gates/hud/bonus-mobile.svg didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+./assets/the-gates/confirmation-frame.png referenced in ./assets/the-gates/confirmation-frame.png didn't resolve at build time, it will remain unchanged to be resolved at runtime
+"FillGradient", "Matrix" and "Sprite" are imported from external module "pixi.js" but never used in "src/game/gpuRewardFlight.ts", "src/components/GpuWinArt.svelte", "src/components/GpuBonusArt.svelte", "src/game/gpuRenderer.ts", "src/components/WinCoins.svelte" and "src/components/TempleGate.svelte".
+✓ 335 modules transformed.
+rendering chunks...
+  Analysing routes
+  Building app
+vite v6.2.0 building for production...
+transforming...
+
+./assets/the-gates/figma-20261013/f6355.png referenced in ./assets/the-gates/figma-20261013/f6355.png didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+./assets/the-gates/figma-20261012/hud/bonus-button-blank.png referenced in ./assets/the-gates/figma-20261012/hud/bonus-button-blank.png didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+./assets/the-gates/figma-20261013/afa46.svg referenced in ./assets/the-gates/figma-20261013/afa46.svg didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+./assets/the-gates/figma-20261013/d883a.png referenced in ./assets/the-gates/figma-20261013/d883a.png didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+./assets/the-gates/figma-20261013/4e7e5.png referenced in ./assets/the-gates/figma-20261013/4e7e5.png didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+./assets/the-gates/figma-20261013/d1e33.png referenced in ./assets/the-gates/figma-20261013/d1e33.png didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+./assets/the-gates/hud/bonus-mobile.svg referenced in ./assets/the-gates/hud/bonus-mobile.svg didn't resolve at build time, it will remain unchanged to be resolved at runtime
+
+./assets/the-gates/confirmation-frame.png referenced in ./assets/the-gates/confirmation-frame.png didn't resolve at build time, it will remain unchanged to be resolved at runtime
+10:53:43 PM [vite-plugin-svelte] src/components/Rules.svelte:357:1 Unused CSS selector ".overview-details"
+https://svelte.dev/e/css_unused_selector
+355:     text-align: center;
+356:   }
+357:   .overview-details {
+                        ^
+358:     display: flex;
+359:     align-items: center;
+10:53:43 PM [vite-plugin-svelte] src/components/Rules.svelte:364:1 Unused CSS selector ".overview-gems"
+https://svelte.dev/e/css_unused_selector
+362:     padding: 22px 0;
+363:   }
+364:   .overview-gems {
+                     ^
+365:     width: 170px;
+366:     display: grid;
+10:53:43 PM [vite-plugin-svelte] src/components/Rules.svelte:370:1 Unused CSS selector ".overview-gems :global(.symbol)"
+https://svelte.dev/e/css_unused_selector
+368:     transform: rotate(-12deg);
+369:   }
+370:   .overview-gems :global(.symbol) {
+                                      ^
+371:     width: 56px;
+372:     height: 56px;
+10:53:43 PM [vite-plugin-svelte] src/components/Rules.svelte:374:1 Unused CSS selector "dl"
+https://svelte.dev/e/css_unused_selector
+372:     height: 56px;
+373:   }
+374:   dl {
+         ^
+375:     margin: 0;
+376:     text-align: left;
+10:53:43 PM [vite-plugin-svelte] src/components/Rules.svelte:382:1 Unused CSS selector "dl > div"
+https://svelte.dev/e/css_unused_selector
+380:       sans-serif;
+381:   }
+382:   dl > div {
+               ^
+383:     display: flex;
+384:     align-items: center;
+10:53:43 PM [vite-plugin-svelte] src/components/Rules.svelte:388:1 Unused CSS selector "dd"
+https://svelte.dev/e/css_unused_selector
+386:     margin: 18px 0;
+387:   }
+388:   dd {
+         ^
+389:     margin: 0;
+390:     color: #ffdc12;
+10:53:43 PM [vite-plugin-svelte] src/components/Rules.svelte:395:1 Unused CSS selector ".rtp"
+https://svelte.dev/e/css_unused_selector
+393:       system-ui;
+394:   }
+395:   .rtp {
+           ^
+396:     padding: 6px 16px;
+397:     background: #073c9a;
+10:53:43 PM [vite-plugin-svelte] src/components/Rules.svelte:402:1 Unused CSS selector ".rules-caveat"
+https://svelte.dev/e/css_unused_selector
+400:     color: white;
+401:   }
+402:   .rules-caveat {
+                    ^
+403:     color: #c5d8eb;
+404:     font-size: 11px !important;
+10:53:43 PM [vite-plugin-svelte] src/components/Rules.svelte:636:1 Unused CSS selector ".next-arrow"
+https://svelte.dev/e/css_unused_selector
+634:     object-fit: contain;
+635:   }
+636:   .next-arrow {
+                  ^
+637:     transform: rotate(180deg);
+638:   }
+10:53:43 PM [vite-plugin-svelte] src/components/Rules.svelte:665:2 Unused CSS selector ".overview-details"
+https://svelte.dev/e/css_unused_selector
+663:       grid-template-columns: repeat(2, minmax(0, 1fr));
+664:     }
+665:     .overview-details {
+                          ^
+666:       flex-direction: column;
+667:       gap: 10px;
+10:53:43 PM [vite-plugin-svelte] src/components/Rules.svelte:692:2 Unused CSS selector ".overview-details"
+https://svelte.dev/e/css_unused_selector
+690:       margin: 0 auto;
+691:     }
+692:     .overview-details {
+                          ^
+693:       padding: 0;
+694:     }
+✓ 1020 modules transformed.
+rendering chunks...
+computing gzip size...
+.svelte-kit/output/client/_app/version.json                             0.03 kB │ gzip:   0.05 kB
+.svelte-kit/output/client/.vite/manifest.json                           0.62 kB │ gzip:   0.28 kB
+.svelte-kit/output/client/_app/immutable/assets/style.Bgfu_jKO.css     90.92 kB │ gzip:  17.77 kB
+.svelte-kit/output/client/_app/immutable/bundle.DxbNYF2U.js         1,087.69 kB │ gzip: 341.52 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.19s
+  Prerendering
+  200 /
+.svelte-kit/output/server/.vite/manifest.json                         2.59 kB
+.svelte-kit/output/server/_app/immutable/assets/style.BRbuqK72.css   90.11 kB
+.svelte-kit/output/server/entries/pages/_page.svelte.js               0.06 kB
+.svelte-kit/output/server/entries/pages/_layout.ts.js                 0.12 kB
+.svelte-kit/output/server/internal.js                                 0.31 kB
+.svelte-kit/output/server/entries/fallbacks/error.svelte.js           0.75 kB
+.svelte-kit/output/server/chunks/index2.js                            1.24 kB
+.svelte-kit/output/server/chunks/index.js                             3.58 kB
+.svelte-kit/output/server/chunks/exports.js                           6.87 kB
+.svelte-kit/output/server/chunks/internal.js                         42.36 kB
+.svelte-kit/output/server/index.js                                  126.88 kB
+.svelte-kit/output/server/entries/pages/_layout.svelte.js           295.48 kB
+✓ built in 6.03s
+
+Run npm run preview to preview your production build locally.
+
+> Using @sveltejs/adapter-static
+  Wrote site to "build"
+  ✔ done

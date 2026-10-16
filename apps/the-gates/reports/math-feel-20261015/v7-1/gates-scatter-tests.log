@@ -1,0 +1,8 @@
+test_bands_and_target (__main__.ScatterAwards.test_bands_and_target) ... ok
+test_once_not_gate_multiplied_and_capped (__main__.ScatterAwards.test_once_not_gate_multiplied_and_capped) ... ok
+test_replay_and_all_buy_adaptations (__main__.ScatterAwards.test_replay_and_all_buy_adaptations) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.353s
+
+OK

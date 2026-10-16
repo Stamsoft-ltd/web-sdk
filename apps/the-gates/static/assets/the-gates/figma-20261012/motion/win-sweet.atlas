@@ -1,0 +1,35 @@
+../wins/sweet-banner.png
+size: 1815,725
+filter: Linear,Linear
+pma: false
+banner
+  bounds: 0,0,1815,725
+
+../wins/sweet-horn-1.png
+size: 570,380
+filter: Linear,Linear
+pma: false
+horn-left
+  bounds: 0,0,570,380
+
+../wins/sweet-horn-2.png
+size: 570,380
+filter: Linear,Linear
+pma: false
+horn-right
+  bounds: 0,0,570,380
+
+../wins/sweet-title.png
+size: 1173,689
+filter: Linear,Linear
+pma: false
+title
+  bounds: 0,0,1173,689
+
+../wins/sweet-crown.png
+size: 337,276
+filter: Linear,Linear
+pma: false
+crown
+  bounds: 0,0,337,276
+

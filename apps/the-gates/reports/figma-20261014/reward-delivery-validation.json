@@ -1,0 +1,68 @@
+{
+  "tests": {
+    "pass": 200,
+    "fail": 0
+  },
+  "typescript": "pass",
+  "productionBuild": "pass",
+  "wagerMath": "unchanged",
+  "canvasCountInPreview": 1,
+  "visibleHint": "removed from idlegameandlanding; rules retainmatchtiers",
+  "timingMs": {
+    "enter": 520,
+    "readableHold": 1800,
+    "flight": 720,
+    "maxStagger": 232,
+    "arrivalPulse": 300,
+    "outroBarrier": 1300,
+    "totalRewardBarrier": 3620,
+    "reducedFlight": 100
+  },
+  "destinations": {
+    "addMultiplier": "multiplier",
+    "multiplyMultiplier": "multiplier",
+    "extraSpin": "spins",
+    "retrigger": "spins",
+    "stickyWild": "each authoritative cell"
+  },
+  "desktopPreview": {
+    "addMultiplier": {
+      "arrivals": 1,
+      "shownMultiplier": 6
+    },
+    "extraSpin": {
+      "arrivals": 1,
+      "shownSpinCount": "15/18",
+      "remaining": 3
+    },
+    "stickyWild": {
+      "arrivals": 3,
+      "positions": [
+        [
+          2,
+          2
+        ],
+        [
+          4,
+          0
+        ],
+        [
+          5,
+          4
+        ]
+      ],
+      "legacySetupRegression": "fixed; threecellsrevealandpulseobserved"
+    }
+  },
+  "audio": "onegesture-unlockedWebAudio context; short280msding, sharedmaster/SFXvolume; mute/hidden/8voicecap/cleanup unitverified",
+  "residuals": [
+    "Audio output not listened to via browsertool; WebAudio envelope/lifecycle verified with mock.",
+    "Viewport control timed out, so mobileflight visualrecheck unavailable; targets follow existing responsiveGPUgeometry.",
+    "No liveRGS wagers; only devscriptedfixtures."
+  ],
+  "proofs": [
+    "delivery-reward-add-arrival.png",
+    "delivery-reward-spins-arrival.png",
+    "delivery-reward-wild-arrival.png"
+  ]
+}

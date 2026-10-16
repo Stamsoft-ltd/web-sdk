@@ -1,0 +1,28 @@
+{
+  "fileKey": "XnhcL9KfnIfkShPq3yF1EK",
+  "acquired": "Figma browser UI, 2026-10-13",
+  "sourceNode": "11236:46136",
+  "imageHash": "7f49cc648330d9ba1b9e06b7a21f4026bc697bee",
+  "sourceLayer": "ChatGPT Image Oct 5, 2026, 02_20_15 PM 1",
+  "layerGeometry": {
+    "width": 400,
+    "height": 710,
+    "left": -20,
+    "top": -30,
+    "layerBlur": 4
+  },
+  "assets": [
+    {
+      "path": "cloud-castle-original.png",
+      "width": 941,
+      "height": 1672,
+      "bytes": 1161671,
+      "sha256": "0214f6b99ec2a266b6e448bd71482c17a7e898d79300314d2caae7606e616f40",
+      "mode": "RGB",
+      "notes": "Figma native image download; source pixels untouched"
+    }
+  ],
+  "landscape": "Native source is portrait; dedicated landscape file not acquired. Source image appears reused across multiple mobile scene instances.",
+  "runtime": "Native source now used in mobile base scene and entry screens; existing desktop terrace and bonus-mode art retained.",
+  "cleanupNote": "Unused exports removed 2026-10-14; retained original bytes/hashes unchanged. Deletion ledger: reports/asset-source-cleanup.json."
+}

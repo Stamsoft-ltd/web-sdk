@@ -1,0 +1,55 @@
+{
+  "candidateIndex": 160,
+  "generation": {
+    "witness": "tail",
+    "attempts": 1,
+    "rejections": {}
+  },
+  "payoutX": 750,
+  "winningGroups": [
+    {
+      "cascade": 1,
+      "symbols": [
+        "GUARDIAN_MASK"
+      ],
+      "rawX": 10.0
+    },
+    {
+      "cascade": 2,
+      "symbols": [
+        "GUARDIAN_MASK"
+      ],
+      "rawX": 10.0
+    },
+    {
+      "cascade": 3,
+      "symbols": [
+        "GUARDIAN_MASK"
+      ],
+      "rawX": 10.0
+    }
+  ],
+  "rewards": [
+    {
+      "kind": "addMultiplier",
+      "value": 25
+    }
+  ],
+  "freeSpinPayoutsX": [
+    750.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ]
+}

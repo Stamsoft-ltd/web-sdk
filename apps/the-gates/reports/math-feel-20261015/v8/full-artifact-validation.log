@@ -1,0 +1,7 @@
+BASE: event/weight/package checks PASS; 10,000 books; RTP 96.1000000000%; non-tenth books 3,258
+CHANCE: event/weight/package checks PASS; 10,000 books; RTP 96.1000000000%; non-tenth books 3,222
+FEATURE: event/weight/package checks PASS; 10,000 books; RTP 96.1000000000%; non-tenth books 3,262
+BONUS: event/weight/package checks PASS; 10,000 books; RTP 96.1000000000%; non-tenth books 4,702
+SUPER: event/weight/package checks PASS; 10,000 books; RTP 96.1000000000%; non-tenth books 4,535
+MYSTERY: event/weight/package checks PASS; 10,000 books; RTP 96.1000000000%; non-tenth books 4,647
+FULL V8 ARTIFACT VALIDATION PASS

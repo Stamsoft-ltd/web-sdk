@@ -1,0 +1,31 @@
+{
+  "task": "Button caption overflow and small controls",
+  "changes": [
+    "ButtonLabel: measured-font, word-boundary two-line fitting; no truncation or clipping. Font/resize cleanup.",
+    "Return-to-base pill: portrait 68x48, compact 68x44, native skin fills button interior.",
+    "Modal action and Continue buttons: shared labels and >=48px row heights; modal close 44px.",
+    "Mobile icons: portrait image sizing now uses actual button box too.",
+    "44px physical mobile hit areas compensate for fitted-stage zoom; neighboring portrait Menu/Return/Spin boxes separated.",
+    "Portrait gate seam overlap increased to absorb recoil/antialiasing; full-screen and fitted portal projection retained."
+  ],
+  "scope": "Presentation only. Buy confirmation, active modes, replay, outcomes, timings and payouts unchanged.",
+  "validation": {
+    "tests": "114/114 PASS",
+    "build": "PASS",
+    "typescript": "PASS",
+    "diffCheck": "PASS",
+    "browser": "BLOCKED: Chrome extension user unavailable. No live visual sign-off."
+  },
+  "manualChecks": [
+    "Portrait 320x568 / 390x844: activate Chance and Feature; Return to base caption stays inside pill and returns mode to BASE.",
+    "Compact 844x390: labels fit sidebar; no overlap with Menu/Spin; speed can still change during bonus.",
+    "All supported languages: buy actions, replay, confirmation, settings, Continue fit full captions.",
+    "Portrait gate at impact/hold: seam closed, intact half-width panel composition."
+  ],
+  "commands": [
+    "pnpm --filter the-gates test",
+    "pnpm --filter the-gates build",
+    "node node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/bin/tsc --noEmit -p apps/the-gates/tsconfig.json",
+    "git diff --check"
+  ]
+}

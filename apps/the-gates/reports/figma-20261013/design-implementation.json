@@ -1,0 +1,74 @@
+{
+  "status": "PARTIAL: fetched desktop design implemented; complete exact Figma sign-off blocked by connector quota",
+  "branch": "feature/the-gates",
+  "sourceFile": "XnhcL9KfnIfkShPq3yF1EK",
+  "sources": {
+    "desktop": "11270:125205",
+    "buyMenu": "11152:9987",
+    "confirmation": "11152:10701 / 11284:148744",
+    "splashLayers": [
+      "11284:149407",
+      "11284:149415"
+    ],
+    "loadingBrand": "11291:154017"
+  },
+  "changes": {
+    "Game.svelte": "Uniform authored desktop stage; real mode prices; native HUD buttons; menu/rules/settings wiring; separate portrait and compact landscape adaptations; status-strip reservation",
+    "FigmaLogo.svelte": "Native badge/gem/wordmark layers and Figma crop geometry",
+    "Board.svelte": "Native frame and non-square Figma symbol pads; existing wave/skip/Spine playback retained",
+    "Symbol.svelte": "Gem/high-symbol viewport fit for new rectangular pads, source PNGs unchanged",
+    "Modal.svelte": "Native blue/gold panel; accessible named keyboard-scroll region; existing confirmations and focus restoration retained",
+    "figma.css": "Scoped Figma skin and responsive adaptations",
+    "figmaLayout.ts": "Pure authored-stage fit; regression tests",
+    "static/assets/the-gates/figma-20261013": "46 exact native downloaded files; SHA-256/dimension inventory"
+  },
+  "preserved": [
+    "Math/RTP/books",
+    "RGS payout/event order and wallet scaling",
+    "Replay",
+    "Jurisdiction locks",
+    "Localization",
+    "Normal/Fast/Turbo and Space skip",
+    "Win thresholds and count-up/auto-dismiss",
+    "Fullscreen gate cycle and per-event seeded effects",
+    "Approved old WILD / bonus-end / MAX-WIN fallbacks"
+  ],
+  "validation": {
+    "unitTests": "92/92 PASS",
+    "typeScript": "TS source tsc --noEmit PASS; separate Svelte type checker not installed",
+    "productionBuild": "PASS, existing shared CSS/public-env warnings retained",
+    "assetIntegrity": "78 previous PNGs + 46 new native PNG/SVG hashes/dimensions PASS",
+    "browser": "Chrome extension; dev-only scripted preview; no RGS purchases",
+    "desktop": "Native logo/frame/pads/HUD; no broken image elements; menu and live prices verified",
+    "portrait390x844": "No HUD button offscreen or overlapping; smallest bet stepper 45.1px; horizontally scrollable menu reaches Mystery confirmation",
+    "landscape844x390": "48.8px utility/stepper targets; complete spin art ends before status strip",
+    "keyboard": "Speed Normal -> Fast, Space starts round and does not cycle speed; named rules region End reaches 1460.5 / 1461 max scroll",
+    "win": "Retained animated Legendary art, live count-up and native Continue button verified",
+    "runtimeErrors": 0
+  },
+  "pendingExactFidelity": [
+    "Dedicated portrait/landscape Figma screen context",
+    "Remaining mode/bonus-end/win composition context",
+    "Dedicated info/settings/autoplay/replay/error screen context",
+    "Full splash decoration/copy composition; existing truthful game copy retained",
+    "Poppins Black body font; current body copy retains project fallback"
+  ],
+  "blocker": "Figma get_design_context now reports a View-seat call limit on the owning Professional plan, despite accepted edit invitation. No seat, plan, sharing or billing changes made.",
+  "commands": [
+    "pnpm --filter the-gates test",
+    "pnpm --filter the-gates verify:assets",
+    "pnpm --filter the-gates build",
+    "pnpm --filter the-gates dev"
+  ],
+  "preview": "http://127.0.0.1:3020/?preview=true",
+  "screenshots": [
+    "runtime-desktop.png",
+    "runtime-buy-menu.png",
+    "runtime-confirm.png",
+    "runtime-portrait.png",
+    "runtime-portrait-confirm.png",
+    "runtime-landscape.png",
+    "runtime-legendary.png",
+    "runtime-rules-scroll-end.png"
+  ]
+}

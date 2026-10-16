@@ -1,0 +1,15 @@
+{
+  "books_BASE.jsonl.zst": true,
+  "books_BONUS.jsonl.zst": true,
+  "books_CHANCE.jsonl.zst": true,
+  "books_FEATURE.jsonl.zst": true,
+  "books_MYSTERY.jsonl.zst": true,
+  "books_SUPER.jsonl.zst": true,
+  "index.json": true,
+  "lookUpTable_BASE_0.csv": true,
+  "lookUpTable_BONUS_0.csv": true,
+  "lookUpTable_CHANCE_0.csv": true,
+  "lookUpTable_FEATURE_0.csv": true,
+  "lookUpTable_MYSTERY_0.csv": true,
+  "lookUpTable_SUPER_0.csv": true
+}

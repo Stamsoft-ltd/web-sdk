@@ -1,0 +1,35 @@
+../wins/legendary-banner.png
+size: 3904,1560
+filter: Linear,Linear
+pma: false
+banner
+  bounds: 0,0,3904,1560
+
+../wins/legendary-horn-1.png
+size: 1225,817
+filter: Linear,Linear
+pma: false
+horn-left
+  bounds: 0,0,1225,817
+
+../wins/legendary-horn-2.png
+size: 1225,817
+filter: Linear,Linear
+pma: false
+horn-right
+  bounds: 0,0,1225,817
+
+../wins/legendary-title.png
+size: 3133,1619
+filter: Linear,Linear
+pma: false
+title
+  bounds: 0,0,3133,1619
+
+../wins/legendary-crown.png
+size: 654,494
+filter: Linear,Linear
+pma: false
+crown
+  bounds: 0,0,654,494
+

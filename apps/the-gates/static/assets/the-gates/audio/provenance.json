@@ -1,0 +1,158 @@
+{
+  "status": "User approved direction and local integration; not cleared for publication",
+  "source": "Original compositions rendered using local macOS gs_instruments.dls; redistribution/commercial output licensing requires review before release",
+  "sourceReport": "reports/audio-direction-20261015/README.md",
+  "files": [
+    {
+      "file": "reel-land-1.mp3",
+      "bytes": 11518,
+      "sha256": "bf0666124371bda34d7b55cbc2a367fa51944be8fa06649ed4e4ef2947a95e2d"
+    },
+    {
+      "file": "09-multiplier-boost.mp3",
+      "bytes": 23100,
+      "sha256": "4c649f5fd472cb86818d304d0854df6c43852cb000a3072d9d8a16ce8f86b172"
+    },
+    {
+      "file": "reel-land-3.mp3",
+      "bytes": 11649,
+      "sha256": "deaff558261a87a339d237ef5038502594302aa7b4f2948c78b7710d4130bd82"
+    },
+    {
+      "file": "reel-land-2.mp3",
+      "bytes": 11493,
+      "sha256": "b315f30796278de451a81eeb1d55fc08e504ee9bd81db83abfd46d25fa8ddad9"
+    },
+    {
+      "file": "reel-land-6.mp3",
+      "bytes": 11833,
+      "sha256": "87e6ee1bc7a75d486115eb1d4c0be1d3a867368485b6c0d695a48894482222c8"
+    },
+    {
+      "file": "08-multiplier-add.mp3",
+      "bytes": 20154,
+      "sha256": "2208028bd7091169449ef53720d79a450fc1f238eb66dccd30df2229af90839d"
+    },
+    {
+      "file": "14-bonus-summary.mp3",
+      "bytes": 38991,
+      "sha256": "17e2643156b354032c81d74b4411d20ed49499b3276bd7bb0e49380ea9a7c145"
+    },
+    {
+      "file": "03-gate-portal.mp3",
+      "bytes": 38141,
+      "sha256": "8a7fe89a1b089aafe8c3f41cb237a889c21eed306932bbd287a748940f82be31"
+    },
+    {
+      "file": "reel-land-5.mp3",
+      "bytes": 11676,
+      "sha256": "9b92530cce5c8b7a733bf114a467ed51ed3dd1a98a4ab18ac7c29550390abdcf"
+    },
+    {
+      "file": "reel-land-4.mp3",
+      "bytes": 11858,
+      "sha256": "a5632170e1e8eec57a6ad2adf299a9c4559a99dc2b0b8ee464f279bad44b1ddf"
+    },
+    {
+      "file": "04-win-fanfare.mp3",
+      "bytes": 48751,
+      "sha256": "5eea14b169ec65948ca4b60060c7b0a426d1dacc9c2bdba8fa0ea7421c28b052"
+    },
+    {
+      "file": "11-extra-spin.mp3",
+      "bytes": 18509,
+      "sha256": "1dc64a247ac351b31214c8a18b68841737f42c0b0b8ee74afd70581f8e84b94b"
+    },
+    {
+      "file": "18-win-sweet.mp3",
+      "bytes": 46978,
+      "sha256": "49121315b5530e11853f91319800f4a781ddc52ddcbdd9790a9f72fe66f49f44"
+    },
+    {
+      "file": "19-win-epic.mp3",
+      "bytes": 51564,
+      "sha256": "6184352d515ef298c15587f811adc45cf07b7db7013a631941b94defe47c36e4"
+    },
+    {
+      "file": "06-spin-start.mp3",
+      "bytes": 12144,
+      "sha256": "6f2cd09d2daa55dd03a23f3fd7e3619e400c33dd9be45a581ebb55d6a91f0c86"
+    },
+    {
+      "file": "10-wild-reward.mp3",
+      "bytes": 22056,
+      "sha256": "62933e537e5dbcf3ce5a305cc56dbb0af58d8baf7bbff987db29068ef326dbf1"
+    },
+    {
+      "file": "13-bonus-entry.mp3",
+      "bytes": 55972,
+      "sha256": "13f52a4342d9f3d19a24e22166e737ad481f0294ab3a4c92c0d641f0023ea841"
+    },
+    {
+      "file": "15-gate-close.mp3",
+      "bytes": 14333,
+      "sha256": "f8e2d31347d5c8318ff511eedd6b4b79cd3cf6002953b07282ec70c1667e750e"
+    },
+    {
+      "file": "12-retrigger.mp3",
+      "bytes": 30138,
+      "sha256": "3d1c381eb66317a6a99c5866b821f37758c8ecb40f5bd953c13464bdc614f3c7"
+    },
+    {
+      "file": "02-cascade.mp3",
+      "bytes": 26121,
+      "sha256": "db624842faffed3bcee7244811a6449f5c75db8d6521d16b85671d02e847721f"
+    },
+    {
+      "file": "20-win-mythic.mp3",
+      "bytes": 58869,
+      "sha256": "779b84692c73515ac36c162680143d080f55fe9fc6ccad1625c262fbaca1b999"
+    },
+    {
+      "file": "17-key-land.mp3",
+      "bytes": 18876,
+      "sha256": "db89df8712a7aeb8d6d2a1294e8267158a1acc692ec1a25a18d684845fef5458"
+    },
+    {
+      "file": "07-wisp-arrival.mp3",
+      "bytes": 19299,
+      "sha256": "612ebfe74d6248091223e677aa98741b33d125eb0d610a7e49f6bce4ec4e2a54"
+    },
+    {
+      "file": "21-win-legendary.mp3",
+      "bytes": 65234,
+      "sha256": "08b38b8f2dba0a912108e8b6770ba91e09b59f81be754e3e260837ac906cd030"
+    },
+    {
+      "file": "16-portal-retract.mp3",
+      "bytes": 20929,
+      "sha256": "586d614984c032d3d80f7518ad5ea464de348528bd465ab61bbc4db00908609e"
+    },
+    {
+      "file": "05-ui-click.mp3",
+      "bytes": 9538,
+      "sha256": "5ddfcda5409a70e6fd4a2ed52c560d6f0af9fa88a2a85f4422ad25314630b71d"
+    },
+    {
+      "file": "base-music-preview.mp3",
+      "bytes": 345300,
+      "sha256": "0757530d37b7d19e461e0e55b6c7792138e91be233dfa9a6a52fd7340cfc9421"
+    },
+    {
+      "file": "bonus-music-preview.mp3",
+      "bytes": 262270,
+      "sha256": "af333e1e1ee49cbdac9996896e75cf27e3404289ee28cf3a0de340792769d7e2"
+    },
+    {
+      "file": "super-music-preview.mp3",
+      "bytes": 240868,
+      "sha256": "430450c0daeb9294224253fcad49a22cf650855564f633536f1d1d4a06a12c5a"
+    },
+    {
+      "file": "hidden-music-preview.mp3",
+      "bytes": 323887,
+      "sha256": "5cd043ae324ac644061eb2326fa8982ceb3f40141830d925c8b3ed3832f98673"
+    }
+  ],
+  "musicStatus": "User approved base and all three bonus tracks, locally integrated; licensing review remains required before publication"
+}

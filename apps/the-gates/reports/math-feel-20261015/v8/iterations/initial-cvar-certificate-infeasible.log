@@ -1,0 +1,44 @@
+BASE zero reuse 2000
+BASE normal reuse 2000
+BASE super reuse 2000
+BASE hidden reuse 2000
+BASE base reuse 2000
+BASE: 10,000 books; weighted RTP 96.1000000000%; non-tenth payout mass 17.499692%
+CHANCE zero reuse 2000
+CHANCE normal reuse 2000
+CHANCE super reuse 2000
+CHANCE hidden reuse 2000
+CHANCE base reuse 2000
+CHANCE: 10,000 books; weighted RTP 96.1000000000%; non-tenth payout mass 17.598755%
+FEATURE feature reuse 10000
+FEATURE: 10,000 books; weighted RTP 96.1000000000%; non-tenth payout mass 26.826694%
+BONUS normal reuse 10000
+BONUS: 10,000 books; weighted RTP 96.1000000000%; non-tenth payout mass 47.041400%
+SUPER super reuse 10000
+SUPER: 10,000 books; weighted RTP 96.1000000000%; non-tenth payout mass 45.088990%
+MYSTERY normal reuse 3334
+MYSTERY super reuse 3333
+MYSTERY hidden reuse 3333
+Traceback (most recent call last):
+  File "/private/tmp/gates-v8-work/resume_v8.py", line 41, in <module>
+    if __name__=='__main__':main()
+                            ~~~~^^
+  File "/private/tmp/gates-v8-work/resume_v8.py", line 33, in main
+    weights,fits[mode]=run.build_mode_weights(mode,pools)
+                       ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/private/tmp/gates-v8-work/run.py", line 283, in build_mode_weights
+    tier_weights["hidden"], fits["hidden"] = fit_tail_capped_weights(
+                                             ~~~~~~~~~~~~~~~~~~~~~~~^
+        pools["hidden"], tier_scale, TIER_TARGET_MEANS["hidden"], cap,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        threshold=threshold, preserve_from=preserve_from,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        starting_weights=tier_weights["hidden"],extra_constraints=retained_constraints)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/gates-v8-work/run.py", line 44, in fit_tail_capped_weights
+    return fit_gate_weights(records,total,target,atom_cap=Fraction(1,100),
+        starting_weights=starting_weights,threshold=threshold,tail_cap=cap,preserve_from=preserve_from,extra_constraints=extra_constraints)
+  File "/private/tmp/gates-v8-work/gate_weights.py", line 57, in fit_gate_weights
+    if not solution.success:raise RuntimeError('V8 constrained weighting infeasible: '+solution.message)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: V8 constrained weighting infeasible: The problem is infeasible. (HiGHS Status 8: model_status is Infeasible; primal_status is None)

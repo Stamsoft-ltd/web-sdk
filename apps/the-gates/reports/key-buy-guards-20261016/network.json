@@ -1,0 +1,20 @@
+[
+  {
+    "time": 1792104474.964299,
+    "method": "POST",
+    "path": "/wallet/authenticate",
+    "body": {
+      "sessionID": "USD-lowfunds-20261016",
+      "language": "en"
+    }
+  },
+  {
+    "time": 1792104572.861456,
+    "method": "POST",
+    "path": "/wallet/authenticate",
+    "body": {
+      "sessionID": "USD-zero-lowfunds-20261016",
+      "language": "en"
+    }
+  }
+]

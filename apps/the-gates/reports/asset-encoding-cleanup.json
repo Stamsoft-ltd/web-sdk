@@ -1,0 +1,640 @@
+{
+  "policy": "Only PNG IDAT zlib recompression in build output; original scanlines and every non-IDAT chunk verified identical. Static originals untouched.",
+  "pngFiles": 70,
+  "changedFiles": 62,
+  "beforeBytes": 28616069,
+  "afterBytes": 25880410,
+  "savedBytes": 2735659,
+  "files": [
+    {
+      "path": "assets/the-gates/figma-20261012/backgrounds/hidden-original.png",
+      "sourceBytes": 1530853,
+      "bytes": 1295944,
+      "saved": 234909,
+      "sourceSha256": "9e5c8ee331996bf54786f87edb25c3d37f14db3ca9cfca63fad65df0abb330e1",
+      "sha256": "71561c5b56f165393571549878ccc9c9f533a7dc5a846ec798f8fa5e3c708f6f",
+      "scanlineSha256": "212a90ef0c8235ab4494f6a71d6e38e4ae56338771ae22d21d898377c86218c5"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/backgrounds/normal-original.png",
+      "sourceBytes": 1529564,
+      "bytes": 1272607,
+      "saved": 256957,
+      "sourceSha256": "a685962e1a1b96a99e95feff30fae845580150835fdc7eaa657ded33caf36bc1",
+      "sha256": "9a7f3700ed17482ec4e40efa50ce528e7571f8dee7acf801e21534eac6696642",
+      "scanlineSha256": "0d134f9d08d8ec69fbdf3acdc51530cea24aa7f35769f6582f706f7f79cdfa25"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/backgrounds/super-original.png",
+      "sourceBytes": 1489136,
+      "bytes": 1243805,
+      "saved": 245331,
+      "sourceSha256": "56cc184eed445a376f16ec0460ed8ef5970860a9db77ad5e4585e09aff7d9558",
+      "sha256": "e523fc838047e8570d461d47b44dfed94b4503f47225bd66044b3fb1e85c4151",
+      "scanlineSha256": "8577f3b4001864fb9cb86ae0ba4aeec8224358139124357cfa2315050917b3fa"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/bonus/hidden-title.png",
+      "sourceBytes": 260697,
+      "bytes": 260697,
+      "saved": 0,
+      "sourceSha256": "3af584cd805aec40afbd0f4961d3cab10f38b8a4c372e45e8501c33714c759f1",
+      "sha256": "3af584cd805aec40afbd0f4961d3cab10f38b8a4c372e45e8501c33714c759f1",
+      "scanlineSha256": "1cb8472dcf39838ae2ed986bb7bf0b65b2ecd623faf25113b178f9a6806a4346"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/bonus/normal-title.png",
+      "sourceBytes": 282874,
+      "bytes": 282624,
+      "saved": 250,
+      "sourceSha256": "66203b586fbcd67c8c58db19b2e2e16a79a9f877792b3ed2b46054a3190d6cdc",
+      "sha256": "8e6e98be24d4d8a2084a571667d8f6fd992bb64701d2ca0de7ff72ffc017f8a7",
+      "scanlineSha256": "403e3450f5bad36a75743079fd061e412035a3220ffea8f8b4e9b40f45e884fd"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/bonus/super-title.png",
+      "sourceBytes": 262217,
+      "bytes": 262217,
+      "saved": 0,
+      "sourceSha256": "53dba5f3877edcd0c1c1296dcada98119c3930a7d12bc1ce5a5ab1f838bd573b",
+      "sha256": "53dba5f3877edcd0c1c1296dcada98119c3930a7d12bc1ce5a5ab1f838bd573b",
+      "scanlineSha256": "4bfbba399e577accc709d2d6ec1f31cc25c0cef0b6aaa74bd5a4c931c5e80cd8"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/gates/hidden-leaf-original.png",
+      "sourceBytes": 1468339,
+      "bytes": 1257655,
+      "saved": 210684,
+      "sourceSha256": "2a0200aabaec2df868ff86c5c40a1fbb8a40c18c0ee1c9c2c40d70fa340f2a0d",
+      "sha256": "8c6d7d17ef2aa64ea66cbfec2948a080a92ada6e0395aa4ec11cacc52e557cc0",
+      "scanlineSha256": "5ba7c92cdb6893c7a55bb1ffa49561a41ec1f15f3ab10992fb93ae18e04e4780"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/gates/normal-leaf-original.png",
+      "sourceBytes": 1445305,
+      "bytes": 1219830,
+      "saved": 225475,
+      "sourceSha256": "57bbc6c6236ee97ab1d082bee0de1c8a6929abb32e49b0e02a71f62b8bffe95f",
+      "sha256": "0882a1f66db6a5aee03adca70e9c5a721ad1ed180152a9a33072be4964a9ef9d",
+      "scanlineSha256": "e37308a45edb42e053221b29d6c17c59fda91517f898151a1e953f547ceb8762"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/gates/super-leaf-original.png",
+      "sourceBytes": 1431637,
+      "bytes": 1206069,
+      "saved": 225568,
+      "sourceSha256": "cd53db386e017c84d07875ab39171dd45a459e97cd4e079231243171b63a2463",
+      "sha256": "4ec16a97fa28fcd8c17570143026bd72a0a90c43efaa70869896071bfb4a149e",
+      "scanlineSha256": "0837a20b7069089c372e08e728a6e6d9fd5595d36161bf13ccec32b978b98617"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/hud/autoplay-en.png",
+      "sourceBytes": 29291,
+      "bytes": 27583,
+      "saved": 1708,
+      "sourceSha256": "3ff5b20ebf1c31aa3d226db03a8da10b98b9583223813e8998c79f298ec6b3cf",
+      "sha256": "ef6cd0288a4aebad1c2b0fea305627460b28167fad1b01b41352b3c130ce9b85",
+      "scanlineSha256": "b30b97d841e96ba5229eb011e49ba7b2df0cc2f866ce0d588ef91835febcae87"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/hud/bet-decrease.png",
+      "sourceBytes": 25987,
+      "bytes": 24092,
+      "saved": 1895,
+      "sourceSha256": "f5de940b120d195779d841d8d6a408a6a07d814eb79a9a87dc0aad7a7beaa951",
+      "sha256": "46eb1f38e8b110942d173cefc4c93acb82a02e3eda2ba57d85550a6097884cff",
+      "scanlineSha256": "05a9f14228ffa6a7b178ce9d0ab269a992e8bfaa432c91180372a04c91f75061"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/hud/bonus-button-blank.png",
+      "sourceBytes": 47586,
+      "bytes": 44243,
+      "saved": 3343,
+      "sourceSha256": "12cbe0675ef45920f297a5b716dd278176c1394c88c2ffb4bc99cbf6b1ecddc2",
+      "sha256": "e2d4c04cffb6b13503cd10ce2bd0aabd18d4c6a0af4e70166e19ec4b2af02ef2",
+      "scanlineSha256": "366f06263f734794a06ba09241ae953242326ab4bb7cad2e7998db2a5cef3e87"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/hud/info.png",
+      "sourceBytes": 25232,
+      "bytes": 23356,
+      "saved": 1876,
+      "sourceSha256": "fd0964774f78f516289d9e570f7b0754a86bf7e13d2858600893ae92a98d23bd",
+      "sha256": "2124622679bb85d93ac6be8994e65cb765e90708376f559cb7a28599cb560f15",
+      "scanlineSha256": "750c2262ef375dd8398a803c3a0c8bcfe737168b3898a8307de26e155bf33705"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/hud/menu.png",
+      "sourceBytes": 26763,
+      "bytes": 25120,
+      "saved": 1643,
+      "sourceSha256": "91bd0097a8ac5c800e7708099bbe36b6cc50f8ef4dcbe921b2c9cce70b477258",
+      "sha256": "6b375e13f22248e41cef0964ad19589c820e984a43f14bc448e8e556ed5b5c69",
+      "scanlineSha256": "225376806e9b5148742a3536ef19434a9d6c47b7c071a916a0ecd4e1c04ad88f"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/logo/logo.png",
+      "sourceBytes": 388806,
+      "bytes": 367767,
+      "saved": 21039,
+      "sourceSha256": "aab8fa58c5ff12b810b6fd1f80d02e7a371cf4e80ca64fa5699292921d3cc8a6",
+      "sha256": "3526d997eec1126fc23589b3a44ba82ca1be163d0ee34058f4616bbacb20059a",
+      "scanlineSha256": "dc6488e0b44b975998c0de5945aee63bd5d6a54ef1a50da29247cee890e03285"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/panels/bonus-counter-blank.png",
+      "sourceBytes": 331314,
+      "bytes": 309403,
+      "saved": 21911,
+      "sourceSha256": "e987eaaa80fa0e336a756cfa9117a70612bcee190530a1b01f3202602c77a260",
+      "sha256": "97255bfaf93ea73519983e2a571b4dc8b16d2db5985cbc1c7cb81e01a44bc5b0",
+      "scanlineSha256": "7721a8be79feec46112a074d73fd9eb7e68b7fff851090c95f00ad87f01502be"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/symbols/blue-gem.png",
+      "sourceBytes": 13300,
+      "bytes": 12755,
+      "saved": 545,
+      "sourceSha256": "3b0ab06c07620d2842947b8870589684425eb41b77773310642b10d28316b2b7",
+      "sha256": "8ffba4463bfff9d69be4eb8af4db27b2c324248eda94a2f5a9df8320a5fc95ba",
+      "scanlineSha256": "88806fc839d3651faed4fdb3d4b641ba951b2e22764bcb1c2e22d68eb6569255"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/symbols/coin.png",
+      "sourceBytes": 120056,
+      "bytes": 114706,
+      "saved": 5350,
+      "sourceSha256": "2bf3b76d427476d6e82cb421f36d215f7e1f12d8f51e2894e11fe9bedcba9b5e",
+      "sha256": "7d89cc148beeb12acf8d528a345454f91953608f43e0cf43c2c0641e0b76ef49",
+      "scanlineSha256": "3e63add5bdf35388552a2395c5797caa66bc8b514a5a229dddc82a540b0af99b"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/symbols/eye.png",
+      "sourceBytes": 108287,
+      "bytes": 105126,
+      "saved": 3161,
+      "sourceSha256": "656f4b2bc672685cdc32f1efc636dfc809e0daa4c4a4f8fee2c8202e1097ebca",
+      "sha256": "6e209f48afe0efd166a8aab7eda6f4ca7c0e594d0381bfcead2fca7e26d1542f",
+      "scanlineSha256": "488ca32a1f1078bd66022feb7053b37c649bce508aae2b3b2493b36a9e5d2239"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/symbols/gold-gem.png",
+      "sourceBytes": 12468,
+      "bytes": 12040,
+      "saved": 428,
+      "sourceSha256": "07baa4951452d7ec76b8bbb485600c218a2c38b53df0b74efa57f045790e520b",
+      "sha256": "5d9f3fb2ff4fb8861a58da7404bb5a5e92dcafad5790a862dc6921ea07a5c73e",
+      "scanlineSha256": "a8bc76194f08f60c650ede3dd55ad5c797672536955133c808473d40480d6c8f"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/symbols/green-gem.png",
+      "sourceBytes": 14650,
+      "bytes": 14164,
+      "saved": 486,
+      "sourceSha256": "33a5f5829ca7d6652d52752bc575b601b5bad021c0272801e2ec6aac8b659f83",
+      "sha256": "c6bfd6cf71b4e3f602a3332fd9ee01f5eaee81a72de30d1f9d2b753022c846b1",
+      "scanlineSha256": "cbe4d69823e79f306009104c2df64ba77faea601fb1ad5151416e63cb808bb43"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/symbols/key-original.png",
+      "sourceBytes": 582604,
+      "bytes": 550706,
+      "saved": 31898,
+      "sourceSha256": "3742ef825bde02592b080c076d2fcd19e6704b29f8070d6cc8fa7dd27c1fd3af",
+      "sha256": "cfd85906cb6767751d8c51e0de22aa256573c29bdd356289fc185719a1f405e8",
+      "scanlineSha256": "8c9950936c2efe3b4a9effac52fbf3e58df7909af2e185caa7e90623ce5ebe17"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/symbols/letter.png",
+      "sourceBytes": 59753,
+      "bytes": 58464,
+      "saved": 1289,
+      "sourceSha256": "4fc32777ba5981d90286f097108f4e8fe19218dd615ea8d1ca06567176b8be59",
+      "sha256": "ae86bb0c1a16d246f00e6803261678fb24734abbba25df64ab426ef979b3aa1e",
+      "scanlineSha256": "7ad2e63290fd100e3016fa8b401b99aff469928f315bef808630be438f5e4858"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/symbols/orb.png",
+      "sourceBytes": 30387,
+      "bytes": 29573,
+      "saved": 814,
+      "sourceSha256": "9323fad30dde99c6d82d8141d7d27449f684b0b792f559dd833bb04c8fc734e3",
+      "sha256": "7783a091dd7d907f23cf0e66974e9f11c7f2e29fe642ef11d8e85b4c84e35ab2",
+      "scanlineSha256": "65b062bdf7aec3b31b449e46c678dcc7bc8ff8d79350108033a5635aa63b5bc9"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/symbols/pharaoh.png",
+      "sourceBytes": 41514,
+      "bytes": 40430,
+      "saved": 1084,
+      "sourceSha256": "7fb4c005ec71f1c369661780dd78050702c42b2d26a4b95ba524e52e610f6dfe",
+      "sha256": "c27abf5e641ad7a9db7125edaf970ca9b75688aeb715fa110e730cb1c5c2fc4c",
+      "scanlineSha256": "7a09822f2aa5e8e3b1ee2b130771fb88f5c40b12537b250ce08c4a306e261b84"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/symbols/purple-gem.png",
+      "sourceBytes": 14478,
+      "bytes": 13962,
+      "saved": 516,
+      "sourceSha256": "a512d9ac5c3dfab41983444fc2825f90099cd120e740a08fb6d3a9ce40ef6cd8",
+      "sha256": "0ce47f6d4ff6867496e3dfdcec900bcfd63a9cd90e45f75234dfd8376ea765d8",
+      "scanlineSha256": "9693fbb64f9dcfba04549ae907407a3e331cabc3d0f61499fd6c4ce29ff404b9"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/symbols/red-gem.png",
+      "sourceBytes": 13833,
+      "bytes": 13209,
+      "saved": 624,
+      "sourceSha256": "fa126e65ab04de6db9eea08b922188f02deef74f6d54ab046c36ff4a7fe13e2a",
+      "sha256": "218505780d42347f994028091939bd381744e5c9c36836255b7745599d12a1e4",
+      "scanlineSha256": "854d1658cbf764935aead904be7bafaa19664f583e12df9bfed02ce6b133f947"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/epic-banner.png",
+      "sourceBytes": 221873,
+      "bytes": 221873,
+      "saved": 0,
+      "sourceSha256": "27de30c2d2380eb0a005c509247b2c52085d56cde2bdb17b5b77924ee423ee62",
+      "sha256": "27de30c2d2380eb0a005c509247b2c52085d56cde2bdb17b5b77924ee423ee62",
+      "scanlineSha256": "d43560993411c309efd3b80589ea76742674f90d1843cf9e37cc6eee1e566a0a"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/epic-crown.png",
+      "sourceBytes": 26208,
+      "bytes": 25527,
+      "saved": 681,
+      "sourceSha256": "17f4368ed1c56d56f761577d6962e229b799539dffd4467ca243223784d4ecda",
+      "sha256": "22a5fa4281d0577540d062cbb4202ec333ea5b723ac53d3f74be8bfb544b8062",
+      "scanlineSha256": "39d4c1c00b8e8e813db524ec20bc6ef660875981590fca4d92e0be8c29665d0a"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/epic-horn-1.png",
+      "sourceBytes": 50785,
+      "bytes": 49741,
+      "saved": 1044,
+      "sourceSha256": "61f90814a29b4fa92edb2a74c77a40dbae69a6e63615b5f23403aafef77beb03",
+      "sha256": "9565cf7d54e098d91428a7aa308294f2beaab767e3785a50719823fbd455e971",
+      "scanlineSha256": "123c03f69f75ec8c2da08f6e8b408be13b20b200839fdeffc6e854b70732c8e6"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/epic-horn-2.png",
+      "sourceBytes": 49120,
+      "bytes": 47994,
+      "saved": 1126,
+      "sourceSha256": "58af099c69b1c77c38538af90ed31921824b76661d6250451c2a9ed93912516a",
+      "sha256": "5fb6d35fe67bea29296f645c9ad3c8afcdc7bdf78ed39ce728d3fe9d4658abf9",
+      "scanlineSha256": "d91371ea617576d0b7dbb491e4ecf3e51d4a5650c4d98896787a99d275ebb705"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/epic-title.png",
+      "sourceBytes": 109002,
+      "bytes": 108316,
+      "saved": 686,
+      "sourceSha256": "ecd65d0c6090e52482a97f1e7b1dd84794b83f2296860e809aa9aa9bfc1129f3",
+      "sha256": "7578f601853bd57f92b94bd9acc676b129864fd536663a66f923ed0e905ea428",
+      "scanlineSha256": "03f124a259526f388ed5c31e51e53ab31d845c2e5d5109f18af10f7d4a5d4547"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/legendary-banner.png",
+      "sourceBytes": 316288,
+      "bytes": 316288,
+      "saved": 0,
+      "sourceSha256": "a0fc3748827303a02bf6fcc5755fd20c69303868944ca606226e1964783b0f28",
+      "sha256": "a0fc3748827303a02bf6fcc5755fd20c69303868944ca606226e1964783b0f28",
+      "scanlineSha256": "d92fdb2e39bb5bac14bcc6a778833f3f2ff25d673a984beaa4d880652ecb1165"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/legendary-crown.png",
+      "sourceBytes": 34649,
+      "bytes": 34226,
+      "saved": 423,
+      "sourceSha256": "f38b75bd1e4053dec9f26eef10e0b611dc3592dc9dbc8e41d33aa6749d0b0be5",
+      "sha256": "5d2c58f709e555acb2fcd5d6ab6bce3e50c861bd267ab6dd936a217e3f0919bb",
+      "scanlineSha256": "2e7a77ab662e65cc5582b91d766ccd7b56514b1958e8744f34ab6685f6f44c3d"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/legendary-horn-1.png",
+      "sourceBytes": 70966,
+      "bytes": 70966,
+      "saved": 0,
+      "sourceSha256": "94f148570108c42f743311bfc19581150f9a631757e068065c3aa937e27ee6ce",
+      "sha256": "94f148570108c42f743311bfc19581150f9a631757e068065c3aa937e27ee6ce",
+      "scanlineSha256": "67ba9229274b164a55ae114e6102b989634610da09173fb606aabb400f8d341e"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/legendary-horn-2.png",
+      "sourceBytes": 73968,
+      "bytes": 73838,
+      "saved": 130,
+      "sourceSha256": "57d593c526d87377fb968ee4117a0e11a67253744c0cf7e9a31a86ae89ee9a5d",
+      "sha256": "1f01e531c05d1383bba1f5216ee4b9a3a33a096a5562687f67821c2f8153fd87",
+      "scanlineSha256": "215ace7bc9389d2e62b94ea541785a8e062964c95d190f2e117c16245b7d0ac7"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/legendary-title.png",
+      "sourceBytes": 239963,
+      "bytes": 239963,
+      "saved": 0,
+      "sourceSha256": "78e37629f2c48fcca5b703061e21958cd58ecee733bd63a5bbaa2fe379ebe2a2",
+      "sha256": "78e37629f2c48fcca5b703061e21958cd58ecee733bd63a5bbaa2fe379ebe2a2",
+      "scanlineSha256": "78938545e584e52ea549d3d772a190aa023bfaa73426938b6221a950ea2a17fe"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/mythic-banner.png",
+      "sourceBytes": 275146,
+      "bytes": 275146,
+      "saved": 0,
+      "sourceSha256": "3be1ffee023b9122b16ee16359e9abedd85f65871d2e96e6c0440ee8b0283b9c",
+      "sha256": "3be1ffee023b9122b16ee16359e9abedd85f65871d2e96e6c0440ee8b0283b9c",
+      "scanlineSha256": "57f8ec16676a530bd571452304319d799ebce950ff0b4b525b70c096de51ae6d"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/mythic-crown.png",
+      "sourceBytes": 34827,
+      "bytes": 34731,
+      "saved": 96,
+      "sourceSha256": "2084c3bc6d70ee63126c8c4e607406b5642916119bbc6ce82b13bb71c1a7f582",
+      "sha256": "736230c6a54cb6439d3567fe331f8c4837786bf6b8edf2c63e885d33e2aba03e",
+      "scanlineSha256": "542767cbe92df392380399816d5093a1159c6ddfff6f64d792a822429c6129f2"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/mythic-horn-1.png",
+      "sourceBytes": 60683,
+      "bytes": 59922,
+      "saved": 761,
+      "sourceSha256": "7bac6ff5f4b54e6a8740ac990b6faeabb7a9f9a127b5c111d9c145b4776a8ecd",
+      "sha256": "eae66a0f128e673f7086c454725b032f7ec09c531dd5345a15bc9b4f8fe5cc45",
+      "scanlineSha256": "7346cfc11b52bcfbc963db917fadfa4251b80cc864786055ab9868d2666aa224"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/mythic-horn-2.png",
+      "sourceBytes": 63293,
+      "bytes": 62590,
+      "saved": 703,
+      "sourceSha256": "eb101fa497939be6bc6a9cdfc01b7be833189109e1e37444484a93d44de1b0cf",
+      "sha256": "1c5984a9719a6900067c806229688ec79c3563627a3396d69f1d643bdfbe548b",
+      "scanlineSha256": "ffbb446fb5f5dfcdd4cab680d62d2732e9914adb8424d6c2161fe7c576ab0259"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/mythic-title.png",
+      "sourceBytes": 163902,
+      "bytes": 163070,
+      "saved": 832,
+      "sourceSha256": "8fc600fd6bcde9b9d4d575eaa487a898f383d3a322b07d0e8b4502073f0b3849",
+      "sha256": "81769019d19dd535edceb296184f8f7b5be3b34de451ca0575c48229f80323f1",
+      "scanlineSha256": "5afaf1167ce1a5c6604efed647a79e9aef3211322493ac12be66ffe8baf7e88a"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/sweet-banner.png",
+      "sourceBytes": 130994,
+      "bytes": 130884,
+      "saved": 110,
+      "sourceSha256": "1820d740b189daad87f32c108e6f820fdefaf60681c2633f96b5dd5e8e3c0086",
+      "sha256": "2638f25b6026d527a1caf5cbcd65f49cf8285d8b1c3d6afd1572f14a4f46c6df",
+      "scanlineSha256": "c54a61d8706b1a6784b9ef27ddd00551bfab44f17871d6fce4e72437b54e4f60"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/sweet-crown.png",
+      "sourceBytes": 17824,
+      "bytes": 17405,
+      "saved": 419,
+      "sourceSha256": "587bf32640c5ca2ac62d6253ee5c9f65f9cff78ce6ddd1fda5662dcb8c0bf04b",
+      "sha256": "7d4d403d02fb1d43bcbe9520ba5d3769667144ecd0b2841f4d2e7dc0bb28f45f",
+      "scanlineSha256": "b769a0bdd5c3d68c24aa8059b01244f42ba36e6f2fbdc71a6a521a1a35d1fdef"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/sweet-horn-1.png",
+      "sourceBytes": 29779,
+      "bytes": 28771,
+      "saved": 1008,
+      "sourceSha256": "96e94d4384f55e349d057f919bf5eda66bf143f0b7fa7e812fcf082142e90ab2",
+      "sha256": "5b6e2a7a9ec1b1ee5bfa0fad51c598cee658a445af2aa679f705485f5dc38854",
+      "scanlineSha256": "c619563a3ef0a0ae06278b776fff6079fa91728819a7bd672ce3cfbb4b2866ab"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/sweet-horn-2.png",
+      "sourceBytes": 30821,
+      "bytes": 29900,
+      "saved": 921,
+      "sourceSha256": "3650242b57685bae949112a33a3dd4cfa70781e1f88137087221c3e4efe49db1",
+      "sha256": "c546278a379e4edb7b128a660887c9b4c35ad50dba55c9bcd3b7c6e765c12492",
+      "scanlineSha256": "612950a122a5891ab71ee19d85c387494cabb1b9f59002d41e03e226bd8735f6"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/sweet-title.png",
+      "sourceBytes": 83106,
+      "bytes": 82072,
+      "saved": 1034,
+      "sourceSha256": "3f59f11e98e78f4bf353f2ae2636556acddaed4d9dd5b6109c7079947df70aae",
+      "sha256": "0ae57842fe403dc0d10e29228866a92de52cca945db3110ecc3458ae73c421c6",
+      "scanlineSha256": "f48fe380c680e8ef067c677ca6ec8ebac3a127803dca250e68335255790f8e06"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/wild-banner.png",
+      "sourceBytes": 218481,
+      "bytes": 217535,
+      "saved": 946,
+      "sourceSha256": "8cc7cbda4201d0f646a0fe2d2030622fd406d8a236327cf2857d8b8fef50ec4b",
+      "sha256": "49ee5950e9198356cf03963b6e62a4c3679eb592c8f7ef20f9e9a49ed9d6ecac",
+      "scanlineSha256": "3ff90d4cebe8554618f715943518854ba504964ce49bce9138405992d8beda94"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/wild-crown.png",
+      "sourceBytes": 24932,
+      "bytes": 24374,
+      "saved": 558,
+      "sourceSha256": "717d7ed54240b3018ad5454fda1cf21f8e4f2d52396ae217762c50528e1cfce0",
+      "sha256": "980252c1412db205b9c610625ca5275f2eaebab1e4b85f2802256c68ec670b6c",
+      "scanlineSha256": "88214e3ba7c1faa320bde3f3689ff48a75db00d07ff1069a885a5de1a44d2623"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/wild-horn-2.png",
+      "sourceBytes": 40401,
+      "bytes": 39204,
+      "saved": 1197,
+      "sourceSha256": "64ccbb420f1929e1621b9f80a6748f1a4d2a775f610d9a3ed1c4ae7bc90fc105",
+      "sha256": "a62a34fb5c383bb4a028af1e492c1856f7f1148ed0cb0ed8afac69feebbad1d7",
+      "scanlineSha256": "4b2c96d7ae2ea20ee170a73a2fd294331af2ffb58011d6d670e57c42649f5f0a"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/wild-title.png",
+      "sourceBytes": 97322,
+      "bytes": 96751,
+      "saved": 571,
+      "sourceSha256": "bedf7eacfae5ff5c7a7f378a16bb996f49c311de998974b20157495eaf15543f",
+      "sha256": "4028f15b7294b3beb8ae22cc6a5ced3d8b9e8df7145d1913eee798d0a0efb25e",
+      "scanlineSha256": "c70163f0063e5f7e4505ca249bafd86e8ffcc5c1e74f6dc9c163c083ea3caea7"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/0f6e5.png",
+      "sourceBytes": 839682,
+      "bytes": 754283,
+      "saved": 85399,
+      "sourceSha256": "61baf4e4eaec0ec57afb3e9834173d90bd33ef076a853eecae5143fa5172adc7",
+      "sha256": "eb9a96dc295582c2a5d0423ce4799e91a507a9eb7fa7615871f6bfa8293adfab",
+      "scanlineSha256": "8f5976da2c85a5503bf3ea619bf8a1e605c4158a761ac26527fa40c5b413f6c1"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/28fc1.png",
+      "sourceBytes": 1425635,
+      "bytes": 1164743,
+      "saved": 260892,
+      "sourceSha256": "7bc3ea1022e3e4a9903729fe983825ee4c6681aed50024db93246f36971ef851",
+      "sha256": "7a813bff743d3d970a4ba1f29962f10dd816d7242b3b1e372d2385f29754c485",
+      "scanlineSha256": "13fc5f049f04fca6c17bd6d1299fed088edb9e6f8ea76afb335f7ea3ba66645b"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/4e7e5.png",
+      "sourceBytes": 10402,
+      "bytes": 9953,
+      "saved": 449,
+      "sourceSha256": "bfe6d6abc28454ba7e2e5935bea6761c2954f4a54103cbe9eabd7b05f362686d",
+      "sha256": "18d19aaa13c95ea607f25c2092e075ae5c3d1da1a886524f04a052dad36c967e",
+      "scanlineSha256": "b900b9ba92c1119fc879bd4b3d09e8771a6e3e68a1dd3fd762967abdc7539b29"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/51301.png",
+      "sourceBytes": 1313454,
+      "bytes": 1186823,
+      "saved": 126631,
+      "sourceSha256": "41ff2c730aa574e2978cfa271b9bf33e5e3c7c5bb0e6fa36f41dc3d2927904a7",
+      "sha256": "c6ace304ea50debdf9082f4c2171dc8a3205872b92474c33aabfd6c8fa1c0069",
+      "scanlineSha256": "da26c969d3205d25b1df585b2e5a8a42c5756a4b2664cf9db8397caf4798e3df"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/61f00.png",
+      "sourceBytes": 829199,
+      "bytes": 763742,
+      "saved": 65457,
+      "sourceSha256": "fb9838aa378580fdd42b76faa28665731654eda29360a54a859b47f1b28baca8",
+      "sha256": "a588875f4f0f1c1da60ab7f3aee1f6b7f5fc85bcb093f08ce0add6d6dc489f38",
+      "scanlineSha256": "0c160536d4c68c93eff96417762d0398ead9ba0e7f655b3159f73525c6e5096e"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/a8485.png",
+      "sourceBytes": 757429,
+      "bytes": 659247,
+      "saved": 98182,
+      "sourceSha256": "ee2be0272c9af04e848107e95b88672a6283e9a22761d5e689f8ff33af218dad",
+      "sha256": "609cc0f6870f4c6f1b50e556779cfc176636f7febb6ce9ced2da04f6cbec053b",
+      "scanlineSha256": "d06edd99f28a03e640ca38471aef2e7e3fd158547df9452ba233288d3c6d566f"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/backgrounds/cloud-castle-original.png",
+      "sourceBytes": 1161671,
+      "bytes": 1089801,
+      "saved": 71870,
+      "sourceSha256": "0214f6b99ec2a266b6e448bd71482c17a7e898d79300314d2caae7606e616f40",
+      "sha256": "909f261cacaf869050f353ff966d902972ee85fe8d0903451c2916107f9f9ecf",
+      "scanlineSha256": "c7f67abfe314853551166103515446dfb3621a018e3d2246c5c904c5debe53ba"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/d1e33.png",
+      "sourceBytes": 9501,
+      "bytes": 9080,
+      "saved": 421,
+      "sourceSha256": "f19798a06076d5f144312b61e689b850ad85830cfca52c0c227800ffdab1e219",
+      "sha256": "b60030f8a34928d469775d1dda4fe517112414d03f7a8e8cb9a290616eb4249c",
+      "scanlineSha256": "9ebc5375772c1ea5d0b63ae011b48284e88c1209eb69543f86e78cc62a38e9fb"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/d7111.png",
+      "sourceBytes": 815694,
+      "bytes": 750509,
+      "saved": 65185,
+      "sourceSha256": "29a63a224576c0a59baf94f266c652e0179660d87becf201ccca5a716e8b09c1",
+      "sha256": "94acdf2d411b3e9f29025149a169c3d8b4cf0bd410e71112dc0e8f0cf239ce3c",
+      "scanlineSha256": "4684aa22dcd9d96abbc248c970924818f54eba72ed32aa50ab90e970e306f1d8"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/d883a.png",
+      "sourceBytes": 831830,
+      "bytes": 711871,
+      "saved": 119959,
+      "sourceSha256": "04ce29e4862954e87974adde0e4a560107484185ce30d8d816fd8f8a8b8d98b9",
+      "sha256": "6af805328d5aeaa61301ce0562397cade77367038897837e81ad085166333f90",
+      "scanlineSha256": "03af209817f908e76209c37db7863e44fded43bf311d45d0a4a408987984c3bf"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/edb79.png",
+      "sourceBytes": 462057,
+      "bytes": 442689,
+      "saved": 19368,
+      "sourceSha256": "96342ee888498c06d9fc5cbd239d5a028028c4daa2c47b045bc1b07c225968b0",
+      "sha256": "f549486d4ea4d08f53695f08d51f5ecfc4e5fa502ae09f64adbe4ba1f100af6a",
+      "scanlineSha256": "0238bd13332dbca8001b9fe3a71d5e6aba8f7fbe379de8181f674a75f704f101"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/f6355.png",
+      "sourceBytes": 16967,
+      "bytes": 16120,
+      "saved": 847,
+      "sourceSha256": "192bdca92245180457101bc85b0319e7f4548c1b445c5e3ffa0480a0461d16c1",
+      "sha256": "54a2d14fcb4bc937ae245e87977742e1cf5d955603f6d8371828ee919793a05d",
+      "scanlineSha256": "27a087300ec67dabb4c80ba866028855592df54ccc38187388879a7770214615"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/fcdb7.png",
+      "sourceBytes": 745664,
+      "bytes": 704024,
+      "saved": 41640,
+      "sourceSha256": "911d49063d35173078734b8d050e6ad1fbbb477674d15de6b6c6d6a23378d155",
+      "sha256": "3a297e7a06d91f837188e71dedc87b46e0be5e9ba7029bed1b917babad6f7360",
+      "scanlineSha256": "1adfa5a2128f7babdc4b9dede648308e31437185977283de2f3915427ba9197d"
+    },
+    {
+      "path": "assets/the-gates/hud/rules-arrow.png",
+      "sourceBytes": 309,
+      "bytes": 304,
+      "saved": 5,
+      "sourceSha256": "677084b38bf96480e1e3ee67719643c253d823a3975869aa96dc1de25307b121",
+      "sha256": "5449c79fdd6b45b7160e7b27f8d03604223ddf115e037da0633a6a1a9402fa62",
+      "scanlineSha256": "f487776af1f5ad11152fcc5d185bd8e0f1403fd1d2ee3353e1c52da3f5469cd9"
+    },
+    {
+      "path": "assets/the-gates/portals-20261012/hidden-portal-layers-v1.png",
+      "sourceBytes": 976963,
+      "bytes": 902117,
+      "saved": 74846,
+      "sourceSha256": "688c1eaa458335c42448ec1df147d01152441f17eb1d0de23090ff7edddf0bef",
+      "sha256": "10f5588b2644c53bef3bd98521f64fc243a3bcdcf470d10244517d529411f099",
+      "scanlineSha256": "0300516acf4392bb7c9919a1b771f032f24668422f18087de9c70d5f667f481c"
+    },
+    {
+      "path": "assets/the-gates/portals-20261012/normal-portal-layers-v1.png",
+      "sourceBytes": 1031188,
+      "bytes": 955049,
+      "saved": 76139,
+      "sourceSha256": "2250797e958dd7f4ed0e82a9239cdec17f97b3e9104fdec8cb6e7163902c9ad7",
+      "sha256": "a07d77117d861b35ab8a9fb47a9837665a4656c48d7313d6cc905c119079c939",
+      "scanlineSha256": "99f577ac9586a0ee2de9be15e03425c74eff096b2bd6cc349cb509d558f37f82"
+    },
+    {
+      "path": "assets/the-gates/portals-20261012/super-portal-layers-v1.png",
+      "sourceBytes": 1038176,
+      "bytes": 962777,
+      "saved": 75399,
+      "sourceSha256": "1adabc9c431f065778e31b4a10194699af8b4743eebf89d6165520dbb9af8e66",
+      "sha256": "38ee134954b5e0ea688f2c975bb451a7afce046fb84aca7ef076d75fe9e80538",
+      "scanlineSha256": "041eae1e96e9ae6bbc233fc7e551e183fd6531d798f81cdcd5ce9237fe5f092b"
+    },
+    {
+      "path": "assets/the-gates/sparks-20261012/cartoon-impact-spark-v1.png",
+      "sourceBytes": 486027,
+      "bytes": 445087,
+      "saved": 40940,
+      "sourceSha256": "c7d62cf0dfbfad5f9ab0b008237434f7ba20b92e0bf2f1b444dd4e3d057dd0d3",
+      "sha256": "37776292600f46e5b7d1fbd8816c55711b0c2efa3c105b88eee339bbef04f9fd",
+      "scanlineSha256": "9baad8cc224061e0c6f058391b50cd83c83693bb9f7f4a408c231677235229ca"
+    },
+    {
+      "path": "assets/the-gates/spine/symbols.png",
+      "sourceBytes": 1812957,
+      "bytes": 1812957,
+      "saved": 0,
+      "sourceSha256": "362c91ed30209a15d64a52ec74bf156a35eef3871f85e0d2630ab84f25caa0f3",
+      "sha256": "362c91ed30209a15d64a52ec74bf156a35eef3871f85e0d2630ab84f25caa0f3",
+      "scanlineSha256": "66fcf9db799721d44bc8bbec9f03f30bfc7e5cebf24dc255fd9185cb9cb4c5ff"
+    }
+  ]
+}

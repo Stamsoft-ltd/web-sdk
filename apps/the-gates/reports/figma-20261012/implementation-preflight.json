@@ -1,0 +1,165 @@
+{
+  "status": "Preparation only; no runtime implementation",
+  "symbolMapping": [
+    {
+      "mathSymbol": "GUARDIAN_MASK",
+      "proposedAsset": "symbols/pharaoh.png",
+      "pixelSize": [
+        400,
+        312
+      ],
+      "status": "Prepared; final Figma slot verification pending design-context access",
+      "note": "Never rename authoritative book symbol or alter paytable."
+    },
+    {
+      "mathSymbol": "SUN_MEDALLION",
+      "proposedAsset": "symbols/coin.png",
+      "pixelSize": [
+        400,
+        312
+      ],
+      "status": "Prepared; final Figma slot verification pending design-context access",
+      "note": "Never rename authoritative book symbol or alter paytable."
+    },
+    {
+      "mathSymbol": "SACRED_EYE",
+      "proposedAsset": "symbols/eye.png",
+      "pixelSize": [
+        400,
+        312
+      ],
+      "status": "Prepared; final Figma slot verification pending design-context access",
+      "note": "Never rename authoritative book symbol or alter paytable."
+    },
+    {
+      "mathSymbol": "RUNE_CHALICE",
+      "proposedAsset": "symbols/letter.png",
+      "pixelSize": [
+        400,
+        312
+      ],
+      "status": "Prepared; final Figma slot verification pending design-context access",
+      "note": "Never rename authoritative book symbol or alter paytable."
+    },
+    {
+      "mathSymbol": "CRYSTAL_ORB",
+      "proposedAsset": "symbols/orb.png",
+      "pixelSize": [
+        400,
+        312
+      ],
+      "status": "Prepared; final Figma slot verification pending design-context access",
+      "note": "Never rename authoritative book symbol or alter paytable."
+    },
+    {
+      "mathSymbol": "RED_GEM",
+      "proposedAsset": "symbols/red-gem.png",
+      "pixelSize": [
+        309,
+        314
+      ],
+      "status": "Prepared; final Figma slot verification pending design-context access",
+      "note": "Never rename authoritative book symbol or alter paytable."
+    },
+    {
+      "mathSymbol": "BLUE_GEM",
+      "proposedAsset": "symbols/blue-gem.png",
+      "pixelSize": [
+        302,
+        312
+      ],
+      "status": "Prepared; final Figma slot verification pending design-context access",
+      "note": "Never rename authoritative book symbol or alter paytable."
+    },
+    {
+      "mathSymbol": "GREEN_GEM",
+      "proposedAsset": "symbols/green-gem.png",
+      "pixelSize": [
+        297,
+        308
+      ],
+      "status": "Prepared; final Figma slot verification pending design-context access",
+      "note": "Never rename authoritative book symbol or alter paytable."
+    },
+    {
+      "mathSymbol": "PURPLE_GEM",
+      "proposedAsset": "symbols/purple-gem.png",
+      "pixelSize": [
+        305,
+        312
+      ],
+      "status": "Prepared; final Figma slot verification pending design-context access",
+      "note": "Never rename authoritative book symbol or alter paytable."
+    },
+    {
+      "mathSymbol": "AMBER_GEM",
+      "proposedAsset": "symbols/gold-gem.png",
+      "pixelSize": [
+        300,
+        305
+      ],
+      "status": "Prepared; final Figma slot verification pending design-context access",
+      "note": "Never rename authoritative book symbol or alter paytable."
+    },
+    {
+      "mathSymbol": "KEY",
+      "proposedAsset": "symbols/key-original.png",
+      "pixelSize": [
+        1319,
+        1193
+      ],
+      "status": "Prepared; final Figma slot verification pending design-context access",
+      "note": "Never rename authoritative book symbol or alter paytable."
+    },
+    {
+      "mathSymbol": "WILD",
+      "proposedAsset": null,
+      "status": "BLOCKED: no explicitly mapped new Wild symbol asset yet. Do not invent or repurpose a paying symbol."
+    }
+  ],
+  "surfaces": {
+    "board": "Board.svelte \u2014 keep 6\u00d75 positions and existing tumble movement/skip contract",
+    "symbols": "Symbol.svelte \u2014 new bitmap assets need new Spine rigs; never reuse old art rigs with new fallback PNGs",
+    "hud": "Game.svelte \u2014 keep control handlers, jurisdiction rules, replay and speed state; replace presentation only after source access",
+    "backgroundAndDoors": "TempleGate.svelte + TempleAtmosphere.svelte \u2014 new background registration and layered door assets needed; current temple fire rigs are old art",
+    "winScreens": "WinScreen.svelte \u2014 titles/banner/horns/crown assets prepared, including nested Wild horn caveat",
+    "bonusScreens": "BonusScreen.svelte \u2014 3 tier titles and blank panels prepared; end art/native dynamic-text layers pending"
+  },
+  "presentationRules": {
+    "baseBetUnits": "Book amounts are hundredths of base bet",
+    "inlineWin": [
+      10,
+      20
+    ],
+    "sweetWin": [
+      20,
+      50
+    ],
+    "wildWin": [
+      50,
+      100
+    ],
+    "epicWin": [
+      100,
+      200
+    ],
+    "mythicWin": [
+      200,
+      500
+    ],
+    "legendaryWin": [
+      500,
+      null
+    ],
+    "initialBonusSpins": 15,
+    "internalHiddenMode": "MYSTERY",
+    "preserve": "RGS event order, 96.1% math, buy costs, settlement, replay, localization, autoplay/skip behavior"
+  },
+  "additionalGaps": [
+    "Explicit WILD artwork mapping",
+    "Bonus end/max-win art placement and localized labels",
+    "Loading/splash assets and final layouts",
+    "Full un-clipped styled gate leaves and Wild banner separation"
+  ],
+  "font": "fonts/figma-20261012/TitanOne-Regular.ttf; unmodified Google Fonts source + OFL included; not wired into UI"
+}

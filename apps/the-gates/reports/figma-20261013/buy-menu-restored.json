@@ -1,0 +1,28 @@
+{
+  "supersedes": [
+    "responsive-menu-gate-controls.json: BuyMenu redesign",
+    "button-labels.json: HUD bonus caption fitter"
+  ],
+  "request": "Restore bonus menu design; change only whole-menu scaling and row capacity.",
+  "changes": [
+    "Deleted paged BuyMenu component and next/previous labels.",
+    "Restored original Modal, mode-card markup, original titles/descriptions, symbol layout, capsules, pill actions; all five modes always rendered.",
+    "Original cards fixed at authored 355x295; row capacity 1..5 selected to maximize a uniform scale within viewport minus 24px margin. No per-card/font/button resize, no carousel, no new background/header.",
+    "Fitted Modal wrapper is optional; other dialogs unchanged.",
+    "HUD Bonus restored to plain caption and original pill geometry; definite grid track prevents caption rail collapse. Return-to-base uses caption scaling only.",
+    "Previous gate/landscape/numeric fixes retained."
+  ],
+  "validation": {
+    "unitTests": "114/114 PASS",
+    "build": "PASS",
+    "typescript": "PASS",
+    "diffCheck": "PASS",
+    "browser": "BLOCKED: Chrome extension user unavailable; built-in browser unavailable. No live visual sign-off."
+  },
+  "manualQA": [
+    "Open bonus menu at desktop, portrait, landscape: all five options visible; native art/card proportions/pill buttons unchanged; no scrollbars.",
+    "Activate CHANCE / FEATURE: Return-to-base label stays visible and returns BASE.",
+    "HUD BASE: Bonus caption visible at desktop and both mobile orientations.",
+    "Confirm over-5x actions still uses original choose/confirm guards. No live wager performed."
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "task": "Buy-menu overflow, portrait gates, compact HUD centers",
+  "changes": {
+    "BuyMenu.svelte": "Dedicated bounded horizontal menu. Five columns at >=950px; pages of three/two/one below that. Explicit prev/next navigation; no scrolling tracks. Existing choose/confirm/balance checks retained.",
+    "buyLayout.ts": "Responsive columns + page clamping; all five options reachable after resize.",
+    "gateViewport.ts": "Portrait panels now fit half viewport width independently from height, avoiding height-cover zoom/cropping. Landscape preserves native proportions. Portal/reward remain independently fitted.",
+    "figma.css": "Compact button images fit actual button width/height. Static grid-centered placement replaces inherited 51/117px dimensions plus transform scale.",
+    "i18n/index.ts": "English/Bulgarian previous/next option labels."
+  },
+  "checks": {
+    "unitTests": "109/109 PASS",
+    "typescript": "PASS",
+    "productionBuild": "PASS",
+    "diffWhitespace": "PASS",
+    "gateGeometry": "All three tiers; portrait and landscape coverage, seam, off-screen start/open states, portal fit, resize and DPR tests pass.",
+    "liveVisualQA": "BLOCKED: Chrome extension user unavailable; native Chrome inspection briefly worked, then no window available. No visual sign-off claimed."
+  },
+  "manualQARequired": [
+    "Desktop 1920x1080 and 1024x768: five cards, no dialog/page scroll; prices remain fitted.",
+    "Portrait 390x844 / 320x568: one card + arrows, all five reachable; active-mode deactivate row fits.",
+    "Landscape 844x390 / 667x375: three/two cards + arrows; Menu/Bonus/Spin/Speed/Auto centered in right sidebar.",
+    "Portrait gate: inspect fitted door panels at close/impact; confirm desired portrait proportions against user screenshot.",
+    "Choose options >5x: original confirmation remains; <=5x activates without confirmation; no live wager made during QA."
+  ],
+  "commands": [
+    "pnpm --filter the-gates test",
+    "pnpm --filter the-gates build",
+    "node node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/bin/tsc --noEmit -p apps/the-gates/tsconfig.json",
+    "git diff --check"
+  ]
+}

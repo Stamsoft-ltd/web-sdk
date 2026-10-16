@@ -1,0 +1,74 @@
+{
+  "scope": "Smoother action rendering and larger tier win screens. Native assets/math unchanged.",
+  "changes": [
+    "Shared deadline-based 60Hz renderer replaces rounding-sensitive 30Hz cap",
+    "Symbol idle painting capped at 30Hz; landing/paying/removal/gate/win animation can render at 60Hz",
+    "Immutable quantized region caches avoid high-quality downsampling original PNGs every frame",
+    "Seeded event tracks share base attachments/bones; no reparsing entire rig per removal",
+    "Covered board Spine rigs freeze while a win/bonus overlay is open",
+    "Coins use shared clock, cached particle-sized texture, <=1.5 DPR",
+    "Win view tightened to 860x600 with +20 vertical registration; width cap 106dvh/1000px instead of 78dvh/760px; live amount follows same updated viewBox",
+    "Developer-only ?motionStats=true diagnostics: bounded local samples, no network"
+  ],
+  "measurements": {
+    "context": "Same local Chrome dev-only scripted board preview; 180-frame rolling samples. Single desktop/browser, not device certification.",
+    "boardBefore": {
+      "samples": 180,
+      "fps": 26.024347222623835,
+      "intervalP95": 42.099999999999454,
+      "workP95": 5.699999988079071,
+      "subscribers": 30
+    },
+    "boardAfter": {
+      "samples": 180,
+      "fps": 60.164449495287116,
+      "intervalP95": 22.19999999999891,
+      "workP95": 5.900000035762787,
+      "subscribers": 30
+    },
+    "warmLegendaryWin": {
+      "samples": 180,
+      "fps": 60.02200806962536,
+      "intervalP95": 17.90000000000873,
+      "workP95": 0.3999999761581421,
+      "subscribers": 2
+    },
+    "artSizeGainDesktop": 0.5802027429934407,
+    "portrait": {
+      "viewport": "390x844",
+      "art": "366x255",
+      "continueBottom": 577.67,
+      "dialogScroll": 844
+    },
+    "landscape": {
+      "viewport": "844x390",
+      "art": "452x316",
+      "continueBottom": 381.63,
+      "dialogScroll": 390
+    }
+  },
+  "validation": {
+    "tests": "86/86 PASS: 60/120/144Hz scheduling, hidden-tab resume, RAF cleanup, bounded mip cache/metrics, complete crown/horn bounds for all five tiers, seeded data isolation",
+    "typescript": "TS source check PASS",
+    "build": "PASS; existing shared CSS/env warnings remain",
+    "browser": "Desktop enlarged Legendary art and coin fountain, portrait and short-landscape fit; no app errors"
+  },
+  "unchanged": [
+    "win tier thresholds",
+    "count-up/auto-dismiss/skip rules",
+    "gate reward hold/seeded effects",
+    "math/RGS/replay/wallet contracts",
+    "original PNG files"
+  ],
+  "evidence": [
+    "runtime-big-legendary-20261013.png",
+    "runtime-big-win-mobile-20261013.png",
+    "motion-before-20261013.json",
+    "motion-after-20261013.json",
+    "win-motion-after-20261013.json"
+  ],
+  "risks": [
+    "Measured FPS varies by device/browser/load; 60Hz is an action-render target, not universal guarantee.",
+    "Low-end physical mobile performance not measured."
+  ]
+}

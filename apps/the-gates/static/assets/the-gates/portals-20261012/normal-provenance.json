@@ -1,0 +1,38 @@
+{
+  "tier": "normal",
+  "path": "normal-portal-layers-v1.png",
+  "tool": "built-in image_gen",
+  "mode": "edit palette variant",
+  "editTarget": "cartoon-portal-layers-v1.png",
+  "paletteReference": "../figma-20261012/gates/normal-leaf-original.png",
+  "sha256": "2250797e958dd7f4ed0e82a9239cdec17f97b3e9104fdec8cb6e7163902c9ad7",
+  "width": 1774,
+  "height": 887,
+  "alphaRange": [
+    0,
+    255
+  ],
+  "regions": {
+    "portal-rim": [
+      41,
+      47,
+      805,
+      789
+    ],
+    "portal-vortex": [
+      937,
+      63,
+      769,
+      754
+    ]
+  },
+  "rimCenterAlpha": 0,
+  "nativeFigmaPngsChanged": false,
+  "prompt": "Use case: precise-object-edit. Asset type: TWO-layer cartoon portal atlas palette variant for The Gates NORMAL mode. Image 1 is the EDIT TARGET: existing transparent portal atlas. Image 2 is PALETTE REFERENCE ONLY: the normal gate. Change ONLY the colors of Image 1 to match Image 2. Palette: deep purple and hot-pink/magenta with bright yellow-gold accents. Rim main band bright hot pink with purple shadow facets; four rim accents bright gold. Inner vortex arms purple, hot pink and small gold accents; deep purple center. No cyan, teal or blue. Preserve all silhouettes, exact two-cell side-by-side 2:1 arrangement, positions, circle sizes, rim thickness, spiral shapes, dark cartoon outlines and crisp highlight shapes from Image 1. Left cell remains RIM ONLY with a fully transparent center hole; right cell remains INNER VORTEX disk ONLY, no added rim. Keep genuine transparency outside both circles and inside left ring. Keep bold simple glossy 2D cartoon style, no photographic textures. Do NOT draw any gate from Image 2. No new motifs, particles, symbols, text, watermark, scene or background. Output the edited two-layer atlas only.",
+  "regionThresholdAlpha": 16,
+  "palette": [
+    "purple",
+    "hot pink",
+    "gold"
+  ]
+}

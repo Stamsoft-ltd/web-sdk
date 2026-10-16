@@ -1,0 +1,139 @@
+{
+  "library": "/tmp/.gates-v7-independent-5000-build-20261015T094907311096Z",
+  "mode": "SUPER",
+  "basis": "Exact complete local lookup-weighted book census, not live telemetry or a fresh RNG simulation",
+  "books": 5000,
+  "totalWeight": 4000000000000,
+  "rtp": 0.9610000000000001,
+  "topPayoutAtoms": [
+    {
+      "x": 44.7,
+      "probability": 0.0018549
+    },
+    {
+      "x": 168.0,
+      "probability": 0.00149194
+    },
+    {
+      "x": 24.1,
+      "probability": 0.00124394
+    },
+    {
+      "x": 41.8,
+      "probability": 0.00123763
+    },
+    {
+      "x": 42.0,
+      "probability": 0.00123756
+    },
+    {
+      "x": 45.2,
+      "probability": 0.00123642
+    },
+    {
+      "x": 49.6,
+      "probability": 0.00123486
+    },
+    {
+      "x": 57.2,
+      "probability": 0.00123217
+    },
+    {
+      "x": 66.8,
+      "probability": 0.00122877
+    },
+    {
+      "x": 67.2,
+      "probability": 0.00122863
+    },
+    {
+      "x": 71.2,
+      "probability": 0.00122722
+    },
+    {
+      "x": 80.8,
+      "probability": 0.00122384
+    }
+  ],
+  "metrics": {
+    "identicalWinningSetTransitionRate": 1.101433026779852e-05,
+    "overlapWinningSetTransitionRate": 2.1073529349263512e-05,
+    "newSymbolTransitionRate": 0.9999812081729292,
+    "disjointWinningSetTransitionRate": 0.9999789264706508,
+    "monoSymbolMultiTumbleSpinRate": 2.1914552945853527e-05,
+    "multiSymbolPayingBoardRate": 0.0007310507340285452,
+    "meanInitialDistinctSymbols": 9.997495364663282,
+    "meanInitial5to7CountSymbols": 0.0008181448570725071,
+    "meanPayingFreeSpins": 5.9681086,
+    "meanFreeSpins": 15.00055282,
+    "onePayingFreeSpinProbability": 8.4e-07,
+    "oneWin14BlanksProbability": 2e-08,
+    "atLeast90PctOnOneFsProbability": 0.02875142,
+    "roundExactly750xProbability": 0.0,
+    "one750x14BlanksProbability": 0.0
+  },
+  "winningFreeSpinsDistribution": {
+    "0": 0.00031313,
+    "1": 8.4e-07,
+    "2": 1.5e-06,
+    "3": 1.9e-06,
+    "4": 0.20920816,
+    "5": 0.20573406,
+    "6": 0.1888758,
+    "7": 0.20105876,
+    "8": 0.19429547,
+    "9": 8.4e-07,
+    "10": 5.2e-07,
+    "11": 8.619e-05,
+    "12": 4.7e-07,
+    "13": 2.6e-07,
+    "14": 0.00012436,
+    "15": 9.311e-05,
+    "16": 0.00016001,
+    "17": 5e-08,
+    "18": 1.089e-05,
+    "19": 5e-08,
+    "20": 1.966e-05,
+    "21": 1e-08,
+    "22": 1.394e-05,
+    "23": 1e-08,
+    "38": 1e-08
+  },
+  "payingSymbolShare": {
+    "AMBER_GEM": 0.10214677338586413,
+    "PURPLE_GEM": 0.10017011471803573,
+    "GUARDIAN_MASK": 0.09567502684669595,
+    "SACRED_EYE": 0.1010660067375858,
+    "BLUE_GEM": 0.09973759866830269,
+    "GREEN_GEM": 0.09963704495838556,
+    "CRYSTAL_ORB": 0.10187608693825478,
+    "RUNE_CHALICE": 0.09990519556718584,
+    "RED_GEM": 0.1012674785772886,
+    "SUN_MEDALLION": 0.09851867360240091
+  },
+  "rawWeightedCounts": {
+    "initialBoards": 64002211280000,
+    "initialDistinctSum": 639861810600000,
+    "initialNear5to7Sum": 52363080000,
+    "bonusRounds": 4000000000000,
+    "fsCountSum": 60002211280000,
+    "payingFsSum": 23872434400000,
+    "onePayingFs": 3360000,
+    "oneWin14Blanks": 80000,
+    "oneSpin90Pct": 115005680000,
+    "fs750x": 9610480000,
+    "round750x": 0,
+    "one750x14Blanks": 0,
+    "payingBoards": 39704330560000,
+    "simultaneousGroupsSum": 39734386760000,
+    "multiSymbolBoards": 29025880000,
+    "transitions": 15830286160000,
+    "identicalSetTransitions": 174360000,
+    "overlapTransitions": 333600000,
+    "newSymbolTransitions": 15829988680000,
+    "disjointTransitions": 15829952560000,
+    "multiTumbleSpins": 7901598560000,
+    "monoSymbolChains": 173160000
+  },
+  "examples": []
+}

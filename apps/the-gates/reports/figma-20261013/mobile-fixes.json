@@ -1,0 +1,48 @@
+{
+  "status": "Mobile layouts revised against user-supplied screenshots; exact new background art remains pending",
+  "branch": "feature/the-gates",
+  "reference": "Portrait and landscape screenshots supplied in chat 2026-10-13; Stake and browser chrome excluded",
+  "changes": {
+    "board": "Desktop native alpha-window inset corrected to x91..1403 / y103..933. Mobile uses provisional plain navy/gold rounded frame; 6x5 grid contained on all edges.",
+    "portrait": "Centered Press Play + logo; board-first layout; blue/gold horizontal controls with oversized spin; dark Balance/Bet/Win cards and integrated grey bet steppers. Default ornate counters hidden; bonus free-spin and multiplier chips retained.",
+    "landscape": "Right-hand vertical Menu/Bonus/Spin/Speed/Auto sidebar; Bet and Balance left, Win lower right; no bottom toolbar or default ornate counters.",
+    "background": "Full bleed removes app-owned blue side/bottom letterbox. Existing terrace art retained unchanged; supplied cloud/castle background not available locally.",
+    "fonts": "Native Titan One + Poppins Black preloaded before play; CSS zoom replaces transform-scaled text layer. Screenshot wallet cards use standard sans-serif.",
+    "splash": "Overflow disabled; independently fitted portrait/landscape content so shorter game stage does not crop the portrait CTA.",
+    "desktop": "Caption gap increased and bottom control deck lowered 10 authored px."
+  },
+  "validation": {
+    "unitTests": "95/95 PASS",
+    "typeScript": "tsc --noEmit PASS",
+    "productionBuild": "PASS; existing shared CSS/public-env warnings retained",
+    "assetIntegrity": "PASS; 78 earlier +46 native UI assets unchanged",
+    "browser": "Chrome extension local scripted preview only; no RGS bets",
+    "portrait390x650": "Final frame/HUD screenshot; grid bottom contained. General controls45.5px, spin97.5px, bet steppers47.66px. Bonus button enlarged after geometry check.",
+    "landscape844x390": "Final right-sidebar screenshot; dark metric cards in reference positions; all controls contained.",
+    "bet": "Increase $1 -> $2, decrease $2 -> $1 verified in scripted preview.",
+    "splash": "Before final HUD changes, no document or splash scroll at390x844,844x390,667x375,320x568. Added independent intro-fit unit test for final shorter portrait stage. Final smaller browser recheck interrupted by browser deadline; not claimed as freshly verified.",
+    "smallTouchTargets": "Sub-44px controls still possible on very small uniformly scaled viewports; not a full mobile accessibility sign-off."
+  },
+  "preserved": [
+    "Math/RTP/books",
+    "RGS event order",
+    "Replay",
+    "Localization",
+    "Speed/Space handlers",
+    "Wallet/bet guards",
+    "Win thresholds/count-up",
+    "Spine symbols and fullscreen gate cycle"
+  ],
+  "pending": [
+    "Native cloud/castle background export",
+    "Exact mobile frame/control component exports and mobile Figma context",
+    "Final smallest-viewport visual/touch sign-off"
+  ],
+  "screenshots": [
+    "mobile-target-portrait.png",
+    "mobile-target-landscape.png",
+    "mobile-fix-desktop.png"
+  ],
+  "access": "Figma connector quota remains blocked; no seat/plan/billing changes",
+  "preview": "http://127.0.0.1:3020/?preview=true"
+}

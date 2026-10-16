@@ -5,6 +5,7 @@
 	import { stateUrlDerived, stateBet, stateConfig, stateModal, stateUi } from 'state-shared';
 	import { API_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 	import { normalizeRgsBetConfig } from '../betConfig';
+	import { replayAmountUnits } from '../replayAmount';
 
 	type Props = { children: Snippet };
 
@@ -22,6 +23,12 @@
 
 			// error
 			if (authenticateData?.error) throw authenticateData;
+			if (
+				!authenticateData?.balance ||
+				!authenticateData?.config ||
+				!Number.isFinite(authenticateData.balance.amount)
+			)
+				throw { error: 'ERR_GEN' };
 
 			// balance
 			if (authenticateData?.balance) {
@@ -115,9 +122,10 @@
 
 	const handleReplay = async () => {
 		try {
+			const replayAmount = replayAmountUnits(stateUrlDerived.amount());
 			if (stateUrlDerived.currency()) stateBet.currency = stateUrlDerived.currency();
-			stateBet.betAmount = stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER || 0;
-			stateBet.wageredBetAmount = stateUrlDerived.amount() / API_AMOUNT_MULTIPLIER || 0;
+			stateBet.betAmount = replayAmount / API_AMOUNT_MULTIPLIER;
+			stateBet.wageredBetAmount = replayAmount / API_AMOUNT_MULTIPLIER;
 			stateBet.activeBetModeKey = stateUrlDerived.mode();
 
 			const data = await requestReplay({
@@ -129,13 +137,15 @@
 				language: stateUrlDerived.lang(),
 			});
 
-			if (!data || data.error) throw data || new Error('Replay unavailable. Please retry.');
+			if (!data || data.error || !Array.isArray(data.state) || !data.state.length)
+				throw data?.error ? data : { error: 'ERR_GEN' };
 
-			const replayCurrency = data.balance?.currency || data.currency;
+			const replayCurrency = stateUrlDerived.currency() || data.balance?.currency || data.currency;
 			if (replayCurrency) stateBet.currency = replayCurrency;
 			// @ts-ignore replay endpoint is not part of the generated RGS schema yet.
 			stateBet.betToResume = {
 				...data,
+				amount: replayAmount,
 				event: '0',
 				active: true,
 				mode: stateUrlDerived.mode(),

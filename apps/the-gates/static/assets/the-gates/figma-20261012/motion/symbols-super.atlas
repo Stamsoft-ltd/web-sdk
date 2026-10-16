@@ -1,0 +1,86 @@
+../symbols/pharaoh.png
+size: 400,312
+filter: Linear,Linear
+pma: false
+GUARDIAN_MASK-art
+  bounds: 0,0,400,312
+
+../symbols/coin.png
+size: 400,312
+filter: Linear,Linear
+pma: false
+SUN_MEDALLION-art
+  bounds: 0,0,400,312
+
+../symbols/eye.png
+size: 100,80
+filter: Linear,Linear
+pma: false
+SACRED_EYE-art
+  bounds: 0,0,100,80
+
+../symbols/letter.png
+size: 400,312
+filter: Linear,Linear
+pma: false
+RUNE_CHALICE-art
+  bounds: 0,0,400,312
+
+../symbols/orb.png
+size: 400,312
+filter: Linear,Linear
+pma: false
+CRYSTAL_ORB-art
+  bounds: 0,0,400,312
+
+../symbols/red-gem.png
+size: 309,314
+filter: Linear,Linear
+pma: false
+RED_GEM-art
+  bounds: 0,0,309,314
+
+../symbols/blue-gem.png
+size: 302,312
+filter: Linear,Linear
+pma: false
+BLUE_GEM-art
+  bounds: 0,0,302,312
+
+../symbols/green-gem.png
+size: 297,308
+filter: Linear,Linear
+pma: false
+GREEN_GEM-art
+  bounds: 0,0,297,308
+
+../symbols/purple-gem.png
+size: 305,312
+filter: Linear,Linear
+pma: false
+PURPLE_GEM-art
+  bounds: 0,0,305,312
+
+../symbols/gold-gem.png
+size: 300,305
+filter: Linear,Linear
+pma: false
+AMBER_GEM-art
+  bounds: 0,0,300,305
+
+../symbols/key-original.png
+size: 139,116
+filter: Linear,Linear
+pma: false
+KEY-art
+  bounds: 12,13,113,95
+
+../../portals-20261012/super-portal-layers-v1.png
+size: 1774,887
+filter: Linear,Linear
+pma: false
+portal-rim
+  bounds: 40,48,806,787
+portal-vortex
+  bounds: 936,64,770,753
+

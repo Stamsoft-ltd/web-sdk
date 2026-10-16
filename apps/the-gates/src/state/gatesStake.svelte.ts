@@ -1,7 +1,7 @@
 import { API_AMOUNT_MULTIPLIER, BOOK_AMOUNT_MULTIPLIER } from 'constants-shared/bet';
 import { stateBet, stateI18nDerived, stateModal, stateUi, stateUrlDerived } from 'state-shared';
 import type { BaseBet } from 'utils-bet';
-import { formatWalletAmount, formatWinAmount } from 'utils-shared/currency';
+import { formatWalletAmount, formatExactWinAmount as formatWinAmount } from 'utils-shared/currency';
 
 type BootStatus = 'booting' | 'ready' | 'error';
 
@@ -48,8 +48,8 @@ const isReplayMode = () => stateUi.config.mode === 'replay' || stateUrlDerived.r
 const replayMode = () =>
 	String(
 		(gatesStakeState.replaySnapshot as { mode?: string })?.mode ||
-			stateBet.activeBetModeKey ||
 			stateUrlDerived.mode() ||
+			stateBet.activeBetModeKey ||
 			'BASE',
 	).toUpperCase();
 
@@ -107,7 +107,7 @@ const captureReplaySnapshot = (bet: BaseBet | null) => {
 	}
 	gatesStakeState.replaySnapshot = clone;
 	gatesStakeState.replayEventId =
-		stateUrlDerived.event() || String((bet as { event?: string | number })?.event ?? '');
+		stateUrlDerived.event() || String((bet as { eventID?: string | number })?.eventID ?? '');
 };
 
 const syncReplayStatus = (idle: boolean) => {
@@ -118,6 +118,9 @@ const syncReplayStatus = (idle: boolean) => {
 		return;
 	}
 
+	// Initial actor loading is not an explicitly requested replay run.
+	if (!idle && !gatesStakeState.replayStartRequested && !gatesStakeState.replayObservedRunning)
+		return;
 	gatesStakeState.replayRunning = !idle;
 	if (!idle) {
 		gatesStakeState.replayStartRequested = false;
@@ -172,10 +175,8 @@ const replayPayoutMultiplier = () => {
 		return safeNumber(snapshot?.payout) / safeNumber(snapshot?.amount);
 	return replayBookPayoutMultiplier();
 };
-const replayWinAmount = () => {
-	const payout = safeNumber((gatesStakeState.replaySnapshot as { payout?: number })?.payout);
-	return payout > 0 ? payout / API_AMOUNT_MULTIPLIER : replayBetAmount() * replayPayoutMultiplier();
-};
+// Replay amount is a presentation parameter; recorded wallet payouts must not override its scale.
+const replayWinAmount = () => replayBetAmount() * replayPayoutMultiplier();
 
 const formatAmount = (amount: number) => formatWalletAmount(stateBet.currency, safeNumber(amount));
 const formatWin = (amount: number) => formatWinAmount(stateBet.currency, safeNumber(amount));

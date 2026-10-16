@@ -1,0 +1,88 @@
+{
+  "task": "Fixed-rail numeric fitting and final-target win precision",
+  "branch": "feature/the-gates",
+  "references": [
+    "apps/forest-gang/src/components/HudHtml.svelte: fixed-slot glyph-em fitting",
+    "apps/veggie-salad/src/components/prototype/VeggieSaladPrototype.svelte: container-width fitting",
+    "packages/utils-shared/currency.ts: wallet precision distinct from final-target win precision"
+  ],
+  "changes": [
+    "FitNumber measures inherited font, reserves widest digits, fits within container width; font-load/resize cleanup",
+    "HUD money, multiplier, spin counters, tumble wins, replay, buy prices, confirmation, win/bonus countups fitted",
+    "CountUp passes unrounded current + final target; keeps final payout precision",
+    "Dev-only large/precision/plain fixtures; no RGS or math changes"
+  ],
+  "browserChecks": {
+    "viewportsPassed": [
+      [
+        1920,
+        1080
+      ],
+      [
+        390,
+        650
+      ],
+      [
+        844,
+        390
+      ],
+      [
+        320,
+        568
+      ]
+    ],
+    "largeValues": [
+      "$4,999,990.85",
+      "$2,500,000,000.00",
+      "$100,000.00"
+    ],
+    "hudGlyphOverflow": false,
+    "bonusPrices": [
+      "$200,000.00",
+      "$2,000,000.00",
+      "$10,000,000.00",
+      "$30,000,000.00",
+      "$40,000,000.00"
+    ],
+    "bonusPriceSlotLogicalWidthPx": 91,
+    "bonusPriceGlyphOverflow": false,
+    "confirmationCost": "$40,000,000.00",
+    "confirmationGlyphOverflow": false,
+    "largeCountup": {
+      "final": "$2,500,000,000.00",
+      "glyphSlotPx": 271,
+      "stableFontPx": 24.1352,
+      "observedFinal": true,
+      "glyphOverflow": false
+    },
+    "fractionalCountup": {
+      "finalLabel": "$2.0025",
+      "hud": "$2.0025",
+      "observedFrames": 35,
+      "maxDecimals": 4,
+      "glyphOverflow": false
+    },
+    "twoDecimalCountup": "Unit-tested; final browser check interrupted by browser user-unavailable state",
+    "viewportReset": "Attempted; browser user-unavailable state prevented reset"
+  },
+  "precisionContract": {
+    "walletBetCost": "Fixed currency decimals; 2 normally, 3 for KWD/TND/etc",
+    "win": "Extra decimals only if final settled target requires them; existing shared tiny-win policy retained"
+  },
+  "validation": {
+    "tests": "105/105 PASS",
+    "productionBuild": "PASS",
+    "typescript": "PASS",
+    "gitDiffCheck": "PASS"
+  },
+  "commands": [
+    "pnpm --filter the-gates test",
+    "pnpm --filter the-gates build",
+    "node node_modules/.pnpm/typescript@5.8.3/node_modules/typescript/bin/tsc --noEmit -p apps/the-gates/tsconfig.json",
+    "git diff --check"
+  ],
+  "screenshots": [
+    "numbers-large-desktop.png",
+    "numbers-large-portrait.png"
+  ]
+}

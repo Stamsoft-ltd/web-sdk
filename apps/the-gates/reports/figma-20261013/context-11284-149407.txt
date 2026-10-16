@@ -1,0 +1,19 @@
+const assetPathPrefix = "./assets/the-gates/figma-20261013";
+const imgOrnateGoldenBlueGameUiPanel1 = `${assetPathPrefix}/d883a.png`;
+const imgOrnateGoldenBlueGameUiPanel2 = `${assetPathPrefix}/fcdb7.png`;
+
+export default function Frame427321626() {
+  return (
+    <div className="content-stretch flex items-center relative size-full" data-node-id="11284:149407">
+      <div className="h-[393px] mr-[-80px] relative shrink-0 w-[434px]" data-node-id="11284:149408" data-name="Ornate Golden-Blue Game UI Panel 1">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgOrnateGoldenBlueGameUiPanel1} />
+      </div>
+      <div className="h-[393px] mr-[-80px] relative shrink-0 w-[434px]" data-node-id="11284:149409" data-name="Ornate Golden-Blue Game UI Panel 2">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgOrnateGoldenBlueGameUiPanel2} />
+      </div>
+      <div className="h-[393px] relative shrink-0 w-[434px]" data-node-id="11284:149410" data-name="Ornate Golden-Blue Game UI Panel 4">
+        <img alt="" className="absolute inset-0 max-w-none object-cover pointer-events-none size-full" src={imgOrnateGoldenBlueGameUiPanel2} />
+      </div>
+    </div>
+  );
+}

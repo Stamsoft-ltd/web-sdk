@@ -1,0 +1,43 @@
+{
+  "status": "Standalone preview updated; NOT game-wired",
+  "removal": "Cartoon mini-portals replace shard burst",
+  "art": {
+    "path": "static/assets/the-gates/portals-20261012/cartoon-portal-layers-v1.png",
+    "provenance": "static/assets/the-gates/portals-20261012/provenance.json",
+    "layers": [
+      "opaque inner vortex behind symbol",
+      "transparent-hole outer rim in foreground"
+    ],
+    "nativeFigmaPngsUnchanged": true
+  },
+  "animation": {
+    "symbol": "brief stretch anticipation, sideways squeeze, seed-dependent twist, inward translation and shrink; remains opaque until final entry",
+    "portal": "elastic opening, independent vortex rotation/rim rocking, pinched close",
+    "normalMs": 400,
+    "fastMs": 267,
+    "turboMs": 133,
+    "symbolGoneMs": 300,
+    "seed": "eventId + cell/symbol identity; cosmetic only"
+  },
+  "checks": {
+    "tests": 57,
+    "pass": 57,
+    "build": "PASS",
+    "nativeAssetIntegrity": "PASS",
+    "browserErrors": 0,
+    "browser": "19/19 rigs loaded; suction at 190ms and closure at 370ms visually verified; live Fast/Turbo and reduced-motion cancel checked",
+    "authoringIssueCorrected": "Portal setup scale .001 multiplied Spine animation scale, leaving it tiny; changed new standalone authored setup to scale1; hidden slots handle neutral pose. Tests preserved."
+  },
+  "performance": {
+    "observedDesktopPreviewDrawMs": 7.3,
+    "scope": "11 visible effects, 30Hz workbench; not a mobile benchmark",
+    "portalSourceDecodedMiB": 6.0,
+    "layersPerSymbol": 3,
+    "shardImagesLoaded": false,
+    "renderControls": "visible-canvas culling; pause/reduced-motion dirty-only drawing; hidden-tab pause; maxDPR2"
+  },
+  "gameRuntimeChanged": false,
+  "mathChanged": false,
+  "screenshot": "portal-suction-190ms.jpg",
+  "preview": "http://127.0.0.1:3021/assets/the-gates/figma-20261012/motion/preview.html"
+}

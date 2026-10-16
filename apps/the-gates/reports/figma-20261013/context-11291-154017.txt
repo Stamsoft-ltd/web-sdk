@@ -1,0 +1,32 @@
+const assetPathPrefix = "./assets/the-gates/figma-20261013";
+const imgFrame427321459 = `${assetPathPrefix}/33b9c.svg`;
+const imgGroup = `${assetPathPrefix}/16b91.svg`;
+const imgGroup1 = `${assetPathPrefix}/1f6d3.svg`;
+
+type LoadingProps = {
+  className?: string;
+  property1?: "Frame 427321460";
+};
+
+function Loading({ className, property1 = "Frame 427321460" }: LoadingProps) {
+  return (
+    <div className={className || "content-stretch flex gap-[32px] items-center relative"} data-node-id="11070:46550">
+      <div className="relative shrink-0 size-[86px]" data-node-id="11070:46551">
+        <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgFrame427321459} />
+        <div className="absolute bg-[#d1300b] left-0 rounded-[8px] size-[86px] top-0" data-node-id="11070:46554" />
+        <div className="absolute inset-[17.44%_31.56%_17.22%_32.56%]" data-node-id="11070:46555" data-name="Group">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup} />
+        </div>
+      </div>
+      <div className="grid-cols-[max-content] grid-rows-[max-content] inline-grid leading-[0] place-items-start relative shrink-0" data-node-id="11070:46558" data-name="Group">
+        <div className="col-1 h-[49.117px] ml-0 mt-0 relative row-1 w-[237.479px]" data-node-id="11070:46559" data-name="Group">
+          <img alt="" className="absolute block inset-0 max-w-none size-full" src={imgGroup1} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Loading1() {
+  return <Loading className="content-stretch flex gap-[32px] items-center relative size-full" />;
+}

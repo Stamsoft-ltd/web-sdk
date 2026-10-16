@@ -1,0 +1,134 @@
+{
+  "BASE": {
+    "books": 500000,
+    "rtp": 0.961,
+    "topPayoutAtoms": [
+      {
+        "x": 0.0,
+        "probability": 0.69785932244225
+      },
+      {
+        "x": 1.5,
+        "probability": 0.0279072089235
+      },
+      {
+        "x": 0.5,
+        "probability": 0.027576498456
+      },
+      {
+        "x": 2.0,
+        "probability": 0.025114861387
+      },
+      {
+        "x": 0.2,
+        "probability": 0.02294448575025
+      },
+      {
+        "x": 0.25,
+        "probability": 0.01963352241425
+      }
+    ],
+    "zeroProbability": 0.69785932244225,
+    "belowOneXProbability": 0.836353128287,
+    "exact750xProbability": 0.0001136074115
+  },
+  "FEATURE": {
+    "books": 500000,
+    "rtp": 0.961,
+    "topPayoutAtoms": [
+      {
+        "x": 12.0,
+        "probability": 0.018781751604
+      },
+      {
+        "x": 13.0,
+        "probability": 0.0150326555425
+      },
+      {
+        "x": 13.5,
+        "probability": 0.01472584311375
+      },
+      {
+        "x": 15.0,
+        "probability": 0.013729989658
+      },
+      {
+        "x": 16.0,
+        "probability": 0.01314581472
+      },
+      {
+        "x": 11.0,
+        "probability": 0.01308023827775
+      }
+    ],
+    "zeroProbability": 0.0,
+    "belowOneXProbability": 0.0,
+    "exact750xProbability": 1.41375e-09
+  },
+  "BONUS": {
+    "books": 100000,
+    "rtp": 0.961,
+    "topPayoutAtoms": [
+      {
+        "x": 0.0,
+        "probability": 0.115151
+      },
+      {
+        "x": 0.2,
+        "probability": 0.11477608
+      },
+      {
+        "x": 0.25,
+        "probability": 0.11468256
+      },
+      {
+        "x": 40.6,
+        "probability": 0.05939135
+      },
+      {
+        "x": 51.0,
+        "probability": 0.05012639
+      },
+      {
+        "x": 55.6,
+        "probability": 0.0465037
+      }
+    ],
+    "zeroProbability": 0.115151,
+    "belowOneXProbability": 0.34460964,
+    "exact750xProbability": 0.00063384
+  },
+  "SUPER": {
+    "books": 100000,
+    "rtp": 0.9610000000000001,
+    "topPayoutAtoms": [
+      {
+        "x": 750.0,
+        "probability": 0.31569776
+      },
+      {
+        "x": 0.0,
+        "probability": 0.19698173
+      },
+      {
+        "x": 0.2,
+        "probability": 0.19664223
+      },
+      {
+        "x": 0.25,
+        "probability": 0.19656076
+      },
+      {
+        "x": 169.9,
+        "probability": 0.04464998
+      },
+      {
+        "x": 341.15,
+        "probability": 0.01000196
+      }
+    ],
+    "zeroProbability": 0.19698173,
+    "belowOneXProbability": 0.59018472,
+    "exact750xProbability": 0.31569776
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "verifiedAssets": 78,
+  "readyAssets": 75,
+  "bytes": 26595046,
+  "sha256Checks": "PASS",
+  "pngDecodeChecks": "PASS: all 78 PNGs fully decoded with PIL",
+  "sourceImagesDownloaded": 1207,
+  "sourceSnapshot": "/Users/simeonhristov/Downloads/THE-GATES-source-20261012.fig",
+  "nativeExportStatus": "Chrome extension exports work. Added layered banners, horns, crowns, blank bonus button, blank neutral modal button, sound/music/info, latest terrace background and blank counter. Clipped gate exports retained as reference only.",
+  "uiStatus": "Figma get_design_context and get_screenshot denied edit access; required high-fidelity context missing. No UI redesign code changed.",
+  "mathStatus": "Unchanged",
+  "pending": [
+    "Mode-specific styled gate pairs without ancestor clipping (full raster originals available).",
+    "Updated purchase-card panel; old card node deleted.",
+    "Wild banner has nested right horn: split in Figma for fully independent layered animation."
+  ],
+  "baselineTests": {
+    "pass": 46,
+    "fail": 0
+  },
+  "baselineBuild": "PASS: Vite emitted site and command exited 0 after Gates-only Sass preprocessing cleanup.",
+  "font": "Titan One Regular 1.001 prepared with bundled OFL; not integrated.",
+  "dependencySetup": {
+    "node": "22.16.0",
+    "pnpm": "10.5.0",
+    "install": "Frozen lockfile, Gates dependency closure; no lockfile or dependency version changes",
+    "gatesModules": "Own node_modules restored; no longer linked to Veggie Salad"
+  },
+  "buildVisualCheck": "Client CSS hash unchanged (style.zsLM2a7N.css). Emitted HTML matches after normalizing generated SvelteKit ID/version and bundle URI hash; UI/math source unchanged.",
+  "motionStatus": "19 standalone Spine rigs + interactive workbench authored and official-runtime tested; NOT integrated into game.",
+  "motionTests": {
+    "total": 52,
+    "pass": 52,
+    "newChecks": 6
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "request": "Correct off-center mobile landscape rail, overlapping win card, and doubled Bonus/Spin rims",
+  "cause": "Legacy rail pseudo-element used content-box sizing plus borders, while the button grid used border-box. Win card used an independent left offset. Spin had both SVG rims and stacked CSS rims.",
+  "fix": [
+    "Draw mobile rail on the grid wrapper with explicit border-box sizing",
+    "Share --hud-axis between landscape branding, rail and win card",
+    "Place win card 7 stage units below rail",
+    "Remove extra Bonus/Spin box shadows",
+    "Use separate mobile Spin SVG with one thick gold rim; desktop SVG unchanged"
+  ],
+  "checks": {
+    "tests": 153,
+    "failed": 0,
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "packageAssets": "passed; mobile SVG retained",
+    "gitDiffCheck": "passed",
+    "previewViewports": [
+      [
+        390,
+        844
+      ],
+      [
+        844,
+        390
+      ],
+      [
+        667,
+        375
+      ]
+    ],
+    "landscape844": {
+      "railCenterX": 783.3671875,
+      "brandCenterX": 783.3671875,
+      "winCenterX": 783.37109375,
+      "winGapPx": 7.3125,
+      "maxControlCenterErrorPx": 0.004
+    },
+    "largeWin667": {
+      "winText": "$2,500,000,000.00",
+      "winGapPx": 5.8359375,
+      "pageScroll": false,
+      "amountContainedInCard": true
+    }
+  },
+  "assetNote": "Mobile rim is a derived SVG under assets/the-gates/hud; original Figma exports and their inventory hashes remain unchanged.",
+  "proof": [
+    "hud-landscape-single-rim.png",
+    "hud-landscape-large-win-clearance.png"
+  ],
+  "limits": [
+    "Local scripted preview only; no live-money actions or physical-device QA"
+  ]
+}

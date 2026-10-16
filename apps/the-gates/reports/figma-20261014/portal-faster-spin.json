@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-14",
+  "change": "Small angular-speed increase; 500\u2013560 degrees over the same suction window, about 18% faster than the previous 420\u2013480 degree range.",
+  "preserved": [
+    "Full-scale hold",
+    "Slow shrink duration",
+    "Rear portal rim/vortex",
+    "Normal 820ms / Fast 500ms / Turbo 180ms",
+    "Seeded spin direction"
+  ],
+  "interpolation": "Added a collinear midpoint key so every adjacent rotation delta remains below 180 degrees.",
+  "validation": {
+    "testsPassed": 140,
+    "typescript": "PASS",
+    "diffCheck": "PASS",
+    "sourcePNGs": "UNCHANGED"
+  }
+}

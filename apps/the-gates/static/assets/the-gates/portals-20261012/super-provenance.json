@@ -1,0 +1,38 @@
+{
+  "tier": "super",
+  "path": "super-portal-layers-v1.png",
+  "tool": "built-in image_gen",
+  "mode": "edit palette variant",
+  "editTarget": "cartoon-portal-layers-v1.png",
+  "paletteReference": "../figma-20261012/gates/super-leaf-original.png",
+  "sha256": "1adabc9c431f065778e31b4a10194699af8b4743eebf89d6165520dbb9af8e66",
+  "width": 1774,
+  "height": 887,
+  "alphaRange": [
+    0,
+    255
+  ],
+  "regions": {
+    "portal-rim": [
+      40,
+      48,
+      806,
+      787
+    ],
+    "portal-vortex": [
+      936,
+      64,
+      770,
+      753
+    ]
+  },
+  "rimCenterAlpha": 0,
+  "nativeFigmaPngsChanged": false,
+  "prompt": "Use case: precise-object-edit. Asset type: TWO-layer cartoon portal atlas palette variant for The Gates SUPER mode. Image 1 is the EDIT TARGET: existing transparent portal atlas. Image 2 is PALETTE REFERENCE ONLY: the super gate. Change ONLY the colors of Image 1 to match Image 2. Palette: royal blue, creamy white and yellow-gold. Rim main band creamy white with gentle gray facet shadows; four rim accents bright royal blue with small gold accent edges. Inner vortex arms royal blue, white and gold with a deep navy center. No purple, magenta, red or teal. Preserve all silhouettes, exact two-cell side-by-side 2:1 arrangement, positions, circle sizes, rim thickness, spiral shapes, dark cartoon outlines and crisp highlight shapes from Image 1. Left cell remains RIM ONLY with a fully transparent center hole; right cell remains INNER VORTEX disk ONLY, no added rim. Keep genuine transparency outside both circles and inside left ring. Keep bold simple glossy 2D cartoon style, no photographic textures. Do NOT draw any gate from Image 2. No new motifs, particles, symbols, text, watermark, scene or background. Output the edited two-layer atlas only.",
+  "regionThresholdAlpha": 16,
+  "palette": [
+    "royal blue",
+    "white",
+    "gold"
+  ]
+}

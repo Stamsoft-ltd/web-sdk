@@ -1,0 +1,126 @@
+{
+  "date": "2026-10-14",
+  "scope": "Development QA, deterministic scripted preview plus loopback fake RGS only. Not live wallet, math or release acceptance.",
+  "integration": {
+    "host": "components/GpuSurface.svelte",
+    "engine": "game/gpuRenderer.ts",
+    "bookBridge": "components/Board.svelte → game/gpuBoard.ts",
+    "hudAndForms": "Svelte HTML, approved hybrid",
+    "renderer": "one Pixi WebGL canvas",
+    "spine": "official spine-pixi-v8 4.2.74",
+    "tileCount": 30,
+    "dprCap": 2,
+    "idle": "demand rendering stops",
+    "hidden": "owned RAF canceled on visibility change",
+    "cleanup": "RAF/listeners/observers/jobs/contexts/textures disposed; unregistration tolerates parent-first destruction"
+  },
+  "browserChecks": {
+    "portrait": {
+      "viewport": [
+        390,
+        844
+      ],
+      "railCenterY": 591.0390625,
+      "buttonCenterY": [
+        591.03515625,
+        591.0390625,
+        591.0390625,
+        591.03515625,
+        591.03515625
+      ],
+      "maxCenterErrorPx": 0.00390625,
+      "canvasCount": 1
+    },
+    "landscape": {
+      "viewport": [
+        844,
+        390
+      ],
+      "canvasCount": 1,
+      "gpuTiles": 30,
+      "renderer": "pixi-webgl"
+    },
+    "idle": {
+      "framesBefore": 4,
+      "framesAfter2500ms": 4
+    },
+    "hudInteractions": {
+      "betIncrease": {
+        "loaderImages": 0,
+        "loaderFetches": 0,
+        "srcWrites": 0,
+        "symbolMounts": 0
+      },
+      "speedChange": {
+        "loaderImages": 0,
+        "loaderFetches": 0,
+        "srcWrites": 0,
+        "symbolMounts": 0
+      }
+    },
+    "winDialog": {
+      "canvasCount": 1,
+      "canvasParent": "DIALOG",
+      "activeLayers": 3,
+      "coins": "pooled GPU sprites behind Spine text"
+    },
+    "gate": {
+      "renderer": "pixi-webgl",
+      "canvasCount": 1,
+      "canvasParent": "temple-gate overlay"
+    },
+    "cleanSessionConsoleErrors": 0
+  },
+  "platformChecks": {
+    "mockLog": "rgs-gpu-qa.json",
+    "authenticate": "shared Authenticate; German catalog; KWD from RGS",
+    "authenticatedBetLevels": [
+      0.01,
+      0.025,
+      0.1,
+      1
+    ],
+    "stepSequence": [
+      0.025,
+      0.1,
+      0.025
+    ],
+    "requestAmountMicro": 25000,
+    "winBookAmount": 50,
+    "displayWin": "KD0.0125",
+    "settledWalletMicro": 123456776500,
+    "resume": "authenticate → end-round; no wallet/play; controls unlocked after playback",
+    "social": "RGS socialCasino=true, XSC, Spanish native play labels; server buy/turbo/autoplay restrictions hide controls"
+  },
+  "localization": {
+    "draftLocales": 16,
+    "draftUiKeysPerLocale": 114,
+    "nativeReviewed": false,
+    "longRulesLegal": "English fallback; existing Bulgarian rules preserved",
+    "socialLongCopy": "Canonical English social fallback where gambling terminology has not been reviewed"
+  },
+  "residualRisks": [
+    "No measured before/after GPU FPS or hardware-mobile benchmark; JS diagnostics exclude GPU time.",
+    "No live RGS / jurisdiction / native translation sign-off.",
+    "WebGL context-loss recovery beyond initialization error/reload not exercised.",
+    "Pixi adds GPU runtime JS; shared inline delivery still emits Vite large-chunk warning."
+  ],
+  "verification": {
+    "tests": {
+      "passed": 166,
+      "failed": 0
+    },
+    "typecheck": "tsc --noEmit passed (Svelte runtime scripts also built + browser checked)",
+    "build": "static build + runtime asset closure passed",
+    "contract": "Pixi Svelte lifecycle contract passed",
+    "diffCheck": "passed",
+    "package": {
+      "bytes": 36609153,
+      "mib": 34.913208961486816,
+      "runtimeAssets": 126,
+      "removedGeneratedFiles": 155
+    },
+    "warning": "Shared inline bundle >500kB; not suppressed",
+    "mockServer": "stopped after QA"
+  }
+}

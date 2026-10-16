@@ -1,0 +1,74 @@
+{
+  "date": "2026-10-14",
+  "request": "Reverse suction: gate reward spins and grows outward while doors open.",
+  "timelineMs": [
+    {
+      "event": "gateOpen",
+      "start": 0,
+      "duration": 580,
+      "sequence": "slide in, crash at 360ms, settle closed; reward not drawn"
+    },
+    {
+      "event": "gateReward",
+      "start": 580,
+      "duration": 520,
+      "sequence": "open doors; reward grows 0.02 to 1 with 720 degree outward rotation and small overshoot"
+    },
+    {
+      "event": "gateReward readable hold",
+      "start": 1100,
+      "duration": 1800,
+      "sequence": "upright, full scale, authoritative localized reward"
+    },
+    {
+      "event": "gateReward outro",
+      "start": 2900,
+      "duration": 330,
+      "sequence": "fade reward; collapse portal only after final award"
+    }
+  ],
+  "invariants": [
+    "No event lookahead or invented rewards",
+    "Gate-open clock pauses at closed pose until reward event",
+    "Hidden second award spins from same open portal, doors suppressed",
+    "Protected readable hold at all live speeds and skip",
+    "Reduced motion uses settled pose; abort still cancels event wait",
+    "Gate actor keyed by stable gate event, not each reward update",
+    "Source artwork untouched"
+  ],
+  "verification": {
+    "tests": {
+      "passed": 142,
+      "failed": 0
+    },
+    "officialSpineEvaluation": "All three tiers complete continuous 720-degree rotation, upright at hold; no shortest-arc snapback",
+    "browser": {
+      "route": "/?preview=true&artPreview=gate-hidden",
+      "mode": "local scripted preview, no money or RGS",
+      "firstRewardObserved": {
+        "canonicalTime": 0.702,
+        "order": 1,
+        "phase": "opening"
+      },
+      "secondRewardObserved": {
+        "canonicalTime": 0.6,
+        "order": 2,
+        "phase": "opening",
+        "doors": "remain hidden"
+      },
+      "errorsObserved": 0,
+      "screenshots": [
+        "gate-reward-spinout.png",
+        "gate-reward-live-opening.png",
+        "gate-reward-hidden-second.png"
+      ]
+    },
+    "typescript": "PASS",
+    "productionBuild": "PASS",
+    "assetPackage": "PASS",
+    "gitDiffCheck": "PASS"
+  },
+  "residualRisks": [
+    "Visual review used desktop local preview; real RGS publication not exercised. Mobile geometry covered by existing viewport tests, not new device screenshots."
+  ]
+}

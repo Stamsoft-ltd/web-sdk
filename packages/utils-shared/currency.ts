@@ -232,3 +232,18 @@ export const formatWinAmount = (currency: string, amount: number, targetAmount =
 		target !== 0 && Number(Math.abs(target).toFixed(Math.min(targetExact, capped))) === 0;
 	return render(currency, value, decimals, targetVanishes ? targetExact : capped);
 };
+
+/** Gates' hundredths books × micro-unit replay stakes require up to eight exact decimals.
+ * Opt-in: other games retain their existing four-digit presentation policy; wallets stay fixed.
+ * Tween frames use the settled target's precision, never arbitrary animation-frame precision.
+ */
+export const formatExactWinAmount = (currency: string, amount: number, targetAmount = amount) => {
+	const decimals = metaFor(currency).decimals;
+	const value = Number.isFinite(amount) ? amount : 0;
+	const target = Number.isFinite(targetAmount) ? targetAmount : value;
+	const digits = Math.min(
+		fractionDigitsForAmount(value, decimals),
+		fractionDigitsForAmount(target, decimals),
+	);
+	return render(currency, value, decimals, digits);
+};

@@ -1,0 +1,759 @@
+{
+  "beforeFiles": 284,
+  "beforeBytes": 138636718,
+  "removed": [
+    {
+      "path": "assets/the-gates/figma-20261012/backgrounds/base-original.png",
+      "bytes": 1579998,
+      "sha256": "67dc36990ee51e7392eab49e8afa3ef0de5313dde327fc455b5486ffd3d63881"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/backgrounds/base-terrace.png",
+      "bytes": 1424259,
+      "sha256": "c6e72840fa52e5753386aeb1f5409fb1eb3e81ff6bafcb214887f732a664f45f"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/board/frame-original.png",
+      "bytes": 462057,
+      "sha256": "96342ee888498c06d9fc5cbd239d5a028028c4daa2c47b045bc1b07c225968b0"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/gates/normal-left.png",
+      "bytes": 96043,
+      "sha256": "4e3d017c5a7c00665a7a10fe242ed25ee861bd8c0701d23b6f2fdacf08cd36ba"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/gates/normal-right.png",
+      "bytes": 113437,
+      "sha256": "d46f53c66e48369ab399cdd6a1db883de074514efb3a36373a1296ae285935e2"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/hud/autoplay-arrows.png",
+      "bytes": 1132,
+      "sha256": "1e4d0c16d296e53deaca35467c5d0a93968550298d4faa9a7e8e1b6e907f1816"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/hud/bar.png",
+      "bytes": 114271,
+      "sha256": "fab7754d4420b9e79e9c61e15d956ea4990fd300e9df87369a318b1cc2199e56"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/hud/bet-increase.png",
+      "bytes": 27780,
+      "sha256": "9f4d5893ea73eb4e60092a901bf72fe0544d93f882db2c36f557d476f6398f10"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/hud/bonus-button-en.png",
+      "bytes": 71981,
+      "sha256": "6d82ab9714e0f6bd04909a04019e43474f5cb6f10a21e0fb6f72d2e90f433ae1"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/hud/music.png",
+      "bytes": 24313,
+      "sha256": "90cf34cf55a25731223ecb91932480f009670d1a8703625cb1f55c58535aaf3a"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/hud/round-button-blank.png",
+      "bytes": 26077,
+      "sha256": "3db3a7f150559b218808d00f2c8d2428178bf852d63c3d98c16f2483605e2653"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/hud/sound.png",
+      "bytes": 25416,
+      "sha256": "35757a3baddc809944a56b420dff060652f345ce2b3184df9dfba3330ad7c6b9"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/hud/speed.png",
+      "bytes": 25802,
+      "sha256": "d5ecdda1d97b15a6fd0a581a9813bda8b28825989b55766ea643243850fa9dab"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/hud/spin.png",
+      "bytes": 114771,
+      "sha256": "cf7368a0af3f480a87d7a2523c4e4a47b37845e651d9e8212da608f467fb5146"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/logo/badge-original.png",
+      "bytes": 815694,
+      "sha256": "29a63a224576c0a59baf94f266c652e0179660d87becf201ccca5a716e8b09c1"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/logo/gates-wordmark-original.png",
+      "bytes": 839682,
+      "sha256": "61baf4e4eaec0ec57afb3e9834173d90bd33ef076a853eecae5143fa5172adc7"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/logo/the-wordmark-original.png",
+      "bytes": 757429,
+      "sha256": "ee2be0272c9af04e848107e95b88672a6283e9a22761d5e689f8ff33af218dad"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/motion/symbol-removal.atlas",
+      "bytes": 352,
+      "sha256": "76bc1537061a8da6559dbf5cbb50eb0a3db18181cd032d957dabed947995d9c8"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/motion/symbol-removal.json",
+      "bytes": 74880,
+      "sha256": "79c28c74b23148ce1f0e8b87036e2d097c9501b8f96d3554de850d375f1639da"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/panels/bonus-panel-original.png",
+      "bytes": 795051,
+      "sha256": "760f9aa9cb26a648340b32a1b764a59203e715407e92724b10a9b91a25dd2e1c"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/panels/buy-card-original.png",
+      "bytes": 824581,
+      "sha256": "f7e49254cbe4aaca512f8b0c41940029e07e0582a9e21b3b7785a3ae9c2a0879"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/panels/inline-win-original.png",
+      "bytes": 839642,
+      "sha256": "0e0e6e337651636e321ee46222324af19b7b04ec321e287bc957bde0834b1f1e"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/panels/modal-neutral-button.png",
+      "bytes": 89985,
+      "sha256": "82ca2624cb9002bc4bd328f8d3bd1fe23233afd4dd39077bf07d916b1b83e31e"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/panels/modal-panel-2x.png",
+      "bytes": 652926,
+      "sha256": "8013012020b3a294217625ee27b81c430b818c88ba9812a57959640c4347ca32"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/banner-original.png",
+      "bytes": 1087531,
+      "sha256": "7fc0f51cf8da170b74409fc73348f0429816a4071162ca49d8ac81f22aa3880e"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/crown-alpha.png",
+      "bytes": 17824,
+      "sha256": "587bf32640c5ca2ac62d6253ee5c9f65f9cff78ce6ddd1fda5662dcb8c0bf04b"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/crown-original.png",
+      "bytes": 1039679,
+      "sha256": "5324cc06c7e6abea63db26f6891d647ebaf7c3c6e800542e928e1aa73b60a78a"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/horn-original.png",
+      "bytes": 634634,
+      "sha256": "922132244fae1f35f9224aa10398f6cb1eb1082e7b6502d4b36504340b626528"
+    },
+    {
+      "path": "assets/the-gates/figma-20261012/wins/wild-horn-1.png",
+      "bytes": 41787,
+      "sha256": "d429d34242b75dfa822cb131daa34b5830c3c318270d0e73a3b6e0ca2919d7a6"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/044e7.png",
+      "bytes": 799328,
+      "sha256": "e1569084e0a8907ad2a3442e12d2ae6f15dcbdbfd80b7df78e57b4d4398a798b"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/0dcc4.svg",
+      "bytes": 1702,
+      "sha256": "5dc7e513137c4c008f4401739eef641bf498a73502876a09419c16766a18fb41"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/139ce.png",
+      "bytes": 942140,
+      "sha256": "926e46acf0d323d7f36d70377433530ce546730d4c65429f2d7d0470e53604e3"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/1866a.png",
+      "bytes": 6528,
+      "sha256": "afbae874e67f3666f8b023be2ac317eaa38179e87251d3872cf5ae7c3da66199"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/1adb5.png",
+      "bytes": 12709,
+      "sha256": "7ee0051fe9b7882bc2ba5623ab216102e5890188584b3c43d4ad4554e8a454c8"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/25449.png",
+      "bytes": 83353,
+      "sha256": "5a0b5d0be1c48816bcd7ba77cde8157044cc6164a84229aa727622eff8541653"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/3031a.svg",
+      "bytes": 1074,
+      "sha256": "fe323466c3580488319a83ef0b3e63cab1661f4842b6af7d1bd0045bce00a22d"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/33b9c.svg",
+      "bytes": 400,
+      "sha256": "f3e13b9704ed15b21ca61d285ba1bea84638b23567db8753e533d8c237e0667e"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/36954.png",
+      "bytes": 1117146,
+      "sha256": "f941e48f6c2e52b5bdc35c2ea7f5f5b2a7ec800ea2e6f3bd888fe8999538caca"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/37673.png",
+      "bytes": 10277,
+      "sha256": "e49ebf2231724af1bc9205f7edaa985f124c459a1ed8cb6ea0139dcfddcd93da"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/3c2ba.svg",
+      "bytes": 709,
+      "sha256": "fde278546da5de0fbd9a86de219dc3c1185f7b3f3dfa80f4efe667f7e3bc17c2"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/407f5.svg",
+      "bytes": 5126,
+      "sha256": "0615b3397574e071f691e58deee74007f033910ee1689c06cad7977d3a5fcb46"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/49b06.svg",
+      "bytes": 651,
+      "sha256": "5e98863a376c985a72023b2e4da6bf51e9eeeba0b31254b8d0846cf6a669ce2a"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/58549.svg",
+      "bytes": 5614,
+      "sha256": "eeb7c858283e9250d8446307f63ce31245cf6e32a71cd9f1d24b07488ccdaa3a"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/5bb47.png",
+      "bytes": 1137175,
+      "sha256": "cc2ac193e33ca96bd82b048630b2db0718b51227866e6c7ed872ceafead53502"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/5d442.png",
+      "bytes": 572115,
+      "sha256": "8d1f68f3c4f0c120b31add2264b2703219122b7cbbdd972368921912ab7aec22"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/627a9.svg",
+      "bytes": 6840,
+      "sha256": "d0fa097982475772bb252169ca680825b2b0c802bcff2a29d424b2ae331cfc5e"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/68caf.png",
+      "bytes": 6881,
+      "sha256": "25d38c5ec4b89fe9211fc9bd823be76e22b7f06d9283591721e25d6b0f3ab733"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/78f83.png",
+      "bytes": 18498,
+      "sha256": "f22b866431eb51fee3febd0791de79a9aa08cd2d4d3dd9b10e13a98863ff9270"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/98971.png",
+      "bytes": 14082,
+      "sha256": "31ba36900ea29f9c50efe1f7ac2b29969e7a6b6d5f3ce4b44af324910679e214"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/a0263.png",
+      "bytes": 1164545,
+      "sha256": "4eecf1f587e7da0871c975a4f649c3ef6fe9697044556961cf0a66384bdd357b"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/a0522.svg",
+      "bytes": 651,
+      "sha256": "aafccb0bc9e6a5d5f51623878dfea7b5b310d4fecec718b79b223d6cab996ad2"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/b1808.png",
+      "bytes": 1174662,
+      "sha256": "8c280db94d24340c39678ea18c998de04613fda2fec143643901c11d0af063e2"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/backgrounds/cloud-castle-portrait-2x.png",
+      "bytes": 751346,
+      "sha256": "fe45e18ef17f5aa61cf095e80ea3c2580b9a03d32f76500988788a0afac3aba6"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/c14a9.svg",
+      "bytes": 4274,
+      "sha256": "0260095cd4c78fd27042815124adae61af31dbd73c245d323875d991c3ea8de7"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/cd320.svg",
+      "bytes": 1024,
+      "sha256": "186c91b3f442f68084dede6a89b0b5bd2b114ee2c685eeafebef3ba785c9d778"
+    },
+    {
+      "path": "assets/the-gates/figma-20261013/fcef2.png",
+      "bytes": 967430,
+      "sha256": "3d73b4a49c3f735ac34e513ea81f4b4632eff0d70680153f84e56bb16c4af004"
+    },
+    {
+      "path": "assets/the-gates/gate-doors.png",
+      "bytes": 4169988,
+      "sha256": "3abe19bade9792fe55929ba51eedf1bdc136e52eaca72e8c8d42b39ddf3fd665"
+    },
+    {
+      "path": "assets/the-gates/particles-20261012/crystal-shard-v1.png",
+      "bytes": 631456,
+      "sha256": "efd08a3935cacf2fc3b32cb0e865a6510409aa4e21678aeb5b316e4b63fec71e"
+    },
+    {
+      "path": "assets/the-gates/particles-20261012/provenance.json",
+      "bytes": 1314,
+      "sha256": "057bd836dcee8a06632229bfa3c45ecb25034826ecf72727a25cd93b6e006538"
+    },
+    {
+      "path": "assets/the-gates/portals-20261012/cartoon-portal-layers-v1.png",
+      "bytes": 1005220,
+      "sha256": "c718298cf9094d9bd6cb5d0ba63f913317a770cf9e40f29eef38023bcfc08484"
+    },
+    {
+      "path": "assets/the-gates/portals-20261012/palette-artifacts.json",
+      "bytes": 4984,
+      "sha256": "7640eee97bb91b47dfd13b47541ec95453c130f1a2aeadb4e6956acfe96b28fd"
+    },
+    {
+      "path": "assets/the-gates/portals-20261012/provenance.json",
+      "bytes": 1782,
+      "sha256": "c9f9a43d0a8062ab504c61c46de9ae4b7b26cdcb45695d038bbcafc77d2739fc"
+    },
+    {
+      "path": "assets/the-gates/presentation-art-provenance.json",
+      "bytes": 17180,
+      "sha256": "be4cba9c49cc3bbe1443c2c22149bce73eb55edf9fc6bbf7a48a26e660679d7b"
+    },
+    {
+      "path": "assets/the-gates/presentations/README.md",
+      "bytes": 1307,
+      "sha256": "8464228ccfdeaa6752990874642faf61c969bb2bc0923bafda5b670464efa673"
+    },
+    {
+      "path": "assets/the-gates/presentations/complete-crest.png",
+      "bytes": 2200407,
+      "sha256": "9d410e1b20ce032243506c035a6d6978b6f867201bd1da78627b3ae8fcf736c1"
+    },
+    {
+      "path": "assets/the-gates/presentations/hidden-crest.png",
+      "bytes": 2422522,
+      "sha256": "b54735cb8faab78c0c2e36642cfdc330a6b09a35f8f63a50902f49c62381dae4"
+    },
+    {
+      "path": "assets/the-gates/presentations/normal-crest.png",
+      "bytes": 2418284,
+      "sha256": "e4b02840ead12c9c2e054052b08e678b691dc3c5caf8d3276f693ea5af882dab"
+    },
+    {
+      "path": "assets/the-gates/presentations/super-crest.png",
+      "bytes": 2502931,
+      "sha256": "a3dfb60b4428a63f3e446b2e70d9c798989901b3b31c18fbb9a8cb988ed12928"
+    },
+    {
+      "path": "assets/the-gates/press_play_logo.webp",
+      "bytes": 3550,
+      "sha256": "fc2f67a162ed028e36bb332801f5099a5deb2925393c709eaa93c01aca5953d6"
+    },
+    {
+      "path": "assets/the-gates/provenance.json",
+      "bytes": 12398,
+      "sha256": "22b041fef79071c527d61f4dc4fdbbca906a8df33ceec067b5a1181319014949"
+    },
+    {
+      "path": "assets/the-gates/scene-base.png",
+      "bytes": 2473625,
+      "sha256": "cec39dd042d0d3e1f1126c283a1891a4e4a609da51c3e5f121267aa9c66273c5"
+    },
+    {
+      "path": "assets/the-gates/scene-hidden.png",
+      "bytes": 2837958,
+      "sha256": "2d752af83efef3ca0597a2b5da5e1ecf24ab67a21d1a20f69a24d34fa87f79cb"
+    },
+    {
+      "path": "assets/the-gates/scene-normal.png",
+      "bytes": 3208369,
+      "sha256": "ed22b2e8123d841db63384504f65eb62da3812269d51548c895fee6fb70887fa"
+    },
+    {
+      "path": "assets/the-gates/scene-super.png",
+      "bytes": 3237783,
+      "sha256": "5187234e611fa5bf674fa1171b4694896f5a6206f74ad9503bce653beeb11fe3"
+    },
+    {
+      "path": "assets/the-gates/spine/AMBER_GEM.json",
+      "bytes": 5842,
+      "sha256": "8bad7da8dd22b23bc81b1cf981383e15175d6ac84f4ce32e2aaa70a5e6af37d5"
+    },
+    {
+      "path": "assets/the-gates/spine/BLUE_GEM.json",
+      "bytes": 5841,
+      "sha256": "44279043cfdb1440f5bff68e8638aa2996ce810aa33cf21f8850087ca9e6ce5c"
+    },
+    {
+      "path": "assets/the-gates/spine/CRYSTAL_ORB.json",
+      "bytes": 6306,
+      "sha256": "b8118c658963e5b529c2dfc7cdf1f3286fc089c0aa71932614349180c1512f2a"
+    },
+    {
+      "path": "assets/the-gates/spine/GREEN_GEM.json",
+      "bytes": 5842,
+      "sha256": "7691d3ef4a6b72a7583d851d5d267f481425f187b6ad09165e42ec531fd70471"
+    },
+    {
+      "path": "assets/the-gates/spine/GUARDIAN_MASK.json",
+      "bytes": 6722,
+      "sha256": "bdcf60fa1aaecfab8adfc85ce1bb0089355adf59bc89db33651f529a852c7a82"
+    },
+    {
+      "path": "assets/the-gates/spine/PURPLE_GEM.json",
+      "bytes": 5843,
+      "sha256": "4c11a2a871517aa97d060b9feb295b497dfca2b8669620936bff192113608bd7"
+    },
+    {
+      "path": "assets/the-gates/spine/RED_GEM.json",
+      "bytes": 5840,
+      "sha256": "13589fcf28421c1fabbef16e2bfa9edb5c0096ca82dcf92136d0dc1ad063704e"
+    },
+    {
+      "path": "assets/the-gates/spine/RUNE_CHALICE.json",
+      "bytes": 7311,
+      "sha256": "1888d08747f8dbc3912f84b939b0f08ea50ae8d6b1ed5aa645bc4e3a4d1edf4f"
+    },
+    {
+      "path": "assets/the-gates/spine/SACRED_EYE.json",
+      "bytes": 5992,
+      "sha256": "ec101e39f3562fca9e6d3e543673bacab603e9d2d376f1e59451a9a1db364509"
+    },
+    {
+      "path": "assets/the-gates/spine/SPINE-LICENSE.txt",
+      "bytes": 1454,
+      "sha256": "6142ee6cc2c03d3a918793e4750ae772bd3755c534d4a35e559e301acf51ec39"
+    },
+    {
+      "path": "assets/the-gates/spine/SUN_MEDALLION.json",
+      "bytes": 5234,
+      "sha256": "8588a600ced6d991e8e945cafa542b0285aca98b389fbd38d9dd3e6a3c7c90ce"
+    },
+    {
+      "path": "assets/the-gates/spine/ambient-base.json",
+      "bytes": 12952,
+      "sha256": "c214f0bbce5833d2d7fcd9a61c0b19f2fda9f421c9cb16626f745f22d4b2e28f"
+    },
+    {
+      "path": "assets/the-gates/spine/ambient-hidden.json",
+      "bytes": 10880,
+      "sha256": "ba717b69cb54fce049bf99a267a4b99bf2bac75a41d1f94d402db7d1a2bee2db"
+    },
+    {
+      "path": "assets/the-gates/spine/ambient-normal.json",
+      "bytes": 10869,
+      "sha256": "5f54f18f4d307168af3923fca0eaa4a94489870491a34cf08ff860cd8379114f"
+    },
+    {
+      "path": "assets/the-gates/spine/ambient-super.json",
+      "bytes": 11902,
+      "sha256": "7ec52484688d20422871503788ae316eb318f2f765d5d2fa1c06d2e7b50a77eb"
+    },
+    {
+      "path": "assets/the-gates/spine/art-layout.json",
+      "bytes": 6730,
+      "sha256": "86495504eab014988f019e3ce5dfda72755f5b0ad6f892189b7a429300af3982"
+    },
+    {
+      "path": "assets/the-gates/spine/bonus-complete.json",
+      "bytes": 6996,
+      "sha256": "aad7f26b84032843ee4ff032901b1939c12ef49bbe792ecea661f300d2608349"
+    },
+    {
+      "path": "assets/the-gates/spine/bonus-hidden.json",
+      "bytes": 6993,
+      "sha256": "06f7306044af57cf03439b36edee9f86485bcb8c1ff95eb355d6e08a548e4ab6"
+    },
+    {
+      "path": "assets/the-gates/spine/bonus-normal.json",
+      "bytes": 6977,
+      "sha256": "0733cd4f44fcc9f387362d7345c6b857435489c6116322a33c41ab5d5185721a"
+    },
+    {
+      "path": "assets/the-gates/spine/bonus-super.json",
+      "bytes": 6994,
+      "sha256": "de3a6562894fb961c589781552861d746a8fb91b380ad1309e1c189c86ab8b00"
+    },
+    {
+      "path": "assets/the-gates/spine/burn-gold.png",
+      "bytes": 1420729,
+      "sha256": "7d74a4c09f407797046e1a4d6bc66d9759a187f70c5d08dacc42fdd9508d2856"
+    },
+    {
+      "path": "assets/the-gates/spine/burn-green.png",
+      "bytes": 1299258,
+      "sha256": "2da0e935e08330ea030756be701891e5d014ece6eb473959ff0ffe62eae05ac8"
+    },
+    {
+      "path": "assets/the-gates/spine/burn-red.png",
+      "bytes": 1193657,
+      "sha256": "adcf2bb9b192525801ef9832e0245ca875686ea9ee85cd460382057edea54d24"
+    },
+    {
+      "path": "assets/the-gates/spine/energy.atlas",
+      "bytes": 1385,
+      "sha256": "5cc68c0a07ffaa90a0a918d94eee09798618cc2191b32482ff4e87daf6246ce2"
+    },
+    {
+      "path": "assets/the-gates/spine/energy.png",
+      "bytes": 41411,
+      "sha256": "bfe4c3afe88e90a1f4419105d5ec2d79428271f8aca800f43f5be65d485c18f0"
+    },
+    {
+      "path": "assets/the-gates/spine/energy.svg",
+      "bytes": 15338,
+      "sha256": "e0e906064a84d1d7ded56fcafbce8663ab3a58e4845e829afd688a65bd941d00"
+    },
+    {
+      "path": "assets/the-gates/spine/fire-gold.json",
+      "bytes": 9984,
+      "sha256": "70bac03187eeefd987790a9de71d84616056dbe23b00c604eb57d46c890778cd"
+    },
+    {
+      "path": "assets/the-gates/spine/fire-green.json",
+      "bytes": 9889,
+      "sha256": "a32b62db3ae1bb3acd3cb407d5a17fd85d2448d3eee9bd93c7ff534e1b4d7e4d"
+    },
+    {
+      "path": "assets/the-gates/spine/fire-red.json",
+      "bytes": 9935,
+      "sha256": "af727f0589cf34701cf2e032311331d7285956d68529c5a068082d4b73b34037"
+    },
+    {
+      "path": "assets/the-gates/spine/flames.atlas",
+      "bytes": 2014,
+      "sha256": "b8f19a5f1e4d7a5ba3450546c8296771b66a32e97d635371f136d480ff070d53"
+    },
+    {
+      "path": "assets/the-gates/spine/flames.png",
+      "bytes": 2439286,
+      "sha256": "d26cc0dcb549c28eabe161d0c366f52ba6aace00fc3c93591a652676c6c1ddc9"
+    },
+    {
+      "path": "assets/the-gates/spine/hq-complete.png",
+      "bytes": 1195757,
+      "sha256": "10423c5c26a3360ba14e4eee9c084a8f2984bf62974cb9dced931c45d93a5b11"
+    },
+    {
+      "path": "assets/the-gates/spine/hq-hidden.png",
+      "bytes": 1582190,
+      "sha256": "2e80f0e51f4d7c538117f6bfa19653e10ba95ec361e8581821680b93ccb06093"
+    },
+    {
+      "path": "assets/the-gates/spine/hq-normal.png",
+      "bytes": 1754992,
+      "sha256": "4a6ea9d78f2891d9ab9ba734ab5aab2cb18e411e7716fbffcd9f07a5c819507a"
+    },
+    {
+      "path": "assets/the-gates/spine/hq-plaque.png",
+      "bytes": 2342442,
+      "sha256": "212a9b262d068ea41f2352120fe8578c75aa7e8311b49947853792be97339e5c"
+    },
+    {
+      "path": "assets/the-gates/spine/hq-super.png",
+      "bytes": 1277061,
+      "sha256": "1fb238b21d7693ac2c41d8d12e5389631e71ea3966dc9ba3d50b7144f3529189"
+    },
+    {
+      "path": "assets/the-gates/spine/manifest.json",
+      "bytes": 315,
+      "sha256": "382de243e1529cc7d718b9552ae050e35cee9bdec31f868ed5235d46e80371cb"
+    },
+    {
+      "path": "assets/the-gates/spine/presentations.atlas",
+      "bytes": 774,
+      "sha256": "bd6aca5bef81e381bebeb0656379a37a5da3ffd846d77efc63c2e7fd1b9b78ce"
+    },
+    {
+      "path": "assets/the-gates/spine/presentations.png",
+      "bytes": 1289704,
+      "sha256": "879f71bfff2e16156e923382c6ebaa61b7fde2bbb2f6f3e9a9a27d57a49cb533"
+    },
+    {
+      "path": "assets/the-gates/spine/provenance.json",
+      "bytes": 9128,
+      "sha256": "06f43bee161a1ebba8a4bbe8b9e181dea51d669c83ee386997245428de6b3ae1"
+    },
+    {
+      "path": "assets/the-gates/spine/refinement-provenance.json",
+      "bytes": 7903,
+      "sha256": "c87c5e0d41142f270f3e2ab15cea5c492b425f7f5b125003705ac109ca66fd07"
+    },
+    {
+      "path": "assets/the-gates/spine/scene-base.png",
+      "bytes": 2385735,
+      "sha256": "e9a7857b573f473fe0865d7404da29cc2247b072f81fd75730e004242bacba47"
+    },
+    {
+      "path": "assets/the-gates/spine/scene-hidden.png",
+      "bytes": 2591048,
+      "sha256": "bba8dfd9339b0207b961af7da42329118df02d94fe7088cc095d09b8a0b46bf4"
+    },
+    {
+      "path": "assets/the-gates/spine/scene-normal.png",
+      "bytes": 2823156,
+      "sha256": "396808889d3b4f711116593432a50d3ee3f7ba76ddc61638c1dec34b8522adc2"
+    },
+    {
+      "path": "assets/the-gates/spine/scene-super.png",
+      "bytes": 2880953,
+      "sha256": "00eadd468c007e381dd6f8f197165826f585e90a70c77b31e8ff824fa2d9f9f8"
+    },
+    {
+      "path": "assets/the-gates/spine/win-epic.atlas",
+      "bytes": 203,
+      "sha256": "67d82317da67c8dd80195649a63eb1ab623ef94d5412ead83a212e794d0db849"
+    },
+    {
+      "path": "assets/the-gates/spine/win-epic.json",
+      "bytes": 3582,
+      "sha256": "fb3a46870c35409a41dff59f03b7dc01fcc9ae90477f594a551cc0dafccc6322"
+    },
+    {
+      "path": "assets/the-gates/spine/win-legendary.atlas",
+      "bytes": 213,
+      "sha256": "0091462419b4ecb167e9be5ed4a8cd77f6288256ce356999edae907a053ac1ce"
+    },
+    {
+      "path": "assets/the-gates/spine/win-legendary.json",
+      "bytes": 3582,
+      "sha256": "8d8358b0e82b5915ba810ae9d5a9f10065643b825696f05ccc3b3babf089d17e"
+    },
+    {
+      "path": "assets/the-gates/spine/win-max.atlas",
+      "bytes": 207,
+      "sha256": "de1588a1f19da96b1fb3ce3eac8e34534730607a8fdab40780248538ffa704ef"
+    },
+    {
+      "path": "assets/the-gates/spine/win-max.json",
+      "bytes": 3582,
+      "sha256": "8d8358b0e82b5915ba810ae9d5a9f10065643b825696f05ccc3b3babf089d17e"
+    },
+    {
+      "path": "assets/the-gates/spine/win-mythic.atlas",
+      "bytes": 207,
+      "sha256": "c45dfe56a51ad41e067c7b2b4ee4d6c62a9f225e5c7c0bc95e07c58fd29a18de"
+    },
+    {
+      "path": "assets/the-gates/spine/win-mythic.json",
+      "bytes": 3582,
+      "sha256": "fb3a46870c35409a41dff59f03b7dc01fcc9ae90477f594a551cc0dafccc6322"
+    },
+    {
+      "path": "assets/the-gates/spine/win-sweet.atlas",
+      "bytes": 205,
+      "sha256": "ce52038d76e1a6a8999e0c5bce7f32e90a8cbbd936b598e83f95007c465f8a56"
+    },
+    {
+      "path": "assets/the-gates/spine/win-sweet.json",
+      "bytes": 3582,
+      "sha256": "fb3a46870c35409a41dff59f03b7dc01fcc9ae90477f594a551cc0dafccc6322"
+    },
+    {
+      "path": "assets/the-gates/spine/win-wild.atlas",
+      "bytes": 203,
+      "sha256": "4658c17ed24502972f60be5e5a1bc3e1f141128f0067be3a193037dce3d916c9"
+    },
+    {
+      "path": "assets/the-gates/spine/win-wild.json",
+      "bytes": 3582,
+      "sha256": "fb3a46870c35409a41dff59f03b7dc01fcc9ae90477f594a551cc0dafccc6322"
+    },
+    {
+      "path": "assets/the-gates/symbols.png",
+      "bytes": 2027982,
+      "sha256": "99f221a28751a9d6249f0bc313f0a8c3d37aa9bce0625ddc3d9029b973dc5ef4"
+    },
+    {
+      "path": "assets/the-gates/temple-backplate.png",
+      "bytes": 2296705,
+      "sha256": "ab6b5454045981e77ad999956428a28a2a7f40b5c637edf5e66cfddd07652f9d"
+    },
+    {
+      "path": "assets/the-gates/temple.png",
+      "bytes": 2544793,
+      "sha256": "8f1ae676a66b0731110fc8f082b2920bfb9ec6c3012a384b1f6fd91b3e46b788"
+    },
+    {
+      "path": "assets/the-gates/wins/README.md",
+      "bytes": 1128,
+      "sha256": "cfb640d103ece7ab24440ccbba782b633c28219f5e9f1df2b268eaef53cfda0c"
+    },
+    {
+      "path": "assets/the-gates/wins/coin.png",
+      "bytes": 2926306,
+      "sha256": "16b7a8d7ecd0e78afc48660465cab3a25be668edb71976f9f7328eebe24a2acd"
+    },
+    {
+      "path": "assets/the-gates/wins/epic-plaque.png",
+      "bytes": 2324269,
+      "sha256": "8cb6d0c822d20decabd34e6e4c58dccd9b783ba1163d7858e3378128247175a8"
+    },
+    {
+      "path": "assets/the-gates/wins/epic-title.png",
+      "bytes": 1779760,
+      "sha256": "fc2141e52e3d7910cf45d6423382fa7318cf9f0ba88ceb43a0a96520a6dfc9e3"
+    },
+    {
+      "path": "assets/the-gates/wins/legendary-plaque.png",
+      "bytes": 2407233,
+      "sha256": "90510bdac883962b90d504d93c21642b8d10c95b7840aba779d1e6327a57aaad"
+    },
+    {
+      "path": "assets/the-gates/wins/legendary-title.png",
+      "bytes": 1523495,
+      "sha256": "e9d43d05f0055a64194b45cd310071434353a93c3eb91759b151928a209e8b22"
+    },
+    {
+      "path": "assets/the-gates/wins/max-title.png",
+      "bytes": 1549577,
+      "sha256": "60503eb238017ae07d3ada28de03780d57cd68d9178929897a61c04ff0eaad05"
+    },
+    {
+      "path": "assets/the-gates/wins/mythic-plaque.png",
+      "bytes": 2437672,
+      "sha256": "0d9965e5183cae3a943a198d0befea05befa372b049cef47493341bdabd1beda"
+    },
+    {
+      "path": "assets/the-gates/wins/mythic-title.png",
+      "bytes": 1592032,
+      "sha256": "96d26bd9995de8b0d3cb376db3dcc14406b7eba1df03788fd6ef92eed350d776"
+    },
+    {
+      "path": "assets/the-gates/wins/provenance.json",
+      "bytes": 8367,
+      "sha256": "54f040ea3e1acacb3fcebd47a1dc4450bbbc1ae1b5fa10b829b94696235ffe87"
+    },
+    {
+      "path": "assets/the-gates/wins/sweet-plaque.png",
+      "bytes": 2188393,
+      "sha256": "c930f5733323087d47f1c4c89c9a94fea28053151a5b7252aaabcc1d416115bb"
+    },
+    {
+      "path": "assets/the-gates/wins/sweet-title.png",
+      "bytes": 1807211,
+      "sha256": "c95d26cfadc5d825fd960cc0acff49714c0eefe1c1b1a40acb35ab0d91d66e2f"
+    },
+    {
+      "path": "assets/the-gates/wins/wild-plaque.png",
+      "bytes": 2529191,
+      "sha256": "19c9b0d4581c26ebaf1cd59bdf2f0df97ba92a8cad9ab18c5f87d0945e14709f"
+    },
+    {
+      "path": "assets/the-gates/wins/wild-title.png",
+      "bytes": 1752913,
+      "sha256": "b4bed28f2fcf27f3e34d0aa3814ed9def9417c19043bfb04b47fe4c15ff279f4"
+    },
+    {
+      "path": "assets/the-gates/wins/win-title.png",
+      "bytes": 2118562,
+      "sha256": "bac49c5f3792850da84550d8a7ee69b5a7a953c165a2651d283beb4f26edbb61"
+    },
+    {
+      "path": "fonts/cinzel.woff2",
+      "bytes": 25888,
+      "sha256": "ef95296c778719c3d658a8284d65078100450948851b9114485ada01d9d3d3f8"
+    }
+  ],
+  "removedBytes": 109168123,
+  "runtimeAssets": 122,
+  "execute": true
+}

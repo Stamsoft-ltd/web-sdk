@@ -1,0 +1,33 @@
+{
+  "scope": "Gate transition moved from beside the board to the entire game viewport, above board/HUD. No permanent idle gate.",
+  "changes": [
+    "TempleGate.svelte: split background/overlay; fixed inset:0 z-index:30; inactive clock cleaned up; no side anchor or mobile side-gate coordinates",
+    "gateViewport.ts: uniform cover crop per native leaf, independent portal fit, center seam overlap, responsive offscreen travel",
+    "gateViewport.test.mjs: 4 new geometry/lifecycle contract checks"
+  ],
+  "preserved": [
+    "native PNG bytes",
+    "Spine authored timings/seeded sparks/shake",
+    "authoritative reward events and multiple Hidden rewards",
+    "750ms reward hold",
+    "Math/RGS/wallet/controls"
+  ],
+  "validation": {
+    "unitTests": "77/77 PASS",
+    "typescript": "TS sources PASS",
+    "build": "PASS",
+    "browserDesktop": "1200x784 full-screen closed leaves + centered live +5x portal; no idle gate; no app errors",
+    "browserMobile": "390x844 full-screen closed leaves cover board and HUD; desktop override reset",
+    "geometry": "all 3 tiers at 1200x784,1920x1080,768x1024,390x844,320x568,844x390,2560x720; both leaves cover screen, clear offscreen, portal fits; DPR invariant"
+  },
+  "commands": [
+    "pnpm --filter the-gates test",
+    "pnpm --filter the-gates build"
+  ],
+  "evidence": [
+    "runtime-fullscreen-gate-closed.png",
+    "runtime-fullscreen-gate-portal.png",
+    "runtime-fullscreen-gate-mobile.png"
+  ],
+  "note": "Leaf art is uniformly cover-cropped on differing viewport aspects, never stretched. Portal/reward fitted separately to remain fully visible."
+}

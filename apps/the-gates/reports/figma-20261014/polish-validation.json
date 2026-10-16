@@ -1,0 +1,32 @@
+{
+  "unitTests": {
+    "passed": 181,
+    "failed": 0
+  },
+  "typecheck": "pass",
+  "productionBuild": "pass",
+  "nativePngIntegrity": "pass",
+  "packagedRuntimeAssets": 126,
+  "packagedRuntimeBytes": 34574520,
+  "browserQA": {
+    "desktop": "all seven HUD button centers at y=693 CSS px; disabled opacity 1",
+    "portrait": "390x844, single mobile Bonus border and heavier Spin outline",
+    "landscape": "844x390, rail bottom333.17, Win top340.48, gap7.31 CSS px",
+    "winTiers": [
+      "sweet",
+      "wild",
+      "epic",
+      "mythic",
+      "legendary"
+    ],
+    "canvasCount": 1,
+    "legacyReelCellSceneDomCount": 0
+  },
+  "gateSelection": "1300ms timing/order/resume/abort covered by automated tests; browser fixture completed to multiplier5, exact browser phase timing not captured",
+  "renderer": "main background/logo, landing visual scene, loading graphics/progress, win artwork/amount/count use shared Pixi renderer; loading branding and HUD/forms/accessibility remain HTML",
+  "notes": [
+    "Portrait carousel keeps3s/swipe/pause; changes instantly, no slide tween.",
+    "No FPS improvement claimed; browser run was presentation-only scripted preview, not live RGS.",
+    "Existing Pixi ImageSource conversion warnings seen; no renderer error observed."
+  ]
+}

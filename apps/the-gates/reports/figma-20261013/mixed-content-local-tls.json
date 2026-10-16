@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-13",
+  "evidence": "User screenshot shows Chrome auto-upgrading HTTP image requests in a secure launcher context. Current art roots are relative, not hard-coded HTTP URLs.",
+  "change": "App-local opt-in dev:https command. Uses existing localhost certificate or explicit custom pair; binds localhost; fails on port conflict or invalid certificates. Production build and default HTTP command unchanged.",
+  "security": "No certificate installation, trust-store change, TLS verification bypass, mixed-content permission change, console suppression or RGS endpoint change.",
+  "validation": {
+    "unitTests": { "pass": 125, "fail": 0 },
+    "typescript": "PASS",
+    "productionBuild": "PASS",
+    "diffCheck": "PASS",
+    "temporaryTlsServer": "PASS: https://localhost:3021; stopped after testing",
+    "certificateVerifiedAssets": [
+      { "asset": "symbols/red-gem.png", "status": 200 },
+      { "asset": "motion/symbols-normal.atlas", "status": 200 },
+      { "asset": "TitanOne-Regular.ttf", "status": 200 }
+    ],
+    "browser": "BLOCKED: Chrome extension unavailable",
+    "liveFPS": "NOT MEASURED"
+  },
+  "requiredActivation": "User must stop current HTTP server, run pnpm --filter the-gates dev:https, and update launcher Local Testing game URL to https://localhost:3020/. Preserve query parameters. Default certificate is self-signed; use an already trusted local certificate if browser trust fails."
+}

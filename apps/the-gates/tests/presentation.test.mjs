@@ -41,7 +41,7 @@ test('autoplay win screen closes on timeout, not a mandatory acknowledgement', a
 	assert.equal(completed, true);
 	assert.equal(dismiss, null);
 });
-test('bonus acknowledgement remains explicit with no auto-close', async (t) => {
+test('unbounded dismissal stays available for flows requiring explicit acknowledgement', async (t) => {
 	t.mock.timers.enable({ apis: ['setTimeout'] });
 	let dismiss;
 	let completed = false;
@@ -112,13 +112,13 @@ test('live wait abort cleans timer and rejects, including pre-aborted signal', a
 	t.mock.timers.tick(10000);
 });
 
-test('bonus trigger holds entry grid; skip and faster speeds preserve a readable beat', async () => {
+test('bonus intro starts promptly; looping Keys remain readable until acknowledgement', async () => {
 	const { bonusEntryHold } = await import('../src/game/presentation.ts');
-	assert.equal(bonusEntryHold('normal', false, false), 900);
-	assert.equal(bonusEntryHold('fast', false, false), 450);
-	assert.equal(bonusEntryHold('turbo', false, false), 450);
-	assert.equal(bonusEntryHold('normal', false, true), 350);
-	assert.equal(bonusEntryHold('normal', true, false), 150);
+	assert.equal(bonusEntryHold('normal', false, false), 220);
+	assert.equal(bonusEntryHold('fast', false, false), 120);
+	assert.equal(bonusEntryHold('turbo', false, false), 120);
+	assert.equal(bonusEntryHold('normal', false, true), 120);
+	assert.equal(bonusEntryHold('normal', true, false), 80);
 	assert.ok(TIMING.bonusGuard >= 600 && TIMING.bonusGuard < 1000);
 	assert.equal(TIMING.overlayGuard, 120, 'win/cap screens retain quick dismissal');
 });

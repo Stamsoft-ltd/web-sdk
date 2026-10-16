@@ -158,3 +158,29 @@ test('final result returns visual mode to base without discarding total', () => 
 	assert.equal(s.total, 25);
 	assert.equal(s.totalFs, 0);
 });
+
+test('entry Key award uses authoritative settlement and highlights without multiplying or crediting twice', () => {
+	let s = initialState();
+	s.board = Array.from({ length: 6 }, () => Array.from({ length: 5 }, () => ({ name: 'RED_GEM' })));
+	for (let i = 0; i < 3; i++) s.board[i][0] = { name: 'KEY' };
+	s = apply(s, 'spinWin', {
+		spinId: 0,
+		rawAmount: 100,
+		multiplier: 5,
+		uncappedAmount: 700,
+		amount: 700,
+		scatterCount: 3,
+		scatterAmount: 200,
+		cascades: 3,
+		capped: false,
+	});
+	assert.equal(s.spinWin, 700);
+	assert.equal(s.total, 0);
+	assert.equal(s.raw, 100);
+	assert.equal(s.wins[0].symbol, 'KEY');
+	assert.equal(s.wins[0].rawAmount, 200);
+	assert.equal(s.wins[0].positions.length, 3);
+	s = apply(s, 'setTotalWin', { amount: 700 });
+	s = apply(s, 'setTotalWin', { amount: 700 });
+	assert.equal(s.total, 700);
+});

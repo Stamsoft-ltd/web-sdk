@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-13",
+  "scope": "Runtime overhead and deploy package size; no gameplay, art pixels or timing changes",
+  "measurements": {
+    "fullBuildBytes": 139722210,
+    "optimizedBuildBytes": 34843563,
+    "removedBytes": 104878647,
+    "reductionPercent": 75.06,
+    "removedOutputFiles": 156,
+    "retainedRuntimeAssets": 124,
+    "activeSourceFilesScanned": 51,
+    "retainedAssetDigest": "23a4748acc4b30a1dcf5152cafcebb9b556bd5b234c18bf0fa160bfefd2f1900",
+    "jsBeforeBytes": 387284,
+    "jsAfterBytes": 387801,
+    "note": "Major size saving is the upload package, not JS or first-load transfer. Retired images were copied by static packaging but were not necessarily requested by gameplay."
+  },
+  "runtimeChanges": [
+    "Bounded shared numeric glyph/pattern caches and one measurement canvas; identical width calculation and font-load invalidation.",
+    "Numeric resize/font observers survive text updates rather than being recreated for each amount.",
+    "Canvas backing dimensions are written only when changed; current DPR caps and render quality preserved.",
+    "Idle board updates avoid travel-only layout reads.",
+    "Closed gates defer full-screen art decoding; existing playback prewarm remains before visible animation clocks.",
+    "Gate initial resize/draw does not enroll unrelated reactive state in renderer lifecycle."
+  ],
+  "validation": {
+    "unitTestsPass": 138,
+    "unitTestsFail": 0,
+    "productionBuild": "PASS",
+    "typescript": "PASS",
+    "diffCheck": "PASS",
+    "assetClosure": "PASS: all referenced assets byte-identical to source before any output pruning",
+    "numericControlledBenchmark": "100 equal-format updates: 1900 measureText calls before, 11 after; outputs equal. This is call-count evidence, not browser frame-time measurement.",
+    "canvasControlledCheck": "100 identical resize calls: 2 dimension writes total instead of 200",
+    "browserQA": "BLOCKED: Chrome extension unavailable",
+    "FPSImprovement": "NOT MEASURED"
+  },
+  "delivery": {
+    "buildCommand": "pnpm --filter the-gates build",
+    "uploadDirectory": "apps/the-gates/build",
+    "fullDebugBuildCommand": "pnpm --filter the-gates build:full",
+    "readOnlyAuditCommand": "pnpm --filter the-gates audit:bundle",
+    "originals": "All source assets/provenance remain untouched in static; only reproducible generated build files are pruned."
+  },
+  "remainingOpportunities": [
+    "Profile real interaction/network and frame-time behavior once browser control is reconnected; repeated-warning root cause is not yet live-confirmed.",
+    "Delivery-only lossless WebP variants of large images may further reduce transfer; requires full atlas/reference updates and visual/pixel QA, so not done in this pass.",
+    "Inline-to-cacheable JS/CSS splitting and shared SDK locale trimming need launcher/replay/locale compatibility checks. Current inline delivery deliberately preserved.",
+    "Do not replace CSS filters or consolidate thirty symbol canvases without actual paint/draw profile evidence and motion regression QA."
+  ]
+}

@@ -1,0 +1,11 @@
+
+> the-gates@0.0.0 build:motion /Users/simeonhristov/Documents/GitHub/web-sdk/apps/the-gates
+> node --experimental-strip-types tools/build-figma-motion.mjs && node tools/build-figma-motion-preview.mjs
+
+Authored 11 symbols + 5 wins + 3 bonus intros + 3 gate cycles; source PNGs untouched.
+(node:66928) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  static/assets/the-gates/figma-20261012/motion/preview.js  128.2kb
+
+⚡ Done in 29ms

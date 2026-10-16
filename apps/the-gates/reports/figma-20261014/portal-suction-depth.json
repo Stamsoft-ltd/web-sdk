@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-14",
+  "request": "Full-scale symbol at removal start, slower shrink into the portal, portal rim below symbol.",
+  "layerOrderBackToFront": ["portal-vortex", "portal-rim", "body"],
+  "canonicalTimelineMs": {
+    "fullSizeHold": [0, 120],
+    "continuousUniformShrink": [120, 860],
+    "symbolOpacityHeldUntil": 845,
+    "symbolGone": 860,
+    "portalClosesAfterSymbol": [870, 1000]
+  },
+  "runtimeRemovalMs": { "normal": 820, "fast": 500, "turbo": 180 },
+  "motion": "Fifteen body scale poses. Neutral scale/position/rotation during hold. No initial pop or squash. Gentle seeded drift/twist. Portal remains open until symbol is tiny and gone.",
+  "integration": "Existing tumbleRemove event, event-owned wave clock, per-cell delay, skip-tail, cancellation and reduced-motion paths unchanged. Only removal presentation timings adjusted. Regenerated eleven native symbol rigs; existing WILD fallback unchanged.",
+  "validation": {
+    "testsPassed": 139,
+    "testsFailed": 0,
+    "typescript": "PASS",
+    "productionBuildAndAssetPackaging": "PASS",
+    "sourcePNGs": "UNCHANGED; build generator verifies source hashes",
+    "sampledCoverage": "All eleven native symbols, all three palettes and two event seeds. Full neutral start within float32 tolerance, monotonic shrink, rear portal layers, open hole at symbol disappearance.",
+    "browser": "PASS: Chrome workbench loaded 22/22 rigs with zero errors; full-size 0ms and shrinking 500ms poses visually checked; Super palette selection checked then restored Normal/removal mode.",
+    "liveGameFPS": "NOT MEASURED",
+    "screenshots": ["portal-start.png", "portal-midpoint.png"]
+  },
+  "reload": "Reload game once to refresh page-lifetime cached JSON rig setup/draw order."
+}

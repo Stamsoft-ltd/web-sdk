@@ -1,0 +1,56 @@
+{
+  "status": "Standalone preview updated; not game-wired",
+  "gateSparks": {
+    "count": 12,
+    "centralFlash": true,
+    "source": "static/assets/the-gates/sparks-20261012/cartoon-impact-spark-v1.png",
+    "provenance": "static/assets/the-gates/sparks-20261012/provenance.json",
+    "style": "chunky yellow/orange comic starburst, white highlights, dark navy outline",
+    "spine": "13 independent foreground bones/slots; one shared source texture",
+    "seed": "eventId + gate identity, cosmetic only",
+    "birth": "360ms door collision; twelve launches staggered up to14ms at different vertical seam positions",
+    "travel": "both sides; seeded width/rotation/scatter",
+    "cleared": "all sparks gone before opening at580ms"
+  },
+  "landing": {
+    "previousSquash": [
+      1.14,
+      0.82
+    ],
+    "newSquash": [
+      1.28,
+      0.68
+    ],
+    "squashHoldMs": [
+      24,
+      38
+    ],
+    "rebound": [
+      0.9,
+      1.13
+    ],
+    "normalDurationMs": 120,
+    "fastDurationMs": 80,
+    "turboDurationMs": 40,
+    "floor": "visible alpha floor pivot remains fixed; returns neutral scale exactly"
+  },
+  "checks": {
+    "tests": 64,
+    "pass": 64,
+    "build": "PASS",
+    "nativeAssets": "PASS: SHA-256, dimensions, font/OFL unchanged",
+    "browser": "22/22 rigs loaded, 0 errors; collision sparks at420ms and deeper squash at30ms visually verified; live speed/reduced-motion controls checked"
+  },
+  "resources": {
+    "sparkTextureDecodedMiB": 6.0,
+    "peakExtraSpriteDraws": 13,
+    "scope": "per gate; one shared texture, no per-particle copies. Desktop workbench only, mobile performance not benchmarked."
+  },
+  "screenshots": [
+    "gate-sparks-420ms.jpg",
+    "landing-squash-30ms.jpg"
+  ],
+  "gameRuntimeChanged": false,
+  "mathChanged": false,
+  "preview": "http://127.0.0.1:3021/assets/the-gates/figma-20261012/motion/preview.html"
+}

@@ -1,0 +1,25 @@
+{
+	"date": "2026-10-13",
+	"request": "Investigate repeated asset loading on every interaction, not merely mixed-content warnings.",
+	"sourceFindings": [
+		"Game startup preloads and each coin FX instance constructed separate Image objects from Spine atlas page loading.",
+		"Atlas, JSON, rig and image caches deleted rejected promises. Later actor attempts could retry the same unavailable resources.",
+		"Static DOM images and CSS backgrounds are also browser-managed consumers. Warning count alone cannot establish network transfer count."
+	],
+	"changes": [
+		"Shared canonical decoded image loader for startup preloads, Spine atlas pages and coin effects.",
+		"Failed promises retained until page reload, preventing interaction-triggered asset retries.",
+		"Dev-only assetAudit=1 panel reports loader starts, resource timing transfers/cache/unknown, image src writes and symbol node additions/removals after button actions.",
+		"Audit is bounded scalar bookkeeping; observers/listener/timer dispose on unmount; no URL/session capture, console spam or outbound telemetry."
+	],
+	"validation": {
+		"testsPassed": 131,
+		"testsFailed": 0,
+		"typescript": "PASS",
+		"controlledReuse": "100 concurrent plus 100 sequential image consumers: 1 image/decode; 100 rig and seeded-animation updates after warm-up: 0 additional fetches/decodes; 100 failed attempts: no repeated underlying fetch/decode.",
+		"browser": "BLOCKED: extension unavailable",
+		"userFloodRootCause": "NOT YET CONFIRMED WITH LIVE REQUEST/DOM PROFILE",
+		"liveFrameTime": "NOT MEASURED"
+	},
+	"nextCheck": "Warm current dev game, append assetAudit=1 and click a non-spin control once; inspect counters and sanitized Network Name/Status/Size/Initiator columns."
+}

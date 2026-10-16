@@ -3,6 +3,8 @@
 	const paths: Record<string, string> = {
 		spin: 'M20 7v5h-5M4 17v-5h5M6.1 7a7 7 0 0111.5-1L20 9M4 15l2.4 3A7 7 0 0018 17',
 		sound: 'M11 5L6 9H3v6h3l5 4V5zm4 3a6 6 0 010 8m3-11a10 10 0 010 14',
+		music:
+			'M9 18V5l12-2v13M9 8l12-2M9 18a3 3 0 11-3-3c1.7 0 3 1.3 3 3zm12-2a3 3 0 11-3-3c1.7 0 3 1.3 3 3z',
 		muted: 'M11 5L6 9H3v6h3l5 4V5zm5 4 6 6m0-6-6 6',
 		close: 'm6 6 12 12M6 18 18 6',
 		info: 'M12 11v6m0-10v1M22 12a10 10 0 11-20 0 10 10 0 0120 0',

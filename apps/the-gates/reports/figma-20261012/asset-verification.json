@@ -1,0 +1,9 @@
+{
+  "files": 78,
+  "bytes": 26595046,
+  "ready": 75,
+  "referenceOnly": 3,
+  "font": "PASS: Titan One TrueType header, byte count, SHA-256, bundled OFL",
+  "checks": "PASS: PNG headers, geometry, byte counts, SHA-256, provenance, inventory coverage",
+  "uiRedesign": "NOT IMPLEMENTED; acquisition check only"
+}

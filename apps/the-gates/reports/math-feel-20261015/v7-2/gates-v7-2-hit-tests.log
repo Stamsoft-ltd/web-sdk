@@ -1,0 +1,7 @@
+test_feature_rules_and_rtp_remain_locked (__main__.HitRateTargets.test_feature_rules_and_rtp_remain_locked) ... ok
+test_regular_hits_and_dead_rates (__main__.HitRateTargets.test_regular_hits_and_dead_rates) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.000s
+
+OK

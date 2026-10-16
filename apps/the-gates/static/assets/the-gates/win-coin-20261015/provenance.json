@@ -1,0 +1,9 @@
+{
+  "method": "OpenAI built-in image_gen",
+  "generatedDate": "2026-10-15",
+  "source": "exec-993532bd-0a8a-4712-8582-1b4b21ab42db.png",
+  "sha256": "42f8f49f8ddad6c55af0f6035248417c9e137e8cd604d0cdfe48a325a9104085",
+  "reference": "Veggie Salad branch origin/feature/veggie-salad-v1 @4090ad935 uses a single branded gold coin texture for its particle fountain. New Gates artwork is smooth navy/gold/cyan, not pixel art.",
+  "prompt": "One isolated transparent cartoon gold coin. Smooth vector-like Egyptian temple slot style; yellow/orange beveled rim, navy outline, raised ivory angular play/P emblem, four cyan diamond insets. Nearly face-on, subtle lower-right depth. Cream highlights, no external glow/shadow/streaks/text. Particle-ready complete silhouette.",
+  "usage": "Celebration fountain only. Existing SUN_MEDALLION gameplay symbol remains unchanged."
+}

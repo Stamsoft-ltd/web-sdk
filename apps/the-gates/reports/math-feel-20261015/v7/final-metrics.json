@@ -1,0 +1,412 @@
+{
+  "BASE": {
+    "weightedRtp": 0.961,
+    "experience": {
+      "identicalTransitionRate": 1.9511013875676806e-09,
+      "oneWin14BlanksProbability": 2e-08,
+      "meanPayingFreeSpins": 5.8199816272,
+      "meanFreeSpins": 15.0000171401,
+      "maxPositivePayoutProbability": 0.02573022231325,
+      "weightedCounts": {
+        "transitions": 644764033287,
+        "identical": 1258,
+        "bonusRounds": 10000000000,
+        "freeSpins": 150000171401,
+        "payingFreeSpins": 58199816272,
+        "oneWin14Blanks": 200
+      },
+      "strictLimits": {
+        "identicalTransitions": 0.15,
+        "oneWin14Blanks": 0.05
+      }
+    },
+    "tierExperience": {
+      "normal": {
+        "identicalTransitionRate": 3.43230848325558e-08,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 5.78263477,
+        "meanFreeSpins": 14.99999967,
+        "maxPositivePayoutProbability": 0.0110631,
+        "weightedCounts": {
+          "transitions": 27241141190,
+          "identical": 935,
+          "bonusRounds": 8500000000,
+          "freeSpins": 127499997195,
+          "payingFreeSpins": 49152395545,
+          "oneWin14Blanks": 170
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "super": {
+        "identicalTransitionRate": 2.0313973743086904e-08,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 6.0035708,
+        "meanFreeSpins": 15.00012704,
+        "maxPositivePayoutProbability": 0.00311495,
+        "weightedCounts": {
+          "transitions": 5513446134,
+          "identical": 112,
+          "bonusRounds": 1400000000,
+          "freeSpins": 21000177856,
+          "payingFreeSpins": 8404999120,
+          "oneWin14Blanks": 28
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "hidden": {
+        "identicalTransitionRate": 9.250858684195948e-09,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 6.42421607,
+        "meanFreeSpins": 14.9999635,
+        "maxPositivePayoutProbability": 0.00678163,
+        "weightedCounts": {
+          "transitions": 756686513,
+          "identical": 7,
+          "bonusRounds": 100000000,
+          "freeSpins": 1499996350,
+          "payingFreeSpins": 642421607,
+          "oneWin14Blanks": 2
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      }
+    }
+  },
+  "CHANCE": {
+    "weightedRtp": 0.961,
+    "experience": {
+      "identicalTransitionRate": 3.0945506729638834e-09,
+      "oneWin14BlanksProbability": 2e-08,
+      "meanPayingFreeSpins": 5.8694647337,
+      "meanFreeSpins": 14.9999959543,
+      "maxPositivePayoutProbability": 0.027692410464,
+      "weightedCounts": {
+        "transitions": 772648520798,
+        "identical": 2391,
+        "bonusRounds": 30000000000,
+        "freeSpins": 449999878629,
+        "payingFreeSpins": 176083942011,
+        "oneWin14Blanks": 600
+      },
+      "strictLimits": {
+        "identicalTransitions": 0.15,
+        "oneWin14Blanks": 0.05
+      }
+    },
+    "tierExperience": {
+      "normal": {
+        "identicalTransitionRate": 2.138645262143511e-08,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 5.84462296,
+        "meanFreeSpins": 14.99999963,
+        "maxPositivePayoutProbability": 0.0081781,
+        "weightedCounts": {
+          "transitions": 83464052295,
+          "identical": 1785,
+          "bonusRounds": 25500000000,
+          "freeSpins": 382499990565,
+          "payingFreeSpins": 149037885480,
+          "oneWin14Blanks": 510
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "super": {
+        "identicalTransitionRate": 2.284354707410864e-08,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 5.98027006,
+        "meanFreeSpins": 14.99997594,
+        "maxPositivePayoutProbability": 0.00473602,
+        "weightedCounts": {
+          "transitions": 16547342616,
+          "identical": 378,
+          "bonusRounds": 4200000000,
+          "freeSpins": 62999898948,
+          "payingFreeSpins": 25117134252,
+          "oneWin14Blanks": 84
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "hidden": {
+        "identicalTransitionRate": 1.0553826434955068e-08,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 6.42974093,
+        "meanFreeSpins": 14.99996372,
+        "maxPositivePayoutProbability": 0.00721445,
+        "weightedCounts": {
+          "transitions": 2274056727,
+          "identical": 24,
+          "bonusRounds": 300000000,
+          "freeSpins": 4499989116,
+          "payingFreeSpins": 1928922279,
+          "oneWin14Blanks": 6
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      }
+    }
+  },
+  "FEATURE": {
+    "weightedRtp": 0.961,
+    "experience": {
+      "identicalTransitionRate": 1.0048787951179039e-10,
+      "oneWin14BlanksProbability": 0.0,
+      "meanPayingFreeSpins": 11.1,
+      "meanFreeSpins": 12.66,
+      "maxPositivePayoutProbability": 0.01193273226675,
+      "weightedCounts": {
+        "transitions": 10369409774218,
+        "identical": 1042,
+        "bonusRounds": 50,
+        "freeSpins": 633,
+        "payingFreeSpins": 555,
+        "oneWin14Blanks": 0
+      },
+      "strictLimits": {
+        "identicalTransitions": 0.15,
+        "oneWin14Blanks": 0.05
+      }
+    },
+    "tierExperience": {
+      "normal": {
+        "identicalTransitionRate": 0.003621001810500905,
+        "oneWin14BlanksProbability": 0.0,
+        "meanPayingFreeSpins": 13.342105263157896,
+        "meanFreeSpins": 15.0,
+        "maxPositivePayoutProbability": 0.02631578947368421,
+        "weightedCounts": {
+          "transitions": 1657,
+          "identical": 6,
+          "bonusRounds": 38,
+          "freeSpins": 570,
+          "payingFreeSpins": 507,
+          "oneWin14Blanks": 0
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "super": {
+        "identicalTransitionRate": 0.007547169811320755,
+        "oneWin14BlanksProbability": 0.0,
+        "meanPayingFreeSpins": 3.6666666666666665,
+        "meanFreeSpins": 6.166666666666667,
+        "maxPositivePayoutProbability": 0.8333333333333334,
+        "weightedCounts": {
+          "transitions": 265,
+          "identical": 2,
+          "bonusRounds": 6,
+          "freeSpins": 37,
+          "payingFreeSpins": 22,
+          "oneWin14Blanks": 0
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "hidden": {
+        "identicalTransitionRate": 0.010471204188481676,
+        "oneWin14BlanksProbability": 0.0,
+        "meanPayingFreeSpins": 4.333333333333333,
+        "meanFreeSpins": 4.333333333333333,
+        "maxPositivePayoutProbability": 1.0,
+        "weightedCounts": {
+          "transitions": 191,
+          "identical": 2,
+          "bonusRounds": 6,
+          "freeSpins": 26,
+          "payingFreeSpins": 26,
+          "oneWin14Blanks": 0
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      }
+    }
+  },
+  "BONUS": {
+    "weightedRtp": 0.961,
+    "experience": {
+      "identicalTransitionRate": 1.818383594318842e-07,
+      "oneWin14BlanksProbability": 2e-08,
+      "meanPayingFreeSpins": 5.78278967,
+      "meanFreeSpins": 14.99999902,
+      "maxPositivePayoutProbability": 0.00316645,
+      "weightedCounts": {
+        "transitions": 12978559680000,
+        "identical": 2360000,
+        "bonusRounds": 4000000000000,
+        "freeSpins": 59999996080000,
+        "payingFreeSpins": 23131158680000,
+        "oneWin14Blanks": 80000
+      },
+      "strictLimits": {
+        "identicalTransitions": 0.15,
+        "oneWin14Blanks": 0.05
+      }
+    },
+    "tierExperience": {
+      "normal": {
+        "identicalTransitionRate": 1.818383594318842e-07,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 5.78278967,
+        "meanFreeSpins": 14.99999902,
+        "maxPositivePayoutProbability": 0.00316645,
+        "weightedCounts": {
+          "transitions": 12978559680000,
+          "identical": 2360000,
+          "bonusRounds": 4000000000000,
+          "freeSpins": 59999996080000,
+          "payingFreeSpins": 23131158680000,
+          "oneWin14Blanks": 80000
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      }
+    }
+  },
+  "SUPER": {
+    "weightedRtp": 0.961,
+    "experience": {
+      "identicalTransitionRate": 6.047000440612221e-06,
+      "oneWin14BlanksProbability": 2e-08,
+      "meanPayingFreeSpins": 5.95734242,
+      "meanFreeSpins": 15.00026277,
+      "maxPositivePayoutProbability": 0.00282517,
+      "weightedCounts": {
+        "transitions": 15730112960000,
+        "identical": 95120000,
+        "bonusRounds": 4000000000000,
+        "freeSpins": 60001051080000,
+        "payingFreeSpins": 23829369680000,
+        "oneWin14Blanks": 80000
+      },
+      "strictLimits": {
+        "identicalTransitions": 0.15,
+        "oneWin14Blanks": 0.05
+      }
+    },
+    "tierExperience": {
+      "super": {
+        "identicalTransitionRate": 6.047000440612221e-06,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 5.95734242,
+        "meanFreeSpins": 15.00026277,
+        "maxPositivePayoutProbability": 0.00282517,
+        "weightedCounts": {
+          "transitions": 15730112960000,
+          "identical": 95120000,
+          "bonusRounds": 4000000000000,
+          "freeSpins": 60001051080000,
+          "payingFreeSpins": 23829369680000,
+          "oneWin14Blanks": 80000
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      }
+    }
+  },
+  "MYSTERY": {
+    "weightedRtp": 0.961,
+    "experience": {
+      "identicalTransitionRate": 5.0670703522402475e-09,
+      "oneWin14BlanksProbability": 2e-09,
+      "meanPayingFreeSpins": 5.8810597261,
+      "meanFreeSpins": 15.0000243927,
+      "maxPositivePayoutProbability": 0.0049409841,
+      "weightedCounts": {
+        "transitions": 14485687961200,
+        "identical": 73400,
+        "bonusRounds": 4000000000000,
+        "freeSpins": 60000097570800,
+        "payingFreeSpins": 23524238904400,
+        "oneWin14Blanks": 8000
+      },
+      "strictLimits": {
+        "identicalTransitions": 0.15,
+        "oneWin14Blanks": 0.05
+      }
+    },
+    "tierExperience": {
+      "normal": {
+        "identicalTransitionRate": 6.326642419187475e-09,
+        "oneWin14BlanksProbability": 2e-09,
+        "meanPayingFreeSpins": 5.797292696,
+        "meanFreeSpins": 14.999999943,
+        "maxPositivePayoutProbability": 0.007147608,
+        "weightedCounts": {
+          "transitions": 8219209583000,
+          "identical": 52000,
+          "bonusRounds": 2600000000000,
+          "freeSpins": 38999999851800,
+          "payingFreeSpins": 15072961009600,
+          "oneWin14Blanks": 5200
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "super": {
+        "identicalTransitionRate": 4.0478076533493635e-09,
+        "oneWin14BlanksProbability": 2e-09,
+        "meanPayingFreeSpins": 5.974017794,
+        "meanFreeSpins": 15.000082409,
+        "maxPositivePayoutProbability": 0.002904301,
+        "weightedCounts": {
+          "transitions": 4743308389200,
+          "identical": 19200,
+          "bonusRounds": 1200000000000,
+          "freeSpins": 18000098890800,
+          "payingFreeSpins": 7168821352800,
+          "oneWin14Blanks": 2400
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "hidden": {
+        "identicalTransitionRate": 1.4443561886643762e-09,
+        "oneWin14BlanksProbability": 2e-09,
+        "meanPayingFreeSpins": 6.41228271,
+        "meanFreeSpins": 14.999994141,
+        "maxPositivePayoutProbability": 0.007073491,
+        "weightedCounts": {
+          "transitions": 1523169989000,
+          "identical": 2200,
+          "bonusRounds": 200000000000,
+          "freeSpins": 2999998828200,
+          "payingFreeSpins": 1282456542000,
+          "oneWin14Blanks": 400
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      }
+    }
+  }
+}

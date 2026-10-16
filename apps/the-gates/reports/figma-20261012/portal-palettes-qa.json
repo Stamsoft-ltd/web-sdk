@@ -1,0 +1,45 @@
+{
+  "status": "Standalone gate + symbol-removal palettes match modes; NOT game-wired",
+  "palettes": {
+    "normal": [
+      "purple",
+      "hot pink",
+      "gold"
+    ],
+    "super": [
+      "royal blue",
+      "white",
+      "gold"
+    ],
+    "hidden": [
+      "ruby red",
+      "cream",
+      "gold"
+    ]
+  },
+  "assets": "static/assets/the-gates/portals-20261012/palette-artifacts.json",
+  "layers": "Separate transparent-hole rim and swirl; shared per-mode texture between gate and removal sprites",
+  "defaults": "Normal palette for Base/Normal symbol-removal preview; Super/Hidden selectable in workbench",
+  "unchanged": "Door/spark/reward timeline, seeded randomness, landing, win tiers, math/RGS/game runtime; native Figma PNGs intact",
+  "tests": {
+    "total": 65,
+    "pass": 65,
+    "addedCheck": "Mode-to-portal SHA/path mapping, transparent hole, valid regions, all symbol palettes parse with Spine4.2, unchanged landing timing"
+  },
+  "build": "PASS",
+  "nativeAssetIntegrity": "PASS",
+  "browser": "22/22 rigs loaded; 0 errors; all three gate portal colors visually confirmed at1300ms; Normal/Super/Hidden symbol removal variants checked at190ms",
+  "resources": {
+    "textures": 3,
+    "decodedPortalMiB": 18.01,
+    "sharing": "Gates and symbols reuse mode PNG through common image cache; no tint copies",
+    "scope": "Desktop workbench preloads three modes. Production load active mode only; mobile performance not benchmarked."
+  },
+  "screenshots": [
+    "mode-portal-palettes.jpg",
+    "symbol-portals-normal.jpg",
+    "symbol-portals-super.jpg",
+    "symbol-portals-hidden.jpg"
+  ],
+  "preview": "http://127.0.0.1:3021/assets/the-gates/figma-20261012/motion/preview.html"
+}

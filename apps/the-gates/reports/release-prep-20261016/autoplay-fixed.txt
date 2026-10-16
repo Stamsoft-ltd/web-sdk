@@ -1,0 +1,31 @@
+- main:
+  - img "The Gates"
+  - img "Press Play"
+  - region "The Gates game":
+    - status: Tumbles 0/3. Multiplier 1×.
+    - img "6 columns, 5 rows. Win anywhere."
+  - button "Menu"
+  - button "Bonus" [disabled]:
+    - generic: Bonus
+  - button "Spin" [disabled]
+  - 'button "Speed: Normal" [disabled]'
+  - button "Autoplay" [disabled]
+  - button "Base play −" [disabled]
+  - button "Base play +" [disabled]
+  - generic: Balance
+  - strong:
+    - generic: 0.00 SC
+  - generic: Win
+  - strong:
+    - generic: 0.00 SC
+  - generic: Play
+  - strong:
+    - generic: 1.50 SC
+  - generic: THE GATES | 07:25
+  - status: Balance too low for this play. Lower the play amount.
+- dialog "Autoplay":
+  - button "Close" [active]:
+  - heading "Autoplay" [level=2]
+  - paragraph: Balance too low for this play. Lower the play amount.
+  - button "Continue":
+    - generic: Continue

@@ -1,0 +1,44 @@
+{
+  "request": "Side slide, longer portal award, no brief reappearance after disappearing",
+  "fixes": [
+    "Removed closed static door loading fallback that flashed before Spine started",
+    "Gate asset decode completes before authoritative presentation start clock",
+    "Opening/reward timestamps owned by playback, not reactive component load/resize/state changes",
+    "Award hold 1800ms + 330ms outro at every speed",
+    "Hidden portal stays present between rewards; only final reward closes it",
+    "Final ended frame forces all slots and backdrop invisible"
+  ],
+  "unchanged": [
+    "native asset files",
+    "seeded sparks and impact poses",
+    "math/payouts/reward order/RGS",
+    "full-screen coverage"
+  ],
+  "validation": {
+    "tests": "81/81 PASS",
+    "typescript": "TS sources PASS",
+    "productionBuild": "PASS, existing shared warnings retained",
+    "chrome": "Scripted dev UI: visible side entry captured; Hidden first reward still visible beyond old timeout; 88 samples over entire cycle",
+    "sampledPhases": [
+      "closing",
+      "impact",
+      "opening",
+      "portal",
+      "outro"
+    ],
+    "sampledRewardOrders": [
+      0,
+      1,
+      2
+    ],
+    "portalAlphaBetweenRewards": 1,
+    "reappearanceAfterEnd": false,
+    "appErrors": 0
+  },
+  "evidence": [
+    "runtime-gate-sliding-20261013.png",
+    "runtime-gate-hidden-hold-20261013.png",
+    "gate-no-flash-browser-samples.json"
+  ],
+  "devReview": "http://127.0.0.1:3020/?preview=true&artPreview=gate-hidden"
+}

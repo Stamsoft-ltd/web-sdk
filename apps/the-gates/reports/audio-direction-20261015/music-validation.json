@@ -1,0 +1,46 @@
+{
+  "base-music": {
+    "bpm": 96,
+    "bars": 8,
+    "seconds": 20,
+    "integratedLUFS": "-22.00",
+    "truePeakDbTP": "-8.27",
+    "boundaryDeltaPcm16": 185,
+    "internalDeltaP99Pcm16": 534,
+    "sha256": "1b4e5cfd2eacdd70d754364ae4d902e15789f80da138b31edf44a2c06202080a",
+    "status": "approved and locally integrated; licensing review before publishing"
+  },
+  "bonus-music": {
+    "bpm": 120,
+    "bars": 8,
+    "seconds": 16,
+    "integratedLUFS": "-22.00",
+    "truePeakDbTP": "-9.12",
+    "boundaryDeltaPcm16": 245,
+    "internalDeltaP99Pcm16": 639,
+    "sha256": "30abb495869761e55857fd44e6be02079414f9b83e987d93d5084aaf9eab849a",
+    "status": "approved and locally integrated; licensing review before publishing"
+  },
+  "super-music": {
+    "bpm": 128,
+    "bars": 8,
+    "seconds": 15,
+    "integratedLUFS": "-22.00",
+    "truePeakDbTP": "-9.76",
+    "boundaryDeltaPcm16": 142,
+    "internalDeltaP99Pcm16": 603,
+    "sha256": "d7a009648f59236e92afbb4fdd0082a7b62467febd5f24d267e68cf9de2676f1",
+    "status": "approved and locally integrated; licensing review before publishing"
+  },
+  "hidden-music": {
+    "bpm": 100,
+    "bars": 8,
+    "seconds": 19.2,
+    "integratedLUFS": "-22.00",
+    "truePeakDbTP": "-11.90",
+    "boundaryDeltaPcm16": 237,
+    "internalDeltaP99Pcm16": 645,
+    "sha256": "6098878671ebb2bcfe4ecfc9be4c3883f5d3a876a1daefc3acdf5fcc65af3016",
+    "status": "approved and locally integrated; licensing review before publishing"
+  }
+}

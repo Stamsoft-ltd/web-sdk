@@ -1,0 +1,21 @@
+{
+  "path": "cartoon-impact-spark-v1.png",
+  "tool": "built-in image_gen",
+  "mode": "generate with style reference",
+  "sha256": "c7d62cf0dfbfad5f9ab0b008237434f7ba20b92e0bf2f1b444dd4e3d057dd0d3",
+  "width": 1254,
+  "height": 1254,
+  "alphaRange": [
+    0,
+    255
+  ],
+  "alphaBounds": [
+    33,
+    41,
+    1240,
+    1199
+  ],
+  "sourcePixelEdits": false,
+  "usage": "One shared texture; central comic impact flash and twelve independent Spine sparks at door seam",
+  "prompt": "Use case: stylized-concept. Asset type: transparent cartoon impact spark sprite for The Gates door collision. Image 1 is STYLE reference only: match its flat saturated colors, chunky rounded-cartoon geometry, very bold dark navy outlines and crisp white highlights. Create ONE isolated bright yellow comic-book impact spark, a plump asymmetric four-point starburst with short notched zigzag rays, orange inset edge and a creamy-white center highlight. Slightly longer horizontal rays so it reads as a flying collision spark, not a gem or decorative emoji. Clean 2D casual-game art; readable at 12\u201325 screen pixels. Centered in a square canvas, occupies about 70 percent, ample transparent padding. Genuine transparent background. No portal, no doors, no text, no realistic flame/glow, no blurry aura, no thin dust trails, no shards, no photorealistic metal, no ground, no watermark, no other objects."
+}

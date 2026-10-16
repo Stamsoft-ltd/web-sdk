@@ -1,0 +1,54 @@
+{
+  "mapping": "User confirmed backgrounds first base to last hidden; leaves reverse hidden/super/normal. Native bytes unchanged.",
+  "assets": [
+    {
+      "path": "base-background.png",
+      "source": "/Users/simeonhristov/Downloads/ChatGPT Image Oct 5 2026 from Figma.png",
+      "width": 360,
+      "height": 684,
+      "sha256": "3f0a60bcb9f3ee9e236f0b414f985a0c4b0403139630dfc3bda2c96307f73ab1"
+    },
+    {
+      "path": "normal-background.png",
+      "source": "/Users/simeonhristov/Downloads/Sunset Temple Terrace Figma.png",
+      "width": 360,
+      "height": 608,
+      "sha256": "7ac04689ad7526850ca289536ce143a430b94967a7568b05749a3b79e2b7a0c5"
+    },
+    {
+      "path": "super-background.png",
+      "source": "/Users/simeonhristov/Downloads/Gates Slot Base Game.png",
+      "width": 1080,
+      "height": 1779,
+      "sha256": "35a98de4474de8f06540e7c7e72744e751db528d17f09224ae135b607b27b168"
+    },
+    {
+      "path": "hidden-background.png",
+      "source": "/Users/simeonhristov/Downloads/Gates Slot Base Game (1).png",
+      "width": 1080,
+      "height": 2010,
+      "sha256": "69d31e7b882c91a0011c202ba2037c9cc85f25c4967b3ad482252976b8367f0e"
+    },
+    {
+      "path": "hidden-leaf.png",
+      "source": "/Users/simeonhristov/Downloads/Geometric Golden Gemstone Mosaic Vectorized.png",
+      "width": 181,
+      "height": 578,
+      "sha256": "129cd6d7e281514b574ac20f00cabb88a5acbc23fe3ebd25d5e3bde8fef00ba7"
+    },
+    {
+      "path": "super-leaf.png",
+      "source": "/Users/simeonhristov/Downloads/Gates Slot Chevron Mosaic 2.png",
+      "width": 179,
+      "height": 577,
+      "sha256": "3a1cfd26940c1f792c7d2585a0bbc347fa395e716500b63767082a3d0e3bbec6"
+    },
+    {
+      "path": "normal-leaf.png",
+      "source": "/Users/simeonhristov/Downloads/Geometric Stained-Glass Chevron Panel 2.png",
+      "width": 177,
+      "height": 579,
+      "sha256": "6a6093d83c45721d70fefe6fe33d67249108cee096b08fab059bd8a1146f3148"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+../bonus/super-title.png
+size: 2528,1304
+filter: Linear,Linear
+pma: false
+title
+  bounds: 0,0,2528,1304
+
+../panels/bonus-counter-blank.png
+size: 988,552
+filter: Linear,Linear
+pma: false
+award
+  bounds: 0,0,988,552
+

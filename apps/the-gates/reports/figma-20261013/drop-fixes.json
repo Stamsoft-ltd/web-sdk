@@ -1,0 +1,46 @@
+{
+  "status": "Implemented and checked in local scripted preview",
+  "branch": "feature/the-gates",
+  "background": "Native cloud/castle source wired into mobile portrait/landscape base play and entry screens; 4px reference blur. Shared portrait source fitted into landscape; dedicated landscape source not acquired. Desktop terrace and bonus mode art preserved.",
+  "motion": {
+    "tile": "Pad, border and symbol travel as one cell. Empty pads vanish after removal.",
+    "clock": "One shared RAF timestamp for tile gravity and Spine contact; CSS symbol-only travel disabled.",
+    "contact": "Starts at column delay + travel duration; Normal240ms / Fast160ms / Turbo80ms. Phase waits through last contact.",
+    "exit": "Matches incoming left-to-right reel stagger at all speeds, instead of3ms column delay.",
+    "coldLoad": "Symbol rig/atlas decoded before reveal wave begins; no elapsed landing while textures load.",
+    "skip": "Same wave origin; airborne travel shortened, future contacts accelerated; settled contacts never restarted.",
+    "resize": "Row pitches remeasured by bounded ResizeObserver while travelling; observer/ticker cleaned up on phase change/unmount."
+  },
+  "preserved": [
+    "Authoritative events/awards",
+    "Math/RTP/books",
+    "Replay",
+    "Sticky wild lock",
+    "Localized HUD",
+    "Jurisdiction speed/skip locks",
+    "Seeded portal removal"
+  ],
+  "validation": {
+    "tests": "99/99 PASS",
+    "build": "PASS; existing shared CSS/public-env warnings",
+    "typeScript": "tsc --noEmit PASS",
+    "diff": "git diff --check PASS",
+    "normal": "65 DOM samples span exit/drop/win; zero Spine land poses on displaced tiles; no inner CSS travel transforms.",
+    "fast": "45 DOM samples span exit/drop/win; zero early land poses.",
+    "turbo": "35 DOM samples span drop/win/removal; zero early land poses.",
+    "skip": "Space during spinning sets data-skipped=true; selected speed stays Normal.",
+    "landscape": "Final exit screenshot and DOM show left columns displaced130px, column3~51px, column4~7px, column5 still. Pads and symbols share the cell transform.",
+    "money": "Dev-only scripted preview; no real wagers/transactions",
+    "runtimeErrors": "No game error logs in checked preview"
+  },
+  "screenshots": [
+    "cloud-background-portrait.png",
+    "cloud-background-landscape.png",
+    "whole-tile-exit-wave.png"
+  ],
+  "commands": [
+    "pnpm --filter the-gates test",
+    "pnpm --filter the-gates build"
+  ],
+  "preview": "http://127.0.0.1:3020/?preview=true"
+}

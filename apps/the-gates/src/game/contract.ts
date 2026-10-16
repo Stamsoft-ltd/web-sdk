@@ -92,6 +92,9 @@ type Payload =
 			rawAmount: number;
 			multiplier: number;
 			uncappedAmount: number;
+			/** Authoritative entry Key award, outside Gate multiplication (v7.1+). */
+			scatterCount?: number;
+			scatterAmount?: number;
 			amount: number;
 			cascades: number;
 			capped: boolean;

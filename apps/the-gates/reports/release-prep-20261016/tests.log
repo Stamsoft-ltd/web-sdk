@@ -1,0 +1,1942 @@
+TAP version 13
+# (node:73077) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:73077) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# Subtest: RGS host normalization preserves schemes/paths and never invents a different host
+ok 1 - RGS host normalization preserves schemes/paths and never invents a different host
+  ---
+  duration_ms: 2.745625
+  type: 'test'
+  ...
+# (node:73077) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# Subtest: real RGS transport sends one mutation; handles HTTP failures and timeout without retries
+ok 2 - real RGS transport sends one mutation; handles HTTP failures and timeout without retries
+  ---
+  duration_ms: 81.757542
+  type: 'test'
+  ...
+# Subtest: all player error paths use safe catalog keys, never server text or dollar amounts
+ok 3 - all player error paths use safe catalog keys, never server text or dollar amounts
+  ---
+  duration_ms: 1.853917
+  type: 'test'
+  ...
+# Subtest: rules match published v8 extensions and cover current controls
+ok 4 - rules match published v8 extensions and cover current controls
+  ---
+  duration_ms: 2.21125
+  type: 'test'
+  ...
+# Subtest: Wild reward shows native symbol/count, then one native symbol per actual target
+ok 5 - Wild reward shows native symbol/count, then one native symbol per actual target
+  ---
+  duration_ms: 0.684958
+  type: 'test'
+  ...
+# Subtest: optional/invalid replay amounts fall back safely; boot never counts as a played replay
+ok 6 - optional/invalid replay amounts fall back safely; boot never counts as a played replay
+  ---
+  duration_ms: 0.813042
+  type: 'test'
+  ...
+# Subtest: board accessible text also uses social-safe translation
+ok 7 - board accessible text also uses social-safe translation
+  ---
+  duration_ms: 5.791834
+  type: 'test'
+  ...
+# (node:73078) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 11 approved symbol mappings; old WILD is the only explicit fallback
+ok 8 - 11 approved symbol mappings; old WILD is the only explicit fallback
+  ---
+  duration_ms: 4.050834
+  type: 'test'
+  ...
+# Subtest: normal, fast, turbo and skip scrub the same portal track to completion before removal barrier
+ok 9 - normal, fast, turbo and skip scrub the same portal track to completion before removal barrier
+  ---
+  duration_ms: 29.960875
+  type: 'test'
+  ...
+# Subtest: contact land uses one bottom-pivot squash; repeated sample stays exact and can restore idle
+ok 10 - contact land uses one bottom-pivot squash; repeated sample stays exact and can restore idle
+  ---
+  duration_ms: 0.97925
+  type: 'test'
+  ...
+# Subtest: gateOpen waits closed without reward; authoritative reward opens doors and spins out
+ok 11 - gateOpen waits closed without reward; authoritative reward opens doors and spins out
+  ---
+  duration_ms: 10.12075
+  type: 'test'
+  ...
+# Subtest: all five native titles/crowns parse and anchor a blank banner for live amounts
+ok 12 - all five native titles/crowns parse and anchor a blank banner for live amounts
+  ---
+  duration_ms: 5.357
+  type: 'test'
+  ...
+# Subtest: live components use approved rigs; old atmosphere removed; CSS cannot double squash or override award anchor
+ok 13 - live components use approved rigs; old atmosphere removed; CSS cannot double squash or override award anchor
+  ---
+  duration_ms: 0.851958
+  type: 'test'
+  ...
+# Subtest: runtime loader separates art roots and shares native pages; seeded event rigs never reuse a prior event
+ok 14 - runtime loader separates art roots and shares native pages; seeded event rigs never reuse a prior event
+  ---
+  duration_ms: 8.683167
+  type: 'test'
+  ...
+# Subtest: developer art fixtures preserve all win thresholds, cap and summary values; production branch never uses them
+ok 15 - developer art fixtures preserve all win thresholds, cap and summary values; production branch never uses them
+  ---
+  duration_ms: 47.649583
+  type: 'test'
+  ...
+# (node:73079) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: PNG lossless recompression reduces IDAT bytes, preserves exact scanlines and metadata
+ok 16 - PNG lossless recompression reduces IDAT bytes, preserves exact scanlines and metadata
+  ---
+  duration_ms: 23.510583
+  type: 'test'
+  ...
+# Subtest: PNG optimizer is idempotent and refuses changed pixels/metadata or invalid CRC
+ok 17 - PNG optimizer is idempotent and refuses changed pixels/metadata or invalid CRC
+  ---
+  duration_ms: 14.304666
+  type: 'test'
+  ...
+# Subtest: transparent Wild, native backdrops and legal frames retain source encoding semantics
+ok 18 - transparent Wild, native backdrops and legal frames retain source encoding semantics
+  ---
+  duration_ms: 10091.642375
+  type: 'test'
+  ...
+# Subtest: source cleanup has no unused public assets left; runtime and authoring dependencies resolve
+ok 19 - source cleanup has no unused public assets left; runtime and authoring dependencies resolve
+  ---
+  duration_ms: 165.923042
+  type: 'test'
+  ...
+# Subtest: runtime does not import retired Canvas2D renderer or broad shared UI barrels
+ok 20 - runtime does not import retired Canvas2D renderer or broad shared UI barrels
+  ---
+  duration_ms: 0.943
+  type: 'test'
+  ...
+# (node:73080) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 100 concurrent and sequential preload/FX requests share one canonical decoded image
+ok 21 - 100 concurrent and sequential preload/FX requests share one canonical decoded image
+  ---
+  duration_ms: 1.770416
+  type: 'test'
+  ...
+# Subtest: failed image decode cannot become an interaction-driven retry storm
+ok 22 - failed image decode cannot become an interaction-driven retry storm
+  ---
+  duration_ms: 2.609084
+  type: 'test'
+  ...
+# Subtest: 100 rig state/seed updates issue no additional asset fetches or image decodes after warm-up
+ok 23 - 100 rig state/seed updates issue no additional asset fetches or image decodes after warm-up
+  ---
+  duration_ms: 28.506834
+  type: 'test'
+  ...
+# Subtest: failed rig fetch is retained instead of refetched on every new actor attempt
+ok 24 - failed rig fetch is retained instead of refetched on every new actor attempt
+  ---
+  duration_ms: 1.775917
+  type: 'test'
+  ...
+# Subtest: asset audit separates transfers, cache hits and unknown timing without collecting URLs or RGS calls
+ok 25 - asset audit separates transfers, cache hits and unknown timing without collecting URLs or RGS calls
+  ---
+  duration_ms: 0.249042
+  type: 'test'
+  ...
+# Subtest: preload, Spine and coin FX use one image loader; audit is dev-only and observers are disposed
+ok 26 - preload, Spine and coin FX use one image loader; audit is dev-only and observers are disposed
+  ---
+  duration_ms: 1.481583
+  type: 'test'
+  ...
+# (node:73081) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: autoplay detents preserve small counts then step by 100 to 1000
+ok 27 - autoplay detents preserve small counts then step by 100 to 1000
+  ---
+  duration_ms: 1.778416
+  type: 'test'
+  ...
+# Subtest: autoplay has no optional stop threshold controls
+ok 28 - autoplay has no optional stop threshold controls
+  ---
+  duration_ms: 0.710875
+  type: 'test'
+  ...
+# Subtest: browser-exported cloud backgrounds retain native PNG dimensions and hashes
+ok 29 - browser-exported cloud backgrounds retain native PNG dimensions and hashes
+  ---
+  duration_ms: 4.471459
+  type: 'test'
+  ...
+# (node:73083) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Pixi owns all thirty tile coordinates without querying HTML cells
+ok 30 - Pixi owns all thirty tile coordinates without querying HTML cells
+  ---
+  duration_ms: 3.318875
+  type: 'test'
+  ...
+# Subtest: gameplay has no hidden HTML grid, duplicate frame image or alternate visual fallback
+ok 31 - gameplay has no hidden HTML grid, duplicate frame image or alternate visual fallback
+  ---
+  duration_ms: 16.983667
+  type: 'test'
+  ...
+# Subtest: GPU board remains behind overlays; covered animations stop and failures are explicit
+ok 32 - GPU board remains behind overlays; covered animations stop and failures are explicit
+  ---
+  duration_ms: 3.873917
+  type: 'test'
+  ...
+# Subtest: mobile generated rim has equal horizontal and vertical insets
+ok 33 - mobile generated rim has equal horizontal and vertical insets
+  ---
+  duration_ms: 0.92325
+  type: 'test'
+  ...
+# Subtest: design body font is native Poppins Black, unchanged and licensed
+ok 34 - design body font is native Poppins Black, unchanged and licensed
+  ---
+  duration_ms: 2.791958
+  type: 'test'
+  ...
+# (node:73085) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:73085) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# Subtest: bonus presentation requires acknowledgement, darkens only, with no button or duplicate copy
+ok 35 - bonus presentation requires acknowledgement, darkens only, with no button or duplicate copy
+  ---
+  duration_ms: 4.042
+  type: 'test'
+  ...
+# Subtest: bonus acknowledgement has no auto-close; abort still cleans the pending listener
+ok 36 - bonus acknowledgement has no auto-close; abort still cleans the pending listener
+  ---
+  duration_ms: 2.386833
+  type: 'test'
+  ...
+# Subtest: bonus spins and summary count use native award bone in Pixi, never DOM text anchoring
+ok 37 - bonus spins and summary count use native award bone in Pixi, never DOM text anchoring
+  ---
+  duration_ms: 1.178416
+  type: 'test'
+  ...
+# (node:73086) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: bonus entry emerges only as the doors open; exit retracts before doors close
+ok 38 - bonus entry emerges only as the doors open; exit retracts before doors close
+  ---
+  duration_ms: 1.049041
+  type: 'test'
+  ...
+# Subtest: reduced motion fades without spinning/door movement; holds have neutral transform
+ok 39 - reduced motion fades without spinning/door movement; holds have neutral transform
+  ---
+  duration_ms: 0.370375
+  type: 'test'
+  ...
+# Subtest: entry allows remaining cascades and settlement before first free-spin boundary
+ok 40 - entry allows remaining cascades and settlement before first free-spin boundary
+  ---
+  duration_ms: 0.986875
+  type: 'test'
+  ...
+# Subtest: exit never respawns a portal after summary removal while doors reopen to base
+ok 41 - exit never respawns a portal after summary removal while doors reopen to base
+  ---
+  duration_ms: 0.454
+  type: 'test'
+  ...
+# Subtest: summary portal shrinks closed, never abruptly cuts from its full-size hold
+ok 42 - summary portal shrinks closed, never abruptly cuts from its full-size hold
+  ---
+  duration_ms: 0.074959
+  type: 'test'
+  ...
+# (node:73087) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: return to base uses two readable lines, not overflowing one long line
+ok 43 - return to base uses two readable lines, not overflowing one long line
+  ---
+  duration_ms: 0.649667
+  type: 'test'
+  ...
+# Subtest: short captions stay full-size and long localized captions fit without ellipsis
+ok 44 - short captions stay full-size and long localized captions fit without ellipsis
+  ---
+  duration_ms: 0.707417
+  type: 'test'
+  ...
+# Subtest: explicit one-line labels fit without adding a line
+ok 45 - explicit one-line labels fit without adding a line
+  ---
+  duration_ms: 0.064667
+  type: 'test'
+  ...
+# Subtest: Non-buy text buttons retain fitted labels after restoring the authored buy menu
+ok 46 - Non-buy text buttons retain fitted labels after restoring the authored buy menu
+  ---
+  duration_ms: 1.866542
+  type: 'test'
+  ...
+# (node:73088) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: original card dimensions never change at any breakpoint
+ok 47 - original card dimensions never change at any breakpoint
+  ---
+  duration_ms: 0.911708
+  type: 'test'
+  ...
+# Subtest: all five cards fit without a scroll track; choose largest uniform scale
+ok 48 - all five cards fit without a scroll track; choose largest uniform scale
+  ---
+  duration_ms: 0.269709
+  type: 'test'
+  ...
+# Subtest: restored menu renders original captions and cards, not pages or new rectangular actions
+ok 49 - restored menu renders original captions and cards, not pages or new rectangular actions
+  ---
+  duration_ms: 0.583166
+  type: 'test'
+  ...
+# Subtest: HUD bonus caption remains plain visible text, not a collapsing fitted child
+ok 50 - HUD bonus caption remains plain visible text, not a collapsing fitted child
+  ---
+  duration_ms: 2.168875
+  type: 'test'
+  ...
+# (node:73090) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: phone evidence overrides desktop launch hint; viewport size alone never identifies mobile
+ok 51 - phone evidence overrides desktop launch hint; viewport size alone never identifies mobile
+  ---
+  duration_ms: 0.582459
+  type: 'test'
+  ...
+# Subtest: DevTools touch emulation works without reloading desktop user agent
+ok 52 - DevTools touch emulation works without reloading desktop user agent
+  ---
+  duration_ms: 0.080167
+  type: 'test'
+  ...
+# Subtest: phone emulation rotates into compact and back without desktop window heuristics
+ok 53 - phone emulation rotates into compact and back without desktop window heuristics
+  ---
+  duration_ms: 9.722875
+  type: 'test'
+  ...
+# (node:73091) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: desktop adds caption clearance and keeps the authored width
+ok 54 - desktop adds caption clearance and keeps the authored width
+  ---
+  duration_ms: 0.685708
+  type: 'test'
+  ...
+# Subtest: portrait adaptation contains the complete board and control stage
+ok 55 - portrait adaptation contains the complete board and control stage
+  ---
+  duration_ms: 0.1145
+  type: 'test'
+  ...
+# Subtest: compact landscape keeps tappable controls instead of tiny desktop buttons
+ok 56 - compact landscape keeps tappable controls instead of tiny desktop buttons
+  ---
+  duration_ms: 0.130791
+  type: 'test'
+  ...
+# Subtest: empty or short viewport never gets a negative fit
+ok 57 - empty or short viewport never gets a negative fit
+  ---
+  duration_ms: 0.080209
+  type: 'test'
+  ...
+# Subtest: portrait intro has independent clearance after shortening the game stage
+ok 58 - portrait intro has independent clearance after shortening the game stage
+  ---
+  duration_ms: 0.143541
+  type: 'test'
+  ...
+# Subtest: native frame opening has no added left padding and ends before bottom frame
+ok 59 - native frame opening has no added left padding and ends before bottom frame
+  ---
+  duration_ms: 0.062042
+  type: 'test'
+  ...
+# Subtest: short desktop windows never switch to mobile landscape
+ok 60 - short desktop windows never switch to mobile landscape
+  ---
+  duration_ms: 0.123542
+  type: 'test'
+  ...
+# Subtest: portrait layout stays orientation-based regardless of device signal
+ok 61 - portrait layout stays orientation-based regardless of device signal
+  ---
+  duration_ms: 0.052542
+  type: 'test'
+  ...
+# Subtest: modal chrome is responsive and short viewport rules copy shrinks
+ok 62 - modal chrome is responsive and short viewport rules copy shrinks
+  ---
+  duration_ms: 2.043416
+  type: 'test'
+  ...
+# (node:73092) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: new motion uses intact verified native art; no reference-only or invented Wild
+ok 63 - new motion uses intact verified native art; no reference-only or invented Wild
+  ---
+  duration_ms: 31.798125
+  type: 'test'
+  ...
+# Subtest: every standalone rig parses in official Spine 4.2 and stays finite
+ok 64 - every standalone rig parses in official Spine 4.2 and stays finite
+  ---
+  duration_ms: 305.955875
+  type: 'test'
+  ...
+# Subtest: landing visibly squashes at a fixed floor pivot then returns exactly to neutral
+ok 65 - landing visibly squashes at a fixed floor pivot then returns exactly to neutral
+  ---
+  duration_ms: 21.44975
+  type: 'test'
+  ...
+# Subtest: all idle and paying loops close without popping; premiums have distinct poses
+ok 66 - all idle and paying loops close without popping; premiums have distinct poses
+  ---
+  duration_ms: 69.029666
+  type: 'test'
+  ...
+# Subtest: normal/fast/turbo land once and queue idle without altering the landing rig
+ok 67 - normal/fast/turbo land once and queue idle without altering the landing rig
+  ---
+  duration_ms: 1.255625
+  type: 'test'
+  ...
+# Subtest: win/bonus parts enter staggered, settle, idle seamlessly and fade away
+ok 68 - win/bonus parts enter staggered, settle, idle seamlessly and fade away
+  ---
+  duration_ms: 18.113208
+  type: 'test'
+  ...
+# Subtest: crowns register above requested letters, lift from text, then settle without sideways drift
+ok 69 - crowns register above requested letters, lift from text, then settle without sideways drift
+  ---
+  duration_ms: 20.198958
+  type: 'test'
+  ...
+# Subtest: portal rim stays below full-size symbol; slow suction, pinch and clear are ordered
+ok 70 - portal rim stays below full-size symbol; slow suction, pinch and clear are ordered
+  ---
+  duration_ms: 120.81025
+  type: 'test'
+  ...
+# Subtest: portal eventId preserves replay motion; new cells/events change cosmetic spin only
+ok 71 - portal eventId preserves replay motion; new cells/events change cosmetic spin only
+  ---
+  duration_ms: 1.320333
+  type: 'test'
+  ...
+# Subtest: gate and symbol-removal portals use each mode palette and verified transparent layered art
+ok 72 - gate and symbol-removal portals use each mode palette and verified transparent layered art
+  ---
+  duration_ms: 87.536417
+  type: 'test'
+  ...
+# Subtest: Figma UI native files retain original hash, dimensions and non-empty bytes
+ok 73 - Figma UI native files retain original hash, dimensions and non-empty bytes
+  ---
+  duration_ms: 14.227166
+  type: 'test'
+  ...
+# Subtest: every fetched UI image has an inventory entry and the requested source file
+ok 74 - every fetched UI image has an inventory entry and the requested source file
+  ---
+  duration_ms: 0.342292
+  type: 'test'
+  ...
+# (node:73094) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: skip calls end-round exactly once and accepts authoritative balance
+ok 75 - skip calls end-round exactly once and accepts authoritative balance
+  ---
+  duration_ms: 0.453708
+  type: 'test'
+  ...
+# Subtest: failed or malformed settlement rejects instead of reporting successful skip
+ok 76 - failed or malformed settlement rejects instead of reporting successful skip
+  ---
+  duration_ms: 0.369125
+  type: 'test'
+  ...
+# (node:73095) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: wisp timing shrinks by speed and mobile landscape does not depend on small height
+ok 77 - wisp timing shrinks by speed and mobile landscape does not depend on small height
+  ---
+  duration_ms: 0.583875
+  type: 'test'
+  ...
+# Subtest: per-type labels choose closest winning symbol to center without changing win data
+ok 78 - per-type labels choose closest winning symbol to center without changing win data
+  ---
+  duration_ms: 0.494375
+  type: 'test'
+  ...
+# Subtest: skip existing round settles wallet without reload; presentation has no continue button
+ok 79 - skip existing round settles wallet without reload; presentation has no continue button
+  ---
+  duration_ms: 1.094417
+  type: 'test'
+  ...
+# Subtest: each symbol type gets one summed label and original authoritative arrays remain untouched
+ok 80 - each symbol type gets one summed label and original authoritative arrays remain untouched
+  ---
+  duration_ms: 0.139667
+  type: 'test'
+  ...
+# Subtest: total win matches free-spin frame; payouts appear near portal removal end with larger type
+ok 81 - total win matches free-spin frame; payouts appear near portal removal end with larger type
+  ---
+  duration_ms: 1.590583
+  type: 'test'
+  ...
+# (node:73096) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: all 26 approved cues have deployable audio files
+ok 82 - all 26 approved cues have deployable audio files
+  ---
+  duration_ms: 0.814792
+  type: 'test'
+  ...
+# Subtest: gesture unlock, decoding, mute, overlap cap, hidden tab and cleanup
+ok 83 - gesture unlock, decoding, mute, overlap cap, hidden tab and cleanup
+  ---
+  duration_ms: 7.465167
+  type: 'test'
+  ...
+# (node:73097) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: all three gates use intact native mode leaves, mirror right, and keep portal/reward behind doors
+ok 84 - all three gates use intact native mode leaves, mirror right, and keep portal/reward behind doors
+  ---
+  duration_ms: 11.958375
+  type: 'test'
+  ...
+# Subtest: gates enter from opposite offscreen sides, collide, settle closed, then fully clear
+ok 85 - gates enter from opposite offscreen sides, collide, settle closed, then fully clear
+  ---
+  duration_ms: 21.736
+  type: 'test'
+  ...
+# Subtest: impact shake is little, deterministic per eventId, returns neutral before reward
+ok 86 - impact shake is little, deterministic per eventId, returns neutral before reward
+  ---
+  duration_ms: 17.32725
+  type: 'test'
+  ...
+# Subtest: reward spins and grows out while doors open, settles upright, then removes both
+ok 87 - reward spins and grows out while doors open, settles upright, then removes both
+  ---
+  duration_ms: 63.38325
+  type: 'test'
+  ...
+# Subtest: live speed scales movement but protects the full 750ms reward hold, including boundary crossings
+ok 88 - live speed scales movement but protects the full 750ms reward hold, including boundary crossings
+  ---
+  duration_ms: 0.589375
+  type: 'test'
+  ...
+# Subtest: gate events fire once in order, even across large updates; cancellation emits no later reward
+ok 89 - gate events fire once in order, even across large updates; cancellation emits no later reward
+  ---
+  duration_ms: 17.936
+  type: 'test'
+  ...
+# Subtest: cartoon sparks start at center seam only on impact, shoot both sides, clear before gate opens
+ok 90 - cartoon sparks start at center seam only on impact, shoot both sides, clear before gate opens
+  ---
+  duration_ms: 23.84375
+  type: 'test'
+  ...
+# Subtest: evaluated reward makes two continuous outward turns, not shortest-path snapback
+ok 91 - evaluated reward makes two continuous outward turns, not shortest-path snapback
+  ---
+  duration_ms: 138.378042
+  type: 'test'
+  ...
+# (node:73098) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: award spins out then stays readable 1.8 seconds and closes once within the shared barrier
+ok 92 - award spins out then stays readable 1.8 seconds and closes once within the shared barrier
+  ---
+  duration_ms: 7.304708
+  type: 'test'
+  ...
+# Subtest: Hidden keeps same portal between awards; only final reward collapses it
+ok 93 - Hidden keeps same portal between awards; only final reward collapses it
+  ---
+  duration_ms: 0.435583
+  type: 'test'
+  ...
+# Subtest: doors move through closing before impact; event clocks unaffected by subsequent state updates
+ok 94 - doors move through closing before impact; event clocks unaffected by subsequent state updates
+  ---
+  duration_ms: 1.424542
+  type: 'test'
+  ...
+# Subtest: developer gate reviews exercise one slide with real ordered reward fixtures for all three tiers
+ok 95 - developer gate reviews exercise one slide with real ordered reward fixtures for all three tiers
+  ---
+  duration_ms: 14.137916
+  type: 'test'
+  ...
+# Subtest: authoritative first reward starts during opening; Hidden second never repeats doors
+ok 96 - authoritative first reward starts during opening; Hidden second never repeats doors
+  ---
+  duration_ms: 2.6065
+  type: 'test'
+  ...
+# (node:73099) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:73099) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# Subtest: third-win selection completes every native paying cycle before gate closure
+ok 97 - third-win selection completes every native paying cycle before gate closure
+  ---
+  duration_ms: 15.166916
+  type: 'test'
+  ...
+# Subtest: gate selection shares cascade clock; no duplicate 1.3s hold after ordinary highlight
+ok 98 - gate selection shares cascade clock; no duplicate 1.3s hold after ordinary highlight
+  ---
+  duration_ms: 3.279417
+  type: 'test'
+  ...
+# Subtest: resumed gateOpen reads restored selected symbols; skip can shorten, abort cancels
+ok 99 - resumed gateOpen reads restored selected symbols; skip can shorten, abort cancels
+  ---
+  duration_ms: 1.024833
+  type: 'test'
+  ...
+# Subtest: selection barrier precedes gate clock; awards and actual removals remain authoritative
+ok 100 - selection barrier precedes gate clock; awards and actual removals remain authoritative
+  ---
+  duration_ms: 3.299791
+  type: 'test'
+  ...
+# (node:73100) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: closed leaves cover the whole viewport and center seam for every tier and breakpoint
+ok 101 - closed leaves cover the whole viewport and center seam for every tier and breakpoint
+  ---
+  duration_ms: 78.460375
+  type: 'test'
+  ...
+# Subtest: offscreen leaves fully clear both edges; centered portal fits portrait and landscape
+ok 102 - offscreen leaves fully clear both edges; centered portal fits portrait and landscape
+  ---
+  duration_ms: 33.221583
+  type: 'test'
+  ...
+# Subtest: resizing re-samples pose without accumulating scale; DPR preserves screen geometry
+ok 103 - resizing re-samples pose without accumulating scale; DPR preserves screen geometry
+  ---
+  duration_ms: 4.433584
+  type: 'test'
+  ...
+# Subtest: closed portrait gate recoil never exposes the game through the center seam
+ok 104 - closed portrait gate recoil never exposes the game through the center seam
+  ---
+  duration_ms: 6.87025
+  type: 'test'
+  ...
+# Subtest: live overlay is full viewport above HUD, hidden at idle; old side anchor/breakpoints gone
+ok 105 - live overlay is full viewport above HUD, hidden at idle; old side anchor/breakpoints gone
+  ---
+  duration_ms: 0.356375
+  type: 'test'
+  ...
+# Subtest: gameplay and FX share two bounded compositing layers and one clock; no per-symbol canvas or autonomous Spine ticker
+ok 106 - gameplay and FX share two bounded compositing layers and one clock; no per-symbol canvas or autonomous Spine ticker
+  ---
+  duration_ms: 18.792541
+  type: 'test'
+  ...
+# Subtest: GPU drops move full tiles, keep event-driven timing, and remove actors/listeners on unmount
+ok 107 - GPU drops move full tiles, keep event-driven timing, and remove actors/listeners on unmount
+  ---
+  duration_ms: 9.086166
+  type: 'test'
+  ...
+# (node:73102) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:73102) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# Subtest: tap steps once; hold repeats at bounded cadence without a release-click extra step
+ok 108 - tap steps once; hold repeats at bounded cadence without a release-click extra step
+  ---
+  duration_ms: 1.574959
+  type: 'test'
+  ...
+# Subtest: hold stops on pointercancel, never leaves a timer dispatching steps
+ok 109 - hold stops on pointercancel, never leaves a timer dispatching steps
+  ---
+  duration_ms: 0.374208
+  type: 'test'
+  ...
+# Subtest: hold stops on lostpointercapture, never leaves a timer dispatching steps
+ok 110 - hold stops on lostpointercapture, never leaves a timer dispatching steps
+  ---
+  duration_ms: 0.216625
+  type: 'test'
+  ...
+# Subtest: hold stops on blur, never leaves a timer dispatching steps
+ok 111 - hold stops on blur, never leaves a timer dispatching steps
+  ---
+  duration_ms: 3.755292
+  type: 'test'
+  ...
+# Subtest: hold stops on hidden, never leaves a timer dispatching steps
+ok 112 - hold stops on hidden, never leaves a timer dispatching steps
+  ---
+  duration_ms: 0.945209
+  type: 'test'
+  ...
+# Subtest: hold stops on destroy, never leaves a timer dispatching steps
+ok 113 - hold stops on destroy, never leaves a timer dispatching steps
+  ---
+  duration_ms: 0.165708
+  type: 'test'
+  ...
+# Subtest: hold stops on disabled, never leaves a timer dispatching steps
+ok 114 - hold stops on disabled, never leaves a timer dispatching steps
+  ---
+  duration_ms: 0.175292
+  type: 'test'
+  ...
+# Subtest: disabled, nonprimary and secondary pointer input cannot step; callback can update safely
+ok 115 - disabled, nonprimary and secondary pointer input cannot step; callback can update safely
+  ---
+  duration_ms: 0.244375
+  type: 'test'
+  ...
+# Subtest: holds traverse only RGS levels and stop at either bound; all four bet controls use the action
+ok 116 - holds traverse only RGS levels and stop at either bound; all four bet controls use the action
+  ---
+  duration_ms: 0.83825
+  type: 'test'
+  ...
+# (node:73110) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: falling Keys stay masked through every reel delay and promote exactly at contact
+ok 117 - falling Keys stay masked through every reel delay and promote exactly at contact
+  ---
+  duration_ms: 4.485875
+  type: 'test'
+  ...
+# Subtest: departing Keys never escape the mask; stationary and reduced-motion landed Keys keep overlap
+ok 118 - departing Keys never escape the mask; stationary and reduced-motion landed Keys keep overlap
+  ---
+  duration_ms: 1.18775
+  type: 'test'
+  ...
+# Subtest: $280 at $1 disables Super and Mystery even if already the active mode
+ok 119 - $280 at $1 disables Super and Mystery even if already the active mode
+  ---
+  duration_ms: 0.176709
+  type: 'test'
+  ...
+# Subtest: all buy thresholds use wallet precision, including exact funds, wager changes and malformed values
+ok 120 - all buy thresholds use wallet precision, including exact funds, wager changes and malformed values
+  ---
+  duration_ms: 0.477583
+  type: 'test'
+  ...
+# Subtest: only active Chance/Feature toggles can be disabled without money; fresh activation is blocked
+ok 121 - only active Chance/Feature toggles can be disabled without money; fresh activation is blocked
+  ---
+  duration_ms: 0.108875
+  type: 'test'
+  ...
+# Subtest: card, caption, selection guard and final confirmation share affordability; no active-buy exemption
+ok 122 - card, caption, selection guard and final confirmation share affordability; no active-buy exemption
+  ---
+  duration_ms: 0.371834
+  type: 'test'
+  ...
+# (node:73111) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: current Veggie loader uses separate P/wordmark and procedural progress, not obsolete atlas
+ok 123 - current Veggie loader uses separate P/wordmark and procedural progress, not obsolete atlas
+  ---
+  duration_ms: 3.617875
+  type: 'test'
+  ...
+# Subtest: landing cards drop left to right before logo; exit drops cards and brings game from above
+ok 124 - landing cards drop left to right before logo; exit drops cards and brings game from above
+  ---
+  duration_ms: 0.970625
+  type: 'test'
+  ...
+# Subtest: reduced entry avoids positional movement and finishes within 140ms
+ok 125 - reduced entry avoids positional movement and finishes within 140ms
+  ---
+  duration_ms: 0.080291
+  type: 'test'
+  ...
+# Subtest: bonus presentation accepts tap and Enter after guard but not while doors transition
+ok 126 - bonus presentation accepts tap and Enter after guard but not while doors transition
+  ---
+  duration_ms: 0.174916
+  type: 'test'
+  ...
+# Subtest: loader dims native base background and keeps lockup on its own bright layer
+ok 127 - loader dims native base background and keeps lockup on its own bright layer
+  ---
+  duration_ms: 2.157666
+  type: 'test'
+  ...
+# Subtest: loader remains mounted until landing art is installed; intro starts only after handoff
+ok 128 - loader remains mounted until landing art is installed; intro starts only after handoff
+  ---
+  duration_ms: 3.738
+  type: 'test'
+  ...
+# Subtest: base-game canvas and HUD cannot flash before loader registration
+ok 129 - base-game canvas and HUD cannot flash before loader registration
+  ---
+  duration_ms: 0.363334
+  type: 'test'
+  ...
+# Subtest: unfinished round never bypasses loading/landing or the board and HUD entrance
+ok 130 - unfinished round never bypasses loading/landing or the board and HUD entrance
+  ---
+  duration_ms: 0.905333
+  type: 'test'
+  ...
+# Subtest: HTTP development and production builds do not load TLS files
+ok 131 - HTTP development and production builds do not load TLS files
+  ---
+  duration_ms: 0.532917
+  type: 'test'
+  ...
+# Subtest: HTTPS uses existing localhost certificate on a strict loopback-only server
+ok 132 - HTTPS uses existing localhost certificate on a strict loopback-only server
+  ---
+  duration_ms: 56.250917
+  type: 'test'
+  ...
+# Subtest: incomplete, missing or invalid custom certificate pairs fail instead of downgrading
+ok 133 - incomplete, missing or invalid custom certificate pairs fail instead of downgrading
+  ---
+  duration_ms: 5.680084
+  type: 'test'
+  ...
+# Subtest: secure command is app-local; assets stay relative and no mixed-content bypass is installed
+ok 134 - secure command is app-local; assets stay relative and no mixed-content bypass is installed
+  ---
+  duration_ms: 9.328833
+  type: 'test'
+  ...
+# (node:73121) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: all configured non-English locales and Bulgarian have equally covered draft UI catalogs
+ok 135 - all configured non-English locales and Bulgarian have equally covered draft UI catalogs
+  ---
+  duration_ms: 3.408209
+  type: 'test'
+  ...
+# Subtest: native social action labels use play; wagering-related unreviewed copy is explicitly detected
+ok 136 - native social action labels use play; wagering-related unreviewed copy is explicitly detected
+  ---
+  duration_ms: 0.497709
+  type: 'test'
+  ...
+# Subtest: catalog integration preserves canonical English and existing Bulgarian rule fallback
+ok 137 - catalog integration preserves canonical English and existing Bulgarian rule fallback
+  ---
+  duration_ms: 0.410625
+  type: 'test'
+  ...
+# Subtest: HTML HUD and status remain above the viewport Pixi scene without opaque host fills
+ok 138 - HTML HUD and status remain above the viewport Pixi scene without opaque host fills
+  ---
+  duration_ms: 0.844334
+  type: 'test'
+  ...
+# Subtest: extra dark HUD contours are mobile-only; desktop keeps native art
+ok 139 - extra dark HUD contours are mobile-only; desktop keeps native art
+  ---
+  duration_ms: 0.861583
+  type: 'test'
+  ...
+# Subtest: landscape rail, branding and win card share an axis with a positive bottom gap
+ok 140 - landscape rail, branding and win card share an axis with a positive bottom gap
+  ---
+  duration_ms: 0.298292
+  type: 'test'
+  ...
+# Subtest: Bonus and Spin render one native rim, without extra CSS ring stacks
+ok 141 - Bonus and Spin render one native rim, without extra CSS ring stacks
+  ---
+  duration_ms: 5.847917
+  type: 'test'
+  ...
+# Subtest: desktop control sizes derive top offsets from the same centerline
+ok 142 - desktop control sizes derive top offsets from the same centerline
+  ---
+  duration_ms: 0.547334
+  type: 'test'
+  ...
+# Subtest: disabled controls retain opaque artwork while native disabled state blocks input
+ok 143 - disabled controls retain opaque artwork while native disabled state blocks input
+  ---
+  duration_ms: 0.40225
+  type: 'test'
+  ...
+# Subtest: mobile rail uses a single centered grid instead of independent button offsets
+ok 144 - mobile rail uses a single centered grid instead of independent button offsets
+  ---
+  duration_ms: 1.543083
+  type: 'test'
+  ...
+# Subtest: inset mobile bet controls paint over the metric card and reserve numeric space
+ok 145 - inset mobile bet controls paint over the metric card and reserve numeric space
+  ---
+  duration_ms: 0.453
+  type: 'test'
+  ...
+# Subtest: autoplay stop retains circular artwork and locks bet/autoplay controls
+ok 146 - autoplay stop retains circular artwork and locks bet/autoplay controls
+  ---
+  duration_ms: 2.225417
+  type: 'test'
+  ...
+# Subtest: autoplay counter sits below stop square with outlined white text; disabled cursor is explicit
+ok 147 - autoplay counter sits below stop square with outlined white text; disabled cursor is explicit
+  ---
+  duration_ms: 0.6795
+  type: 'test'
+  ...
+# Subtest: speed button shows one, two and three bolts for normal, fast and turbo
+ok 148 - speed button shows one, two and three bolts for normal, fast and turbo
+  ---
+  duration_ms: 0.97825
+  type: 'test'
+  ...
+# (node:73126) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: portrait uses two equal pairs around the board with centered, evenly spaced cards
+ok 149 - portrait uses two equal pairs around the board with centered, evenly spaced cards
+  ---
+  duration_ms: 4.882083
+  type: 'test'
+  ...
+# Subtest: portrait fit includes the enlarged header and controls at supported viewport sizes
+ok 150 - portrait fit includes the enlarged header and controls at supported viewport sizes
+  ---
+  duration_ms: 0.836375
+  type: 'test'
+  ...
+# Subtest: landscape bonus rail fits four framed cards above the bet selector without overlap
+ok 151 - landscape bonus rail fits four framed cards above the bet selector without overlap
+  ---
+  duration_ms: 2.1615
+  type: 'test'
+  ...
+# Subtest: all four stat cards share desktop gold/blue frame; only desktop shows Remaining
+ok 152 - all four stat cards share desktop gold/blue frame; only desktop shows Remaining
+  ---
+  duration_ms: 0.727083
+  type: 'test'
+  ...
+# Subtest: HTML modals own focus without moving the GPU canvas into a native dialog
+ok 153 - HTML modals own focus without moving the GPU canvas into a native dialog
+  ---
+  duration_ms: 7.00225
+  type: 'test'
+  ...
+# Subtest: focus trap supports Escape, wraps Tab and restores the prior connected control
+ok 154 - focus trap supports Escape, wraps Tab and restores the prior connected control
+  ---
+  duration_ms: 0.576625
+  type: 'test'
+  ...
+# Subtest: feature confirmations have one explanation, one price and Back/OK, without a close X
+ok 155 - feature confirmations have one explanation, one price and Back/OK, without a close X
+  ---
+  duration_ms: 0.259667
+  type: 'test'
+  ...
+# Subtest: autoplay UI uses existing exclusive speed flags, bounded spin count and earned-bonus opt in
+ok 156 - autoplay UI uses existing exclusive speed flags, bounded spin count and earned-bonus opt in
+  ---
+  duration_ms: 0.6995
+  type: 'test'
+  ...
+# Subtest: compact panels reset inherited spacing and reserve a visible 48px footer on short screens
+ok 157 - compact panels reset inherited spacing and reserve a visible 48px footer on short screens
+  ---
+  duration_ms: 7.279792
+  type: 'test'
+  ...
+# Subtest: autoplay owns a wide sheet with three horizontal switches and a centered slider heading
+ok 158 - autoplay owns a wide sheet with three horizontal switches and a centered slider heading
+  ---
+  duration_ms: 0.449167
+  type: 'test'
+  ...
+# Subtest: rules shell reserves navigation outside its fitted page
+ok 159 - rules shell reserves navigation outside its fitted page
+  ---
+  duration_ms: 0.415459
+  type: 'test'
+  ...
+# (node:73129) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Veggie-style gravity scales with sqrt(distance), bottom rows start first
+ok 160 - Veggie-style gravity scales with sqrt(distance), bottom rows start first
+  ---
+  duration_ms: 0.612375
+  type: 'test'
+  ...
+# Subtest: three distinct speeds shorten travel, removal and landing
+ok 161 - three distinct speeds shorten travel, removal and landing
+  ---
+  duration_ms: 0.176917
+  type: 'test'
+  ...
+# Subtest: skip preserves landed cells, pulls pending cells forward, never lengthens fast cells
+ok 162 - skip preserves landed cells, pulls pending cells forward, never lengthens fast cells
+  ---
+  duration_ms: 0.544875
+  type: 'test'
+  ...
+# Subtest: every airborne cell ends by skip tail; no finished animation rewinds
+ok 163 - every airborne cell ends by skip tail; no finished animation rewinds
+  ---
+  duration_ms: 0.24125
+  type: 'test'
+  ...
+# Subtest: normal exit plus full board drop stays within the readable normal budget
+ok 164 - normal exit plus full board drop stays within the readable normal budget
+  ---
+  duration_ms: 0.119167
+  type: 'test'
+  ...
+# Subtest: normal staggers left-to-right; Fast/Turbo move every tile together
+ok 165 - normal staggers left-to-right; Fast/Turbo move every tile together
+  ---
+  duration_ms: 1.383875
+  type: 'test'
+  ...
+# Subtest: GPU gravity travel reaches exact cell target at contact without top-left drift
+ok 166 - GPU gravity travel reaches exact cell target at contact without top-left drift
+  ---
+  duration_ms: 0.138125
+  type: 'test'
+  ...
+# Subtest: contact squash clock starts only after the tile reaches its final cell
+ok 167 - contact squash clock starts only after the tile reaches its final cell
+  ---
+  duration_ms: 0.084583
+  type: 'test'
+  ...
+# Subtest: skip target and renderer contact share one frozen wave clock
+ok 168 - skip target and renderer contact share one frozen wave clock
+  ---
+  duration_ms: 0.443833
+  type: 'test'
+  ...
+# (node:73130) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: approved music assets and exact musical loop lengths
+ok 169 - approved music assets and exact musical loop lengths
+  ---
+  duration_ms: 1.762666
+  type: 'test'
+  ...
+# Subtest: base/bonus crossfade; resize/repeated scene does not create duplicate loops
+ok 170 - base/bonus crossfade; resize/repeated scene does not create duplicate loops
+  ---
+  duration_ms: 0.885792
+  type: 'test'
+  ...
+# Subtest: music volume and ducking operate independently, hidden-tab silence preserves phase
+ok 171 - music volume and ducking operate independently, hidden-tab silence preserves phase
+  ---
+  duration_ms: 0.138834
+  type: 'test'
+  ...
+# Subtest: late load starts only current scene after unlock; mute prevents initial source creation
+ok 172 - late load starts only current scene after unlock; mute prevents initial source creation
+  ---
+  duration_ms: 0.079333
+  type: 'test'
+  ...
+# Subtest: each bonus tier has its own loop; entry follows visible scene, not buy selection
+ok 173 - each bonus tier has its own loop; entry follows visible scene, not buy selection
+  ---
+  duration_ms: 0.149875
+  type: 'test'
+  ...
+# Subtest: all four scenes reuse bounded loops and crossfade old tiers to zero
+ok 174 - all four scenes reuse bounded loops and crossfade old tiers to zero
+  ---
+  duration_ms: 0.259375
+  type: 'test'
+  ...
+# (node:73131) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: large money/counters shrink inside fixed slots without moving neighbouring controls
+ok 175 - large money/counters shrink inside fixed slots without moving neighbouring controls
+  ---
+  duration_ms: 0.724291
+  type: 'test'
+  ...
+# Subtest: countup reserves final width rather than pumping the font each frame
+ok 176 - countup reserves final width rather than pumping the font each frame
+  ---
+  duration_ms: 0.083125
+  type: 'test'
+  ...
+# Subtest: win precision follows final amount, not arbitrary tween frames
+ok 177 - win precision follows final amount, not arbitrary tween frames
+  ---
+  duration_ms: 110.438167
+  type: 'test'
+  ...
+# Subtest: Pixi amounts pass exact book target to shared formatter
+ok 178 - Pixi amounts pass exact book target to shared formatter
+  ---
+  duration_ms: 2.660584
+  type: 'test'
+  ...
+# Subtest: all currency symbols and suffixes fit; three-decimal currencies keep their precision
+ok 179 - all currency symbols and suffixes fit; three-decimal currencies keep their precision
+  ---
+  duration_ms: 19.263875
+  type: 'test'
+  ...
+# Subtest: numeric containers cannot inherit legacy inline label layout
+ok 180 - numeric containers cannot inherit legacy inline label layout
+  ---
+  duration_ms: 5.912792
+  type: 'test'
+  ...
+# (node:73132) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 100 numeric updates reuse widest-digit and normalized currency measurement
+ok 181 - 100 numeric updates reuse widest-digit and normalized currency measurement
+  ---
+  duration_ms: 9.46725
+  type: 'test'
+  ...
+# Subtest: numeric metric cache handles locale/precision/font changes and font-load invalidation
+ok 182 - numeric metric cache handles locale/precision/font changes and font-load invalidation
+  ---
+  duration_ms: 0.217834
+  type: 'test'
+  ...
+# Subtest: numeric cache remains bounded rather than storing every distinct text/font forever
+ok 183 - numeric cache remains bounded rather than storing every distinct text/font forever
+  ---
+  duration_ms: 1.00575
+  type: 'test'
+  ...
+# Subtest: packaging includes every tier, native symbol, rainbow Wild, atlas page and required font
+ok 184 - packaging includes every tier, native symbol, rainbow Wild, atlas page and required font
+  ---
+  duration_ms: 462.626625
+  type: 'test'
+  ...
+# Subtest: asset scanners preserve CSS, preload and literal roots; atlas pages resolve independently
+ok 185 - asset scanners preserve CSS, preload and literal roots; atlas pages resolve independently
+  ---
+  duration_ms: 0.516958
+  type: 'test'
+  ...
+# Subtest: numeric observers stay mounted across text changes; closed gate startup and idle layout reads are avoided
+ok 186 - numeric observers stay mounted across text changes; closed gate startup and idle layout reads are avoided
+  ---
+  duration_ms: 0.478625
+  type: 'test'
+  ...
+# Subtest: options use independent persisted sound/music toggles with crossed icons and Info
+ok 187 - options use independent persisted sound/music toggles with crossed icons and Info
+  ---
+  duration_ms: 4.649541
+  type: 'test'
+  ...
+# Subtest: options SVGs reset legacy margins and Info has no inner ring
+ok 188 - options SVGs reset legacy margins and Info has no inner ring
+  ---
+  duration_ms: 0.687333
+  type: 'test'
+  ...
+# Subtest: small-screen popover shrinks about its anchored corner; mobile rules reserve a close lane
+ok 189 - small-screen popover shrinks about its anchored corner; mobile rules reserve a close lane
+  ---
+  duration_ms: 1.330125
+  type: 'test'
+  ...
+# (node:73134) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: missing RGS jurisdiction fields receive defaults without losing any server restriction
+ok 190 - missing RGS jurisdiction fields receive defaults without losing any server restriction
+  ---
+  duration_ms: 0.917083
+  type: 'test'
+  ...
+# Subtest: bet stepper follows RGS levels, including sub-cent and resumed off-list amounts
+ok 191 - bet stepper follows RGS levels, including sub-cent and resumed off-list amounts
+  ---
+  duration_ms: 0.12975
+  type: 'test'
+  ...
+# Subtest: social fallback replaces real-money copy, not wallet units or localized catalogs
+ok 192 - social fallback replaces real-money copy, not wallet units or localized catalogs
+  ---
+  duration_ms: 14.813625
+  type: 'test'
+  ...
+# Subtest: live boot, wager and settlement retain shared RGS configuration and distinct unit scales
+ok 193 - live boot, wager and settlement retain shared RGS configuration and distinct unit scales
+  ---
+  duration_ms: 3.519666
+  type: 'test'
+  ...
+# (node:73135) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: suction spins over one full turn with consistent direction and no shortest-arc jumps
+ok 194 - suction spins over one full turn with consistent direction and no shortest-arc jumps
+  ---
+  duration_ms: 4.025834
+  type: 'test'
+  ...
+# Subtest: every native symbol and portal palette preserves full start pose, rear rim and gradual suction
+ok 195 - every native symbol and portal palette preserves full start pose, rear rim and gradual suction
+  ---
+  duration_ms: 150.199416
+  type: 'test'
+  ...
+# (node:73136) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: mini and gate portals collapse uniformly in 60/130 ms after the hold
+ok 196 - mini and gate portals collapse uniformly in 60/130 ms after the hold
+  ---
+  duration_ms: 7.251708
+  type: 'test'
+  ...
+# Subtest: gate releases its covering renderer for the full third-cluster removal wave
+ok 197 - gate releases its covering renderer for the full third-cluster removal wave
+  ---
+  duration_ms: 0.450625
+  type: 'test'
+  ...
+# Subtest: Keys continue pulsing over repeated cycles until acknowledged; reduced motion stays still
+ok 198 - Keys continue pulsing over repeated cycles until acknowledged; reduced motion stays still
+  ---
+  duration_ms: 0.792875
+  type: 'test'
+  ...
+# Subtest: only landed Keys use the unmasked over-frame layer; controls never bubble into click-skip
+ok 199 - only landed Keys use the unmasked over-frame layer; controls never bubble into click-skip
+  ---
+  duration_ms: 0.426583
+  type: 'test'
+  ...
+# Subtest: rainbow Wild has a valid native rig, tight count-first reward and cluster-specific glow
+ok 200 - rainbow Wild has a valid native rig, tight count-first reward and cluster-specific glow
+  ---
+  duration_ms: 15.288958
+  type: 'test'
+  ...
+# Subtest: Chance displays doubled cost; the underlying base bet is untouched
+ok 201 - Chance displays doubled cost; the underlying base bet is untouched
+  ---
+  duration_ms: 0.223333
+  type: 'test'
+  ...
+# (node:73137) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: suction holds full scale first, then shrinks smoothly through fifteen authored poses
+ok 202 - suction holds full scale first, then shrinks smoothly through fifteen authored poses
+  ---
+  duration_ms: 1.147041
+  type: 'test'
+  ...
+# Subtest: all speeds show the full slower removal; skipping still compresses only the remaining tail
+ok 203 - all speeds show the full slower removal; skipping still compresses only the remaining tail
+  ---
+  duration_ms: 0.17775
+  type: 'test'
+  ...
+# Subtest: buy pill clears both native frame and cost capsule; multiplier has its own blue highlight
+ok 204 - buy pill clears both native frame and cost capsule; multiplier has its own blue highlight
+  ---
+  duration_ms: 4.2225
+  type: 'test'
+  ...
+# (node:73140) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# (node:73140) ExperimentalWarning: The MockTimers API is an experimental feature and might change at any time
+# Subtest: win screen can dismiss before auto-close; callback and timer cleaned
+ok 205 - win screen can dismiss before auto-close; callback and timer cleaned
+  ---
+  duration_ms: 0.843083
+  type: 'test'
+  ...
+# Subtest: autoplay win screen closes on timeout, not a mandatory acknowledgement
+ok 206 - autoplay win screen closes on timeout, not a mandatory acknowledgement
+  ---
+  duration_ms: 0.1285
+  type: 'test'
+  ...
+# Subtest: unbounded dismissal stays available for flows requiring explicit acknowledgement
+ok 207 - unbounded dismissal stays available for flows requiring explicit acknowledgement
+  ---
+  duration_ms: 0.155166
+  type: 'test'
+  ...
+# Subtest: abort before or during presentation resolves and clears callbacks
+ok 208 - abort before or during presentation resolves and clears callbacks
+  ---
+  duration_ms: 0.249417
+  type: 'test'
+  ...
+# Subtest: presentation pacing faster, gate animation and readable rewards retained
+ok 209 - presentation pacing faster, gate animation and readable rewards retained
+  ---
+  duration_ms: 0.135125
+  type: 'test'
+  ...
+# Subtest: live waits react to mid-wait speed/skip, not the initial duration
+ok 210 - live waits react to mid-wait speed/skip, not the initial duration
+  ---
+  duration_ms: 9.702042
+  type: 'test'
+  ...
+# Subtest: live wait abort cleans timer and rejects, including pre-aborted signal
+ok 211 - live wait abort cleans timer and rejects, including pre-aborted signal
+  ---
+  duration_ms: 0.702458
+  type: 'test'
+  ...
+# Subtest: bonus intro starts promptly; looping Keys remain readable until acknowledgement
+ok 212 - bonus intro starts promptly; looping Keys remain readable until acknowledgement
+  ---
+  duration_ms: 0.144167
+  type: 'test'
+  ...
+# (node:73144) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: quarter pays and mode costs preserved
+ok 213 - quarter pays and mode costs preserved
+  ---
+  duration_ms: 0.860625
+  type: 'test'
+  ...
+# Subtest: cascade displays raw amount without crediting a win
+ok 214 - cascade displays raw amount without crediting a win
+  ---
+  duration_ms: 0.249667
+  type: 'test'
+  ...
+# Subtest: cumulative setters replace rather than add
+ok 215 - cumulative setters replace rather than add
+  ---
+  duration_ms: 0.144292
+  type: 'test'
+  ...
+# Subtest: spin settlement uses supplied capped amount, never raw times multiplier
+ok 216 - spin settlement uses supplied capped amount, never raw times multiplier
+  ---
+  duration_ms: 0.070792
+  type: 'test'
+  ...
+# Subtest: bonus summary does not lose the entry win
+ok 217 - bonus summary does not lose the entry win
+  ---
+  duration_ms: 0.066792
+  type: 'test'
+  ...
+# Subtest: bonus starts with authoritative 15 spins, resets entry multiplier
+ok 218 - bonus starts with authoritative 15 spins, resets entry multiplier
+  ---
+  duration_ms: 0.186083
+  type: 'test'
+  ...
+# Subtest: free spin ordinal is not incremented again
+ok 219 - free spin ordinal is not incremented again
+  ---
+  duration_ms: 0.069875
+  type: 'test'
+  ...
+# Subtest: sticky reward changes current board before removal without mutating snapshot
+ok 220 - sticky reward changes current board before removal without mutating snapshot
+  ---
+  duration_ms: 17.906417
+  type: 'test'
+  ...
+# Subtest: hidden rewards retain supplied order and multiplier
+ok 221 - hidden rewards retain supplied order and multiplier
+  ---
+  duration_ms: 2.158916
+  type: 'test'
+  ...
+# Subtest: gate extension changes remaining count, no client award formula
+ok 222 - gate extension changes remaining count, no client award formula
+  ---
+  duration_ms: 1.436292
+  type: 'test'
+  ...
+# Subtest: restore every cursor matches uninterrupted reduction including sticky placement
+ok 223 - restore every cursor matches uninterrupted reduction including sticky placement
+  ---
+  duration_ms: 0.983042
+  type: 'test'
+  ...
+# Subtest: invalid cursor and unsupported events fail closed
+ok 224 - invalid cursor and unsupported events fail closed
+  ---
+  duration_ms: 0.211542
+  type: 'test'
+  ...
+# Subtest: refill moves only affected symbols, keeps surviving cells still
+ok 225 - refill moves only affected symbols, keeps surviving cells still
+  ---
+  duration_ms: 0.112
+  type: 'test'
+  ...
+# Subtest: final result returns visual mode to base without discarding total
+ok 226 - final result returns visual mode to base without discarding total
+  ---
+  duration_ms: 0.052792
+  type: 'test'
+  ...
+# Subtest: entry Key award uses authoritative settlement and highlights without multiplying or crediting twice
+ok 227 - entry Key award uses authoritative settlement and highlights without multiplying or crediting twice
+  ---
+  duration_ms: 0.122958
+  type: 'test'
+  ...
+# (node:73145) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: six contacts, not thirty, follow the actual staggered final tile contact
+ok 228 - six contacts, not thirty, follow the actual staggered final tile contact
+  ---
+  duration_ms: 0.716792
+  type: 'test'
+  ...
+# Subtest: only affected non-sticky reels land on cascades; exits/removals are silent
+ok 229 - only affected non-sticky reels land on cascades; exits/removals are silent
+  ---
+  duration_ms: 0.414625
+  type: 'test'
+  ...
+# Subtest: one-shot contacts survive resize, speed change and skip without replay; new wave resets
+ok 230 - one-shot contacts survive resize, speed change and skip without replay; new wave resets
+  ---
+  duration_ms: 0.2565
+  type: 'test'
+  ...
+# Subtest: reduced motion lands once immediately; stale background contacts never burst
+ok 231 - reduced motion lands once immediately; stale background contacts never burst
+  ---
+  duration_ms: 0.196375
+  type: 'test'
+  ...
+# (node:73146) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Gates preserves every settled micro-stake × hundredths-book digit, not just nonzero wins
+ok 232 - Gates preserves every settled micro-stake × hundredths-book digit, not just nonzero wins
+  ---
+  duration_ms: 13.550958
+  type: 'test'
+  ...
+# Subtest: accepted replay amounts and mode costs are exact, including JPY and social suffixes
+ok 233 - accepted replay amounts and mode costs are exact, including JPY and social suffixes
+  ---
+  duration_ms: 3.140083
+  type: 'test'
+  ...
+# Subtest: every autoplay reason is allowlisted, translated, social-safe; unknown reasons never leak
+ok 234 - every autoplay reason is allowlisted, translated, social-safe; unknown reasons never leak
+  ---
+  duration_ms: 2.5405
+  type: 'test'
+  ...
+# Subtest: bonus entry/end share a white slow prompt, only when acknowledgement is actually enabled
+ok 235 - bonus entry/end share a white slow prompt, only when acknowledgement is actually enabled
+  ---
+  duration_ms: 0.287334
+  type: 'test'
+  ...
+# Subtest: asset cleanup preserves distribution notices, including current Spine and Pixi copyrights
+ok 236 - asset cleanup preserves distribution notices, including current Spine and Pixi copyrights
+  ---
+  duration_ms: 0.232208
+  type: 'test'
+  ...
+# (node:73147) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 60Hz action clock stays paced across 60/120/144Hz displays; pause and last unsubscribe clean up RAF
+ok 237 - 60Hz action clock stays paced across 60/120/144Hz displays; pause and last unsubscribe clean up RAF
+  ---
+  duration_ms: 1.524083
+  type: 'test'
+  ...
+# Subtest: region resize buckets cache once, stay shared and never upscale source art
+ok 238 - region resize buckets cache once, stay shared and never upscale source art
+  ---
+  duration_ms: 0.184666
+  type: 'test'
+  ...
+# Subtest: renderer metrics bounded at 180 samples; hidden gaps ignored
+ok 239 - renderer metrics bounded at 180 samples; hidden gaps ignored
+  ---
+  duration_ms: 0.229
+  type: 'test'
+  ...
+# Subtest: larger win view contains every tier horn and crown through full entrance/idle
+ok 240 - larger win view contains every tier horn and crown through full entrance/idle
+  ---
+  duration_ms: 79.345042
+  type: 'test'
+  ...
+# Subtest: win popup freezes covered board actors; coins share the GPU stage; only developer previews show diagnostics
+ok 241 - win popup freezes covered board actors; coins share the GPU stage; only developer previews show diagnostics
+  ---
+  duration_ms: 0.820875
+  type: 'test'
+  ...
+# (node:73150) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: replay card fits desktop, portrait and short landscape without cutting action
+ok 242 - replay card fits desktop, portrait and short landscape without cutting action
+  ---
+  duration_ms: 0.530583
+  type: 'test'
+  ...
+# Subtest: multipliers are localized, finite, zero-safe and preserve sub-cent precision
+ok 243 - multipliers are localized, finite, zero-safe and preserve sub-cent precision
+  ---
+  duration_ms: 40.767042
+  type: 'test'
+  ...
+# Subtest: summary includes full labeled replay metadata, source-derived amounts and replay-only action
+ok 244 - summary includes full labeled replay metadata, source-derived amounts and replay-only action
+  ---
+  duration_ms: 1.1335
+  type: 'test'
+  ...
+# Subtest: replay mode remains stable after actor resets active mode; cursor never masquerades as event ID
+ok 245 - replay mode remains stable after actor resets active mode; cursor never masquerades as event ID
+  ---
+  duration_ms: 0.212667
+  type: 'test'
+  ...
+# (node:73166) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: event removal replaces only an actor-local track, not its skeleton or shared cached rig
+ok 246 - event removal replaces only an actor-local track, not its skeleton or shared cached rig
+  ---
+  duration_ms: 14.8505
+  type: 'test'
+  ...
+# Subtest: surviving cells stay mounted; covered board actors pause
+ok 247 - surviving cells stay mounted; covered board actors pause
+  ---
+  duration_ms: 0.705875
+  type: 'test'
+  ...
+# Subtest: button captions cannot trigger self-shrinking resize loops; numeric measurements deduplicate
+ok 248 - button captions cannot trigger self-shrinking resize loops; numeric measurements deduplicate
+  ---
+  duration_ms: 0.368125
+  type: 'test'
+  ...
+# Subtest: resume is compact, locked and offers play/skip without fitting observers
+ok 249 - resume is compact, locked and offers play/skip without fitting observers
+  ---
+  duration_ms: 1.359416
+  type: 'test'
+  ...
+# Subtest: unfinished-round modal waits for landing entry; the completed game HUD stays visible
+ok 250 - unfinished-round modal waits for landing entry; the completed game HUD stays visible
+  ---
+  duration_ms: 0.376375
+  type: 'test'
+  ...
+# (node:73167) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: reward arrivals safely no-op before audio is installed and never synthesize sound
+ok 251 - reward arrivals safely no-op before audio is installed and never synthesize sound
+  ---
+  duration_ms: 0.750083
+  type: 'test'
+  ...
+# (node:73168) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: multiplier add/multiply and extra/retrigger spins settle visually on arrival without changing authoritative state
+ok 252 - multiplier add/multiply and extra/retrigger spins settle visually on arrival without changing authoritative state
+  ---
+  duration_ms: 1.210625
+  type: 'test'
+  ...
+# Subtest: each awarded Wild cell remains original until its own flight lands; original sticky Wilds stay intact
+ok 253 - each awarded Wild cell remains original until its own flight lands; original sticky Wilds stay intact
+  ---
+  duration_ms: 0.2525
+  type: 'test'
+  ...
+# Subtest: all 30 possible flights and arrival pulses finish inside playback barrier, including reduced motion
+ok 254 - all 30 possible flights and arrival pulses finish inside playback barrier, including reduced motion
+  ---
+  duration_ms: 0.253167
+  type: 'test'
+  ...
+# Subtest: swoop endpoints exact, bounded progress, and resize targets resolve without resetting timeline
+ok 255 - swoop endpoints exact, bounded progress, and resize targets resolve without resetting timeline
+  ---
+  duration_ms: 0.161875
+  type: 'test'
+  ...
+# Subtest: presentation cleanup, scoped targets, one renderer and no rendered match8+ hint
+ok 256 - presentation cleanup, scoped targets, one renderer and no rendered match8+ hint
+  ---
+  duration_ms: 0.769875
+  type: 'test'
+  ...
+# Subtest: developer fixtures cover each delivered reward type, never a production path
+ok 257 - developer fixtures cover each delivered reward type, never a production path
+  ---
+  duration_ms: 1.486209
+  type: 'test'
+  ...
+# Subtest: rules navigation uses sharp vector arrows, reverses next, keeps keyboard paging
+ok 258 - rules navigation uses sharp vector arrows, reverses next, keeps keyboard paging
+  ---
+  duration_ms: 1.87025
+  type: 'test'
+  ...
+# Subtest: native rules cards hold aspect and fit bold copy without scrolling
+ok 259 - native rules cards hold aspect and fit bold copy without scrolling
+  ---
+  duration_ms: 0.7655
+  type: 'test'
+  ...
+# Subtest: legal frame uses original nine-sliced artwork, without stretching corner pixels
+ok 260 - legal frame uses original nine-sliced artwork, without stretching corner pixels
+  ---
+  duration_ms: 0.245041
+  type: 'test'
+  ...
+# (node:73169) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: updated info copy is separate from modal copy and matches v7.1 Key accounting
+ok 261 - updated info copy is separate from modal copy and matches v7.1 Key accounting
+  ---
+  duration_ms: 87.931459
+  type: 'test'
+  ...
+# Subtest: rules scroll small viewports without subpages and contain no development claims
+ok 262 - rules scroll small viewports without subpages and contain no development claims
+  ---
+  duration_ms: 0.294917
+  type: 'test'
+  ...
+# (node:73170) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: only actual keys celebrate, pulse stays bounded and reduced motion never shakes
+ok 263 - only actual keys celebrate, pulse stays bounded and reduced motion never shakes
+  ---
+  duration_ms: 0.927875
+  type: 'test'
+  ...
+# Subtest: trigger celebration runs after landing before settlement and doors, never guesses from key count alone
+ok 264 - trigger celebration runs after landing before settlement and doors, never guesses from key count alone
+  ---
+  duration_ms: 0.515958
+  type: 'test'
+  ...
+# (node:73171) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: standalone scatter protrudes past its generated cell without stretching
+ok 265 - standalone scatter protrudes past its generated cell without stretching
+  ---
+  duration_ms: 0.750834
+  type: 'test'
+  ...
+# (node:73172) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: scene cover/contain keep native aspect and stay centered across device sizes
+ok 266 - scene cover/contain keep native aspect and stay centered across device sizes
+  ---
+  duration_ms: 0.906584
+  type: 'test'
+  ...
+# Subtest: main scene, welcome and loading share the owned GPU renderer without visual HTML fallbacks
+ok 267 - main scene, welcome and loading share the owned GPU renderer without visual HTML fallbacks
+  ---
+  duration_ms: 1.827791
+  type: 'test'
+  ...
+# Subtest: canvas is permanently mounted in main; presentation is GPU visibility and a GPU shade, not DOM reparenting
+ok 268 - canvas is permanently mounted in main; presentation is GPU visibility and a GPU shade, not DOM reparenting
+  ---
+  duration_ms: 0.756916
+  type: 'test'
+  ...
+# Subtest: mobile panel rail centers both counters below the board and keeps transient copy clear
+ok 269 - mobile panel rail centers both counters below the board and keeps transient copy clear
+  ---
+  duration_ms: 1.152834
+  type: 'test'
+  ...
+# Subtest: game clock replaces the version footer and owns timer cleanup
+ok 270 - game clock replaces the version footer and owns timer cleanup
+  ---
+  duration_ms: 0.19825
+  type: 'test'
+  ...
+# Subtest: portrait counters gain height while the HUD and wallet keep separate space
+ok 271 - portrait counters gain height while the HUD and wallet keep separate space
+  ---
+  duration_ms: 0.352375
+  type: 'test'
+  ...
+# (node:73173) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: current win/bonus intros transition to idle once, with finite official Spine transforms
+ok 272 - current win/bonus intros transition to idle once, with finite official Spine transforms
+  ---
+  duration_ms: 21.15875
+  type: 'test'
+  ...
+# Subtest: separate actors share immutable native source data, not playback state
+ok 273 - separate actors share immutable native source data, not playback state
+  ---
+  duration_ms: 4.593375
+  type: 'test'
+  ...
+# (node:73174) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: portal progress ends inside removal barrier at every speed; live skip never restarts it
+ok 274 - portal progress ends inside removal barrier at every speed; live skip never restarts it
+  ---
+  duration_ms: 0.595917
+  type: 'test'
+  ...
+# (node:73175) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: only five premium symbols have an idle halo
+ok 275 - only five premium symbols have an idle halo
+  ---
+  duration_ms: 1.2735
+  type: 'test'
+  ...
+# (node:73176) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: wisp targets only new 1/2/3 increments, not resets or repeated reactive updates
+ok 276 - wisp targets only new 1/2/3 increments, not resets or repeated reactive updates
+  ---
+  duration_ms: 0.425584
+  type: 'test'
+  ...
+# Subtest: flight starts at winning symbols and lands exactly at the selected number
+ok 277 - flight starts at winning symbols and lands exactly at the selected number
+  ---
+  duration_ms: 0.580458
+  type: 'test'
+  ...
+# (node:73177) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: normal -> fast -> turbo -> normal matches exclusive studio speed flags
+ok 278 - normal -> fast -> turbo -> normal matches exclusive studio speed flags
+  ---
+  duration_ms: 0.830959
+  type: 'test'
+  ...
+# Subtest: jurisdiction restrictions cannot be bypassed by speed flags
+ok 279 - jurisdiction restrictions cannot be bypassed by speed flags
+  ---
+  duration_ms: 0.071
+  type: 'test'
+  ...
+# Subtest: win panel starts at 20x, including fractional boundary
+ok 280 - win panel starts at 20x, including fractional boundary
+  ---
+  duration_ms: 0.071333
+  type: 'test'
+  ...
+# (node:73178) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Feature HUD shows full spin cost without changing base bet or other mode prices
+ok 281 - Feature HUD shows full spin cost without changing base bet or other mode prices
+  ---
+  duration_ms: 1.066916
+  type: 'test'
+  ...
+# Subtest: coins have larger bounded fountains and launch behind title instead of from screen bottom
+ok 282 - coins have larger bounded fountains and launch behind title instead of from screen bottom
+  ---
+  duration_ms: 6.409791
+  type: 'test'
+  ...
+# Subtest: rules use seven ordered pages with bounded navigation and verified payout source
+ok 283 - rules use seven ordered pages with bounded navigation and verified payout source
+  ---
+  duration_ms: 0.648209
+  type: 'test'
+  ...
+# Subtest: card symbols have a fitting viewport and headings retain an opaque yellow fill
+ok 284 - card symbols have a fitting viewport and headings retain an opaque yellow fill
+  ---
+  duration_ms: 1.087833
+  type: 'test'
+  ...
+# Subtest: paytable matches the supplied authoritative symbol order and all 30 payouts
+ok 285 - paytable matches the supplied authoritative symbol order and all 30 payouts
+  ---
+  duration_ms: 5.397167
+  type: 'test'
+  ...
+# Subtest: idle preview board retains its runtime symbol-list import
+ok 286 - idle preview board retains its runtime symbol-list import
+  ---
+  duration_ms: 0.329125
+  type: 'test'
+  ...
+# (node:73179) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: presentation RNG is stable per cosmetic seed and stays bounded
+ok 287 - presentation RNG is stable per cosmetic seed and stays bounded
+  ---
+  duration_ms: 1.006042
+  type: 'test'
+  ...
+# Subtest: gate eventId preserved; index fallback and prefix replay deterministic
+ok 288 - gate eventId preserved; index fallback and prefix replay deterministic
+  ---
+  duration_ms: 0.259875
+  type: 'test'
+  ...
+# Subtest: coins triple original desktop size, mobile retains larger but bounded coins
+ok 289 - coins triple original desktop size, mobile retains larger but bounded coins
+  ---
+  duration_ms: 0.668167
+  type: 'test'
+  ...
+# (node:73180) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: landing fits portrait, landscape and desktop without changing the card aspect ratio
+ok 290 - landing fits portrait, landscape and desktop without changing the card aspect ratio
+  ---
+  duration_ms: 2.512458
+  type: 'test'
+  ...
+# Subtest: carousel wraps all three cards and accepts only deliberate horizontal swipes
+ok 291 - carousel wraps all three cards and accepts only deliberate horizontal swipes
+  ---
+  duration_ms: 0.161
+  type: 'test'
+  ...
+# Subtest: rotation schedules exactly every three seconds and releases its timer on cleanup
+ok 292 - rotation schedules exactly every three seconds and releases its timer on cleanup
+  ---
+  duration_ms: 0.120333
+  type: 'test'
+  ...
+# Subtest: landing carousel is isolated and cleaned up without a pause button; tagline is not rendered
+ok 293 - landing carousel is isolated and cleaned up without a pause button; tagline is not rendered
+  ---
+  duration_ms: 0.713833
+  type: 'test'
+  ...
+# Subtest: updated landing cards retain approved order and copy keys
+ok 294 - updated landing cards retain approved order and copy keys
+  ---
+  duration_ms: 1.182333
+  type: 'test'
+  ...
+# Subtest: landing continue target covers the full screen in every layout without swallowing swipes
+ok 295 - landing continue target covers the full screen in every layout without swallowing swipes
+  ---
+  duration_ms: 0.227958
+  type: 'test'
+  ...
+# (node:73181) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: native Wild can rest/freeze on arrival without requiring a fabricated setup animation
+ok 296 - native Wild can rest/freeze on arrival without requiring a fabricated setup animation
+  ---
+  duration_ms: 3.313459
+  type: 'test'
+  ...
+# Subtest: win fountain uses its own generated coin; gameplay Sun artwork is unchanged
+ok 297 - win fountain uses its own generated coin; gameplay Sun artwork is unchanged
+  ---
+  duration_ms: 5.029416
+  type: 'test'
+  ...
+# (node:73183) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: Pixi celebration count progresses, settles exactly, and preserves tiny/large targets
+ok 298 - Pixi celebration count progresses, settles exactly, and preserves tiny/large targets
+  ---
+  duration_ms: 1.724166
+  type: 'test'
+  ...
+# Subtest: skip eases from current value to exact final value in 120ms
+ok 299 - skip eases from current value to exact final value in 120ms
+  ---
+  duration_ms: 0.167875
+  type: 'test'
+  ...
+# Subtest: tiered native win rigs layer inward trumpet tips behind fitted titles and grow with the award
+ok 300 - tiered native win rigs layer inward trumpet tips behind fitted titles and grow with the award
+  ---
+  duration_ms: 1.235292
+  type: 'test'
+  ...
+# (node:73184) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: exact win boundaries in hundredths of base bet
+ok 301 - exact win boundaries in hundredths of base bet
+  ---
+  duration_ms: 0.469458
+  type: 'test'
+  ...
+# Subtest: Veggie count/hold timings scale safely; all automatically finish counting before close
+ok 302 - Veggie count/hold timings scale safely; all automatically finish counting before close
+  ---
+  duration_ms: 0.319375
+  type: 'test'
+  ...
+1..302
+# tests 302
+# suites 0
+# pass 302
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10514.057417

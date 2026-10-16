@@ -1,0 +1,981 @@
+{
+  "fileKey": "XnhcL9KfnIfkShPq3yF1EK",
+  "sourceSnapshotSha256": "9b340f01c6024b16733b6936425769d4287392decbe53e4a5ca46e10e7bd243d",
+  "assets": [
+    {
+      "path": "backgrounds/hidden-original.png",
+      "bytes": 1530853,
+      "sha256": "9e5c8ee331996bf54786f87edb25c3d37f14db3ca9cfca63fad65df0abb330e1",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "alphaBounds": null,
+      "nodeId": "11232:15851",
+      "exportScale": null,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "backgrounds/normal-original.png",
+      "bytes": 1529564,
+      "sha256": "a685962e1a1b96a99e95feff30fae845580150835fdc7eaa657ded33caf36bc1",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "alphaBounds": null,
+      "nodeId": "11232:12241",
+      "exportScale": null,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "backgrounds/super-original.png",
+      "bytes": 1489136,
+      "sha256": "56cc184eed445a376f16ec0460ed8ef5970860a9db77ad5e4585e09aff7d9558",
+      "width": 1672,
+      "height": 941,
+      "mode": "RGB",
+      "alphaBounds": null,
+      "nodeId": "11232:13461",
+      "exportScale": null,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "bonus/hidden-title.png",
+      "bytes": 260697,
+      "sha256": "3af584cd805aec40afbd0f4961d3cab10f38b8a4c372e45e8501c33714c759f1",
+      "width": 2548,
+      "height": 1316,
+      "mode": "RGBA",
+      "alphaBounds": [
+        146,
+        64,
+        2430,
+        1247
+      ],
+      "nodeId": "11145:2491",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "bonus/normal-title.png",
+      "bytes": 282874,
+      "sha256": "66203b586fbcd67c8c58db19b2e2e16a79a9f877792b3ed2b46054a3190d6cdc",
+      "width": 2600,
+      "height": 1340,
+      "mode": "RGBA",
+      "alphaBounds": [
+        87,
+        77,
+        2540,
+        1235
+      ],
+      "nodeId": "11145:2148",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "bonus/super-title.png",
+      "bytes": 262217,
+      "sha256": "53dba5f3877edcd0c1c1296dcada98119c3930a7d12bc1ce5a5ab1f838bd573b",
+      "width": 2528,
+      "height": 1304,
+      "mode": "RGBA",
+      "alphaBounds": [
+        202,
+        57,
+        2323,
+        1226
+      ],
+      "nodeId": "11145:2648",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "gates/hidden-leaf-original.png",
+      "bytes": 1468339,
+      "sha256": "2a0200aabaec2df868ff86c5c40a1fbb8a40c18c0ee1c9c2c40d70fa340f2a0d",
+      "width": 1005,
+      "height": 1565,
+      "mode": "RGB",
+      "alphaBounds": null,
+      "nodeId": "11232:18603",
+      "exportScale": null,
+      "status": "ready",
+      "notes": [
+        "Whole native source leaf. Left/right share source; mirror only per Figma transform. Vectorized variants may differ; verify before integration."
+      ]
+    },
+    {
+      "path": "gates/normal-leaf-original.png",
+      "bytes": 1445305,
+      "sha256": "57bbc6c6236ee97ab1d082bee0de1c8a6929abb32e49b0e02a71f62b8bffe95f",
+      "width": 1006,
+      "height": 1563,
+      "mode": "RGB",
+      "alphaBounds": null,
+      "nodeId": "11232:28699",
+      "exportScale": null,
+      "status": "ready",
+      "notes": [
+        "Whole native source leaf. Left/right share source; mirror only per Figma transform. Vectorized variants may differ; verify before integration."
+      ]
+    },
+    {
+      "path": "gates/super-leaf-original.png",
+      "bytes": 1431637,
+      "sha256": "cd53db386e017c84d07875ab39171dd45a459e97cd4e079231243171b63a2463",
+      "width": 1006,
+      "height": 1564,
+      "mode": "RGB",
+      "alphaBounds": null,
+      "nodeId": "11232:26346",
+      "exportScale": null,
+      "status": "ready",
+      "notes": [
+        "Whole native source leaf. Left/right share source; mirror only per Figma transform. Vectorized variants may differ; verify before integration."
+      ]
+    },
+    {
+      "path": "hud/autoplay-en.png",
+      "bytes": 29291,
+      "sha256": "3ff5b20ebf1c31aa3d226db03a8da10b98b9583223813e8998c79f298ec6b3cf",
+      "width": 204,
+      "height": 204,
+      "mode": "RGBA",
+      "alphaBounds": [
+        0,
+        0,
+        204,
+        204
+      ],
+      "nodeId": "11267:107197",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "English text baked into export. Export blank layer for localization; keep current live text dynamic."
+      ]
+    },
+    {
+      "path": "hud/bet-decrease.png",
+      "bytes": 25987,
+      "sha256": "f5de940b120d195779d841d8d6a408a6a07d814eb79a9a87dc0aad7a7beaa951",
+      "width": 204,
+      "height": 204,
+      "mode": "RGBA",
+      "alphaBounds": [
+        0,
+        0,
+        204,
+        204
+      ],
+      "nodeId": "11267:107184",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "hud/bonus-button-blank.png",
+      "bytes": 47586,
+      "sha256": "12cbe0675ef45920f297a5b716dd278176c1394c88c2ffb4bc99cbf6b1ecddc2",
+      "width": 592,
+      "height": 248,
+      "mode": "RGBA",
+      "alphaBounds": [
+        20,
+        20,
+        572,
+        228
+      ],
+      "nodeId": "11267:107179",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Blank button artwork; label remains localized dynamic UI."
+      ]
+    },
+    {
+      "path": "hud/info.png",
+      "bytes": 25232,
+      "sha256": "fd0964774f78f516289d9e570f7b0754a86bf7e13d2858600893ae92a98d23bd",
+      "width": 204,
+      "height": 204,
+      "mode": "RGBA",
+      "alphaBounds": [
+        0,
+        0,
+        204,
+        204
+      ],
+      "nodeId": "11267:107085",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "hud/menu.png",
+      "bytes": 26763,
+      "sha256": "91bd0097a8ac5c800e7708099bbe36b6cc50f8ef4dcbe921b2c9cce70b477258",
+      "width": 204,
+      "height": 204,
+      "mode": "RGBA",
+      "alphaBounds": [
+        0,
+        0,
+        204,
+        204
+      ],
+      "nodeId": "11267:107167",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "logo/logo.png",
+      "bytes": 388806,
+      "sha256": "aab8fa58c5ff12b810b6fd1f80d02e7a371cf4e80ca64fa5699292921d3cc8a6",
+      "width": 791,
+      "height": 592,
+      "mode": "RGBA",
+      "alphaBounds": [
+        11,
+        81,
+        778,
+        499
+      ],
+      "nodeId": "11267:107127",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "panels/bonus-counter-blank.png",
+      "bytes": 331314,
+      "sha256": "e987eaaa80fa0e336a756cfa9117a70612bcee190530a1b01f3202602c77a260",
+      "width": 988,
+      "height": 552,
+      "mode": "RGBA",
+      "alphaBounds": [
+        33,
+        47,
+        955,
+        523
+      ],
+      "nodeId": "11284:149363",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Blank current bonus intro panel; spin/amount text remains dynamic."
+      ]
+    },
+    {
+      "path": "symbols/blue-gem.png",
+      "bytes": 13300,
+      "sha256": "3b0ab06c07620d2842947b8870589684425eb41b77773310642b10d28316b2b7",
+      "width": 302,
+      "height": 312,
+      "mode": "RGBA",
+      "alphaBounds": [
+        0,
+        0,
+        302,
+        312
+      ],
+      "nodeId": null,
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [],
+      "exportName": "Group 301.png",
+      "sourceArchive": "/Users/simeonhristov/Downloads/THE-GATES-symbols-4x-20261012.zip"
+    },
+    {
+      "path": "symbols/coin.png",
+      "bytes": 120056,
+      "sha256": "2bf3b76d427476d6e82cb421f36d215f7e1f12d8f51e2894e11fe9bedcba9b5e",
+      "width": 400,
+      "height": 312,
+      "mode": "RGBA",
+      "alphaBounds": [
+        52,
+        12,
+        349,
+        305
+      ],
+      "nodeId": null,
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [],
+      "exportName": "coin.png",
+      "sourceArchive": "/Users/simeonhristov/Downloads/THE-GATES-symbols-4x-20261012.zip"
+    },
+    {
+      "path": "symbols/eye.png",
+      "bytes": 11083,
+      "sha256": "52e854374e1dc1d88e63d151e30bfb3867f2ee2eecc7a5b6c04a8fceedc7ed66",
+      "width": 100,
+      "height": 80,
+      "mode": "RGBA",
+      "alphaBounds": [
+        0,
+        0,
+        100,
+        80
+      ],
+      "nodeId": null,
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [],
+      "exportName": "eye.png",
+      "sourceArchive": "/Users/simeonhristov/Downloads/THE-GATES-symbols-4x-20261012.zip",
+      "source": "User replacement 2026-10-15: The Gates Slot Eye.png"
+    },
+    {
+      "path": "symbols/gold-gem.png",
+      "bytes": 12468,
+      "sha256": "07baa4951452d7ec76b8bbb485600c218a2c38b53df0b74efa57f045790e520b",
+      "width": 300,
+      "height": 305,
+      "mode": "RGBA",
+      "alphaBounds": [
+        0,
+        0,
+        300,
+        305
+      ],
+      "nodeId": null,
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [],
+      "exportName": "Group 307.png",
+      "sourceArchive": "/Users/simeonhristov/Downloads/THE-GATES-symbols-4x-20261012.zip"
+    },
+    {
+      "path": "symbols/green-gem.png",
+      "bytes": 14650,
+      "sha256": "33a5f5829ca7d6652d52752bc575b601b5bad021c0272801e2ec6aac8b659f83",
+      "width": 297,
+      "height": 308,
+      "mode": "RGBA",
+      "alphaBounds": [
+        0,
+        0,
+        297,
+        308
+      ],
+      "nodeId": null,
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [],
+      "exportName": "Group 304.png",
+      "sourceArchive": "/Users/simeonhristov/Downloads/THE-GATES-symbols-4x-20261012.zip"
+    },
+    {
+      "path": "symbols/key-original.png",
+      "bytes": 10761,
+      "sha256": "ea7dc4213aa49171679be67ae0ba2c4f1552c061ea2191e014d9a3aab40b3f06",
+      "width": 139,
+      "height": 116,
+      "mode": "RGBA",
+      "alphaBounds": [
+        12,
+        13,
+        125,
+        108
+      ],
+      "nodeId": "11255:62227",
+      "exportScale": null,
+      "status": "ready",
+      "notes": [],
+      "source": "User replacement 2026-10-15: The Gates Slot Group 313.png"
+    },
+    {
+      "path": "symbols/letter.png",
+      "bytes": 59753,
+      "sha256": "4fc32777ba5981d90286f097108f4e8fe19218dd615ea8d1ca06567176b8be59",
+      "width": 400,
+      "height": 312,
+      "mode": "RGBA",
+      "alphaBounds": [
+        12,
+        12,
+        388,
+        299
+      ],
+      "nodeId": null,
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [],
+      "exportName": "letter.png",
+      "sourceArchive": "/Users/simeonhristov/Downloads/THE-GATES-symbols-4x-20261012.zip"
+    },
+    {
+      "path": "symbols/orb.png",
+      "bytes": 30387,
+      "sha256": "9323fad30dde99c6d82d8141d7d27449f684b0b792f559dd833bb04c8fc734e3",
+      "width": 400,
+      "height": 312,
+      "mode": "RGBA",
+      "alphaBounds": [
+        55,
+        13,
+        345,
+        303
+      ],
+      "nodeId": null,
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [],
+      "exportName": "atmosphere.png",
+      "sourceArchive": "/Users/simeonhristov/Downloads/THE-GATES-symbols-4x-20261012.zip"
+    },
+    {
+      "path": "symbols/pharaoh.png",
+      "bytes": 41514,
+      "sha256": "7fb4c005ec71f1c369661780dd78050702c42b2d26a4b95ba524e52e610f6dfe",
+      "width": 400,
+      "height": 312,
+      "mode": "RGBA",
+      "alphaBounds": [
+        44,
+        8,
+        360,
+        305
+      ],
+      "nodeId": null,
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [],
+      "exportName": "pharaon.png",
+      "sourceArchive": "/Users/simeonhristov/Downloads/THE-GATES-symbols-4x-20261012.zip"
+    },
+    {
+      "path": "symbols/purple-gem.png",
+      "bytes": 14478,
+      "sha256": "a512d9ac5c3dfab41983444fc2825f90099cd120e740a08fb6d3a9ce40ef6cd8",
+      "width": 305,
+      "height": 312,
+      "mode": "RGBA",
+      "alphaBounds": [
+        0,
+        0,
+        305,
+        312
+      ],
+      "nodeId": null,
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [],
+      "exportName": "Group 306.png",
+      "sourceArchive": "/Users/simeonhristov/Downloads/THE-GATES-symbols-4x-20261012.zip"
+    },
+    {
+      "path": "symbols/red-gem.png",
+      "bytes": 13833,
+      "sha256": "fa126e65ab04de6db9eea08b922188f02deef74f6d54ab046c36ff4a7fe13e2a",
+      "width": 309,
+      "height": 314,
+      "mode": "RGBA",
+      "alphaBounds": [
+        0,
+        0,
+        309,
+        314
+      ],
+      "nodeId": null,
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [],
+      "exportName": "Group 302.png",
+      "sourceArchive": "/Users/simeonhristov/Downloads/THE-GATES-symbols-4x-20261012.zip"
+    },
+    {
+      "path": "wins/epic-banner.png",
+      "bytes": 221873,
+      "sha256": "27de30c2d2380eb0a005c509247b2c52085d56cde2bdb17b5b77924ee423ee62",
+      "width": 2864,
+      "height": 1144,
+      "mode": "RGBA",
+      "alphaBounds": [
+        34,
+        57,
+        2830,
+        1051
+      ],
+      "nodeId": "11145:4971",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "wins/epic-crown.png",
+      "bytes": 26208,
+      "sha256": "17f4368ed1c56d56f761577d6962e229b799539dffd4467ca243223784d4ecda",
+      "width": 531,
+      "height": 436,
+      "mode": "RGBA",
+      "alphaBounds": [
+        62,
+        70,
+        449,
+        366
+      ],
+      "nodeId": "11234:37591",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Native PNG includes source rotation; do not apply rotation again."
+      ]
+    },
+    {
+      "path": "wins/epic-horn-1.png",
+      "bytes": 50785,
+      "sha256": "61f90814a29b4fa92edb2a74c77a40dbae69a6e63615b5f23403aafef77beb03",
+      "width": 899,
+      "height": 599,
+      "mode": "RGBA",
+      "alphaBounds": [
+        97,
+        33,
+        814,
+        545
+      ],
+      "nodeId": "11145:5545",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Node mapping verified against live dimensions/flip and PNG glyph orientation. Export already includes source horizontal flip."
+      ],
+      "side": "right"
+    },
+    {
+      "path": "wins/epic-horn-2.png",
+      "bytes": 49120,
+      "sha256": "58af099c69b1c77c38538af90ed31921824b76661d6250451c2a9ed93912516a",
+      "width": 899,
+      "height": 599,
+      "mode": "RGBA",
+      "alphaBounds": [
+        84,
+        33,
+        801,
+        545
+      ],
+      "nodeId": "11234:37548",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Node mapping verified against live dimensions/flip and PNG glyph orientation. Export already includes source horizontal flip."
+      ],
+      "side": "left"
+    },
+    {
+      "path": "wins/epic-title.png",
+      "bytes": 109002,
+      "sha256": "ecd65d0c6090e52482a97f1e7b1dd84794b83f2296860e809aa9aa9bfc1129f3",
+      "width": 1639,
+      "height": 1091,
+      "mode": "RGBA",
+      "alphaBounds": [
+        182,
+        64,
+        1443,
+        1027
+      ],
+      "nodeId": "11234:37621",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "wins/legendary-banner.png",
+      "bytes": 316288,
+      "sha256": "a0fc3748827303a02bf6fcc5755fd20c69303868944ca606226e1964783b0f28",
+      "width": 3904,
+      "height": 1560,
+      "mode": "RGBA",
+      "alphaBounds": [
+        46,
+        78,
+        3857,
+        1432
+      ],
+      "nodeId": "11145:4704",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "wins/legendary-crown.png",
+      "bytes": 34649,
+      "sha256": "f38b75bd1e4053dec9f26eef10e0b611dc3592dc9dbc8e41d33aa6749d0b0be5",
+      "width": 654,
+      "height": 494,
+      "mode": "RGBA",
+      "alphaBounds": [
+        59,
+        43,
+        594,
+        433
+      ],
+      "nodeId": "11145:5756",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Native PNG includes source rotation; do not apply rotation again."
+      ]
+    },
+    {
+      "path": "wins/legendary-horn-1.png",
+      "bytes": 70966,
+      "sha256": "94f148570108c42f743311bfc19581150f9a631757e068065c3aa937e27ee6ce",
+      "width": 1225,
+      "height": 817,
+      "mode": "RGBA",
+      "alphaBounds": [
+        115,
+        45,
+        1092,
+        743
+      ],
+      "nodeId": "11145:5458",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Node mapping verified against live dimensions/flip and PNG glyph orientation. Export already includes source horizontal flip."
+      ],
+      "side": "left"
+    },
+    {
+      "path": "wins/legendary-horn-2.png",
+      "bytes": 73968,
+      "sha256": "57d593c526d87377fb968ee4117a0e11a67253744c0cf7e9a31a86ae89ee9a5d",
+      "width": 1225,
+      "height": 817,
+      "mode": "RGBA",
+      "alphaBounds": [
+        132,
+        45,
+        1109,
+        743
+      ],
+      "nodeId": "11145:5415",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Node mapping verified against live dimensions/flip and PNG glyph orientation. Export already includes source horizontal flip."
+      ],
+      "side": "right"
+    },
+    {
+      "path": "wins/legendary-title.png",
+      "bytes": 239963,
+      "sha256": "78e37629f2c48fcca5b703061e21958cd58ecee733bd63a5bbaa2fe379ebe2a2",
+      "width": 3133,
+      "height": 1619,
+      "mode": "RGBA",
+      "alphaBounds": [
+        148,
+        134,
+        3110,
+        1402
+      ],
+      "nodeId": "11145:4882",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "wins/mythic-banner.png",
+      "bytes": 275146,
+      "sha256": "3be1ffee023b9122b16ee16359e9abedd85f65871d2e96e6c0440ee8b0283b9c",
+      "width": 3424,
+      "height": 1368,
+      "mode": "RGBA",
+      "alphaBounds": [
+        40,
+        69,
+        3384,
+        1256
+      ],
+      "nodeId": "11145:3693",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "wins/mythic-crown.png",
+      "bytes": 34827,
+      "sha256": "2084c3bc6d70ee63126c8c4e607406b5642916119bbc6ce82b13bb71c1a7f582",
+      "width": 666,
+      "height": 571,
+      "mode": "RGBA",
+      "alphaBounds": [
+        88,
+        112,
+        541,
+        474
+      ],
+      "nodeId": "11145:4220",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Native PNG includes source rotation; do not apply rotation again."
+      ]
+    },
+    {
+      "path": "wins/mythic-horn-1.png",
+      "bytes": 60683,
+      "sha256": "7bac6ff5f4b54e6a8740ac990b6faeabb7a9f9a127b5c111d9c145b4776a8ecd",
+      "width": 1074,
+      "height": 716,
+      "mode": "RGBA",
+      "alphaBounds": [
+        101,
+        39,
+        958,
+        652
+      ],
+      "nodeId": "11145:2905",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Node mapping verified against live dimensions/flip and PNG glyph orientation. Export already includes source horizontal flip."
+      ],
+      "side": "left"
+    },
+    {
+      "path": "wins/mythic-horn-2.png",
+      "bytes": 63293,
+      "sha256": "eb101fa497939be6bc6a9cdfc01b7be833189109e1e37444484a93d44de1b0cf",
+      "width": 1074,
+      "height": 716,
+      "mode": "RGBA",
+      "alphaBounds": [
+        116,
+        39,
+        973,
+        652
+      ],
+      "nodeId": "11232:18560",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Node mapping verified against live dimensions/flip and PNG glyph orientation. Export already includes source horizontal flip."
+      ],
+      "side": "right"
+    },
+    {
+      "path": "wins/mythic-title.png",
+      "bytes": 163902,
+      "sha256": "8fc600fd6bcde9b9d4d575eaa487a898f383d3a322b07d0e8b4502073f0b3849",
+      "width": 2020,
+      "height": 1516,
+      "mode": "RGBA",
+      "alphaBounds": [
+        56,
+        222,
+        1979,
+        1296
+      ],
+      "nodeId": "11145:3932",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "wins/sweet-banner.png",
+      "bytes": 130994,
+      "sha256": "1820d740b189daad87f32c108e6f820fdefaf60681c2633f96b5dd5e8e3c0086",
+      "width": 1815,
+      "height": 725,
+      "mode": "RGBA",
+      "alphaBounds": [
+        21,
+        36,
+        1793,
+        666
+      ],
+      "nodeId": "11145:5151",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "wins/sweet-crown.png",
+      "bytes": 17824,
+      "sha256": "587bf32640c5ca2ac62d6253ee5c9f65f9cff78ce6ddd1fda5662dcb8c0bf04b",
+      "width": 337,
+      "height": 276,
+      "mode": "RGBA",
+      "alphaBounds": [
+        39,
+        44,
+        285,
+        232
+      ],
+      "nodeId": "11145:5914",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Native PNG includes source rotation; do not apply rotation again."
+      ]
+    },
+    {
+      "path": "wins/sweet-horn-1.png",
+      "bytes": 29779,
+      "sha256": "96e94d4384f55e349d057f919bf5eda66bf143f0b7fa7e812fcf082142e90ab2",
+      "width": 570,
+      "height": 380,
+      "mode": "RGBA",
+      "alphaBounds": [
+        53,
+        21,
+        508,
+        345
+      ],
+      "nodeId": "11145:5589",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Node mapping verified against live dimensions/flip and PNG glyph orientation. Export already includes source horizontal flip."
+      ],
+      "side": "left"
+    },
+    {
+      "path": "wins/sweet-horn-2.png",
+      "bytes": 30821,
+      "sha256": "3650242b57685bae949112a33a3dd4cfa70781e1f88137087221c3e4efe49db1",
+      "width": 570,
+      "height": 380,
+      "mode": "RGBA",
+      "alphaBounds": [
+        61,
+        21,
+        516,
+        345
+      ],
+      "nodeId": "11145:5633",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Node mapping verified against live dimensions/flip and PNG glyph orientation. Export already includes source horizontal flip."
+      ],
+      "side": "right"
+    },
+    {
+      "path": "wins/sweet-title.png",
+      "bytes": 83106,
+      "sha256": "3f59f11e98e78f4bf353f2ae2636556acddaed4d9dd5b6109c7079947df70aae",
+      "width": 1173,
+      "height": 689,
+      "mode": "RGBA",
+      "alphaBounds": [
+        77,
+        52,
+        1105,
+        647
+      ],
+      "nodeId": "11152:7562",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    },
+    {
+      "path": "wins/wild-banner.png",
+      "bytes": 179236,
+      "sha256": "85c841e0ae4727aa63e2a143805a55d1b8721e2a20ceda815405f7720d0a35c4",
+      "width": 2380,
+      "height": 951,
+      "mode": "RGBA",
+      "alphaBounds": [
+        28,
+        48,
+        2351,
+        873
+      ],
+      "nodeId": "11145:4261",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Clean plaque; separate symmetric trumpets."
+      ],
+      "source": "User supplied pad_wild.png, 2026-10-15"
+    },
+    {
+      "path": "wins/wild-crown.png",
+      "bytes": 24932,
+      "sha256": "717d7ed54240b3018ad5454fda1cf21f8e4f2d52396ae217762c50528e1cfce0",
+      "width": 458,
+      "height": 388,
+      "mode": "RGBA",
+      "alphaBounds": [
+        81,
+        73,
+        398,
+        322
+      ],
+      "nodeId": "11145:5677",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Native PNG includes source rotation; do not apply rotation again."
+      ]
+    },
+    {
+      "path": "wins/wild-horn-2.png",
+      "bytes": 40401,
+      "sha256": "64ccbb420f1929e1621b9f80a6748f1a4d2a775f610d9a3ed1c4ae7bc90fc105",
+      "width": 747,
+      "height": 498,
+      "mode": "RGBA",
+      "alphaBounds": [
+        70,
+        27,
+        666,
+        453
+      ],
+      "nodeId": "11145:5372",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": [
+        "Node mapping verified against live dimensions/flip and PNG glyph orientation. Export already includes source horizontal flip."
+      ],
+      "side": "left"
+    },
+    {
+      "path": "wins/wild-title.png",
+      "bytes": 97322,
+      "sha256": "bedf7eacfae5ff5c7a7f378a16bb996f49c311de998974b20157495eaf15543f",
+      "width": 1732,
+      "height": 893,
+      "mode": "RGBA",
+      "alphaBounds": [
+        206,
+        33,
+        1485,
+        828
+      ],
+      "nodeId": "11145:1810",
+      "exportScale": 4,
+      "status": "ready",
+      "notes": []
+    }
+  ],
+  "status": "asset import only; not connected to game UI",
+  "runtimeRulesToPreserve": {
+    "initialBonusSpins": 15,
+    "internalMysteryMode": "MYSTERY",
+    "visibleMysteryLabel": "HIDDEN",
+    "mathChanges": false
+  },
+  "pendingNativeExports": [
+    "Mode-specific styled gate pairs without ancestor clipping (full raster originals available).",
+    "Updated purchase-card panel; old card node deleted.",
+    "Wild banner has nested right horn: split in Figma for fully independent layered animation."
+  ],
+  "cleanupNote": "Unused exports removed 2026-10-14; retained original bytes/hashes unchanged. Deletion ledger: reports/asset-source-cleanup.json."
+}

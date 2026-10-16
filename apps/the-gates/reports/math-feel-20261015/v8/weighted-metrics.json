@@ -1,0 +1,1479 @@
+{
+  "BASE": {
+    "experience": {
+      "identicalTransitionRate": 1.046033854341243e-09,
+      "oneWin14BlanksProbability": 2e-08,
+      "meanPayingFreeSpins": 11.4576154805,
+      "meanFreeSpins": 16.1474095505,
+      "maxPositivePayoutProbability": 0.0653724295525,
+      "weightedCounts": {
+        "transitions": 768617570706,
+        "identical": 804,
+        "bonusRounds": 10000000000,
+        "freeSpins": 161474095505,
+        "payingFreeSpins": 114576154805,
+        "oneWin14Blanks": 200
+      },
+      "strictLimits": {
+        "identicalTransitions": 0.15,
+        "oneWin14Blanks": 0.05
+      }
+    },
+    "tierExperience": {
+      "normal": {
+        "identicalTransitionRate": 4.109431105244204e-09,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 10.6615194,
+        "meanFreeSpins": 14.99999972,
+        "maxPositivePayoutProbability": 0.00200523,
+        "weightedCounts": {
+          "transitions": 82736512985,
+          "identical": 340,
+          "bonusRounds": 8500000000,
+          "freeSpins": 127499997620,
+          "payingFreeSpins": 90622914900,
+          "oneWin14Blanks": 170
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "super": {
+        "identicalTransitionRate": 2.6459101681667607e-09,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 15.48597059,
+        "meanFreeSpins": 21.88867254,
+        "maxPositivePayoutProbability": 0.00385199,
+        "weightedCounts": {
+          "transitions": 21164739708,
+          "identical": 56,
+          "bonusRounds": 1400000000,
+          "freeSpins": 30644141556,
+          "payingFreeSpins": 21680358826,
+          "oneWin14Blanks": 28
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "hidden": {
+        "identicalTransitionRate": 1.892100680599589e-09,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 22.72881079,
+        "meanFreeSpins": 33.29956329,
+        "maxPositivePayoutProbability": 0.00488299,
+        "weightedCounts": {
+          "transitions": 2114052408,
+          "identical": 4,
+          "bonusRounds": 100000000,
+          "freeSpins": 3329956329,
+          "payingFreeSpins": 2272881079,
+          "oneWin14Blanks": 2
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      }
+    },
+    "v8": {
+      "normal": {
+        "meanGates": 4.03408875,
+        "gatePayoutShare": 0.9122819389532413,
+        "smallClusterShare": 0.9776130516098929,
+        "rewardTypeByEligibility": {
+          "eligible": {
+            "addMultiplier": 1.0,
+            "multiplyMultiplier": 0.0,
+            "stickyWild": 0.0,
+            "extraSpin": 0.0,
+            "retrigger": 0.0
+          },
+          "full": {
+            "addMultiplier": null,
+            "multiplyMultiplier": null,
+            "stickyWild": null,
+            "extraSpin": null,
+            "retrigger": null
+          }
+        },
+        "inner": {
+          "boost2": null,
+          "boost3": null,
+          "boost5": null,
+          "extra1": null,
+          "extra2": null,
+          "extra3": null,
+          "extra5": null,
+          "wild2": null
+        },
+        "weightedCounts": {
+          "bonuses": 8500000000,
+          "gates": 34289754375,
+          "raw": 7016129112825,
+          "payout": 79985000000000,
+          "clusters": 173359427885,
+          "small": 169478439320,
+          "eligible": 34289754375,
+          "full": 0,
+          "eligible/addMultiplier": 34289754375,
+          "addMultiplier": 34289754375
+        }
+      },
+      "super": {
+        "meanGates": 6.05999958,
+        "gatePayoutShare": 0.9480905296065397,
+        "smallClusterShare": 0.9788027359487181,
+        "rewardTypeByEligibility": {
+          "eligible": {
+            "addMultiplier": 0.40000002734061885,
+            "multiplyMultiplier": 0.15499996684050604,
+            "stickyWild": 0.24500003172051402,
+            "extraSpin": 0.14499998621277346,
+            "retrigger": 0.054999987885587645
+          },
+          "full": {
+            "addMultiplier": 0.5283335072573883,
+            "multiplyMultiplier": 0.20499983806381789,
+            "stickyWild": 0.0,
+            "extraSpin": 0.19500001408575057,
+            "retrigger": 0.07166664059304327
+          }
+        },
+        "inner": {
+          "boost2": 0.7950000277914615,
+          "boost3": 0.18299996092603474,
+          "boost5": 0.022000011282503774,
+          "extra1": 0.44499994887826294,
+          "extra2": 0.30499994046862655,
+          "extra3": 0.176513244358495,
+          "extra5": 0.0734868662946155,
+          "wild2": 0.20499998201543898
+        },
+        "weightedCounts": {
+          "bonuses": 1400000000,
+          "gates": 8483999412,
+          "raw": 2022496785470,
+          "payout": 38962000000000,
+          "clusters": 43022984466,
+          "small": 42111014904,
+          "eligible": 7783291278,
+          "full": 700708134,
+          "eligible/addMultiplier": 3113316724,
+          "addMultiplier": 3483524310,
+          "eligible/extraSpin": 1128577128,
+          "extraSpin": 1265215224,
+          "extra3": 223327244,
+          "eligible/stickyWild": 1906906610,
+          "stickyWild": 1906906610,
+          "wildSpaceTwo": 1634735480,
+          "eligible/multiplyMultiplier": 1206409890,
+          "multiplyMultiplier": 1350054944,
+          "boost2": 1073293718,
+          "full/addMultiplier": 370207586,
+          "full/multiplyMultiplier": 143645054,
+          "extra2": 385890568,
+          "wild2": 335120744,
+          "eligible/retrigger": 428080926,
+          "retrigger": 478298324,
+          "extra1": 563020710,
+          "boost5": 29701224,
+          "boost3": 247060002,
+          "extra5": 92976702,
+          "full/retrigger": 50217398,
+          "full/extraSpin": 136638096
+        }
+      },
+      "hidden": {
+        "meanGates": 8.08000011,
+        "gatePayoutShare": 0.9951112203847474,
+        "smallClusterShare": 0.9741191801646903,
+        "rewardTypeByEligibility": {
+          "eligible": {
+            "addMultiplier": 0.4049999988141144,
+            "multiplyMultiplier": 0.15499999520489746,
+            "stickyWild": 0.2450000130447413,
+            "extraSpin": 0.1461768559828489,
+            "retrigger": 0.048823136953397885
+          },
+          "full": {
+            "addMultiplier": 0.5383332997658629,
+            "multiplyMultiplier": 0.20500001491658337,
+            "stickyWild": 0.0,
+            "extraSpin": 0.1950000163401577,
+            "retrigger": 0.06166666897739604
+          }
+        },
+        "inner": {
+          "boost2": 0.7949999815766328,
+          "boost3": 0.18300001784343786,
+          "boost5": 0.022000000579929412,
+          "extra1": 0.4450000122677948,
+          "extra2": 0.30499997559511755,
+          "extra3": 0.17783480084478762,
+          "extra5": 0.07216521129230007,
+          "wild2": 0.2050000243355402
+        },
+        "weightedCounts": {
+          "bonuses": 100000000,
+          "gates": 808000011,
+          "raw": 227763353495,
+          "payout": 46589000000000,
+          "clusters": 4413421473,
+          "small": 4299198507,
+          "eligible": 969739430,
+          "full": 646260592,
+          "eligible/addMultiplier": 392744468,
+          "addMultiplier": 740648065,
+          "eligible/retrigger": 47345721,
+          "retrigger": 87198459,
+          "eligible/stickyWild": 237586173,
+          "stickyWild": 237586173,
+          "wildSpaceTwo": 169505175,
+          "eligible/multiplyMultiplier": 150309607,
+          "multiplyMultiplier": 282793038,
+          "boost2": 224820460,
+          "full/extraSpin": 126020826,
+          "extraSpin": 267774287,
+          "extra2": 81671151,
+          "full/retrigger": 39852738,
+          "full/multiplyMultiplier": 132483431,
+          "full/addMultiplier": 347903597,
+          "eligible/extraSpin": 141753461,
+          "extra1": 119159561,
+          "boost3": 51751131,
+          "extra3": 47619587,
+          "extra5": 19323988,
+          "wild2": 34748565,
+          "boost5": 6221447
+        }
+      }
+    },
+    "books": 10000,
+    "cost": 1,
+    "totalWeight": 4000000000000,
+    "meanBaseBetX": 0.961,
+    "weightedRtp": 0.961,
+    "rtpDelta": 0.0,
+    "tailRiskChecks": {
+      "5000": {
+        "probability": 4.75256775e-06,
+        "limit": 0.01,
+        "passed": true
+      },
+      "10000": {
+        "probability": 2.2477955e-06,
+        "limit": 0.005,
+        "passed": true
+      },
+      "25000": {
+        "probability": 6.925e-11,
+        "limit": 0.002,
+        "passed": true
+      }
+    },
+    "baseGameMeanX": 0.54716,
+    "freeGameMeanX": 0.41384,
+    "stdDevBaseBetX": 40.333819049439604,
+    "hitRate": 0.5025,
+    "bonusTriggerRate": 0.0025,
+    "bonusTierMix": {
+      "normal": 0.85,
+      "super": 0.14,
+      "hidden": 0.01
+    },
+    "maxWinRate": 6.925e-11,
+    "payoutAtLeast5000xBaseBet": 4.75256775e-06,
+    "payoutAtLeast10000xBaseBet": 2.2477955e-06,
+    "cvar001x": 338.7789159369125,
+    "roundWith1000xGateRate": 4.65e-11,
+    "averageGates": 0.0167953218065,
+    "averageWinningCascades": 0.72079843137775,
+    "nonTenthPayoutRate": 0.1749969162425,
+    "maxSingleBookProbability": 0.00195068246675,
+    "effectiveBookCount": 1388.4381141205142,
+    "warnings": [],
+    "uncompressedSha256": "d50a2491990bd260361b1697fc8322dee1affcbccaa3c96ab15b04ae04a23559"
+  },
+  "CHANCE": {
+    "experience": {
+      "identicalTransitionRate": 1.4715568877300018e-09,
+      "oneWin14BlanksProbability": 2e-08,
+      "meanPayingFreeSpins": 11.3903001968,
+      "meanFreeSpins": 16.1220057996,
+      "maxPositivePayoutProbability": 0.045782872022,
+      "weightedCounts": {
+        "transitions": 1091361138255,
+        "identical": 1606,
+        "bonusRounds": 30000000000,
+        "freeSpins": 483660173988,
+        "payingFreeSpins": 341709005904,
+        "oneWin14Blanks": 600
+      },
+      "strictLimits": {
+        "identicalTransitions": 0.15,
+        "oneWin14Blanks": 0.05
+      }
+    },
+    "tierExperience": {
+      "normal": {
+        "identicalTransitionRate": 4.131566487379336e-09,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 10.60626729,
+        "meanFreeSpins": 14.99999972,
+        "maxPositivePayoutProbability": 0.00252576,
+        "weightedCounts": {
+          "transitions": 246879725430,
+          "identical": 1020,
+          "bonusRounds": 25500000000,
+          "freeSpins": 382499992860,
+          "payingFreeSpins": 270459815895,
+          "oneWin14Blanks": 510
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "super": {
+        "identicalTransitionRate": 2.650130721971197e-09,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 15.31404529,
+        "meanFreeSpins": 21.69458496,
+        "maxPositivePayoutProbability": 0.00516577,
+        "weightedCounts": {
+          "transitions": 63393099294,
+          "identical": 168,
+          "bonusRounds": 4200000000,
+          "freeSpins": 91117256832,
+          "payingFreeSpins": 64318990218,
+          "oneWin14Blanks": 84
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "hidden": {
+        "identicalTransitionRate": 1.882069878752386e-09,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 23.10066597,
+        "meanFreeSpins": 33.47641432,
+        "maxPositivePayoutProbability": 0.00631111,
+        "weightedCounts": {
+          "transitions": 6375958797,
+          "identical": 12,
+          "bonusRounds": 300000000,
+          "freeSpins": 10042924296,
+          "payingFreeSpins": 6930199791,
+          "oneWin14Blanks": 6
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      }
+    },
+    "v8": {
+      "normal": {
+        "meanGates": 4.0400004,
+        "gatePayoutShare": 0.913671695802338,
+        "smallClusterShare": 0.9787359026011716,
+        "rewardTypeByEligibility": {
+          "eligible": {
+            "addMultiplier": 1.0,
+            "multiplyMultiplier": 0.0,
+            "stickyWild": 0.0,
+            "extraSpin": 0.0,
+            "retrigger": 0.0
+          },
+          "full": {
+            "addMultiplier": null,
+            "multiplyMultiplier": null,
+            "stickyWild": null,
+            "extraSpin": null,
+            "retrigger": null
+          }
+        },
+        "inner": {
+          "boost2": null,
+          "boost3": null,
+          "boost5": null,
+          "extra1": null,
+          "extra2": null,
+          "extra3": null,
+          "extra5": null,
+          "wild2": null
+        },
+        "weightedCounts": {
+          "bonuses": 25500000000,
+          "gates": 103020010200,
+          "raw": 20714908233750,
+          "payout": 239955000000000,
+          "clusters": 517339541325,
+          "small": 506338782930,
+          "eligible": 103020010200,
+          "full": 0,
+          "eligible/addMultiplier": 103020010200,
+          "addMultiplier": 103020010200
+        }
+      },
+      "super": {
+        "meanGates": 6.0600003,
+        "gatePayoutShare": 0.9481840164301114,
+        "smallClusterShare": 0.9789617268814561,
+        "rewardTypeByEligibility": {
+          "eligible": {
+            "addMultiplier": 0.4023416163891375,
+            "multiplyMultiplier": 0.1550000235522817,
+            "stickyWild": 0.24500000701174798,
+            "extraSpin": 0.1449999908307911,
+            "retrigger": 0.05265836221604173
+          },
+          "full": {
+            "addMultiplier": 0.5283334320801195,
+            "multiplyMultiplier": 0.2049999748948849,
+            "stickyWild": 0.0,
+            "extraSpin": 0.19499992468465466,
+            "retrigger": 0.07166666834034101
+          }
+        },
+        "inner": {
+          "boost2": 0.7949999434243361,
+          "boost3": 0.18300004701328773,
+          "boost5": 0.022000009562376195,
+          "extra1": 0.44499987870675906,
+          "extra2": 0.2985379140094667,
+          "extra3": 0.18500008100971932,
+          "extra5": 0.0714621262740549,
+          "wild2": 0.20500001517831135
+        },
+        "weightedCounts": {
+          "bonuses": 4200000000,
+          "gates": 25452001260,
+          "raw": 6056563055550,
+          "payout": 116886000000000,
+          "clusters": 128097201078,
+          "small": 125402257176,
+          "eligible": 23360793960,
+          "full": 2091207300,
+          "eligible/addMultiplier": 9399019602,
+          "addMultiplier": 10503874332,
+          "eligible/extraSpin": 3387314910,
+          "extraSpin": 3795100176,
+          "extra2": 1132981290,
+          "eligible/stickyWild": 5723394684,
+          "stickyWild": 5723394684,
+          "wildSpaceTwo": 4870106976,
+          "eligible/multiplyMultiplier": 3620923614,
+          "multiplyMultiplier": 4049621058,
+          "boost2": 3219448512,
+          "wild2": 998372004,
+          "full/addMultiplier": 1104854730,
+          "full/multiplyMultiplier": 428697444,
+          "boost3": 741080844,
+          "extra1": 1688819118,
+          "full/retrigger": 149869860,
+          "retrigger": 1380011010,
+          "eligible/retrigger": 1230141150,
+          "boost5": 89091702,
+          "extra3": 702093840,
+          "extra5": 271205928,
+          "full/extraSpin": 407785266
+        }
+      },
+      "hidden": {
+        "meanGates": 8.08000024,
+        "gatePayoutShare": 0.9951077002790358,
+        "smallClusterShare": 0.9786062974731987,
+        "rewardTypeByEligibility": {
+          "eligible": {
+            "addMultiplier": 0.4049999622513315,
+            "multiplyMultiplier": 0.15500000913613085,
+            "stickyWild": 0.2500000125538534,
+            "extraSpin": 0.1450000133070846,
+            "retrigger": 0.045000002751599696
+          },
+          "full": {
+            "addMultiplier": 0.5301877561875621,
+            "multiplyMultiplier": 0.20499997125135297,
+            "stickyWild": 0.0,
+            "extraSpin": 0.19500000625581806,
+            "retrigger": 0.06981226630526689
+          }
+        },
+        "inner": {
+          "boost2": 0.7949999823002709,
+          "boost3": 0.1836183520702665,
+          "boost5": 0.021381665629462546,
+          "extra1": 0.4450000429166459,
+          "extra2": 0.30499998148914576,
+          "extra3": 0.17895453969238925,
+          "extra5": 0.07104543590181912,
+          "wild2": 0.20499997501556985
+        },
+        "weightedCounts": {
+          "bonuses": 300000000,
+          "gates": 2424000072,
+          "raw": 683782055100,
+          "payout": 139767000000000,
+          "clusters": 13385734173,
+          "small": 13099363758,
+          "eligible": 2927388021,
+          "full": 1920612123,
+          "eligible/addMultiplier": 1185592038,
+          "addMultiplier": 2203877070,
+          "eligible/multiplyMultiplier": 453745170,
+          "multiplyMultiplier": 847470600,
+          "boost2": 673739112,
+          "eligible/extraSpin": 424471302,
+          "extraSpin": 798990678,
+          "extra1": 355550886,
+          "extra3": 142983009,
+          "eligible/stickyWild": 731847042,
+          "stickyWild": 731847042,
+          "wildSpaceTwo": 508516701,
+          "wild2": 104245911,
+          "eligible/retrigger": 131732469,
+          "retrigger": 265814754,
+          "full/addMultiplier": 1018285032,
+          "full/multiplyMultiplier": 393725430,
+          "full/extraSpin": 374519376,
+          "extra2": 243692142,
+          "extra5": 56764641,
+          "boost3": 155611155,
+          "full/retrigger": 134082285,
+          "boost5": 18120333
+        }
+      }
+    },
+    "books": 10000,
+    "cost": 2,
+    "totalWeight": 4000000000000,
+    "meanBaseBetX": 1.922,
+    "weightedRtp": 0.961,
+    "rtpDelta": 0.0,
+    "tailRiskChecks": {
+      "5000": {
+        "probability": 1.42620825e-05,
+        "limit": 0.01,
+        "passed": true
+      },
+      "10000": {
+        "probability": 6.743378e-06,
+        "limit": 0.005,
+        "passed": true
+      },
+      "25000": {
+        "probability": 2.255e-10,
+        "limit": 0.002,
+        "passed": true
+      }
+    },
+    "baseGameMeanX": 0.68048,
+    "freeGameMeanX": 1.24152,
+    "stdDevBaseBetX": 69.44208999819865,
+    "hitRate": 0.5075,
+    "bonusTriggerRate": 0.0075,
+    "bonusTierMix": {
+      "normal": 0.85,
+      "super": 0.14,
+      "hidden": 0.01
+    },
+    "maxWinRate": 2.255e-10,
+    "payoutAtLeast5000xBaseBet": 1.42620825e-05,
+    "payoutAtLeast10000xBaseBet": 6.743378e-06,
+    "cvar001x": 731.3587275481625,
+    "roundWith1000xGateRate": 7.525e-11,
+    "averageGates": 0.04185301989975,
+    "averageWinningCascades": 0.85826753603975,
+    "nonTenthPayoutRate": 0.1759875534415,
+    "maxSingleBookProbability": 0.00150606669125,
+    "effectiveBookCount": 1680.3580064257812,
+    "warnings": [],
+    "uncompressedSha256": "be3615433fa7cc3b8bbfb46c8695d2b3875c0d9e1143885d679cc541d439331b"
+  },
+  "FEATURE": {
+    "experience": {
+      "identicalTransitionRate": 5.618631692995449e-13,
+      "oneWin14BlanksProbability": 0.0,
+      "meanPayingFreeSpins": 11.175749001891182,
+      "meanFreeSpins": 16.126606046110187,
+      "maxPositivePayoutProbability": 0.03463872940825,
+      "weightedCounts": {
+        "transitions": 17797927585228,
+        "identical": 10,
+        "bonusRounds": 678020649419,
+        "freeSpins": 10934171904308,
+        "payingFreeSpins": 7577388596006,
+        "oneWin14Blanks": 0
+      },
+      "strictLimits": {
+        "identicalTransitions": 0.15,
+        "oneWin14Blanks": 0.05
+      }
+    },
+    "tierExperience": {
+      "normal": {
+        "identicalTransitionRate": 0.0,
+        "oneWin14BlanksProbability": 0.0,
+        "meanPayingFreeSpins": 10.389546891746063,
+        "meanFreeSpins": 15.0,
+        "maxPositivePayoutProbability": 0.004046364589053409,
+        "weightedCounts": {
+          "transitions": 6571041172460,
+          "identical": 0,
+          "bonusRounds": 550069515738,
+          "freeSpins": 8251042736070,
+          "payingFreeSpins": 5714973027480,
+          "oneWin14Blanks": 0
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "super": {
+        "identicalTransitionRate": 0.0,
+        "oneWin14BlanksProbability": 0.0,
+        "meanPayingFreeSpins": 14.553505102901422,
+        "meanFreeSpins": 20.96611349658812,
+        "maxPositivePayoutProbability": 0.013050751009087586,
+        "weightedCounts": {
+          "transitions": 2164843295568,
+          "identical": 0,
+          "bonusRounds": 127911133684,
+          "freeSpins": 2681799346296,
+          "payingFreeSpins": 1861555336788,
+          "oneWin14Blanks": 0
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "hidden": {
+        "identicalTransitionRate": 0.0,
+        "oneWin14BlanksProbability": 0.0,
+        "meanPayingFreeSpins": 21.50579506293463,
+        "meanFreeSpins": 33.24555104341633,
+        "maxPositivePayoutProbability": 0.3300812747560956,
+        "weightedCounts": {
+          "transitions": 885370990,
+          "identical": 0,
+          "bonusRounds": 39999997,
+          "freeSpins": 1329821942,
+          "payingFreeSpins": 860231738,
+          "oneWin14Blanks": 0
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      }
+    },
+    "v8": {
+      "normal": {
+        "meanGates": 3.9599999999645865,
+        "gatePayoutShare": 0.8729380773799029,
+        "smallClusterShare": 0.981096376142778,
+        "rewardTypeByEligibility": {
+          "eligible": {
+            "addMultiplier": 1.0,
+            "multiplyMultiplier": 0.0,
+            "stickyWild": 0.0,
+            "extraSpin": 0.0,
+            "retrigger": 0.0
+          },
+          "full": {
+            "addMultiplier": null,
+            "multiplyMultiplier": null,
+            "stickyWild": null,
+            "extraSpin": null,
+            "retrigger": null
+          }
+        },
+        "inner": {
+          "boost2": null,
+          "boost3": null,
+          "boost5": null,
+          "extra1": null,
+          "extra2": null,
+          "extra3": null,
+          "extra5": null,
+          "wild2": null
+        },
+        "weightedCounts": {
+          "bonuses": 550069515738,
+          "gates": 2178275282303,
+          "raw": 397284548902475,
+          "payout": 3126700278968055,
+          "clusters": 10893741305021,
+          "small": 10687810116993,
+          "eligible": 2178275282303,
+          "full": 0,
+          "eligible/addMultiplier": 2178275282303,
+          "addMultiplier": 2178275282303
+        }
+      },
+      "super": {
+        "meanGates": 5.940000000039403,
+        "gatePayoutShare": 0.7984530287333501,
+        "smallClusterShare": 0.9835013936045162,
+        "rewardTypeByEligibility": {
+          "eligible": {
+            "addMultiplier": 0.39500000000388885,
+            "multiplyMultiplier": 0.14999999998742267,
+            "stickyWild": 0.25499999999220785,
+            "extraSpin": 0.15500000001215808,
+            "retrigger": 0.045000000004322555
+          },
+          "full": {
+            "addMultiplier": 0.5283333334099687,
+            "multiplyMultiplier": 0.2049999999331583,
+            "stickyWild": 0.0,
+            "extraSpin": 0.20499999996253926,
+            "retrigger": 0.06166666669433375
+          }
+        },
+        "inner": {
+          "boost2": 0.8049999999853032,
+          "boost3": 0.17609141081363333,
+          "boost5": 0.018908589201063468,
+          "extra1": 0.4550000000682917,
+          "extra2": 0.29499999983886455,
+          "extra3": 0.1850000000819088,
+          "extra5": 0.06500000001093492,
+          "wild2": 0.19499999999886836
+        },
+        "weightedCounts": {
+          "bonuses": 127911133684,
+          "gates": 759792134088,
+          "raw": 142388608334530,
+          "payout": 706478531727215,
+          "clusters": 3730854732970,
+          "small": 3669300829212,
+          "eligible": 691720877978,
+          "full": 68071256110,
+          "eligible/addMultiplier": 273229746804,
+          "addMultiplier": 309194060454,
+          "eligible/retrigger": 31127439512,
+          "retrigger": 35325166974,
+          "eligible/stickyWild": 176388823879,
+          "stickyWild": 176388823879,
+          "wildSpaceTwo": 154641328965,
+          "full/retrigger": 4197727462,
+          "full/addMultiplier": 35964313650,
+          "full/multiplyMultiplier": 13954607498,
+          "multiplyMultiplier": 117712739186,
+          "boost5": 2225781829,
+          "eligible/extraSpin": 107216736095,
+          "extraSpin": 121171343595,
+          "extra5": 7876137335,
+          "extra1": 55132961344,
+          "extra2": 35745546341,
+          "eligible/multiplyMultiplier": 103758131688,
+          "boost2": 94758755043,
+          "wild2": 30155059148,
+          "full/extraSpin": 13954607500,
+          "extra3": 22416698575,
+          "boost3": 20728202314
+        }
+      },
+      "hidden": {
+        "meanGates": 7.92000039400003,
+        "gatePayoutShare": 0.9503928859947854,
+        "smallClusterShare": 0.9848700007264416,
+        "rewardTypeByEligibility": {
+          "eligible": {
+            "addMultiplier": 0.3949999907491087,
+            "multiplyMultiplier": 0.14500001075103586,
+            "stickyWild": 0.2549999942494459,
+            "extraSpin": 0.15499999424944594,
+            "retrigger": 0.050000010000963595
+          },
+          "full": {
+            "addMultiplier": 0.5383333358158007,
+            "multiplyMultiplier": 0.19500000778981125,
+            "stickyWild": 0.0,
+            "extraSpin": 0.2049999939222352,
+            "retrigger": 0.061666662472152925
+          }
+        },
+        "inner": {
+          "boost2": 0.8049999937230774,
+          "boost3": 0.1770000327365654,
+          "boost5": 0.017999973540357185,
+          "extra1": 0.45500005824010065,
+          "extra2": 0.2949999963599937,
+          "extra3": 0.17499997269995282,
+          "extra5": 0.07499997269995283,
+          "wild2": 0.1949999554020872
+        },
+        "weightedCounts": {
+          "bonuses": 39999997,
+          "gates": 316799992,
+          "raw": 71390420485,
+          "payout": 1439116584720,
+          "clusters": 1653801203,
+          "small": 1628779192,
+          "eligible": 399961460,
+          "full": 233638524,
+          "eligible/addMultiplier": 157984773,
+          "addMultiplier": 283760179,
+          "eligible/stickyWild": 101990170,
+          "stickyWild": 101990170,
+          "wildSpaceTwo": 72424914,
+          "eligible/multiplyMultiplier": 57994416,
+          "multiplyMultiplier": 103553930,
+          "boost2": 83360913,
+          "eligible/extraSpin": 61994024,
+          "extraSpin": 109889920,
+          "extra1": 49999920,
+          "eligible/retrigger": 19998077,
+          "retrigger": 34405785,
+          "extra2": 32417526,
+          "full/extraSpin": 47895896,
+          "full/addMultiplier": 125775406,
+          "full/retrigger": 14407708,
+          "full/multiplyMultiplier": 45559514,
+          "extra5": 8241741,
+          "boost3": 18329049,
+          "extra3": 19230733,
+          "boost5": 1863968,
+          "wild2": 14122855
+        }
+      }
+    },
+    "books": 10000,
+    "cost": 20,
+    "totalWeight": 4000000000000,
+    "meanBaseBetX": 19.22,
+    "weightedRtp": 0.961,
+    "rtpDelta": 0.0,
+    "tailRiskChecks": {
+      "5000": {
+        "probability": 5.95e-11,
+        "limit": 0.01,
+        "passed": true
+      },
+      "10000": {
+        "probability": 3e-11,
+        "limit": 0.005,
+        "passed": true
+      },
+      "25000": {
+        "probability": 1.3e-11,
+        "limit": 0.002,
+        "passed": true
+      }
+    },
+    "baseGameMeanX": 9.633455181800025,
+    "freeGameMeanX": 9.586544818199975,
+    "stdDevBaseBetX": 26.902217205469096,
+    "hitRate": 1.0,
+    "bonusTriggerRate": 0.16950516235475,
+    "bonusTierMix": {
+      "normal": 0.8112872612498718,
+      "super": 0.1886537435011866,
+      "hidden": 5.8995248941571675e-05
+    },
+    "maxWinRate": 1.3e-11,
+    "payoutAtLeast5000xBaseBet": 5.95e-11,
+    "payoutAtLeast10000xBaseBet": 3e-11,
+    "cvar001x": 153.75850668,
+    "roundWith1000xGateRate": 2.5e-13,
+    "averageGates": 1.96416997745125,
+    "averageWinningCascades": 7.3438290453085,
+    "nonTenthPayoutRate": 0.2682669444305,
+    "maxSingleBookProbability": 0.00013911136325,
+    "effectiveBookCount": 7191.707372590488,
+    "warnings": [],
+    "uncompressedSha256": "b6992b200476f7fd2d16be070878b437c2bfa7c9fd27e65bd48861a5ae046e42"
+  },
+  "BONUS": {
+    "experience": {
+      "identicalTransitionRate": 4.156956090851203e-09,
+      "oneWin14BlanksProbability": 2e-08,
+      "meanPayingFreeSpins": 10.59567605,
+      "meanFreeSpins": 14.99999972,
+      "maxPositivePayoutProbability": 0.00120156,
+      "weightedCounts": {
+        "transitions": 38489701720000,
+        "identical": 160000,
+        "bonusRounds": 4000000000000,
+        "freeSpins": 59999998880000,
+        "payingFreeSpins": 42382704200000,
+        "oneWin14Blanks": 80000
+      },
+      "strictLimits": {
+        "identicalTransitions": 0.15,
+        "oneWin14Blanks": 0.05
+      }
+    },
+    "tierExperience": {
+      "normal": {
+        "identicalTransitionRate": 4.156956090851203e-09,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 10.59567605,
+        "meanFreeSpins": 14.99999972,
+        "maxPositivePayoutProbability": 0.00120156,
+        "weightedCounts": {
+          "transitions": 38489701720000,
+          "identical": 160000,
+          "bonusRounds": 4000000000000,
+          "freeSpins": 59999998880000,
+          "payingFreeSpins": 42382704200000,
+          "oneWin14Blanks": 80000
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      }
+    },
+    "v8": {
+      "normal": {
+        "meanGates": 3.98599128,
+        "gatePayoutShare": 0.9129410478214666,
+        "smallClusterShare": 0.9791845000671151,
+        "rewardTypeByEligibility": {
+          "eligible": {
+            "addMultiplier": 1.0,
+            "multiplyMultiplier": 0.0,
+            "stickyWild": 0.0,
+            "extraSpin": 0.0,
+            "retrigger": 0.0
+          },
+          "full": {
+            "addMultiplier": null,
+            "multiplyMultiplier": null,
+            "stickyWild": null,
+            "extraSpin": null,
+            "retrigger": null
+          }
+        },
+        "inner": {
+          "boost2": null,
+          "boost3": null,
+          "boost5": null,
+          "extra1": null,
+          "extra2": null,
+          "extra3": null,
+          "extra5": null,
+          "wild2": null
+        },
+        "weightedCounts": {
+          "bonuses": 4000000000000,
+          "gates": 15943965120000,
+          "raw": 3276898960000000,
+          "payout": 37640000000000000,
+          "clusters": 80872405920000,
+          "small": 79189006360000,
+          "eligible": 15943965120000,
+          "full": 0,
+          "eligible/addMultiplier": 15943965120000,
+          "addMultiplier": 15943965120000
+        }
+      }
+    },
+    "books": 10000,
+    "cost": 100,
+    "totalWeight": 4000000000000,
+    "meanBaseBetX": 96.1,
+    "weightedRtp": 0.961,
+    "rtpDelta": 0.0,
+    "tailRiskChecks": {
+      "5000": {
+        "probability": 2e-08,
+        "limit": 0.01,
+        "passed": true
+      },
+      "10000": {
+        "probability": 2e-08,
+        "limit": 0.005,
+        "passed": true
+      },
+      "25000": {
+        "probability": 2e-08,
+        "limit": 0.002,
+        "passed": true
+      }
+    },
+    "baseGameMeanX": 2.0,
+    "freeGameMeanX": 94.1,
+    "stdDevBaseBetX": 75.82786468428873,
+    "hitRate": 1.0,
+    "bonusTriggerRate": 1.0,
+    "bonusTierMix": {
+      "normal": 1.0,
+      "super": 0.0,
+      "hidden": 0.0
+    },
+    "maxWinRate": 2e-08,
+    "payoutAtLeast5000xBaseBet": 2e-08,
+    "payoutAtLeast10000xBaseBet": 2e-08,
+    "cvar001x": 748.9458585,
+    "roundWith1000xGateRate": 1e-08,
+    "averageGates": 3.98599128,
+    "averageWinningCascades": 20.21810148,
+    "nonTenthPayoutRate": 0.470414,
+    "maxSingleBookProbability": 0.00010014,
+    "effectiveBookCount": 9987.09254539037,
+    "warnings": [],
+    "uncompressedSha256": "471a6595aa5fbecb1c863c2f7cb33c47c2a0038394ec736bb1cc4a5b5aef405e"
+  },
+  "SUPER": {
+    "experience": {
+      "identicalTransitionRate": 2.6505036919478854e-09,
+      "oneWin14BlanksProbability": 2e-08,
+      "meanPayingFreeSpins": 15.35416047,
+      "meanFreeSpins": 21.61745467,
+      "maxPositivePayoutProbability": 0.00144709,
+      "weightedCounts": {
+        "transitions": 60365884600000,
+        "identical": 160000,
+        "bonusRounds": 4000000000000,
+        "freeSpins": 86469818680000,
+        "payingFreeSpins": 61416641880000,
+        "oneWin14Blanks": 80000
+      },
+      "strictLimits": {
+        "identicalTransitions": 0.15,
+        "oneWin14Blanks": 0.05
+      }
+    },
+    "tierExperience": {
+      "super": {
+        "identicalTransitionRate": 2.6505036919478854e-09,
+        "oneWin14BlanksProbability": 2e-08,
+        "meanPayingFreeSpins": 15.35416047,
+        "meanFreeSpins": 21.61745467,
+        "maxPositivePayoutProbability": 0.00144709,
+        "weightedCounts": {
+          "transitions": 60365884600000,
+          "identical": 160000,
+          "bonusRounds": 4000000000000,
+          "freeSpins": 86469818680000,
+          "payingFreeSpins": 61416641880000,
+          "oneWin14Blanks": 80000
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      }
+    },
+    "v8": {
+      "super": {
+        "meanGates": 6.05999978,
+        "gatePayoutShare": 0.9473125301455264,
+        "smallClusterShare": 0.9783177583308799,
+        "rewardTypeByEligibility": {
+          "eligible": {
+            "addMultiplier": 0.4033267776210231,
+            "multiplyMultiplier": 0.15499996843965463,
+            "stickyWild": 0.24500005093793095,
+            "extraSpin": 0.14500006134441207,
+            "retrigger": 0.05167314165697928
+          },
+          "full": {
+            "addMultiplier": 0.5283334703524818,
+            "multiplyMultiplier": 0.20499997944712772,
+            "stickyWild": 0.0,
+            "extraSpin": 0.19499997944712774,
+            "retrigger": 0.07166657075326277
+          }
+        },
+        "inner": {
+          "boost2": 0.7950001685298905,
+          "boost3": 0.1829999146557993,
+          "boost5": 0.021999916814310197,
+          "extra1": 0.44500004318803915,
+          "extra2": 0.2950000431880392,
+          "extra3": 0.18499991916084976,
+          "extra5": 0.0749999944630719,
+          "wild2": 0.20500013986281107
+        },
+        "weightedCounts": {
+          "bonuses": 4000000000000,
+          "gates": 24239999120000,
+          "raw": 5865169144200000,
+          "payout": 111320000000000000,
+          "clusters": 122168982360000,
+          "small": 119520084960000,
+          "eligible": 22293799120000,
+          "full": 1946200000000,
+          "eligible/addMultiplier": 8991686160000,
+          "addMultiplier": 10019928760000,
+          "eligible/multiplyMultiplier": 3455538160000,
+          "multiplyMultiplier": 3854509120000,
+          "boost2": 3064335400000,
+          "eligible/stickyWild": 5461981920000,
+          "stickyWild": 5461981920000,
+          "wildSpaceTwo": 4643121320000,
+          "eligible/extraSpin": 3232602240000,
+          "extraSpin": 3612111200000,
+          "extra3": 668240280000,
+          "extra1": 1607389640000,
+          "eligible/retrigger": 1151990640000,
+          "retrigger": 1291468120000,
+          "boost3": 705374840000,
+          "extra2": 1065572960000,
+          "wild2": 951840520000,
+          "full/multiplyMultiplier": 398970960000,
+          "full/extraSpin": 379508960000,
+          "full/addMultiplier": 1028242600000,
+          "extra5": 270908320000,
+          "full/retrigger": 139477480000,
+          "boost5": 84798880000
+        }
+      }
+    },
+    "books": 10000,
+    "cost": 300,
+    "totalWeight": 4000000000000,
+    "meanBaseBetX": 288.3,
+    "weightedRtp": 0.961,
+    "rtpDelta": 0.0,
+    "tailRiskChecks": {
+      "5000": {
+        "probability": 2e-08,
+        "limit": 0.01,
+        "passed": true
+      },
+      "10000": {
+        "probability": 2e-08,
+        "limit": 0.005,
+        "passed": true
+      },
+      "25000": {
+        "probability": 2e-08,
+        "limit": 0.002,
+        "passed": true
+      }
+    },
+    "baseGameMeanX": 10.0,
+    "freeGameMeanX": 278.3,
+    "stdDevBaseBetX": 365.2873673119543,
+    "hitRate": 1.0,
+    "bonusTriggerRate": 1.0,
+    "bonusTierMix": {
+      "normal": 0.0,
+      "super": 1.0,
+      "hidden": 0.0
+    },
+    "maxWinRate": 2e-08,
+    "payoutAtLeast5000xBaseBet": 2e-08,
+    "payoutAtLeast10000xBaseBet": 2e-08,
+    "cvar001x": 4360.2989015,
+    "roundWith1000xGateRate": 1e-08,
+    "averageGates": 6.05999978,
+    "averageWinningCascades": 30.44563162,
+    "nonTenthPayoutRate": 0.4508899,
+    "maxSingleBookProbability": 0.00024119,
+    "effectiveBookCount": 4148.751592395743,
+    "warnings": [],
+    "uncompressedSha256": "1cb5cfdcd9d325548c0a4a94f0d55f9c151dc2368089c50fcd206e98369713a4"
+  },
+  "MYSTERY": {
+    "experience": {
+      "identicalTransitionRate": 3.364241330690328e-10,
+      "oneWin14BlanksProbability": 2e-09,
+      "meanPayingFreeSpins": 12.6990385974,
+      "meanFreeSpins": 17.9757362858,
+      "maxPositivePayoutProbability": 0.00175828605,
+      "weightedCounts": {
+        "transitions": 47559013837800,
+        "identical": 16000,
+        "bonusRounds": 4000000000000,
+        "freeSpins": 71902945143200,
+        "payingFreeSpins": 50796154389600,
+        "oneWin14Blanks": 8000
+      },
+      "strictLimits": {
+        "identicalTransitions": 0.15,
+        "oneWin14Blanks": 0.05
+      }
+    },
+    "tierExperience": {
+      "normal": {
+        "identicalTransitionRate": 4.147295272972911e-10,
+        "oneWin14BlanksProbability": 2e-09,
+        "meanPayingFreeSpins": 10.592666206,
+        "meanFreeSpins": 14.999999972,
+        "maxPositivePayoutProbability": 0.002404671,
+        "weightedCounts": {
+          "transitions": 25076584413400,
+          "identical": 10400,
+          "bonusRounds": 2600000000000,
+          "freeSpins": 38999999927200,
+          "payingFreeSpins": 27540932135600,
+          "oneWin14Blanks": 5200
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "super": {
+        "identicalTransitionRate": 2.644564148104765e-10,
+        "oneWin14BlanksProbability": 2e-09,
+        "meanPayingFreeSpins": 15.368662134,
+        "meanFreeSpins": 21.644819213,
+        "maxPositivePayoutProbability": 0.002603333,
+        "weightedCounts": {
+          "transitions": 18150438904800,
+          "identical": 4800,
+          "bonusRounds": 1200000000000,
+          "freeSpins": 25973783055600,
+          "payingFreeSpins": 18442394560800,
+          "oneWin14Blanks": 2400
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      },
+      "hidden": {
+        "identicalTransitionRate": 1.8467261098112214e-10,
+        "oneWin14BlanksProbability": 2e-09,
+        "meanPayingFreeSpins": 24.064138466,
+        "meanFreeSpins": 34.645810802,
+        "maxPositivePayoutProbability": 0.00849084,
+        "weightedCounts": {
+          "transitions": 4331990519600,
+          "identical": 800,
+          "bonusRounds": 200000000000,
+          "freeSpins": 6929162160400,
+          "payingFreeSpins": 4812827693200,
+          "oneWin14Blanks": 400
+        },
+        "strictLimits": {
+          "identicalTransitions": 0.15,
+          "oneWin14Blanks": 0.05
+        }
+      }
+    },
+    "v8": {
+      "normal": {
+        "meanGates": 4.003822466,
+        "gatePayoutShare": 0.9122229755595112,
+        "smallClusterShare": 0.9792506205346412,
+        "rewardTypeByEligibility": {
+          "eligible": {
+            "addMultiplier": 1.0,
+            "multiplyMultiplier": 0.0,
+            "stickyWild": 0.0,
+            "extraSpin": 0.0,
+            "retrigger": 0.0
+          },
+          "full": {
+            "addMultiplier": null,
+            "multiplyMultiplier": null,
+            "stickyWild": null,
+            "extraSpin": null,
+            "retrigger": null
+          }
+        },
+        "inner": {
+          "boost2": null,
+          "boost3": null,
+          "boost5": null,
+          "extra1": null,
+          "extra2": null,
+          "extra3": null,
+          "extra5": null,
+          "wild2": null
+        },
+        "weightedCounts": {
+          "bonuses": 2600000000000,
+          "gates": 10409938411600,
+          "raw": 2147552679961000,
+          "payout": 24466000000000000,
+          "clusters": 52617516549000,
+          "small": 51525735731600,
+          "eligible": 10409938411600,
+          "full": 0,
+          "eligible/addMultiplier": 10409938411600,
+          "addMultiplier": 10409938411600
+        }
+      },
+      "super": {
+        "meanGates": 6.059999994,
+        "gatePayoutShare": 0.9485690319753862,
+        "smallClusterShare": 0.9784174951339815,
+        "rewardTypeByEligibility": {
+          "eligible": {
+            "addMultiplier": 0.40305363647747167,
+            "multiplyMultiplier": 0.15499999584320237,
+            "stickyWild": 0.245000002610584,
+            "extraSpin": 0.1450000037612546,
+            "retrigger": 0.05194636130748736
+          },
+          "full": {
+            "addMultiplier": 0.5283333268745017,
+            "multiplyMultiplier": 0.20500000311228675,
+            "stickyWild": 0.0,
+            "extraSpin": 0.195000004919421,
+            "retrigger": 0.07166666509379056
+          }
+        },
+        "inner": {
+          "boost2": 0.7950000153598634,
+          "boost3": 0.18299998900022205,
+          "boost5": 0.02199999563991453,
+          "extra1": 0.44500000053674116,
+          "extra2": 0.295000001698758,
+          "extra3": 0.18499999170541281,
+          "extra5": 0.07500000605908805,
+          "wild2": 0.2049999967149485
+        },
+        "weightedCounts": {
+          "bonuses": 1200000000000,
+          "gates": 7271999992800,
+          "raw": 1717588608150000,
+          "payout": 33396000000000000,
+          "clusters": 36703149246000,
+          "small": 35911003348800,
+          "eligible": 6674368684800,
+          "full": 597631308000,
+          "eligible/addMultiplier": 2690128569600,
+          "addMultiplier": 3005877106800,
+          "eligible/stickyWild": 1635220345200,
+          "stickyWild": 1635220345200,
+          "wildSpaceTwo": 1389932545200,
+          "wild2": 284936167200,
+          "full/extraSpin": 116538108000,
+          "extraSpin": 1084321592400,
+          "extra5": 81324126000,
+          "full/addMultiplier": 315748537200,
+          "extra2": 319874871600,
+          "full/multiplyMultiplier": 122514420000,
+          "multiplyMultiplier": 1157041538400,
+          "boost3": 211738588800,
+          "eligible/multiplyMultiplier": 1034527118400,
+          "boost2": 919848040800,
+          "eligible/extraSpin": 967783484400,
+          "extra1": 482523109200,
+          "extra3": 200599485600,
+          "eligible/retrigger": 346709167200,
+          "retrigger": 389539410000,
+          "full/retrigger": 42830242800,
+          "boost5": 25454908800
+        }
+      },
+      "hidden": {
+        "meanGates": 8.080000021,
+        "gatePayoutShare": 0.9949238098988817,
+        "smallClusterShare": 0.9787245797471699,
+        "rewardTypeByEligibility": {
+          "eligible": {
+            "addMultiplier": 0.40396397056916933,
+            "multiplyMultiplier": 0.15499999732466144,
+            "stickyWild": 0.24500000227445975,
+            "extraSpin": 0.1449999988142427,
+            "retrigger": 0.05103603101746677
+          },
+          "full": {
+            "addMultiplier": 0.5283333300378326,
+            "multiplyMultiplier": 0.20500000274666638,
+            "stickyWild": 0.0,
+            "extraSpin": 0.195000002791571,
+            "retrigger": 0.07166666442393
+          }
+        },
+        "inner": {
+          "boost2": 0.7949999956602012,
+          "boost3": 0.18300000522466683,
+          "boost5": 0.021999999115131938,
+          "extra1": 0.4550000037165122,
+          "extra2": 0.2949999841441263,
+          "extra3": 0.17500000214773317,
+          "extra5": 0.07500000999162829,
+          "wild2": 0.2049999869593579
+        },
+        "weightedCounts": {
+          "bonuses": 200000000000,
+          "gates": 1616000004200,
+          "raw": 472989241242000,
+          "payout": 93178000000000000,
+          "clusters": 9195716121000,
+          "small": 9000073396000,
+          "eligible": 1895834822400,
+          "full": 1336165186000,
+          "eligible/addMultiplier": 765848962400,
+          "addMultiplier": 1471789564600,
+          "eligible/multiplyMultiplier": 293854392400,
+          "multiplyMultiplier": 567768259200,
+          "boost3": 103901594400,
+          "eligible/stickyWild": 464479535800,
+          "stickyWild": 464479535800,
+          "wildSpaceTwo": 340857449000,
+          "wild2": 69875772600,
+          "full/multiplyMultiplier": 273913866800,
+          "boost2": 451375763600,
+          "full/retrigger": 95758502000,
+          "retrigger": 192514386800,
+          "full/addMultiplier": 705940602200,
+          "full/extraSpin": 260552215000,
+          "extraSpin": 535448262000,
+          "extra2": 157957228800,
+          "extra1": 243628961200,
+          "eligible/retrigger": 96755884800,
+          "eligible/extraSpin": 274896047000,
+          "boost5": 12490901200,
+          "extra3": 93703447000,
+          "extra5": 40158625000
+        }
+      }
+    },
+    "books": 10000,
+    "cost": 400,
+    "totalWeight": 4000000000000,
+    "meanBaseBetX": 384.4,
+    "weightedRtp": 0.961,
+    "rtpDelta": 0.0,
+    "tailRiskChecks": {
+      "5000": {
+        "probability": 0.0089913906,
+        "limit": 0.01,
+        "passed": true
+      },
+      "10000": {
+        "probability": 0.00449569525,
+        "limit": 0.005,
+        "passed": true
+      },
+      "25000": {
+        "probability": 1.11e-08,
+        "limit": 0.002,
+        "passed": true
+      }
+    },
+    "baseGameMeanX": 6.8,
+    "freeGameMeanX": 377.6,
+    "stdDevBaseBetX": 1483.1399431506436,
+    "hitRate": 1.0,
+    "bonusTriggerRate": 1.0,
+    "bonusTierMix": {
+      "normal": 0.65,
+      "super": 0.3,
+      "hidden": 0.05
+    },
+    "maxWinRate": 1.11e-08,
+    "payoutAtLeast5000xBaseBet": 0.0089913906,
+    "payoutAtLeast10000xBaseBet": 0.00449569525,
+    "cvar001x": 19863.4687707675,
+    "roundWith1000xGateRate": 1e-09,
+    "averageGates": 4.82448460215,
+    "averageWinningCascades": 24.58879205685,
+    "nonTenthPayoutRate": 0.4663000707,
+    "maxSingleBookProbability": 0.00042454195,
+    "effectiveBookCount": 4849.5653618531305,
+    "warnings": [],
+    "uncompressedSha256": "64e8dcd1021b04aabd08192230cfdfc09a045da3d52a124e5857fa0d38c6b3b3"
+  }
+}

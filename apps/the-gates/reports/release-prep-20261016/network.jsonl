@@ -1,0 +1,22 @@
+{"time": 1792124652.699693, "method": "GET", "path": "/bet/replay/0_0_the_gates/v8/BASE/8000", "body": {}}
+{"time": 1792124663.992696, "method": "POST", "path": "/wallet/authenticate", "body": {"sessionID": "USD-win-release", "language": "en"}}
+{"time": 1792124686.134541, "method": "POST", "path": "/wallet/play", "body": {"mode": "BASE", "currency": "USD", "sessionID": "USD-win-release", "amount": 1750000}}
+{"time": 1792124686.4095008, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "1"}}
+{"time": 1792124751.25487, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "7"}}
+{"time": 1792124751.635981, "method": "POST", "path": "/wallet/authenticate", "body": {"sessionID": "XSC-zero-release", "language": "en"}}
+{"time": 1792124752.580699, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "12"}}
+{"time": 1792124753.907477, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "17"}}
+{"time": 1792124755.233932, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "22"}}
+{"time": 1792124756.5558379, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "27"}}
+{"time": 1792124757.887888, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "32"}}
+{"time": 1792124759.21385, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "37"}}
+{"time": 1792124760.5429602, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "42"}}
+{"time": 1792124761.867485, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "47"}}
+{"time": 1792124763.2012942, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "52"}}
+{"time": 1792124764.533098, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "57"}}
+{"time": 1792124765.868073, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "62"}}
+{"time": 1792124767.1998641, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "67"}}
+{"time": 1792124768.531903, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "72"}}
+{"time": 1792124769.864322, "method": "POST", "path": "/bet/event", "body": {"sessionID": "USD-win-release", "event": "77"}}
+{"time": 1792124971.3764448, "method": "POST", "path": "/wallet/end-round", "body": {"sessionID": "USD-win-release"}}
+{"time": 1792125316.919453, "method": "GET", "path": "/bet/replay/0_0_the_gates/v8/BASE/8000", "body": {}}

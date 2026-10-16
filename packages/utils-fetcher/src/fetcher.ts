@@ -3,11 +3,13 @@ export const fetcher = (options: {
 	method: 'POST' | 'GET';
 	endpoint: string;
 	variables?: object;
+	signal?: AbortSignal;
 }) => {
 	const { method, endpoint, variables } = options;
 
 	return (options.fetch ?? fetch)(endpoint, {
 		method,
+		signal: options.signal,
 		headers: {
 			'Content-Type': 'application/json',
 		},

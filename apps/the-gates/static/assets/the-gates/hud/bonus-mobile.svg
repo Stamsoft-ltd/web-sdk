@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="108" height="60" viewBox="0 0 108 60" fill="none">
+  <!-- Derived mobile capsule: one dark outer contour, one gold rim, one dark inner edge. -->
+  <rect x="1.5" y="1.5" width="105" height="57" rx="20" fill="url(#gold)" stroke="#021D42" stroke-width="3"/>
+  <rect x="7" y="7" width="94" height="46" rx="14.5" fill="url(#red)" stroke="#021D42" stroke-width="3"/>
+  <defs>
+    <linearGradient id="gold" x1="54" y1="0" x2="54" y2="60" gradientUnits="userSpaceOnUse"><stop stop-color="#EDBD4F"/><stop offset="0.5" stop-color="#FDCB02"/><stop offset="1" stop-color="#F67F00"/></linearGradient>
+    <linearGradient id="red" x1="54" y1="7" x2="54" y2="53" gradientUnits="userSpaceOnUse"><stop stop-color="#FF3024"/><stop offset="1" stop-color="#DF0000"/></linearGradient>
+  </defs>
+</svg>

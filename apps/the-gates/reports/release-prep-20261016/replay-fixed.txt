@@ -1,0 +1,54 @@
+- main:
+  - img "The Gates"
+  - img "Press Play"
+  - region "The Gates game":
+    - status: Tumbles 0/3. Multiplier 1×.
+    - img "6 columns, 5 rows. Win anywhere."
+  - button "Menu"
+  - button "Bonus" [disabled]:
+    - generic: Bonus
+  - button "Spin" [disabled]
+  - 'button "Speed: Normal"'
+  - button "Autoplay" [disabled]
+  - button "Base play −" [disabled]
+  - button "Base play +" [disabled]
+  - generic: Balance
+  - strong:
+    - generic: 0.00 SC
+  - generic: Win
+  - strong:
+    - generic: 0.00 SC
+  - generic: Play
+  - strong:
+    - generic: 0.00125 SC
+  - generic: THE GATES | 07:24
+  - generic: Replay
+- dialog "Replay":
+  - generic: The Gates
+  - heading "Replay" [level=2]
+  - term: Mode
+  - definition: Base game
+  - term: Event
+  - definition: "8000"
+  - term: Base play
+  - definition:
+    - generic: 0.00125 SC
+  - generic: Based on base play
+  - term: Total play
+  - definition:
+    - generic: 0.00125 SC
+  - text: Cost multiplier
+  - strong: 1×
+  - term: Win multiplier
+  - definition:
+    - generic: 0.2×
+  - generic: Based on base play
+  - term: Total win
+  - definition:
+    - generic: 0.00025 SC
+  - generic: Recorded result
+  - generic: Game 0_0_the_gates
+  - generic: Version v8
+  - button "Play replay" [active]:
+    - generic: Play replay
+  - paragraph: Recorded round only. No new play or balance change.

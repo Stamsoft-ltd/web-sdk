@@ -1,4 +1,5 @@
 import type { Speed } from './uiPolicy';
+import { GATE_OPEN_DURATION_MS, GATE_REWARD_DURATION_MS } from './gatePlayback.ts';
 
 /** Wait for an acknowledgement or optional auto-close. Own and clean up every timer. */
 export function waitForDismissal(
@@ -30,9 +31,13 @@ export function waitForDismissal(
 /** Re-read a timing target during playback (Veggie Salad's live waitFor pattern).
  * A speed/skip press shortens the active wait, not only the next event.
  */
-export function waitForTarget(target: () => number, signal: AbortSignal): Promise<void> {
+export function waitForTarget(
+	target: () => number,
+	signal: AbortSignal,
+	startedAt = performance.now(),
+): Promise<void> {
 	return new Promise((resolve, reject) => {
-		const start = performance.now();
+		const start = startedAt;
 		let timer: ReturnType<typeof setTimeout>;
 		const abort = () => {
 			clearTimeout(timer);
@@ -55,17 +60,26 @@ export function waitForTarget(target: () => number, signal: AbortSignal): Promis
 /** Read the entry Keys before switching to the bonus backdrop/modal.
  * Even slam-stop retains a short trigger beat; reduced motion avoids a long pause. */
 export const bonusEntryHold = (speed: Speed, reduced: boolean, skipped: boolean) =>
-	reduced ? 150 : skipped ? 350 : speed === 'normal' ? 900 : 450;
+	reduced ? 80 : skipped ? 120 : speed === 'normal' ? 220 : 120;
+
+/** Read the gate-completing selection before doors cover it. Native paying tracks last
+ * up to 1.12s + 0.14s mix; speed settings must not truncate this explanatory beat.
+ * An explicit slam-stop can shorten it, while reduced motion keeps only a static beat.
+ * This is NOT a removal: authoritative gate awards can turn selected cells into Wilds. */
+export const gateSelectionHold = (reduced: boolean, skipped: boolean) =>
+	reduced ? 150 : skipped ? 350 : 1300;
 
 /** Presentation only; unchanged event order and awards. Milliseconds. */
 export const TIMING = {
 	winHighlight: 360,
 	progress: 80,
-	gateOpen: 1100,
-	gateReward: 1050,
+	gateOpen: GATE_OPEN_DURATION_MS,
+	gateReward: GATE_REWARD_DURATION_MS,
 	settle: 280,
 	overlayGuard: 120,
 	bonusGuard: 650,
+	bonusIntro: 2200,
+	bonusIntroReduced: 1100,
 	winAutoClose: 1800,
 	capAutoClose: 2400,
 } as const;

@@ -1,0 +1,159 @@
+{
+  "fileKey": "XnhcL9KfnIfkShPq3yF1EK",
+  "source": "get_design_context native asset URLs, downloaded unchanged",
+  "sourceNodes": [
+    "11270:125205",
+    "11152:9987",
+    "11152:10701",
+    "11284:149407",
+    "11284:149415",
+    "11291:154017"
+  ],
+  "assets": [
+    {
+      "path": "0f6e5.png",
+      "bytes": 839682,
+      "sha256": "61baf4e4eaec0ec57afb3e9834173d90bd33ef076a853eecae5143fa5172adc7",
+      "format": "png",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "path": "11cd1.svg",
+      "bytes": 8069,
+      "sha256": "c4d29cffb4250ffc07a3b5f324c61344f8660f391711a69d3b2f3da7b593f2b1",
+      "format": "svg",
+      "width": 69.5637,
+      "height": 14.3884
+    },
+    {
+      "path": "19460.svg",
+      "bytes": 4424,
+      "sha256": "016cc66bf8bb629505857743478789facadde913dfa26565095f82a694b0559d",
+      "format": "svg",
+      "width": 51,
+      "height": 51
+    },
+    {
+      "path": "28fc1.png",
+      "bytes": 1425635,
+      "sha256": "7bc3ea1022e3e4a9903729fe983825ee4c6681aed50024db93246f36971ef851",
+      "format": "png",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "path": "4e7e5.png",
+      "bytes": 10402,
+      "sha256": "bfe6d6abc28454ba7e2e5935bea6761c2954f4a54103cbe9eabd7b05f362686d",
+      "format": "png",
+      "width": 253,
+      "height": 51
+    },
+    {
+      "path": "51301.png",
+      "bytes": 1313454,
+      "sha256": "41ff2c730aa574e2978cfa271b9bf33e5e3c7c5bb0e6fa36f41dc3d2927904a7",
+      "format": "png",
+      "width": 2896,
+      "height": 2172
+    },
+    {
+      "path": "61f00.png",
+      "bytes": 829199,
+      "sha256": "fb9838aa378580fdd42b76faa28665731654eda29360a54a859b47f1b28baca8",
+      "format": "png",
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "path": "a8485.png",
+      "bytes": 757429,
+      "sha256": "ee2be0272c9af04e848107e95b88672a6283e9a22761d5e689f8ff33af218dad",
+      "format": "png",
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "path": "afa46.svg",
+      "bytes": 2516,
+      "sha256": "e5143a53f0a432f75cb7ec16e5a30c83d75281ec31db06c91d04e1d28a313a52",
+      "format": "svg",
+      "width": 24,
+      "height": 24
+    },
+    {
+      "path": "c8de1.svg",
+      "bytes": 3930,
+      "sha256": "5d8a6600e823fc0e92804de774ed411115ff5edb49376401422494cd5d73dcc8",
+      "format": "svg",
+      "width": 51,
+      "height": 51
+    },
+    {
+      "path": "d1e33.png",
+      "bytes": 9501,
+      "sha256": "f19798a06076d5f144312b61e689b850ad85830cfca52c0c227800ffdab1e219",
+      "format": "png",
+      "width": 253,
+      "height": 51
+    },
+    {
+      "path": "d7111.png",
+      "bytes": 815694,
+      "sha256": "29a63a224576c0a59baf94f266c652e0179660d87becf201ccca5a716e8b09c1",
+      "format": "png",
+      "width": 1448,
+      "height": 1086
+    },
+    {
+      "path": "d883a.png",
+      "bytes": 831830,
+      "sha256": "04ce29e4862954e87974adde0e4a560107484185ce30d8d816fd8f8a8b8d98b9",
+      "format": "png",
+      "width": 1319,
+      "height": 1193
+    },
+    {
+      "path": "edb79.png",
+      "bytes": 462057,
+      "sha256": "96342ee888498c06d9fc5cbd239d5a028028c4daa2c47b045bc1b07c225968b0",
+      "format": "png",
+      "width": 1494,
+      "height": 1052
+    },
+    {
+      "path": "ee395.svg",
+      "bytes": 1100,
+      "sha256": "42633e0e8a1bd7a63a1e8f15c4f33eae13f852f47a909ef02b06e8f1db22c092",
+      "format": "svg",
+      "width": 15.9368,
+      "height": 28.9997
+    },
+    {
+      "path": "f05f2.svg",
+      "bytes": 7325,
+      "sha256": "1fc9bc99c2284e23f47c092232d8b1b3e346991cb3887f343c832ece0cf84fbc",
+      "format": "svg",
+      "width": 117,
+      "height": 117
+    },
+    {
+      "path": "f6355.png",
+      "bytes": 16967,
+      "sha256": "192bdca92245180457101bc85b0319e7f4548c1b445c5e3ffa0480a0461d16c1",
+      "format": "png",
+      "width": 1024,
+      "height": 73
+    },
+    {
+      "path": "fcdb7.png",
+      "bytes": 745664,
+      "sha256": "911d49063d35173078734b8d050e6ad1fbbb477674d15de6b6c6d6a23378d155",
+      "format": "png",
+      "width": 1738,
+      "height": 1572
+    }
+  ],
+  "cleanupNote": "Unused exports removed 2026-10-14; retained original bytes/hashes unchanged. Deletion ledger: reports/asset-source-cleanup.json."
+}

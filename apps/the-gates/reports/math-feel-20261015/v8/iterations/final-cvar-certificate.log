@@ -1,0 +1,4 @@
+MYSTERY/hidden: constrained tail fit 20000x; CVaR eta 18000
+MYSTERY/hidden: constrained tail fit 10000x; CVaR eta 18000
+MYSTERY/hidden: constrained tail fit 5000x; CVaR eta 18000
+SUCCESS 18000 CVaR 19863.4687707675

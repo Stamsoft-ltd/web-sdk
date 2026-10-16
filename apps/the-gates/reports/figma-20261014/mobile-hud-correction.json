@@ -1,0 +1,62 @@
+{
+  "scope": "Desktop native HUD styling restored; mobile-only dark contours and centered rail geometry",
+  "changes": [
+    "Mobile Bonus capsule border follows visible art, not transparent hitbox margins",
+    "Shared horizontal/vertical grid centers mobile controls",
+    "Mobile bet +/- inset within card and painted above its fill",
+    "Desktop extra outlines and deck shadow removed; focus-visible retained"
+  ],
+  "verification": {
+    "unitTests": {
+      "passed": 151,
+      "failed": 0
+    },
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "packagedBytes": 34912353,
+    "gitDiffCheck": "passed",
+    "browser": "Chrome extension; scripted preview only",
+    "viewports": [
+      [
+        320,
+        568
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        667,
+        375
+      ],
+      [
+        844,
+        390
+      ],
+      [
+        1440,
+        900
+      ]
+    ],
+    "findings": [
+      "No page scrolling at all checked sizes",
+      "All mobile rail buttons within viewport",
+      "Portrait control Y centers agree within 0.01px; landscape X centers agree within 0.01px",
+      "Bet +/- boxes contained in bet card; center hit-testing confirms visible controls",
+      "Desktop Bonus outline:none, box-shadow:none; deck pseudo-element box-shadow:none",
+      "Landscape utility menu renders above board",
+      "Feature-mode Disable fits mobile pill; displayed cost remains yellow",
+      "No captured app console errors after final build refresh"
+    ]
+  },
+  "proof": [
+    "hud-portrait-corrected.png",
+    "hud-landscape-corrected.png",
+    "hud-desktop-restored.png"
+  ],
+  "limits": [
+    "Local scripted UI preview, not a live-money round",
+    "No physical mobile-device QA or new FPS profiling in this pass",
+    "Source layout regression tests supplemented by browser geometry and screenshots"
+  ]
+}

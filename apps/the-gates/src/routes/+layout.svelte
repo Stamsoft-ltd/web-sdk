@@ -3,10 +3,12 @@
 	let { children }: { children: Snippet } = $props();
 	import { page } from '$app/state';
 	import { dev } from '$app/environment';
-	import { Authenticate, LoadI18n } from 'components-shared';
+	import Authenticate from 'components-shared/src/components/Authenticate.svelte';
+	import LoadI18n from 'components-shared/src/components/LoadI18n.svelte';
 	import messagesMap from '../i18n';
 	import Game from '../components/Game.svelte';
 	import '../style.css';
+	import '../figma.css';
 	const demo = $derived(dev && page.url.searchParams.get('preview') === 'true');
 </script>
 

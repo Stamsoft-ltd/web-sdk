@@ -121,6 +121,19 @@ export function reduceEvent(previous: GameState, e: BookEvent): GameState {
 			s.raw = e.rawAmount;
 			s.multiplier = e.multiplier;
 			s.capped = e.capped;
+			if ((e.scatterAmount ?? 0) > 0) {
+				const positions = s.board.flatMap((col, reel) =>
+					col.flatMap((cell, row) => (cell?.name === 'KEY' ? [{ reel, row }] : [])),
+				);
+				s.wins = [
+					{
+						symbol: 'KEY',
+						size: e.scatterCount ?? positions.length,
+						positions,
+						rawAmount: e.scatterAmount!,
+					},
+				];
+			}
 			break;
 		case 'setTotalWin':
 		case 'setWin':

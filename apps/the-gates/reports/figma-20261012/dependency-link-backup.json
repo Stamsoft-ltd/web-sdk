@@ -1,0 +1,4 @@
+{
+  "previousLink": "../veggie-salad/node_modules",
+  "action": "Removed symlink only, retained target directory; install own locked dependency links."
+}

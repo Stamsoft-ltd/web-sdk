@@ -1,0 +1,15 @@
+{
+  "file": "apps/the-gates/reports/figma-20261012/crown-preview-reference.png",
+  "nodeId": "11145:5914",
+  "size": [
+    582,
+    478
+  ],
+  "alphaRange": [
+    255,
+    255
+  ],
+  "sha256": "cc00a228f00e56a9ba20a908e35e14a225ddfd3d3384cf7699a48db9073a1be3",
+  "status": "reference only",
+  "reason": "Native Figma preview has opaque checkerboard baked in; actual PNG Export still required."
+}
