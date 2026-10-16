@@ -29,7 +29,6 @@ export function statPanelLayout(width: number, boardBottom: number, bonus: boole
 		return {
 			portrait,
 			compact,
-			showRemaining: false,
 			tumbles: box(8, y, 165, PORTRAIT_LAYOUT.cardHeight),
 			multiplier: box(187, y, 165, PORTRAIT_LAYOUT.cardHeight),
 			freeSpins: box(8, PORTRAIT_LAYOUT.bonusTop, 165, PORTRAIT_LAYOUT.cardHeight),
@@ -41,7 +40,6 @@ export function statPanelLayout(width: number, boardBottom: number, bonus: boole
 		return {
 			portrait,
 			compact,
-			showRemaining: false,
 			tumbles: box(10, bonus ? 84 : 90, 130, height),
 			multiplier: box(10, bonus ? 130 : 163, 130, height),
 			freeSpins: box(10, 176, 130, 40),
@@ -51,7 +49,6 @@ export function statPanelLayout(width: number, boardBottom: number, bonus: boole
 	return {
 		portrait,
 		compact,
-		showRemaining: true,
 		tumbles: box(13, 130, 196, 125),
 		multiplier: box(14, 266, 196, 125),
 		freeSpins: box(1000, 170, 175, 115),

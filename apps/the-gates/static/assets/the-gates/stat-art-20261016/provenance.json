@@ -1,0 +1,17 @@
+{
+  "source": "User-supplied artwork; originals unchanged. Normal speed SVG reuses existing HUD circle and embeds supplied lightning.",
+  "assets": {
+    "tumble-gem.png": {
+      "original": "Glossy Blue Gem Badge 5.png",
+      "sha256": "ad580d987a99f4a387df71c8b43a2924b78d81fc2b41a8d9699fd344c1ca51cf"
+    },
+    "speed-outline.png": {
+      "original": "The Gates Slot Vector.png",
+      "sha256": "ff4bb0cfb096be38364b19e5aab4bd49cd3f0f07c02f402d4e1dac1a91a7f9e6"
+    },
+    "stat-frame.png": {
+      "original": "Gates Slot Game UI Frame 1 (1).png",
+      "sha256": "0eb909a332f994ae2c44043f0fc0154bdd74f1e445cb944f3d943aff1331efc5"
+    }
+  }
+}

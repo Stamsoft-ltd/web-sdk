@@ -1,13 +1,13 @@
 
 rainbow-wild.png
-size: 1254,1254
+size: 118,117
 format: RGBA8888
 filter: Linear,Linear
 repeat: none
 rainbow-wild
   rotate: false
   xy: 0, 0
-  size: 1254, 1254
-  orig: 1254, 1254
+  size: 118, 117
+  orig: 118, 117
   offset: 0, 0
   index: -1

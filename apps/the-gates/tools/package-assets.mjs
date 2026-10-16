@@ -81,9 +81,14 @@ export async function runtimeAssets() {
 	for (const file of [...Object.values(AUDIO_FILES), ...Object.values(MUSIC_FILES)])
 		add(`assets/the-gates/audio/${file}.mp3`);
 	add('assets/the-gates/audio/provenance.json');
+	add('assets/the-gates/stat-art-20261016/provenance.json');
 	// Distribution notices are required package dependencies, never unused artwork.
 	add('assets/the-gates/licenses/THIRD-PARTY.txt');
-	for (const file of ['press_play_p.webp', 'press_play_wordmark.webp', 'provenance.json'])
+	for (const file of [
+		'press_play_wordmark.webp',
+		'provenance.json',
+		...Array.from({ length: 10 }, (_, i) => `p0${i}.webp`),
+	])
 		add(`assets/the-gates/loading/${file}`);
 	for (const tier of ['base', 'normal', 'super', 'hidden'])
 		add(`assets/the-gates/portrait-20261015/${tier}-background.png`);
@@ -116,6 +121,8 @@ export async function runtimeAssets() {
 		add(`${ART_ROOT}wins/${key}-title.png`);
 		add(`${ART_ROOT}wins/${key}-banner.png`);
 	}
+	rig('./assets/the-gates/base-gate-20261016/', 'gate-base');
+	add('assets/the-gates/base-gate-20261016/provenance.json');
 	rig('./assets/the-gates/rainbow-wild-20261016/', 'WILD', 'symbols');
 	add('assets/the-gates/rainbow-wild-20261016/provenance.json');
 	// Every atlas page is a real loader dependency, including portal/spark layers.

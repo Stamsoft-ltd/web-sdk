@@ -167,13 +167,13 @@ test('autoplay counter sits below stop square with outlined white text; disabled
 	assert.match(style, /button:disabled \{\s*cursor: not-allowed/);
 });
 
-test('speed button shows one, two and three bolts for normal, fast and turbo', () => {
+test('speed button shows outline, one and two bolts for normal, fast and turbo', () => {
 	const game = readFileSync(new URL('../src/components/Game.svelte', import.meta.url), 'utf8');
 	assert.match(
 		game,
-		/speed === 'turbo'[\s\S]*hud\/speed-3.svg[\s\S]*speed === 'fast'[\s\S]*hud\/speed-2.svg/,
+		/speed === 'turbo'[\s\S]*hud\/speed-2.svg[\s\S]*speed === 'fast'[\s\S]*c8de1.svg[\s\S]*speed-normal.svg/,
 	);
-	for (const count of [2, 3]) {
+	for (const count of [2]) {
 		const art = readFileSync(
 			new URL(`../static/assets/the-gates/hud/speed-${count}.svg`, import.meta.url),
 			'utf8',

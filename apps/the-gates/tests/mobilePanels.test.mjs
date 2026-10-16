@@ -79,11 +79,9 @@ test('landscape bonus rail fits four framed cards above the bet selector without
 	assert.match(panels, /titleSize = portrait \? 11 : compact \? \(short \? 10 : 11\) : 20/);
 	assert.match(panels, /portrait \? 17 : compact \? \(short \? 16 : 21\) : 30/);
 });
-test('all four stat cards share desktop gold/blue frame; only desktop shows Remaining', () => {
-	for (const width of [360, 800, 1200])
-		assert.equal(statPanelLayout(width, 413, true).showRemaining, width === 1200);
+test('all four stat cards use ornate frames only on desktop; no Remaining label at any size', () => {
 	const panels = src('game/gpuPanels.ts');
-	assert.match(panels, /fsRemaining.visible = geometry.showRemaining/);
+	assert.doesNotMatch(panels, /fsRemaining|showRemaining|translate\('REMAINING'\)/);
 	for (const [frame, box] of [
 		['tumbleFrame', 'tb'],
 		['multiplierFrame', 'mb'],
@@ -92,10 +90,14 @@ test('all four stat cards share desktop gold/blue frame; only desktop shows Rema
 	])
 		assert.ok(panels.includes(`panel(${frame}, ${box}.width, ${box}.height)`));
 	const frame = panels.slice(panels.indexOf('const panel ='), panels.indexOf('let state:'));
-	assert.doesNotMatch(frame, /compact|portrait/);
-	assert.match(frame, /stroke\(\{ fill: gold/);
-	assert.match(frame, /color: 0x0c61f4/);
-	assert.match(src('components/ScenePanels.svelte'), /if panelState.width === 1200/);
+	assert.match(frame, /state\?\.width === 360 \|\| state\?\.width === 800/);
+	assert.match(frame, /frame.visible = !mobile/);
+	assert.match(frame, /fill: mobileGold/);
+	assert.match(panels, /new NineSliceSprite/);
+	assert.match(panels, /stat-art-20261016\/stat-frame.png/);
+	assert.match(panels, /stat-art-20261016\/tumble-gem.png/);
+	assert.doesNotMatch(panels, /String\(i \+ 1\)/);
+	assert.doesNotMatch(src('components/ScenePanels.svelte'), /REMAINING/);
 	const desktop = statPanelLayout(1200, 583, true);
 	assert.deepEqual(desktop.freeSpins, { x: 1000, y: 170, width: 175, height: 115 });
 	assert.deepEqual(desktop.totalWin, { x: 1000, y: 292, width: 175, height: 115 });

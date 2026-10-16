@@ -18,7 +18,9 @@
 		void import('../game/gpuPanels')
 			.then(({ createGpuPanels }) => {
 				if (dead) return;
-				owned = createGpuPanels(engine, stageHost, boardHost);
+				owned = createGpuPanels(engine, stageHost, boardHost, (error) => {
+					gpu.error = String(error);
+				});
 				renderer = owned;
 			})
 			.catch((error) => {
@@ -43,9 +45,7 @@
 	{panelState.progress}/3. {panelState.translate('MULTIPLIER')}
 	{panelState.multiplier}×.
 	{#if panelState.bonus}{panelState.translate('FREE SPINS')}
-		{panelState.freeSpin}/{panelState.totalFs}.
-		{#if panelState.width === 1200}{panelState.remaining}
-			{panelState.translate('REMAINING')}.{/if}{/if}
+		{panelState.freeSpin}/{panelState.totalFs}.{/if}
 	{panelState.caption}
 	{panelState.inline}
 </div>

@@ -1,10 +1,19 @@
 {
-  "source": "origin/feature/veggie-salad-v1",
-  "commit": "4090ad935",
-  "component": "PixelLoadingScreen.svelte",
-  "assets": [
-    "press_play_p.webp",
-    "press_play_wordmark.webp"
-  ],
-  "badge": "Procedural grey badge, red progress fill; original Veggie geometry."
+  "source": "origin/feature/mcschmutzo-v1",
+  "commit": "04bd7b214e4d096822b44d5e81c2152213f9c5d5",
+  "component": "PressPlayLoader.svelte",
+  "frames": {
+    "p00.webp": "9c33735243baff944ed349ed210462c3be9066c89e1ffccb4340c134b672db61",
+    "p01.webp": "bd310720eeec083fc57cab78b951dcd4426c6ed4194cdd9504c6e653614055da",
+    "p02.webp": "bd310720eeec083fc57cab78b951dcd4426c6ed4194cdd9504c6e653614055da",
+    "p03.webp": "1a2acbcaa2f46e8a5315ccf23e6d8e94d7591918788c6669492b9fd6ce8b1099",
+    "p04.webp": "df3c04da61a674b1d176f7898d10e5ec6cfab92c0c8b1d2e082ddfc68c9cb730",
+    "p05.webp": "6c3ab341ebed3df8f3b35afd0b6cd214c85c53b3121b36d937aee7f6f768aa7e",
+    "p06.webp": "15edc5ec90a4f6a054ea6c99ed987980df3871682e94bbfeb962b38b3099c0d5",
+    "p07.webp": "a3585f15449a8207193a63bf9fd7a24f09232f424d66b7e3bbe911f3d6db489a",
+    "p08.webp": "6c466af15038971b280cc4cbeebf446693f5943e4f91b1f9b30093313e932ce4",
+    "p09.webp": "8b0a1206d6e3703e67d3418633e82ba0861f965a8af5b6880483628a063743ca"
+  },
+  "wordmark": "Existing shared Press Play wordmark retained; originally from Veggie 4090ad935.",
+  "behavior": "Ten native frames, real progress 0\u2013100%, no synthetic loop; Gates base background darkened."
 }

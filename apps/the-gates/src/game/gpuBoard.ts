@@ -8,6 +8,7 @@ import { Container, Graphics, FillGradient, Sprite, Text } from 'pixi.js';
 import type { Board, SymbolName } from './contract';
 import { MOTION_ROOT, UI_ART_ROOT } from './art';
 import { loadAssetImage } from './imageAssets';
+import { symbolViewport } from './symbolFit';
 import { scatterCellScale, scatterOverFrame } from './scatterFit';
 import { boardGeometry } from './boardGeometry';
 import { ambientSymbolGlow, payingSymbolGlow } from './symbolGlow';
@@ -196,7 +197,7 @@ export function createGpuBoard(
 				});
 				gradients.set(gradientKey, gradient);
 			}
-			if (name === 'KEY') {
+			if (name === 'KEY' || name === 'WILD') {
 				const w = tile.width,
 					h = tile.height,
 					radius = Math.min(8, w * 0.08);
@@ -209,10 +210,9 @@ export function createGpuBoard(
 					.roundRect(4, 4, Math.max(1, w - 8), Math.max(1, h - 8), Math.max(1, radius - 2))
 					.fill(0x031222)
 					.roundRect(5.5, 5.5, Math.max(1, w - 11), Math.max(1, h - 11), Math.max(1, radius - 3))
-					.fill(0x0753c5);
+					.fill(name === 'WILD' && highlight ? gradient : 0x0753c5);
 				return;
 			}
-			const keyed = name === 'WILD';
 			tile.pad
 				.clear()
 				.roundRect(
@@ -224,9 +224,9 @@ export function createGpuBoard(
 				)
 				.fill(gradient)
 				.stroke({
-					width: keyed ? 2.5 : 1,
-					color: highlight || keyed ? 0xfbd332 : 0x46617e,
-					alpha: highlight || keyed ? 1 : 0.65,
+					width: 1,
+					color: highlight ? 0xfbd332 : 0x46617e,
+					alpha: highlight ? 1 : 0.65,
 				});
 		});
 	}
@@ -386,9 +386,7 @@ export function createGpuBoard(
 				const viewport =
 						tile.name === 'WILD'
 							? Math.max(pose.actor.data.width, pose.actor.data.height)
-							: tile.name?.endsWith('_GEM')
-								? 165
-								: 150,
+							: symbolViewport(tile.name),
 					scale =
 						tile.name === 'KEY'
 							? scatterCellScale(tile.width, tile.height)

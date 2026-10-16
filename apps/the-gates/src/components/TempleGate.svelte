@@ -6,7 +6,7 @@
 	import { REWARD_FLIGHT_START_MS } from '../game/rewardDelivery';
 	import { dingRewardArrival } from '../game/rewardAudio';
 	import { runtime, arriveGateReward } from '../game/playback.svelte';
-	import { MOTION_ROOT, PORTRAIT_ART_ROOT, artTier } from '../game/art';
+	import { MOTION_ROOT, PORTRAIT_ART_ROOT, BASE_GATE_ROOT, artTier } from '../game/art';
 	import { loadRig } from '../game/spine';
 	import { useGpu } from '../game/gpuContext';
 	import { gateCycleTracks, GATE_CYCLE } from '../game/gateAnimation';
@@ -16,7 +16,9 @@
 	let { rewardText }: { rewardText: string } = $props();
 	const gpu = useGpu(),
 		skin = $derived(
-			artTier(runtime.sceneTierOverride ? runtime.sceneTierOverride.tier : runtime.game.tier),
+			(runtime.sceneTierOverride ? runtime.sceneTierOverride.tier : runtime.game.tier) === null
+				? 'base'
+				: artTier(runtime.sceneTierOverride ? runtime.sceneTierOverride.tier : runtime.game.tier),
 		),
 		gateOpen = $derived(runtime.game.gateOpen && runtime.phase !== 'removing'),
 		gateEvent = $derived(`${runtime.roundId}:${runtime.game.gateEventId}`);
@@ -34,7 +36,11 @@
 			loadRig(
 				`gate-${tier}`,
 				`gate-${tier}`,
-				engine.app.screen.width < engine.app.screen.height ? PORTRAIT_ART_ROOT : MOTION_ROOT,
+				tier === 'base'
+					? BASE_GATE_ROOT
+					: engine.app.screen.width < engine.app.screen.height
+						? PORTRAIT_ART_ROOT
+						: MOTION_ROOT,
 				{ cycle: gateCycleTracks(event) },
 			),
 			loadRig('WILD', 'symbols'),

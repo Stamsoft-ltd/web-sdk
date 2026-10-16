@@ -862,10 +862,10 @@
 						onclick={changeSpeed}
 						><img
 							src={speed === 'turbo'
-								? './assets/the-gates/hud/speed-3.svg'
+								? './assets/the-gates/hud/speed-2.svg'
 								: speed === 'fast'
-									? './assets/the-gates/hud/speed-2.svg'
-									: `${UI_ART_ROOT}c8de1.svg`}
+									? `${UI_ART_ROOT}c8de1.svg`
+									: './assets/the-gates/stat-art-20261016/speed-normal.svg'}
 							alt=""
 						/></button
 					><button

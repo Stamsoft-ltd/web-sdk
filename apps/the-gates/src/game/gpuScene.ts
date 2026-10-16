@@ -435,19 +435,14 @@ export function createLoadingScene(engine: GpuEngine, host: HTMLElement) {
 	const root = new Container(),
 		shade = new Graphics(),
 		fallback = new Graphics(),
-		badge = new Graphics(),
-		fill = new Graphics(),
-		clip = new Graphics(),
 		brand = new Container();
-	brand.addChild(badge, fill, clip);
-	fill.mask = clip;
 	root.addChild(fallback, shade, brand);
 	let dead = false,
 		progress = 0,
-		displayed = 0,
 		base: Sprite | undefined,
 		portrait: Sprite | undefined,
 		p: Sprite | undefined,
+		frames: Texture[] = [],
 		word: Sprite | undefined;
 	const layout = () => {
 		const { width, height } = engine.app.screen;
@@ -457,30 +452,21 @@ export function createLoadingScene(engine: GpuEngine, host: HTMLElement) {
 			portrait.visible = width < height;
 			fitSprite(width < height ? portrait : base, { x: 0, y: 0, width, height }, true);
 		}
-		shade.clear().rect(0, 0, width, height).fill({ color: 0x000000, alpha: 0.5 });
-		// Current Veggie lockup, design 9298:295019: grey badge with red progress sweep.
-		const w = Math.min(width * 0.2962, height * 0.5306, 430),
-			size = (w * 86) / 355.479;
+		shade.clear().rect(0, 0, width, height).fill({ color: 0x000000, alpha: 0.62 });
+		// McSchmutzo's ten native fill frames, selected by real asset progress.
+		const size = Math.max(58, Math.min(108, width * 0.08)),
+			gap = Math.max(10, Math.min(26, width * 0.018)),
+			wordWidth = size * 2.65,
+			w = size + gap + wordWidth;
 		brand.position.set((width - w) / 2, (height - size) / 2);
-		badge
-			.clear()
-			.roundRect(0, 0, size, size, (size * 8) / 86)
-			.fill(0xe3e3e3);
-		fill
-			.clear()
-			.roundRect(0, 0, size, size, (size * 8) / 86)
-			.fill(0xd1300b);
-		clip
-			.clear()
-			.rect(0, 0, size * displayed, size)
-			.fill(0xffffff);
 		if (p && word) {
-			p.position.set(size * 0.3306, size * 0.2027);
-			p.width = size * 0.3488;
-			p.height = size * 0.5968;
-			word.width = (w * 237.479) / 355.479;
+			p.texture = frames[Math.min(9, Math.round(progress * 9))];
+			p.position.set(0, 0);
+			p.width = size;
+			p.height = size;
+			word.width = wordWidth;
 			word.height = (word.width * 49.117) / 237.479;
-			word.position.set(size + (w * 32) / 355.479, (size - word.height) / 2);
+			word.position.set(size + gap, (size - word.height) / 2);
 		}
 	};
 	const stop = engine.register({
@@ -488,27 +474,27 @@ export function createLoadingScene(engine: GpuEngine, host: HTMLElement) {
 		overlay: host,
 		priority: 50,
 		layout,
-		draw: (dt) => {
-			const target = progress >= 1 ? 1 : Math.min(0.95, progress);
-			displayed += (target - displayed) * (1 - Math.pow(0.92, dt * 60));
-			if (Math.abs(target - displayed) < 0.002) displayed = target;
-			layout();
-			return displayed !== target;
-		},
+		draw: () => false,
 	});
 	void Promise.all([
 		image(engine, `${UI_ART_ROOT}28fc1.png`),
 		image(engine, `${PORTRAIT_ART_ROOT}base-background.png`),
-		image(engine, './assets/the-gates/loading/press_play_p.webp'),
+		...Array.from({ length: 10 }, (_, i) =>
+			image(engine, `./assets/the-gates/loading/p0${i}.webp`),
+		),
 		image(engine, './assets/the-gates/loading/press_play_wordmark.webp'),
 	])
-		.then(([wide, tall, mark, wordmark]) => {
+		.then(([wide, tall, ...marks]) => {
+			const wordmark = marks.pop()!;
+			const mark = marks[0];
 			if (dead) {
-				for (const node of [wide, tall, mark, wordmark]) node.destroy();
+				for (const node of [wide, tall, ...marks, wordmark]) node.destroy();
 				return;
 			}
 			base = wide;
 			portrait = tall;
+			frames = marks.map((node) => node.texture);
+			for (const node of marks.slice(1)) node.destroy();
 			p = mark;
 			word = wordmark;
 			root.addChildAt(wide, 1);
@@ -520,6 +506,7 @@ export function createLoadingScene(engine: GpuEngine, host: HTMLElement) {
 	return {
 		update(next: number) {
 			progress = Math.max(0, Math.min(1, next));
+			layout();
 			engine.invalidate();
 		},
 		destroy() {

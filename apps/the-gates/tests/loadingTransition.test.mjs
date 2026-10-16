@@ -9,15 +9,13 @@ import {
 	LANDING_EXIT_MS,
 } from '../src/game/entryMotion.ts';
 const src = (p) => readFileSync(new URL('../src/' + p, import.meta.url), 'utf8');
-test('current Veggie loader uses separate P/wordmark and procedural progress, not obsolete atlas', () => {
+test('current McSchmutzo loader selects ten native frames from real progress', () => {
 	const code = src('game/gpuScene.ts');
-	assert.match(code, /press_play_p.webp/);
+	assert.match(code, /length: 10/);
+	assert.match(code, /loading\/p0\$\{i\}.webp/);
+	assert.match(code, /Math.min\(9, Math.round\(progress \* 9\)\)/);
 	assert.match(code, /press_play_wordmark.webp/);
-	assert.match(code, /0xe3e3e3/);
-	assert.match(code, /0xd1300b/);
-	assert.match(code, /fill.mask = clip/);
-	assert.match(code, /Math.min\(0.95, progress\)/);
-	assert.doesNotMatch(code, /loading_bar|loaderFrame\(/);
+	assert.doesNotMatch(code, /fill.mask = clip|press_play_p.webp/);
 });
 test('landing cards drop left to right before logo; exit drops cards and brings game from above', () => {
 	assert.deepEqual(landingIntroFrame(0).cards, [1, 1, 1]);
@@ -58,8 +56,8 @@ test('bonus presentation accepts tap and Enter after guard but not while doors t
 test('loader dims native base background and keeps lockup on its own bright layer', () => {
 	const scene = src('game/gpuScene.ts');
 	assert.match(scene, /PORTRAIT_ART_ROOT\}base-background.png/);
-	assert.match(scene, /alpha: 0.5/);
-	assert.match(scene, /355.479/);
+	assert.match(scene, /alpha: 0.62/);
+	assert.match(scene, /wordWidth = size \* 2.65/);
 	assert.match(scene, /shade, brand/);
 });
 

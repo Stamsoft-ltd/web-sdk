@@ -1,3 +1,4 @@
+import { BASE_GATE_ROOT } from './art';
 import { bonusScatterKeys, SCATTER_CELEBRATION_MS } from './scatterCelebration';
 import { playGameSound, stopGameSounds } from './audio';
 import { TUMBLE_FLIGHT_MS, TUMBLE_ARRIVAL_MS, tumbleFlightTiming } from './tumbleFlight';
@@ -273,9 +274,10 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 			if (pendingBonus && bonusEntryBoundary(e)) await enterBonus();
 			if (e.type === 'reveal' && !runtime.reduced) {
 				// Resolve symbol textures before starting gravity/contact clocks on cold loads.
-				const tier = artTier(
-					runtime.sceneTierOverride ? runtime.sceneTierOverride.tier : runtime.game.tier,
-				);
+				const activeTier = runtime.sceneTierOverride
+					? runtime.sceneTierOverride.tier
+					: runtime.game.tier;
+				const tier = activeTier === null ? 'base' : artTier(activeTier);
 				const names = new Set(e.board.flat().flatMap((cell) => (cell ? [cell.name] : [])));
 				await Promise.all(
 					Array.from(names, (name) =>
@@ -317,11 +319,16 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 			}
 			if (e.type === 'gateOpen') {
 				// Decode before starting the visible clock: never jump into a late closed pose.
-				const tier = artTier(
-					runtime.sceneTierOverride ? runtime.sceneTierOverride.tier : runtime.game.tier,
-				);
+				const activeTier = runtime.sceneTierOverride
+					? runtime.sceneTierOverride.tier
+					: runtime.game.tier;
+				const tier = activeTier === null ? 'base' : artTier(activeTier);
 				try {
-					await loadRig(`gate-${tier}`, `gate-${tier}`, MOTION_ROOT);
+					await loadRig(
+						`gate-${tier}`,
+						`gate-${tier}`,
+						tier === 'base' ? BASE_GATE_ROOT : MOTION_ROOT,
+					);
 				} catch (error) {
 					console.warn('Gate animation unavailable:', error);
 				}

@@ -21,3 +21,5 @@ export const SYMBOL_ART: Partial<Record<SymbolName, string>> = {
 };
 
 export const PORTRAIT_ART_ROOT = './assets/the-gates/portrait-20261015/';
+
+export const BASE_GATE_ROOT = './assets/the-gates/base-gate-20261016/';
