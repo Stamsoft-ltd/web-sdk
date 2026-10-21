@@ -22,6 +22,9 @@ try {
 			{
 				name: 'svelte-server-test',
 				setup(build) {
+					// The Vite-only preload manifest (vite.config.js) is an empty list under test.
+					build.onResolve({ filter: /^virtual:preload-list$/ }, () => ({ path: 'preload-list', namespace: 'virtual' }));
+					build.onLoad({ filter: /.*/, namespace: 'virtual' }, () => ({ contents: 'export default [];', loader: 'js' }));
 					build.onLoad({ filter: /\.svelte$/ }, (args) => ({
 						contents: compile(readFileSync(args.path, 'utf8'), {
 							filename: args.path,

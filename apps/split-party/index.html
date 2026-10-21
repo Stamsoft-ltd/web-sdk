@@ -2,11 +2,69 @@
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 		<meta name="theme-color" content="#53478b" />
 		<title>Blob Split · Split Party</title>
+		<!-- No favicon ships; an empty one stops the browser's /favicon.ico request (a 404 per load). -->
+		<link rel="icon" href="data:," />
+		<link rel="preload" as="image" href="./loader/p00.webp" />
+		<link rel="preload" as="font" type="font/woff2" href="./fonts/poppins-400-latin.woff2" crossorigin />
+		<!-- The loading screen's first frame, painted before any script runs: the same layout as
+		     components/Loading.svelte, which removes #boot once it has mounted over it. -->
+		<style>
+			@font-face {
+				font-family: 'Poppins';
+				src: url('/fonts/poppins-400-latin.woff2') format('woff2');
+				font-weight: 400;
+				font-display: swap;
+			}
+			html,
+			body {
+				margin: 0;
+				height: 100%;
+				background: #2b2560;
+			}
+			#boot {
+				position: fixed;
+				inset: 0;
+				z-index: 22;
+				display: grid;
+				place-items: center;
+				background: #5b4fd6 url('/splash/sky-bg.webp') center / cover no-repeat;
+				user-select: none;
+			}
+			#boot::before {
+				content: '';
+				position: absolute;
+				inset: 0;
+				background: rgb(0 0 0 / 0.62);
+			}
+			#boot .mark {
+				position: relative;
+				display: flex;
+				align-items: center;
+				gap: clamp(10px, 1.8vw, 26px);
+			}
+			#boot img {
+				display: block;
+				width: clamp(58px, 8vw, 108px);
+				aspect-ratio: 1;
+				filter: drop-shadow(0 6px 14px rgb(0 0 0 / 0.5));
+			}
+			#boot span {
+				font-family: 'Poppins', sans-serif;
+				font-weight: 400;
+				color: #fff;
+				font-size: clamp(26px, 3.6vw, 52px);
+				letter-spacing: 0.005em;
+				text-shadow: 0 2px 8px rgb(0 0 0 / 0.5);
+			}
+		</style>
 	</head>
 	<body>
+		<div id="boot" aria-hidden="true">
+			<div class="mark"><img src="./loader/p00.webp" alt="" draggable="false" /><span>Press Play</span></div>
+		</div>
 		<div id="app"></div>
 		<script type="module" src="/src/main.ts"></script>
 	</body>

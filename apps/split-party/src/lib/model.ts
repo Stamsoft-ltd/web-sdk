@@ -1,4 +1,6 @@
-export const MODES = { base: 1, feature: 50, normal: 100, super: 500, mystery: 500 } as const;
+// Bet modes and their cost multipliers, as the math publishes them. extra_chance is the base
+// game at 2x cost with a raised bonus trigger rate (the Extra feature toggle).
+export const MODES = { base: 1, extra_chance: 2, feature: 50, normal: 100, super: 500, mystery: 500 } as const;
 export type Mode = keyof typeof MODES;
 export const SYMBOLS = [
 	'WATERMELON',

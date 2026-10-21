@@ -1022,6 +1022,9 @@ importers:
       '@lingui/core':
         specifier: 5.2.0
         version: 5.2.0(@lingui/babel-plugin-lingui-macro@5.2.0(babel-plugin-macros@3.1.0)(typescript@5.8.3))(babel-plugin-macros@3.1.0)
+      pixi.js:
+        specifier: 8.8.1
+        version: 8.8.1
       rgs-requests:
         specifier: workspace:*
         version: link:../../packages/rgs-requests

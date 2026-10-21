@@ -21,6 +21,9 @@ export function launch(search: string) {
 		mode: (p.get('mode') ?? 'base').toLowerCase() as Mode,
 		amount: Number(p.get('amount') ?? 1000000),
 		currency: p.get('currency') ?? 'USD',
+		// Preview only: jurisdiction flags to switch on (e.g. displaySessionTimer,displayNetPosition),
+		// so their UI can be checked without an RGS. Ignored outside demo.
+		flags: (p.get('jurisdiction') ?? '').split(',').filter(Boolean),
 	};
 }
 export type Launch = ReturnType<typeof launch>;
@@ -36,7 +39,7 @@ export function createTransport(q: Launch) {
 					config: {
 						betLevels: [0.1, 0.2, 0.5, 1, 2, 5, 10].map((x) => x * 1e6),
 						defaultBetLevel: 1e6,
-						jurisdiction: {},
+						jurisdiction: Object.fromEntries(q.flags.map((f) => [f, true])),
 					},
 					round: pending,
 				};

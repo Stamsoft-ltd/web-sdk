@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import Logo from './Logo.svelte';
 	import Blob from './Blob.svelte';
+	import JellyDome from './JellyDome.svelte';
+	import SkyClouds from './SkyClouds.svelte';
 	import DOMES from '../lib/splash-domes.json';
 
 	// Splash, built from Figma 9078:18632 (1200×670 frame). Landscape keeps the frame's
@@ -41,67 +43,79 @@
 
 	const start = () => ready && onstart();
 
+	// The split card's blob keeps dividing: 1 → 2 → 3 → 4 → 6, then starts over.
+	const SPLIT_STEPS = [1, 2, 3, 4, 6];
+	let splitStep = $state(0);
+	let splitUnits = $derived(SPLIT_STEPS[splitStep]);
+	$effect(() => {
+		const id = setInterval(() => (splitStep = (splitStep + 1) % SPLIT_STEPS.length), 1600);
+		return () => clearInterval(id);
+	});
+
+	// The max win counts up once its card has revealed (keep in step with --in on .card-2 + --at on .max-big).
+	const MAX_WIN = 20000;
+	// Translated titles run longer than the design's ("Split for / bigger wins"): the font
+	// shrinks with the longest line past what the box holds at the design size.
+	const titleFit = (text: string, px: number, chars: number) =>
+		`font-size:${(px * Math.min(1, chars / Math.max(...text.split('\n').map((l) => l.length)))).toFixed(1)}px`;
+	let maxWin = $state(0);
+	const maxWinText = $derived(`${Math.round(maxWin).toLocaleString('en-US')}×`);
+	onMount(() => {
+		if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+			maxWin = MAX_WIN;
+			return;
+		}
+		let raf = 0;
+		const timer = setTimeout(() => {
+			const t0 = performance.now();
+			const tick = (t: number) => {
+				// The first rAF timestamp can predate t0 (it's the frame's start): clamp, or the
+				// counter opens on a negative number.
+				const k = Math.min(1, Math.max(0, (t - t0) / 900));
+				maxWin = MAX_WIN * (1 - (1 - k) ** 3);
+				if (k < 1) raf = requestAnimationFrame(tick);
+			};
+			raf = requestAnimationFrame(tick);
+		}, 750);
+		return () => (clearTimeout(timer), cancelAnimationFrame(raf));
+	});
+
 	// Sky (Figma 11174:5004, a 1200×670 frame): cover-scaled behind the stage. The seascape and
 	// its jelly domes are one baked image; clouds drift with the wind at random heights, sizes
 	// and depths (far = small, soft, slow) and respawn off-screen; the islands only bob.
 	const SKY = { w: 1200, h: 670 };
 	let skyScale = $derived(Math.max(vw / SKY.w, vh / SKY.h) * 1.04);
-	type Cloud = { id: number; far: boolean; y: number; w: number; dur: number; delay: number; alpha: number };
-	let cloudId = 0;
-	const rand = (a: number, b: number) => a + Math.random() * (b - a);
-	function cloud(midway: boolean): Cloud {
-		const far = Math.random() < 0.5;
-		const w = far ? rand(140, 200) : rand(300, 430);
-		// px/s: near clouds pass at ~22, far ones at ~9, so depth reads from parallax.
-		const dur = (SKY.w + w + 80) / (far ? rand(7, 11) : rand(18, 26));
-		return {
-			id: cloudId++,
-			far,
-			y: far ? rand(30, 165) : rand(10, 120),
-			w,
-			dur,
-			delay: midway ? -rand(0.05, 0.95) * dur : rand(0, 7),
-			alpha: far ? rand(0.5, 0.7) : 0.7,
-		};
-	}
-	// Five of the jelly domes (11174:5006/5010/5011/5012/5014) live as bubbles: each blows up
-	// at a random moment after the logo lands, rests, bursts into droplets and vanishes, then
-	// blows up again later. The other four stay put.
-	type Phase = 'wait' | 'blow' | 'rest' | 'burst';
-	const drops = (size: number) =>
-		Array.from({ length: 7 }, (_, i) => {
-			const a = -Math.PI * (0.1 + (0.8 * (i + Math.random() * 0.6)) / 7);
-			const r = size * rand(0.35, 0.6);
-			return { dx: Math.cos(a) * r, dy: Math.sin(a) * r, s: rand(5, 11) };
-		});
-	let domes = $state(
-		DOMES.map((d) => ({ ...d, phase: (d.pop ? 'wait' : 'rest') as Phase, n: 0, drops: drops(d.size) })),
-	);
-	onMount(() => {
-		if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-			domes.forEach((d) => (d.phase = 'rest'));
-			return;
-		}
-		const timers = new Set<ReturnType<typeof setTimeout>>();
-		const later = (ms: number, fn: () => void) => {
-			const t = setTimeout(() => (timers.delete(t), fn()), ms);
-			timers.add(t);
-		};
-		const step = (i: number, phase: Phase) => {
-			const d = domes[i];
-			d.phase = phase;
-			d.n++;
-			if (phase === 'blow' || phase === 'burst') d.drops = drops(d.size);
-			if (phase === 'blow') later(950, () => step(i, 'rest'));
-			else if (phase === 'rest') later(rand(2500, 7500), () => step(i, 'burst'));
-			else if (phase === 'burst') later(420, () => step(i, 'wait'));
-			else later(rand(1200, 4800), () => step(i, 'blow'));
-		};
-		domes.forEach((d, i) => d.pop && later(rand(900, 3400), () => step(i, 'blow')));
-		return () => timers.forEach(clearTimeout);
+	// The sea in sky-bg is one still painting (horizon y≈388, shore foam y≈494–527), so a
+	// layer over it brings it to life: wave caps that swell and roll shoreward, glints near
+	// the horizon, and foam that laps the beach. SEA_TOP is the layer's offset in frame px.
+	const SEA_TOP = 380;
+	// Shore foam centre line, traced from sky-bg every 50 frame px.
+	const SHORE = [494, 497, 500, 504, 508, 514, 517, 521, 525, 527, 526, 524, 522, 518, 516, 515, 515, 516, 520, 521, 521, 518, 517, 515, 510];
+	const shorePath = (dy: number) => {
+		const p = SHORE.map((y, i) => [i * 50, y - SEA_TOP + dy]);
+		let d = `M${p[0][0]},${p[0][1]}`;
+		for (let i = 1; i < p.length - 1; i++)
+			d += ` Q${p[i][0]},${p[i][1]} ${(p[i][0] + p[i + 1][0]) / 2},${(p[i][1] + p[i + 1][1]) / 2}`;
+		return d + ` L${p.at(-1)![0]},${p.at(-1)![1]}`;
+	};
+	// Caps get longer, thicker and slower toward the viewer (y is in frame px).
+	const CAPS = [
+		[470, 404, 60], [700, 409, 70], [880, 400, 50], [350, 414, 80], [590, 420, 90],
+		[760, 432, 120], [420, 441, 110], [960, 446, 120], [300, 456, 140], [640, 462, 150],
+		[850, 474, 170], [480, 482, 180], [700, 491, 160],
+	].map(([x, y, w], i) => {
+		const t = (y - 400) / 95; // 0 at the horizon, 1 near the shore
+		return { x, y: y - SEA_TOP, w, h: 3 + t * 4, dur: 4.2 + t * 2.4, delay: -((i * 1.37) % 5.5), drift: 10 + t * 22 };
 	});
-	let clouds = $state(Array.from({ length: 5 }, () => cloud(true)));
-	const respawn = (id: number) => (clouds = clouds.map((c) => (c.id === id ? cloud(false) : c)));
+	const GLINTS = [
+		[520, 398], [640, 405], [760, 397], [905, 411], [380, 407], [575, 427], [830, 423], [690, 444],
+	].map(([x, y], i) => ({ x, y: y - SEA_TOP, s: 7 + ((i * 5) % 6), delay: -((i * 0.83) % 3.6) }));
+	// One cloud per height band: near up top, far in the middle, a second near one lower down.
+	const CLOUD_LANES: { far: boolean; y: [number, number] }[] = [
+		{ far: false, y: [28, 45] },
+		{ far: true, y: [138, 155] },
+		{ far: false, y: [212, 230] },
+	];
 </script>
 
 <svelte:window bind:innerWidth={vw} bind:innerHeight={vh} />
@@ -113,47 +127,46 @@
 		aria-hidden="true"
 		style={`width:${SKY.w}px;height:${SKY.h}px;transform:translate(-50%,-50%) scale(${skyScale})`}
 	>
-		<img class="sky-bg" src="/splash/sky-bg.webp" alt="" />
-		{#each domes as d (d.node)}
-			<div
-				class="dome"
-				style={`left:${d.x}px;top:${d.y}px;width:${d.size}px;height:${d.size}px;--ox:${d.ox}px;--oy:${d.oy}px;--c:${d.color}`}
-			>
-				<img class={d.phase} src={d.src} alt="" />
-				{#if d.phase === 'blow' || d.phase === 'burst'}
-					{#key d.n}
-						<span class="dome-burst" class:now={d.phase === 'burst'}>
-							<span class="dome-ring"></span>
-							{#each d.drops as p}<span
-									class="dome-drop"
-									style={`--dx:${p.dx.toFixed(1)}px;--dy:${p.dy.toFixed(1)}px;width:${p.s.toFixed(1)}px;height:${p.s.toFixed(1)}px`}
-								></span>{/each}
-						</span>
-					{/key}
-				{/if}
+		<div class="sky-base">
+			<img class="sky-bg" src="./splash/sky-bg.webp" alt="" />
+			<div class="sea" style={`top:${SEA_TOP}px`}>
+				{#each CAPS as c}
+					<span
+						class="sea-cap"
+						style={`left:${c.x}px;top:${c.y}px;width:${c.w}px;height:${c.h.toFixed(1)}px;--drift:${c.drift.toFixed(0)}px;animation-duration:${c.dur.toFixed(1)}s;animation-delay:${c.delay.toFixed(2)}s`}
+					></span>
+				{/each}
+				{#each GLINTS as g}
+					<span
+						class="sea-glint"
+						style={`left:${g.x}px;top:${g.y}px;width:${g.s}px;height:${g.s}px;animation-delay:${g.delay.toFixed(2)}s`}
+					></span>
+				{/each}
+				<svg class="sea-shore" width={SKY.w} height="170" viewBox={`0 0 ${SKY.w} 170`}>
+					<g class="foam-in">
+						<path d={shorePath(-16)} class="foam-soft" />
+						<path d={shorePath(-16)} class="foam-line" />
+					</g>
+					<g class="foam-lap">
+						<path d={shorePath(-3)} class="foam-soft" />
+						<path d={shorePath(-3)} class="foam-line" />
+					</g>
+				</svg>
 			</div>
+		</div>
+		<!-- Five of the jelly domes (11174:5006/5010/5011/5012/5014) live as bubbles; the other four stay put. -->
+		{#each DOMES as d (d.node)}
+			<JellyDome src={d.src} x={d.x} y={d.y} w={d.size} ox={d.ox} oy={d.oy} color={d.color} pop={d.pop} />
 		{/each}
 		<!-- Islands 11174:5015 / 11174:5016; the baked blur margin is outside the art box. -->
-		<img class="island" src="/splash/island.webp" alt="" style="left:131px;top:39px;width:105px" />
+		<img class="island" src="./splash/island.webp" alt="" style="left:131px;top:39px;width:105px" />
 		<img
 			class="island island-2"
-			src="/splash/island.webp"
+			src="./splash/island.webp"
 			alt=""
 			style="left:996px;top:142px;width:90px"
 		/>
-		{#each clouds as c (c.id)}
-			<div
-				class="cloud"
-				style={`top:${c.y.toFixed(0)}px;--w:${c.w.toFixed(0)}px;animation-duration:${c.dur.toFixed(1)}s;animation-delay:${c.delay.toFixed(1)}s`}
-				onanimationend={(e) => e.target === e.currentTarget && respawn(c.id)}
-			>
-				<img
-					src={c.far ? '/splash/cloud-far.webp' : '/splash/cloud.webp'}
-					alt=""
-					style={`opacity:${c.alpha.toFixed(2)};animation-delay:${(-c.dur * 0.37).toFixed(1)}s`}
-				/>
-			</div>
-		{/each}
+		<SkyClouds lanes={CLOUD_LANES} width={SKY.w} />
 	</div>
 	<div
 		class="splash-fit"
@@ -162,9 +175,9 @@
 	>
 		<section class="splash-stage" role="dialog" aria-modal="true" aria-label="Blob Split">
 			<div class="studio-badge" aria-hidden="true">
-				<img class="studio-mark" src="/splash/studio-mark.svg" alt="" /><img
+				<img class="studio-mark" src="./splash/studio-mark.svg" alt="" /><img
 					class="studio-word"
-					src="/splash/studio-word.svg"
+					src="./splash/studio-word.svg"
 					alt=""
 				/>
 			</div>
@@ -177,20 +190,18 @@
 				<span class="peeker peek-yellow" aria-hidden="true"
 					><span class="peek-face"><Blob symbol="LEMON" uid="peek-yellow" /></span></span
 				>
-				<img class="card-frame" src="/splash/panel.webp" alt="" />
-				<h2 class="card-title green">BONUS<br />GAMES</h2>
-				<ul class="tiers">
-					<li><b>3</b> scatters for<em class="first">Gravity Breach</em></li>
-					<li><b>4</b> scatters for<em>Core Overload</em></li>
-					<li><b>5</b> scatters for<em>Zero Point Protocol</em></li>
-				</ul>
+				<img class="card-frame" src="./splash/panel.webp" alt="" />
+				<h2 class="card-title green long" data-shine={tr('SPLASH SPLIT TITLE')} style={titleFit(tr('SPLASH SPLIT TITLE'), 23, 12)}>{tr('SPLASH SPLIT TITLE')}</h2>
+				<!-- One blob dividing over and over, up to the tile's 6. -->
+				<span class="split-art" aria-hidden="true"><Blob symbol="KIWI" units={splitUnits} uid="splash-split" /></span>
+				<p class="card-copy">{tr('SPLASH SPLIT TEXT')}</p>
 			</div>
 
 			<div class="card card-2" class:active={slide === 1}>
-				<img class="card-frame" src="/splash/panel.webp" alt="" />
-				<h2 class="card-title pink polarity">Polarity Shifter</h2>
-				<div class="egg" aria-hidden="true"><div class="egg-body"><img src="/splash/egg.webp" alt="" /></div></div>
-				<p class="card-copy">Slams all symbols toward one wall — Left, Right, Up, or Down!</p>
+				<img class="card-frame" src="./splash/panel.webp" alt="" />
+				<h2 class="card-title yellow maxwin" data-shine={tr('SPLASH MAX TITLE')} style={titleFit(tr('SPLASH MAX TITLE'), 36, 8)}>{tr('SPLASH MAX TITLE')}</h2>
+				<strong class="max-big" data-shine={maxWinText}>{maxWinText}</strong>
+				<p class="card-copy max-copy">{tr('SPLASH MAX TEXT')}</p>
 			</div>
 
 			<div class="card card-3" class:active={slide === 2}>
@@ -200,11 +211,10 @@
 				<span class="peeker peek-purple" aria-hidden="true"
 					><span class="peek-face"><Blob symbol="GRAPES" uid="peek-purple" /></span></span
 				>
-				<img class="card-frame" src="/splash/panel.webp" alt="" />
-				<h2 class="card-title yellow maxwin">MAX<br />WIN</h2>
-				<p class="max-line upto">up to</p>
-				<strong class="max-big">20'000X</strong>
-				<p class="max-line multiplier">multiplier</p>
+				<img class="card-frame" src="./splash/panel.webp" alt="" />
+				<h2 class="card-title pink long" data-shine={tr('SPLASH BONUS TITLE')} style={titleFit(tr('SPLASH BONUS TITLE'), 23, 12)}>{tr('SPLASH BONUS TITLE')}</h2>
+				<div class="egg" aria-hidden="true"><div class="egg-body"><img src="./splash/egg.webp" alt="" /></div></div>
+				<p class="card-copy">{tr('SPLASH BONUS TEXT')}</p>
 			</div>
 
 			{#if portrait}
@@ -233,6 +243,9 @@
 		overflow: hidden;
 		background: #5b4fd6;
 		user-select: none;
+		/* Its own layer from the start, so the ×9 zoom into the island (App enterGame) scales
+		   that layer instead of re-painting the whole splash at up to 9× resolution. */
+		will-change: transform;
 	}
 	.splash.ready {
 		cursor: pointer;
@@ -245,57 +258,69 @@
 		overflow: hidden;
 		pointer-events: none;
 	}
+	/* The painting and its live sea shake as one piece. */
+	.sky-base {
+		position: absolute;
+		inset: 0;
+		animation: splash-shake 0.6s 0.45s both;
+	}
 	.sky-bg {
 		position: absolute;
 		inset: 0;
 		width: 100%;
 		height: 100%;
-		animation: splash-shake 0.6s 0.72s both;
 	}
-	.dome {
+	.sea {
 		position: absolute;
+		left: 0;
+		width: 1200px;
+		height: 170px;
+		/* The painting is soft-focus; unblurred caps and foam would read as stickers. */
+		filter: blur(1.2px);
 	}
-	.dome img {
-		display: block;
-		width: 100%;
-		height: 100%;
-		transform-origin: var(--ox) var(--oy);
-	}
-	.dome img.wait {
-		opacity: 0;
-	}
-	.dome img.blow {
-		animation: dome-blow 0.95s both;
-	}
-	.dome img.burst {
-		animation: dome-pop 0.32s ease-in forwards;
-	}
-	/* Droplets fly at the blow-up's pop (54% of dome-blow) or right away on a burst. */
-	.dome-burst {
-		--pd: 0.5s;
-	}
-	.dome-burst.now {
-		--pd: 0s;
-	}
-	.dome-ring,
-	.dome-drop {
+	/* A wave cap: swells in, stretches as it rolls a little shoreward, then breaks up. */
+	.sea-cap {
 		position: absolute;
-		left: var(--ox);
-		top: calc(var(--oy) * 0.55);
 		border-radius: 50%;
-		pointer-events: none;
+		background: radial-gradient(closest-side, #fffe 0 25%, #fff0);
+		opacity: 0;
+		animation: sea-cap ease-in-out infinite;
 	}
-	.dome-ring {
-		width: 40%;
-		aspect-ratio: 1;
-		border: 3px solid color-mix(in srgb, var(--c), white 45%);
+	.sea-glint {
+		position: absolute;
 		translate: -50% -50%;
-		animation: dome-ring 0.5s ease-out var(--pd) both;
+		background:
+			linear-gradient(#fff, #fff) center / 100% 18% no-repeat,
+			linear-gradient(#fff, #fff) center / 18% 100% no-repeat;
+		border-radius: 50%;
+		opacity: 0;
+		animation: sea-glint 3.6s ease-in-out infinite;
 	}
-	.dome-drop {
-		background: radial-gradient(circle at 35% 30%, #fffc 0 18%, var(--c) 30%);
-		translate: -50% -50%;
-		animation: dome-drop 0.75s cubic-bezier(0.2, 0.6, 0.4, 1) var(--pd) both;
+	.sea-shore {
+		position: absolute;
+		left: 0;
+		top: 0;
+		overflow: visible;
+	}
+	.sea-shore path {
+		fill: none;
+		stroke: #fff;
+		stroke-linecap: round;
+	}
+	.foam-soft {
+		stroke-width: 9;
+		stroke-opacity: 0.25;
+	}
+	.foam-line {
+		stroke-width: 3.5;
+		stroke-dasharray: 46 9 22 6 70 12;
+		animation: foam-flow 9s linear infinite;
+	}
+	.foam-lap {
+		animation: foam-lap 4.6s ease-in-out infinite;
+	}
+	.foam-in {
+		animation: foam-in 4.6s ease-in infinite;
 	}
 	.island {
 		position: absolute;
@@ -304,18 +329,6 @@
 	.island-2 {
 		animation-duration: 7.6s;
 		animation-delay: -3.1s;
-	}
-	.cloud {
-		position: absolute;
-		left: 0;
-		width: var(--w);
-		animation: cloud-drift linear both;
-	}
-	.cloud img {
-		display: block;
-		width: 100%;
-		transform-origin: 50% 80%;
-		animation: cloud-breathe 11s ease-in-out infinite;
 	}
 	.splash-fit {
 		position: absolute;
@@ -331,7 +344,7 @@
 		font-family: 'Coiny', 'Blob Display', ui-rounded, sans-serif;
 		font-weight: 400;
 		text-align: center;
-		animation: splash-shake 0.6s 0.72s both;
+		animation: splash-shake 0.6s 0.45s both;
 	}
 	.studio-badge {
 		position: absolute;
@@ -362,26 +375,76 @@
 		width: 436px;
 		height: 218px;
 		transform-origin: 50% 100%;
-		animation: logo-drop 1.05s 0.15s both;
+		animation: logo-drop 0.75s 0.05s both;
 	}
 
-	/* Cards: 273×410 frames; every child is placed at its Figma offset from the card. */
+	/* Cards: 273×410 frames; every child is placed at its Figma offset from the card.
+	   As the logo lands (0.45s) they rise in one after another (--d), then their content
+	   reveals line by line from --in, and they keep floating gently. The whole reveal is done
+	   by ~1.1s (card 3's copy: 0.39 + 0.2 + 0.2 + 0.3). Motion uses the
+	   individual translate/scale properties: children are centred with transform, and
+	   portrait cards are scaled with it. */
 	.card {
 		position: absolute;
 		width: 273px;
 		height: 410px;
+		--in: calc(var(--d) + 0.2s);
+		animation:
+			card-rise 0.45s var(--d) both,
+			card-float 5.2s calc(var(--d) + 0.45s) ease-in-out infinite;
 	}
 	.card-1 {
 		left: 183px;
 		top: 250px;
+		--d: 0.25s;
 	}
 	.card-2 {
 		left: 464px;
 		top: 250px;
+		--d: 0.32s;
 	}
 	.card-3 {
 		left: 748px;
 		top: 248px;
+		--d: 0.39s;
+	}
+	/* Content reveal: each line pops up in its turn (--at, after the card's --in). */
+	.card-title,
+	.card-copy,
+	.max-big {
+		animation: line-in 0.3s cubic-bezier(0.2, 0.8, 0.3, 1.2) calc(var(--in) + var(--at, 0s)) both;
+	}
+	.card-copy {
+		--at: 0.2s;
+	}
+	.max-big {
+		--at: 0.12s;
+	}
+	/* Titles and the max win catch a light now and then: a white copy of the text (data-shine)
+	   glints over it. Opacity only, so the glint runs on the compositor (it used to sweep a
+	   background-position, a repaint of the clipped text every frame). */
+	.card-title,
+	.max-big {
+		color: var(--c);
+	}
+	.card-title::after,
+	.max-big::after {
+		content: attr(data-shine);
+		position: absolute;
+		inset: 0;
+		color: #fff;
+		opacity: 0;
+		pointer-events: none;
+		animation: shine 5.5s ease-in-out calc(var(--in) + var(--at, 0s) + var(--shine, 1s)) infinite;
+	}
+	.card-2 .card-title {
+		--shine: 2.6s;
+	}
+	.card-3 .card-title {
+		--shine: 4.2s;
+	}
+	.max-big {
+		--shine: 2s;
 	}
 	.card-frame {
 		position: absolute;
@@ -408,64 +471,60 @@
 		top: 58px;
 		width: 160px;
 		line-height: 1;
-		color: #94f051;
+		--c: #94f051;
 	}
 	.card-title.pink {
 		left: 136px;
 		width: 236px;
-		color: #f782fe;
-		text-transform: uppercase;
+		--c: #f782fe;
 	}
 	.card-title.yellow {
 		left: 136.5px;
-		width: 115px;
-		color: #fece06;
+		/* Wide enough for the translated titles ("MAX. GEWINN", "PREMIO MÁXIMO"). */
+		width: 236px;
+		--c: #fece06;
 	}
-	.tiers {
-		left: 137px;
-		top: 153px;
-		width: 226px;
-		padding: 0;
-		list-style: none;
-		display: grid;
-		gap: 9px;
-		color: #d7d7d7;
-		font-size: 17.707px;
-		letter-spacing: 0.62px;
-	}
-	.tiers li {
-		line-height: 1.12;
-	}
-	.tiers b {
-		font-weight: 400;
-		font-size: 25.085px;
-		color: #f782fe;
-	}
-	.tiers em {
-		display: block;
-		font-style: normal;
-		font-size: 16px;
-		letter-spacing: 0.48px;
+	.card-title {
 		text-transform: uppercase;
-		color: #fdcd06;
-		white-space: nowrap;
+		/* The i18n titles carry their line break as "\n". */
+		white-space: pre-line;
 	}
-	/* Figma's first tier row is taller (37px name offset vs 28px for the others). */
-	.tiers em.first {
-		margin: 9px 0 7px;
+	/* Two-line titles too wide for 36px. */
+	.card-title.long {
+		top: 52px;
+		width: 236px;
+		font-size: 23px;
+		letter-spacing: 0.6px;
+		line-height: 1.08;
+	}
+	.split-art {
+		left: 136.5px;
+		top: 124px;
+		width: 132px;
+		height: 122px;
+		display: block;
+		--divide-ms: 900ms;
+		animation: egg-show 0.25s calc(var(--in) + 0.2s) both;
 	}
 	.egg {
 		left: 136.5px;
-		top: 155px;
+		top: 140px;
 		width: 89px;
 		height: 97px;
+		transform-origin: 50% 100%;
+		/* Fades in with its card and hops in (the same kick the logo's impact used to give it). */
+		animation:
+			egg-show 0.25s calc(var(--in) + 0.2s) both,
+			egg-jump 1.15s calc(var(--in) + 0.2s) both;
 	}
 	.egg-body {
 		position: absolute;
 		inset: 0;
 		overflow: hidden;
 		transform-origin: 50% 90%;
-		animation: egg-breathe 3.2s ease-in-out infinite;
+		animation:
+			egg-breathe 3.2s ease-in-out infinite,
+			egg-wiggle 4.6s ease-in-out 3.2s infinite;
 	}
 	.egg img {
 		position: absolute;
@@ -474,39 +533,32 @@
 		width: 108.64%;
 		height: 100%;
 	}
+	/* Body copy in the body face (Lilita at 15px set it as a dense bold block). */
 	.card-copy {
 		left: 136.5px;
-		top: 274px;
-		width: 215px;
-		font-size: 16px;
-		letter-spacing: 0.48px;
-		line-height: 1.1;
+		top: 254px;
+		width: 226px;
+		font-family: 'Poppins', sans-serif;
+		font-weight: 700;
+		font-size: 13.5px;
+		letter-spacing: 0.1px;
+		line-height: 1.3;
 		color: #fff;
 	}
-	.max-line {
-		width: 140px;
-		font-size: 20px;
-		letter-spacing: 0.6px;
-		line-height: 1.1;
-		color: #fff;
-	}
-	.upto {
-		left: 133.5px;
-		top: 166px;
-	}
-	.multiplier {
-		left: 135px;
-		top: 318px;
+	.max-copy {
+		top: 252px;
+		font-size: 15px;
 	}
 	.max-big {
 		left: 137px;
-		top: 230px;
+		top: 168px;
 		width: 200px;
 		font-weight: 400;
-		font-size: 40px;
+		font-size: 46px;
 		letter-spacing: 1.2px;
 		line-height: 1.1;
-		color: #f782fe;
+		--c: #f782fe;
+		white-space: nowrap;
 	}
 
 	/* Hidden blobs. Each sits at its Figma pose (peeked out) and is pushed back behind
@@ -627,7 +679,7 @@
 	}
 	.portrait .splash-logo {
 		left: 82px;
-		top: 44px;
+		top: 68px;
 	}
 	.portrait .card {
 		left: 95px;
@@ -635,6 +687,10 @@
 		transform: scale(1.5);
 		transform-origin: 0 0;
 		display: none;
+	}
+	/* One card at a time: each reveals its lines as soon as it slides in. */
+	.portrait .card {
+		--d: 0s;
 	}
 	.portrait .card.active {
 		display: block;
@@ -645,10 +701,127 @@
 		width: 560px;
 	}
 
+	@keyframes card-rise {
+		0% {
+			opacity: 0;
+			translate: 0 46px;
+			scale: 0.92;
+		}
+		60% {
+			opacity: 1;
+			translate: 0 -6px;
+			scale: 1.02;
+		}
+		100% {
+			translate: 0 0;
+			scale: 1;
+		}
+	}
+	@keyframes card-float {
+		0%,
+		100% {
+			translate: 0 0;
+		}
+		50% {
+			translate: 0 -5px;
+		}
+	}
+	@keyframes line-in {
+		from {
+			opacity: 0;
+			translate: 0 12px;
+			scale: 0.9;
+		}
+	}
+	@keyframes shine {
+		0%,
+		30%,
+		60%,
+		100% {
+			opacity: 0;
+		}
+		42% {
+			opacity: 0.6;
+		}
+	}
+	@keyframes egg-show {
+		from {
+			opacity: 0;
+		}
+	}
+	@keyframes egg-wiggle {
+		0%,
+		14%,
+		100% {
+			rotate: 0deg;
+		}
+		3% {
+			rotate: -9deg;
+		}
+		6% {
+			rotate: 8deg;
+		}
+		9% {
+			rotate: -5deg;
+		}
+		12% {
+			rotate: 2deg;
+		}
+	}
 	@keyframes card-in {
 		from {
 			opacity: 0;
 			translate: 0 18px;
+		}
+	}
+	/* The ground kicks it: squash, leap with a spin, land squashed, one small bounce. */
+	@keyframes egg-jump {
+		0% {
+			translate: 0 0;
+			scale: 1;
+			rotate: 0deg;
+			animation-timing-function: ease-out;
+		}
+		8% {
+			translate: 0 4px;
+			scale: 1.14 0.84;
+			animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+		}
+		38% {
+			translate: 0 -42px;
+			scale: 0.94 1.08;
+			rotate: -14deg;
+			animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.5);
+		}
+		58% {
+			translate: 0 0;
+			scale: 0.96 1.05;
+			rotate: 4deg;
+			animation-timing-function: ease-out;
+		}
+		64% {
+			scale: 1.16 0.82;
+			rotate: 0deg;
+			animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+		}
+		76% {
+			translate: 0 -12px;
+			scale: 0.97 1.04;
+			rotate: 5deg;
+			animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.5);
+		}
+		86% {
+			translate: 0 0;
+			scale: 1.07 0.93;
+			rotate: 0deg;
+		}
+		93% {
+			scale: 0.98 1.02;
+		}
+		100% {
+			translate: 0 0;
+			scale: 1;
+			rotate: 0deg;
 		}
 	}
 	/* Slow breath: swells a little wider, settles back. */
@@ -659,89 +832,6 @@
 		}
 		50% {
 			transform: scale(1.05, 1.03);
-		}
-	}
-	/* Bubble blowing up from the ground: inflates past full size, pops into a squash, jiggles. */
-	@keyframes dome-blow {
-		0% {
-			opacity: 0;
-			transform: scale(0.06, 0.03);
-			animation-timing-function: cubic-bezier(0.25, 0.6, 0.4, 1);
-		}
-		10% {
-			opacity: 1;
-		}
-		54% {
-			transform: scale(1.14, 1.2);
-			animation-timing-function: cubic-bezier(0.5, 0, 0.6, 1);
-		}
-		66% {
-			transform: scale(1.2, 0.84);
-		}
-		78% {
-			transform: scale(0.94, 1.07);
-		}
-		89% {
-			transform: scale(1.03, 0.97);
-		}
-		100% {
-			opacity: 1;
-			transform: none;
-		}
-	}
-	/* Burst: a last stretch, then the skin is gone. */
-	@keyframes dome-pop {
-		0% {
-			transform: none;
-		}
-		50% {
-			opacity: 1;
-			transform: scale(1.1, 1.14);
-		}
-		100% {
-			opacity: 0;
-			transform: scale(1.35, 1.2);
-		}
-	}
-	@keyframes dome-ring {
-		from {
-			opacity: 0.9;
-			transform: scale(0.3);
-		}
-		to {
-			opacity: 0;
-			transform: scale(2.4);
-		}
-	}
-	@keyframes dome-drop {
-		0% {
-			opacity: 0;
-			transform: none;
-		}
-		12% {
-			opacity: 1;
-		}
-		70% {
-			opacity: 1;
-			transform: translate(var(--dx), var(--dy)) scale(1);
-		}
-		100% {
-			opacity: 0;
-			transform: translate(calc(var(--dx) * 1.1), calc(var(--dy) + 18px)) scale(0.4);
-		}
-	}
-	@keyframes cloud-drift {
-		from {
-			transform: translateX(calc(-1 * var(--w) - 40px));
-		}
-		to {
-			transform: translateX(1240px);
-		}
-	}
-	/* Clouds slowly swell and rise a touch, so they don't read as stickers sliding. */
-	@keyframes cloud-breathe {
-		50% {
-			transform: translateY(-4px) scale(1.05, 1.03);
 		}
 	}
 	@keyframes island-bob {
@@ -849,9 +939,75 @@
 			transform: translate(var(--hx, 0px), var(--hy, 0px));
 		}
 	}
+	@keyframes sea-cap {
+		0% {
+			opacity: 0;
+			transform: translate(calc(var(--drift) * -0.4), 0) scaleX(0.4);
+		}
+		45% {
+			opacity: 0.9;
+			transform: translate(0, 2px) scaleX(1);
+		}
+		100% {
+			opacity: 0;
+			transform: translate(var(--drift), 5px) scaleX(0.75);
+		}
+	}
+	@keyframes sea-glint {
+		0%,
+		60%,
+		100% {
+			opacity: 0;
+			transform: scale(0.2) rotate(0deg);
+		}
+		75% {
+			opacity: 1;
+			transform: scale(1) rotate(45deg);
+		}
+	}
+	@keyframes foam-flow {
+		to {
+			stroke-dashoffset: -330;
+		}
+	}
+	/* The shore foam runs up the beach and slides back, fading as it thins. */
+	@keyframes foam-lap {
+		0%,
+		100% {
+			opacity: 0.55;
+			transform: translateY(-3px);
+		}
+		45% {
+			opacity: 1;
+			transform: translateY(5px);
+		}
+	}
+	/* The next crest rolls in from behind and merges into the lap as it breaks. */
+	@keyframes foam-in {
+		0% {
+			opacity: 0;
+			transform: translateY(-10px);
+		}
+		30% {
+			opacity: 0.8;
+		}
+		45%,
+		100% {
+			opacity: 0;
+			transform: translateY(14px);
+		}
+	}
 	@media (prefers-reduced-motion: reduce) {
 		.peeker {
 			transform: none;
+		}
+		.card,
+		.card *,
+		.portrait .card.active {
+			animation: none !important;
+		}
+		.sea {
+			display: none;
 		}
 	}
 </style>

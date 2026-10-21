@@ -91,7 +91,7 @@ def layer(a, mask, k, name):
     crop[region] = a[y0:y1, x0:x1][region]
     Image.fromarray(crop).save(OUT_DIR / name, 'WEBP', quality=92, method=6)
     return {
-        'src': f'/symbols/face/{name}',
+        'src': f'./symbols/face/{name}',
         'x': round(x0 * k, 2),
         'y': round(y0 * k, 2),
         'w': round((x1 - x0) * k, 2),
@@ -171,7 +171,7 @@ def build(path):
             brows.append(m)
         elif cy > eye_bot - 2 and (mouth is None or m.sum() > mouth.sum()):
             mouth = m
-    out = {'base': f'/symbols/face/{s}-base.webp', 'brows': [], 'mouth': None, 'cheeks': cheeks(a, lum, body_lum, eye_bot, k)}
+    out = {'base': f'./symbols/face/{s}-base.webp', 'brows': [], 'mouth': None, 'cheeks': cheeks(a, lum, body_lum, eye_bot, k)}
     hole = np.zeros((h, w), bool)
     brows.sort(key=lambda m: np.nonzero(m)[1].mean())
     for j, m in enumerate(brows):

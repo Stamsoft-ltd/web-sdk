@@ -99,7 +99,7 @@ def main():
         name = f'logo-drop-{j}.webp'
         Image.fromarray(l.pop('crop')).save(OUT_DIR / name, 'WEBP', quality=90, method=6)
         l.pop('cx')
-        out.append({'src': f'/splash/{name}', **l})
+        out.append({'src': f'./splash/{name}', **l})
         print(name, l)
     Image.fromarray(base).save(OUT_DIR / 'logo-base.webp', 'WEBP', quality=90, method=6)
     OUT_JSON.write_text(json.dumps({'width': 100, 'height': round(h * k, 2), 'drops': out}, indent='\t') + '\n')

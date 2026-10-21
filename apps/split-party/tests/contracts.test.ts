@@ -171,7 +171,8 @@ test('Svelte first render initializes locale before translating', () => {
 	});
 	const html = render(App).body;
 	assert.match(html, /Blob Split/);
-	assert.match(html, /Open visual preview/);
+	// The first render is the loading screen (the splash follows once assets are preloaded).
+	assert.match(html, /aria-label="Loading"/);
 	assert.equal((html.match(/class="cell\b/g) ?? []).length, 49);
 	assert.match(html, /Visual preview/);
 	assert.match(html, /Balance/);
