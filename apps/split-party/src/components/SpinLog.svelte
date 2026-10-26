@@ -102,9 +102,17 @@
 		width: 228.66px;
 		height: var(--log-h, 266.5px);
 		padding: 8px 9.2px;
-		background: #202149;
-		border: 2.135px solid #3a3981;
-		border-radius: 8.56px;
+		/* The framed panel (style.css "Framed panels"): bevel rim, dark outline, indigo well. */
+		border: 3px solid transparent;
+		border-radius: 16px;
+		background:
+			linear-gradient(#251870, #1a0f52) padding-box,
+			linear-gradient(#c4adff, #8a68f5 30%, #5a3bd2) border-box;
+		box-shadow:
+			0 0 0 2.5px #241063,
+			inset 0 0 0 1.5px #241063,
+			inset 0 4px 10px #0006,
+			0 10px 24px #12063a80;
 	}
 	.spin-log-rows {
 		height: 100%;
@@ -139,12 +147,18 @@
 		align-items: center;
 		gap: 6.806px;
 		padding: 0 8px 0 3.5px;
-		background: #7963b9;
-		border: 2.135px solid #3a3981;
-		border-radius: 8px;
+		/* A jelly slab: lit lip, shaded foot. */
+		background: linear-gradient(#8f78dc, #7259c4 55%, #6148b0);
+		border: 2px solid #2a1a72;
+		border-radius: 10px;
+		box-shadow:
+			inset 0 1.5px 0 #ffffff40,
+			inset 0 -2px 0 #2a1a7255;
 	}
 	.spin-log-row.vacant {
-		background: #4b3981;
+		background: #ffffff0a;
+		border: 2px dashed #ffffff1f;
+		box-shadow: none;
 	}
 	.spin-log-box {
 		flex: 0 0 auto;
@@ -154,8 +168,8 @@
 		padding: 0 3px;
 		display: grid;
 		place-items: center;
-		background: #7963b9;
-		border: 0.851px solid rgba(255, 255, 255, 0.3);
+		background: #2a1a72;
+		border: 1px solid rgba(255, 255, 255, 0.25);
 		border-radius: 8px;
 		/* Figma 11259:3652 (Coiny 8.2px in the 114-wide phone log) at this log's ×2. */
 		font: 400 16.4px/1 'Coiny', sans-serif;
@@ -177,6 +191,7 @@
 		font: 400 18px/1 'Coiny', sans-serif;
 		letter-spacing: 1.88px;
 		color: #fee302;
+		text-shadow: 0 1.5px 0 #2a1a72;
 		white-space: nowrap;
 	}
 </style>

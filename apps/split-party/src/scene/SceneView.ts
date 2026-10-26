@@ -522,14 +522,12 @@ const BASE_DOMES = [
 	['magenta', 1058, 480, 56],
 	['purple', 1118, 492, 64],
 ] as const;
+// Portrait: three domes standing whole in the strip of grass under the bottom row. A row
+// higher only peeked out between the HUD's boxes, and the screen's edge cut a lower one.
 const PHONE_DOMES = [
-	['purple', 0.13, 0.868, 62],
-	['magenta', 0.36, 0.865, 50],
-	['green', 0.66, 0.868, 58],
-	['magenta', 0.89, 0.865, 52],
-	['green', 0.08, 0.995, 64],
-	['purple', 0.5, 1.0, 72],
-	['magenta', 0.88, 0.995, 58],
+	['magenta', 0.11, 0.985, 66],
+	['purple', 0.5, 0.99, 60],
+	['green', 0.89, 0.985, 66],
 ] as const;
 const DOME_COLOR = { magenta: '#ea32df', green: '#5bed7c', purple: '#b241fb' };
 const GRASS_Y = 505;
@@ -1050,10 +1048,12 @@ export class SceneView {
 				ctx.save();
 				ctx.shadowColor = 'rgba(255,244,196,.33)';
 				ctx.shadowBlur = 40 * TEX_RES;
-				ctx.beginPath();
-				ctx.arc(37, 37, 37 + 14, 0, Math.PI * 2);
+				// The halo shape sits off-canvas and only its glow lands here. The path takes the
+				// transform when it is built, so translate before arc().
 				ctx.shadowOffsetX = 4000 * TEX_RES;
 				ctx.translate(-4000, 0);
+				ctx.beginPath();
+				ctx.arc(37, 37, 37 + 14, 0, Math.PI * 2);
 				ctx.fill();
 				ctx.restore();
 				const g = ctx.createRadialGradient(74 * 0.38, 74 * 0.36, 0, 74 * 0.38, 74 * 0.36, Math.hypot(0.62, 0.64) * 74);

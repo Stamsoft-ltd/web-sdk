@@ -367,14 +367,22 @@
 		height: 552px;
 		box-sizing: border-box;
 		overflow: hidden;
-		border: 3px solid #522fa2;
-		border-radius: 13px;
-		background: #4b3981;
+		/* The framed panel (style.css "Framed panels"): bevel rim, dark outline, purple body. */
+		border: 4px solid transparent;
+		border-radius: 18px;
+		background:
+			radial-gradient(180px 130px at 0 0, #ffffff14, #fff0 70%) padding-box,
+			radial-gradient(180px 130px at 100% 100%, #ffffff0d, #fff0 70%) padding-box,
+			linear-gradient(#54409a, #3f2d7d) padding-box,
+			linear-gradient(#c4adff, #8a68f5 30%, #5a3bd2) border-box;
 		color: #fff;
 		font-family: 'Poppins', sans-serif;
 		font-weight: 400;
 		text-align: center;
-		box-shadow: 0 24px 80px rgb(10 6 40 / 0.55);
+		box-shadow:
+			0 0 0 3px #241063,
+			inset 0 0 0 2px #241063,
+			0 24px 80px rgb(10 6 40 / 0.6);
 		animation: panel-in 0.52s cubic-bezier(0.3, 1.45, 0.5, 1) both;
 	}
 	@keyframes panel-in {
@@ -400,6 +408,13 @@
 		font: 400 35px/41px 'Coiny', sans-serif;
 		letter-spacing: 1.05px;
 		text-transform: uppercase;
+		color: #ffe14d;
+		text-shadow:
+			0 2px 0 #1b0f55,
+			0 -1px 0 #1b0f55,
+			1.5px 0 0 #1b0f55,
+			-1.5px 0 0 #1b0f55,
+			0 4px 8px #0008;
 	}
 	h3 {
 		margin: 0;
@@ -416,9 +431,15 @@
 	}
 	.card {
 		box-sizing: border-box;
-		border: 1px solid #7f7fd6;
-		border-radius: 12px;
-		background: #2f1b6c;
+		border: 2px solid #7f62e6;
+		border-radius: 14px;
+		background:
+			radial-gradient(80px 60px at 0 0, #ffffff12, #fff0 70%),
+			linear-gradient(#33207a, #26165e);
+		box-shadow:
+			0 0 0 1.5px #241063,
+			inset 0 1.5px 0 #ffffff1f,
+			0 6px 14px #12063a59;
 		animation: card-in 0.62s cubic-bezier(0.3, 1.45, 0.5, 1) calc(0.08s + var(--i, 0) * 0.07s) both;
 	}
 	.card p {
@@ -504,7 +525,9 @@
 	}
 	.info-logo {
 		position: absolute;
-		left: 775px;
+		/* The art ends 174px into the 190px box: at 755 it stops 13px inside the panel's 942px
+		   padding box (at 775 the splash on the right was cut off). */
+		left: 755px;
 		top: 4px;
 		width: 190px;
 		height: 95px;
@@ -533,17 +556,22 @@
 		margin: 0;
 		text-align: left;
 	}
-	.facts .max {
-		font: 400 18px 'Coiny', sans-serif;
-		color: #a5a7ee;
-	}
-	.facts .rtp {
-		padding: 8px 32px;
+	/* Both values in the same well, as the stat tiles below carry them. */
+	.facts :is(.max, .rtp) {
+		min-width: 150px;
+		box-sizing: border-box;
+		padding: 7px 20px;
 		border: 1px solid #7f7fd6;
 		border-radius: 8px;
 		background: #2f1b6c;
-		font-weight: 700;
-		font-size: 13px;
+		font: 400 16px 'Coiny', sans-serif;
+		text-align: center;
+	}
+	.facts .max {
+		color: #ffe14d;
+	}
+	.facts .rtp {
+		color: #5ff0df;
 	}
 	.tiles {
 		display: flex;
@@ -590,15 +618,28 @@
 		width: 46px;
 		height: 29px;
 		padding: 0;
-		border-radius: 7px;
-		background: #734ebb;
+		border-radius: 8px;
+		background: linear-gradient(#8058c8, #6a45b3);
+		box-shadow:
+			inset 0 1px 0 #ffffff33,
+			inset 0 -1.5px 0 #2a1a7255;
 		font-weight: 400;
 		white-space: nowrap;
 	}
 	.pad.head {
-		border: 1px solid #734ebb;
-		background: #462690;
+		border: 1px solid #7f62e6;
+		background: #2a1a72;
+		box-shadow: none;
+		color: #c9b8ff;
 		font-size: 12px;
+	}
+	/* The three top payers' rows in gold: the table reads from its most valuable blob down. */
+	tbody tr:nth-child(-n + 3) .pad:not(.head) {
+		background: linear-gradient(#a07a2c, #7d5a1a);
+		box-shadow:
+			inset 0 1px 0 #ffe6a066,
+			inset 0 -1.5px 0 #3d280955;
+		color: #ffe9a8;
 	}
 	thead .pad {
 		height: 34px;

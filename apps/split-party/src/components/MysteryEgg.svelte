@@ -1,6 +1,9 @@
 <script lang="ts" module>
 	/** Full length of the break-open at pace 1, ms; App waits this (times its pace). */
-	export const MYSTERY_MS = 4100;
+	export const MYSTERY_MS = 6650;
+	/** When the egg bursts, and the four knocks before it that each open the crack further. */
+	export const BURST_MS = 4300;
+	export const KNOCKS_MS = [1300, 2100, 2900, 3700];
 	/** Blobs per tile each drawn bonus starts with (the math's 1 / 2 / 3). */
 	export const START_BLOBS: Record<string, number> = { normal: 1, super: 2, hidden: 3 };
 </script>
@@ -9,9 +12,11 @@
 	import { onMount } from 'svelte';
 	import Blob from './Blob.svelte';
 
-	// Mystery buy reveal: the mystery egg (Figma 11174:5039) drops in and builds in three beats
-	// (it rocks; it shudders while a light in the tier's colour pulses up behind it; it cracks
-	// with that colour leaking through) and bursts open (top flies off, shell bits and a flash); a blob climbs out
+	// Mystery buy reveal: the mystery egg (Figma 11174:5039) drops in and sits still, then takes
+	// four knocks, each opening the crack further from the middle out while a light that cycles
+	// through all three tiers' colours swells behind it (the crack leaks white: nothing gives the
+	// draw away early); a held breath, and it bursts open in the drawn tier's colour (top flies
+	// off, shell bits and a flash); a blob climbs out
 	// and divides into as many blobs as the drawn bonus starts its tiles with (Normal 1, Super 2,
 	// Hidden 3), side by side over the egg; App then shows the result card. Parts from
 	// scripts/build-mystery-egg.py. Every time is scaled by `pace` (turbo plays it faster).
@@ -26,7 +31,7 @@
 	const ROOT = { x: 0, y: -120 };
 	const BLOB = 96; // px at scale 1 (the first blob); the last generation is END_SCALE of it
 	const END_SCALE = 0.86;
-	const RISE_AT = 1850;
+	const RISE_AT = 4400;
 	const RISE_MS = 520;
 	const SPLIT_GAP = 420; // ms per generation
 	// The final blobs stand in a row at the root's height, 118px apart.
@@ -124,13 +129,13 @@
 	<div class="stage">
 		<div class="rays"></div>
 		<div class="flash"></div>
-		<div class="glow"></div>
+		<div class="glow"><span class="normal"></span><span class="super"></span><span class="hidden"></span></div>
 		<!-- Two layers: one transform each (the drop, then the wobble). -->
 		<div class="fall">
 			<div class="egg">
 				<img class="whole" src="./mystery/egg.webp" alt="" />
-				<img class="crack" src="./mystery/egg-crack.webp" alt="" />
-				<div class="leak"><span></span></div>
+				{#each KNOCKS_MS as _, i}<img class={`crack c${i}`} src="./mystery/egg-crack.webp" alt="" />{/each}
+				<div class="leak">{#each KNOCKS_MS as _, i}<span class={`c${i}`}></span>{/each}</div>
 				<img class="bottom" src="./mystery/egg-bottom.webp" alt="" />
 				<img class="top" src="./mystery/egg-top.webp" alt="" />
 			</div>
@@ -150,10 +155,10 @@
 </div>
 
 <style>
-	/* Timeline (ms at pace 1): drop 0-550; then three beats: rock 550-1150, shudder + glow pulse
-	   behind 1150-1550, crack with the tier colour leaking 1550-1750; burst at 1750; blob climbs
-	   out 1850-2370 and splits up to twice (420ms each) to ~3210, holds, everything fades
-	   3700-4100. All of it animates transform/opacity only. */
+	/* Timeline (ms at pace 1): drop 0-550, still to 1300; knocks at 1300 / 2100 / 2900 / 3700,
+	   each widening the crack (shudder building between them, the light behind swelling); held
+	   breath 3810-4300; burst at 4300; blob climbs out 4400-4920 and splits up to twice (420ms
+	   each) to ~5760, holds, everything fades 6250-6650. Transform/opacity only. */
 	.mystery {
 		--c1: #b6f04a;
 		--c2: #2bc4b4;
@@ -163,7 +168,7 @@
 		display: grid;
 		place-items: center;
 		pointer-events: none;
-		animation: m-out calc(400ms * var(--p)) calc(3700ms * var(--p)) both;
+		animation: m-out calc(400ms * var(--p)) calc(6250ms * var(--p)) both;
 	}
 	.mystery.super {
 		--c1: #ff7ce5;
@@ -210,7 +215,7 @@
 	}
 	.egg {
 		transform-origin: 50% 90%;
-		animation: egg-wobble calc(1200ms * var(--p)) calc(550ms * var(--p)) both;
+		animation: egg-wobble calc(3750ms * var(--p)) calc(550ms * var(--p)) both;
 	}
 	@keyframes egg-drop {
 		0% {
@@ -226,120 +231,199 @@
 			transform: none;
 		}
 	}
-	/* 1200ms from 550: beat 1 (0-50%) slow rocks that grow; beat 2 (50-83%) a tight swelling
-	   shudder while the light pulses; beat 3 (83-100%) the crack jolts and the pre-burst squash. */
+	/* 3750ms from 550 (1% = 37.5ms): near-still, then a knock at 20% (1300), 41% (2100), 63%
+	   (2900) and 84% (3700), each harder, with a tremor between that grows into a swelling
+	   shudder; after the last, a held breath (87-97%) and the pre-burst squash. */
 	@keyframes egg-wobble {
 		0%,
+		19%,
 		100% {
 			transform: none;
 		}
-		12% {
-			transform: rotate(-5deg);
+		8% {
+			transform: rotate(0.8deg);
 		}
-		25% {
-			transform: rotate(6deg);
+		14% {
+			transform: rotate(-0.8deg);
 		}
-		37% {
-			transform: rotate(-8deg);
+		20.5% {
+			transform: rotate(-4deg) scale(1.02, 0.98);
+		}
+		22% {
+			transform: rotate(2deg);
+		}
+		24%,
+		41% {
+			transform: none;
+		}
+		30% {
+			transform: rotate(0.6deg);
+		}
+		36% {
+			transform: rotate(-0.6deg);
+		}
+		42% {
+			transform: rotate(5deg) scale(1.03, 0.97);
+		}
+		43.5% {
+			transform: rotate(-3deg);
+		}
+		45% {
+			transform: rotate(1.5deg);
+		}
+		47%,
+		62% {
+			transform: none;
 		}
 		50% {
-			transform: rotate(8deg) scale(1.02);
+			transform: rotate(-1.2deg);
 		}
-		54% {
-			transform: rotate(-3deg) scale(1.03);
+		53% {
+			transform: rotate(1.2deg);
 		}
-		58% {
-			transform: rotate(3deg) scale(1.04);
+		56% {
+			transform: rotate(-1.5deg);
 		}
-		62% {
-			transform: rotate(-3deg) scale(1.04);
+		59% {
+			transform: rotate(1.5deg);
 		}
-		66% {
-			transform: rotate(3.5deg) scale(1.05);
+		63.5% {
+			transform: rotate(-6deg) scale(1.05, 0.95);
 		}
-		70% {
-			transform: rotate(-3.5deg) scale(1.06);
+		65% {
+			transform: rotate(4deg) scale(1.04);
 		}
-		74% {
-			transform: rotate(4deg) scale(1.06);
+		66.5% {
+			transform: rotate(-2deg) scale(1.04);
 		}
-		78% {
-			transform: rotate(-4deg) scale(1.07);
+		69% {
+			transform: rotate(2deg) scale(1.05);
+		}
+		71% {
+			transform: rotate(-2.2deg) scale(1.05);
+		}
+		73% {
+			transform: rotate(2.5deg) scale(1.06);
+		}
+		75% {
+			transform: rotate(-2.8deg) scale(1.06);
+		}
+		77% {
+			transform: rotate(3deg) scale(1.07);
+		}
+		79% {
+			transform: rotate(-3.2deg) scale(1.07);
+		}
+		81% {
+			transform: rotate(3.5deg) scale(1.08);
 		}
 		83% {
-			transform: rotate(0deg) scale(1.08);
+			transform: rotate(-3.5deg) scale(1.08);
 		}
-		86% {
-			transform: rotate(-6deg) scale(1.1, 0.95);
+		85% {
+			transform: scale(1.12, 0.9);
 		}
-		90% {
-			transform: rotate(5deg) scale(1.1, 0.94);
+		87%,
+		97% {
+			transform: scale(1.06, 1.04);
 		}
-		95% {
-			transform: scale(1.16, 0.85);
+		99.5% {
+			transform: scale(1.18, 0.84);
 		}
 	}
 	/* Whole until it bursts; then the halves take over. The halves, bits and drops fill
 	   forwards only: their first keyframe is visible, and a backwards fill would show them on
 	   the whole egg from the start. */
 	.whole {
-		animation: m-hide 1ms calc(1750ms * var(--p)) both;
+		animation: m-hide 1ms calc(4300ms * var(--p)) both;
 	}
 	@keyframes m-hide {
 		to {
 			opacity: 0;
 		}
 	}
-	/* The crack lands in three jolts (opacity steps, with the egg's 86/90/95% kicks); it used
-	   to wipe in on clip-path, which repaints every step. */
+	/* The crack grows from the middle out, one width per knock: four copies of the art, each
+	   cut wider (static clip-paths) and switched on at its knock, so only opacity animates. */
 	.crack {
 		opacity: 0;
 		animation:
-			crack-run calc(180ms * var(--p)) calc(1550ms * var(--p)) steps(3, jump-start) forwards,
-			m-hide 1ms calc(1750ms * var(--p)) forwards;
+			m-show 1ms calc(var(--at) * var(--p)) forwards,
+			m-hide 1ms calc(4300ms * var(--p)) forwards;
 	}
-	@keyframes crack-run {
-		from {
-			opacity: 0;
-		}
+	:is(.crack, .leak span).c0 {
+		--at: 1300ms;
+		clip-path: inset(0 41% 0 41%);
+	}
+	:is(.crack, .leak span).c1 {
+		--at: 2100ms;
+		clip-path: inset(0 29% 0 29%);
+	}
+	:is(.crack, .leak span).c2 {
+		--at: 2900ms;
+		clip-path: inset(0 15% 0 15%);
+	}
+	:is(.crack, .leak span).c3 {
+		--at: 3700ms;
+	}
+	@keyframes m-show {
 		to {
 			opacity: 1;
 		}
 	}
-	/* The tier's light leaking out along the crack lines: a colour fill masked by the crack art,
-	   haloed by a static drop-shadow; only its opacity animates. */
+	/* Light leaking out along the crack lines, white so it can't tell the tier: a fill masked by
+	   the crack's inner slit (egg-leak.webp, cut per knock like the crack), haloed by a static drop-shadow; it flares at
+	   each knock and settles a little brighter each time. */
 	.leak {
 		position: absolute;
 		inset: 0;
-		filter: drop-shadow(0 0 5px var(--c1)) drop-shadow(0 0 14px var(--c2));
+		filter: drop-shadow(0 0 9px #fff6c880);
 		opacity: 0;
 		animation:
-			leak calc(200ms * var(--p)) calc(1560ms * var(--p)) ease-in forwards,
-			m-hide 1ms calc(1750ms * var(--p)) forwards;
+			leak calc(3000ms * var(--p)) calc(1300ms * var(--p)) ease-out forwards,
+			m-hide 1ms calc(4300ms * var(--p)) forwards;
 	}
 	.leak span {
 		position: absolute;
 		inset: 0;
-		background: color-mix(in srgb, var(--c1), #fff 45%);
-		-webkit-mask: url('/mystery/egg-crack.webp') 0 0 / 100% 100% no-repeat;
-		mask: url('/mystery/egg-crack.webp') 0 0 / 100% 100% no-repeat;
+		opacity: 0;
+		animation: m-show 1ms calc(var(--at) * var(--p)) forwards;
+		background: #fff3c4;
+		-webkit-mask: url('/mystery/egg-leak.webp') 0 0 / 100% 100% no-repeat;
+		mask: url('/mystery/egg-leak.webp') 0 0 / 100% 100% no-repeat;
 	}
+	/* 3000ms from 1300 (knocks at 0, 26.7, 53.3 and 80%). */
 	@keyframes leak {
 		0% {
 			opacity: 0;
 		}
-		40% {
-			opacity: 0.55;
+		3% {
+			opacity: 0.6;
 		}
-		55% {
-			opacity: 0.35;
+		12%,
+		26.7% {
+			opacity: 0.3;
 		}
-		85%,
+		29% {
+			opacity: 0.75;
+		}
+		38%,
+		53.3% {
+			opacity: 0.45;
+		}
+		56% {
+			opacity: 0.9;
+		}
+		65%,
+		80% {
+			opacity: 0.6;
+		}
+		82%,
 		100% {
 			opacity: 1;
 		}
 	}
-	/* Beat 2: the light behind the egg pulses up (twice, then full) and dies in the flash. */
+	/* The light behind the egg: three layers in the three tiers' colours cross-fading in turn
+	   (any of them could be coming), swelling with each knock and dying in the flash. */
 	.glow {
 		position: absolute;
 		left: 50%;
@@ -347,39 +431,84 @@
 		width: 470px;
 		height: 470px;
 		margin: -235px 0 0 -235px;
-		border-radius: 50%;
-		background: radial-gradient(closest-side, color-mix(in srgb, var(--c1), #fff 35%), color-mix(in srgb, var(--c2), transparent 40%) 45%, #fff0);
 		opacity: 0;
-		animation: glow-pulse calc(800ms * var(--p)) calc(1150ms * var(--p)) ease-in-out forwards;
+		animation: glow-build calc(3050ms * var(--p)) calc(1300ms * var(--p)) ease-in-out forwards;
 	}
-	@keyframes glow-pulse {
+	.glow span {
+		position: absolute;
+		inset: 0;
+		border-radius: 50%;
+		animation: glow-cycle calc(1500ms * var(--p)) linear infinite;
+	}
+	.glow .normal {
+		background: radial-gradient(closest-side, color-mix(in srgb, #b6f04a, #fff 35%), color-mix(in srgb, #2bc4b4, transparent 40%) 45%, #fff0);
+	}
+	.glow .super {
+		background: radial-gradient(closest-side, color-mix(in srgb, #ff7ce5, #fff 35%), color-mix(in srgb, #9b3dfb, transparent 40%) 45%, #fff0);
+		animation-delay: calc(-500ms * var(--p));
+	}
+	.glow .hidden {
+		background: radial-gradient(closest-side, color-mix(in srgb, #ffe36b, #fff 35%), color-mix(in srgb, #ff9f1c, transparent 40%) 45%, #fff0);
+		animation-delay: calc(-1000ms * var(--p));
+	}
+	@keyframes glow-cycle {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		33%,
+		67% {
+			opacity: 0;
+		}
+	}
+	/* 3050ms from 1300 (knocks at 0, 26.2, 52.5 and 78.7%; burst at 98.4%). */
+	@keyframes glow-build {
 		0% {
 			opacity: 0;
-			transform: scale(0.55);
+			transform: scale(0.5);
 		}
-		16% {
-			opacity: 0.75;
-			transform: scale(0.85);
-		}
-		32% {
-			opacity: 0.35;
-			transform: scale(0.78);
-		}
-		50% {
-			opacity: 0.9;
-			transform: scale(0.98);
-		}
-		62% {
+		5% {
 			opacity: 0.5;
+			transform: scale(0.7);
+		}
+		20%,
+		26.2% {
+			opacity: 0.25;
+			transform: scale(0.65);
+		}
+		31% {
+			opacity: 0.6;
+			transform: scale(0.8);
+		}
+		45%,
+		52.5% {
+			opacity: 0.35;
+			transform: scale(0.76);
+		}
+		57% {
+			opacity: 0.8;
 			transform: scale(0.92);
 		}
-		75% {
+		70%,
+		78.7% {
+			opacity: 0.55;
+			transform: scale(0.88);
+		}
+		83% {
 			opacity: 1;
-			transform: scale(1.12);
+			transform: scale(1.08);
+		}
+		96% {
+			opacity: 0.85;
+			transform: scale(1);
+		}
+		98.4% {
+			opacity: 1;
+			transform: scale(1.2);
 		}
 		100% {
 			opacity: 0;
-			transform: scale(1.5);
+			transform: scale(1.6);
 		}
 	}
 	.top,
@@ -388,7 +517,7 @@
 	}
 	.top {
 		transform-origin: 50% 50%;
-		animation: top-fly calc(900ms * var(--p)) calc(1750ms * var(--p)) cubic-bezier(0.2, 0.7, 0.4, 1) forwards;
+		animation: top-fly calc(900ms * var(--p)) calc(4300ms * var(--p)) cubic-bezier(0.2, 0.7, 0.4, 1) forwards;
 	}
 	@keyframes top-fly {
 		0% {
@@ -406,7 +535,7 @@
 	}
 	.bottom {
 		transform-origin: 50% 100%;
-		animation: bottom-stay calc(2900ms * var(--p)) calc(1750ms * var(--p)) forwards;
+		animation: bottom-stay calc(2900ms * var(--p)) calc(4300ms * var(--p)) forwards;
 	}
 	@keyframes bottom-stay {
 		0% {
@@ -438,7 +567,7 @@
 		border-radius: 50%;
 		background: radial-gradient(closest-side, #fff, #fff9 30%, color-mix(in srgb, var(--c1), transparent 50%) 55%, #fff0);
 		opacity: 0;
-		animation: flash calc(700ms * var(--p)) calc(1720ms * var(--p)) ease-out both;
+		animation: flash calc(700ms * var(--p)) calc(4270ms * var(--p)) ease-out both;
 	}
 	@keyframes flash {
 		0% {
@@ -466,7 +595,7 @@
 		mask: radial-gradient(closest-side, #000 20%, #0000);
 		opacity: 0;
 		animation:
-			rays-in calc(500ms * var(--p)) calc(1800ms * var(--p)) both,
+			rays-in calc(500ms * var(--p)) calc(4350ms * var(--p)) both,
 			rays-turn 9s linear infinite;
 	}
 	@keyframes rays-in {
@@ -503,7 +632,7 @@
 		border: 3px solid #f7b733;
 		box-sizing: border-box;
 		clip-path: polygon(0 30%, 45% 0, 100% 40%, 70% 100%, 15% 85%);
-		animation: bit-fly calc(900ms * var(--p)) calc(1750ms * var(--p)) cubic-bezier(0.15, 0.7, 0.4, 1) forwards;
+		animation: bit-fly calc(900ms * var(--p)) calc(4300ms * var(--p)) cubic-bezier(0.15, 0.7, 0.4, 1) forwards;
 	}
 	@keyframes bit-fly {
 		0% {
@@ -521,7 +650,7 @@
 	.drop {
 		border-radius: 50%;
 		background: radial-gradient(circle at 35% 30%, #fffc 0 20%, var(--c1) 32%, var(--c2));
-		animation: drop-fly calc(800ms * var(--p)) calc(1780ms * var(--p)) cubic-bezier(0.2, 0.7, 0.4, 1) forwards;
+		animation: drop-fly calc(800ms * var(--p)) calc(4330ms * var(--p)) cubic-bezier(0.2, 0.7, 0.4, 1) forwards;
 	}
 	@keyframes drop-fly {
 		0% {

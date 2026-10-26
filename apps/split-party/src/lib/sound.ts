@@ -89,30 +89,21 @@ const lastAt = new Map<Sfx, number>();
 // Effects queued ahead (landings timed to a wave); a slam stop cancels them.
 const pending = new Set<AudioBufferSourceNode>();
 
-/** Creates the context (suspended until a gesture) and fetches and decodes every clip. */
+let loading = false;
+
+/** Fetches and decodes every clip, and opens the live context on the player's first press.
+ *  A context created before any gesture starts suspended and Chrome logs "The AudioContext was
+ *  not allowed to start" for it, so the clips are decoded offline (an AudioBuffer plays in any
+ *  context, resampled if the rates differ) and the live one waits for the first press. */
 export function loadSound() {
-	if (ctx || typeof AudioContext === 'undefined') return;
-	ctx = new AudioContext();
-	sfxBus = ctx.createGain();
-	musicBus = ctx.createGain();
-	bedBus = ctx.createGain();
-	sfxBus.gain.value = sfxOn ? 1 : 0;
-	musicBus.gain.value = musicOn ? 1 : 0;
-	// A limiter over everything: a big cascade stacks pops, landings and the win music.
-	master = ctx.createDynamicsCompressor();
-	master.threshold.value = -6;
-	master.knee.value = 6;
-	master.ratio.value = 12;
-	master.attack.value = 0.003;
-	master.release.value = 0.25;
-	master.connect(ctx.destination);
-	bedBus.connect(musicBus);
-	sfxBus.connect(master);
-	musicBus.connect(master);
+	if (loading || typeof AudioContext === 'undefined') return;
+	loading = true;
 	// A browser only lets audio start from a gesture; any press in the game unlocks it. Safari
 	// takes only the release (pointerup / touchend / click) as one, not pointerdown, and iOS
 	// wants a sound started inside that gesture, hence the silent one-sample buffer.
 	const unlock = () => {
+		if (!loading) return;
+		if (!ctx) openContext();
 		if (!ctx || ctx.state === 'running') return;
 		void ctx.resume();
 		const src = ctx.createBufferSource();
@@ -131,15 +122,39 @@ export function loadSound() {
 		if (document.hidden) void ctx.suspend();
 		else void ctx.resume();
 	});
+	const decoder = new OfflineAudioContext(2, 1, 48000);
 	for (const [key, file] of Object.entries(FILES))
 		fetch(`./audio/${file}.mp3`)
 			.then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(r.status)))
-			.then((data) => ctx!.decodeAudioData(data))
+			.then((data) => decoder.decodeAudioData(data))
 			.then((buf) => {
 				buffers.set(key, buf);
 				if (key === bedWant && !bed) setBed(bedWant);
 			})
 			.catch((e) => console.warn(`sound: ${file} not loaded`, e));
+}
+
+// The live context and its buses, made inside the first press.
+function openContext() {
+	ctx = new AudioContext();
+	sfxBus = ctx.createGain();
+	musicBus = ctx.createGain();
+	bedBus = ctx.createGain();
+	sfxBus.gain.value = sfxOn ? 1 : 0;
+	musicBus.gain.value = musicOn ? 1 : 0;
+	// A limiter over everything: a big cascade stacks pops, landings and the win music.
+	master = ctx.createDynamicsCompressor();
+	master.threshold.value = -6;
+	master.knee.value = 6;
+	master.ratio.value = 12;
+	master.attack.value = 0.003;
+	master.release.value = 0.25;
+	master.connect(ctx.destination);
+	bedBus.connect(musicBus);
+	sfxBus.connect(master);
+	musicBus.connect(master);
+	// The bed asked for before the press starts now.
+	if (bedWant) setBed(bedWant);
 }
 
 const ramp = (g: GainNode, to: number, s = FADE_S) => {
@@ -275,4 +290,5 @@ export function sting(name: Sting): () => void {
 export function closeSound() {
 	void ctx?.close();
 	ctx = undefined;
+	loading = false;
 }

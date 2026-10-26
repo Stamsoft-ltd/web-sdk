@@ -12,7 +12,7 @@
 	import BaseScene from './components/BaseScene.svelte';
 	import BonusNormal from './components/BonusNormal.svelte';
 	import BonusSuper from './components/BonusSuper.svelte';
-	import MysteryEgg, { MYSTERY_MS, START_BLOBS } from './components/MysteryEgg.svelte';
+	import MysteryEgg, { BURST_MS, KNOCKS_MS, MYSTERY_MS, START_BLOBS } from './components/MysteryEgg.svelte';
 	import BonusCard, { CARD_BUILD_MS, type CardKind } from './components/BonusCard.svelte';
 	import WinScreen, { type WinTier } from './components/WinScreen.svelte';
 	import SpinLog, { type SpinLogRow } from './components/SpinLog.svelte';
@@ -46,6 +46,19 @@
 		localeVersion;
 		return t(k);
 	};
+	// The Mystery card's copy is a lead line, one line per bonus with its odds, and a closing
+	// line: the odds lines render as rows, the percentage in a chip and the bonus name apart
+	// from what it does.
+	const oddsCopy = (text: string) => {
+		const lines = text.split('\n');
+		const odds = lines.slice(1, lines.length > 2 ? -1 : undefined).map((line) => {
+			// "65 % Name — what", "%65 Name — what" (tr), "65 % Name: what" (es).
+			const [, pct = '', rest = line] = /^(\d+\s?%|%\d+)\s*(.*)$/.exec(line) ?? [];
+			const [, name = rest, what = ''] = /^(.*?)(?:\s[—–-]\s|:\s)(.*)$/.exec(rest) ?? [];
+			return { pct, name, what };
+		});
+		return { lead: lines[0], odds, foot: lines.length > 2 ? lines.at(-1) : '' };
+	};
 	let board = $state(initialState());
 	let balance = $state(0);
 	let currency = $state(q.currency);
@@ -54,8 +67,8 @@
 	let bets = $state([0.1, 0.2, 0.5, 1, 2, 5, 10]);
 	let busy = $state(false);
 	let mystery = $state<{ tier: string; pace: number } | null>(null);
-	// The bonus cards (BonusCard): free spins awarded for Normal/Super, the Mystery draw's
-	// result after the egg, and the bonus total when the spins end. Each waits for the player
+	// The bonus cards (BonusCard): the bonus won or bought (its name, rule and spins; after the
+	// egg for a Mystery draw), and the bonus total when the spins end. Each waits for the player
 	// like other slots' congrats screens: it stays until a tap, Space or Enter, taken only once
 	// the card has built up. `card` outlives `cardOpen` so the card keeps its content while it
 	// fades out.
@@ -193,10 +206,16 @@
 	let settling = $state(false);
 	let turbo = $state(false);
 	let superTurbo = $state(false);
-	// Every bonus round, bought or won, plays at normal speed: turbo and super turbo are put
-	// aside as the round starts (board.tier) and handed back once it is over.
+	// Every bonus round, bought or won, starts at normal speed: turbo and super turbo are put
+	// aside as the round starts (board.tier) and handed back once it is over. The player may
+	// speed the round back up; that choice then outlives the round (a speed change drops the hold).
 	let turboHeld: { turbo: boolean; superTurbo: boolean } | null = null;
 	let inBonus = $derived(!!board.tier);
+	// A tall phone's spare sky goes to a bigger logo in the base game (up to 1.6×). The bonus
+	// panels and spin log share its row, so there it keeps nearly its own size.
+	let logoScale = $derived(
+		!portrait ? 1 : inBonus ? 1.08 : Math.min(1.6, 1 + Math.max(0, baseStage.h - PORTRAIT_H) / 600),
+	);
 	$effect(() => {
 		const on = inBonus;
 		untrack(() => {
@@ -242,16 +261,23 @@
 	let autoChoice = $state(100);
 	let autoFeature = $state(false);
 	let autoMode = $state<Mode>('base');
-	// Extra feature: while on, every regular spin (and regular autoplay) plays extra_chance.
-	let extraChance = $state(false);
-	let spinMode = $derived<Mode>(extraChance ? 'extra_chance' : 'base');
+	// Extra Feature and Feature Spin are switches, not buys: while one is on, every regular spin
+	// (and regular autoplay) plays its mode at its cost, shown as the HUD bet. One at a time;
+	// the HUD bonus button reads DEACTIVATE and turns it off.
+	let toggled = $state<'extra_chance' | 'feature' | null>(null);
+	let spinMode = $derived<Mode>(toggled ?? 'base');
+	const toggleMode = (mode: 'extra_chance' | 'feature') => {
+		toggled = toggled === mode ? null : mode;
+		// Switching one on is the player's choice made: back to the board.
+		if (toggled) closeModal();
+	};
 	// The HUD bonus button turns into the switch-off while Extra is on. DEACTIVATE runs about
 	// twice BONUS's length, so its label is fitted to the button (measured in the button's own
 	// font, per layout).
 	let bonusBtn = $state<HTMLButtonElement>();
 	let bonusW = $state(0);
 	let bonusFit = $state({ k: 1, track: 0 });
-	let bonusLabel = $derived(tr(extraChance ? 'DEACTIVATE' : 'BONUS'));
+	let bonusLabel = $derived(tr(toggled ? 'DEACTIVATE' : 'BONUS'));
 	$effect(() => {
 		const label = bonusLabel;
 		const w = bonusW;
@@ -270,7 +296,7 @@
 			bonusFit = { k: Math.min(1, room / tw), track };
 		});
 	});
-	const AUTO_STEPS = [5, 10, 25, 50, 100];
+	const AUTO_STEPS = [10, 25, 50, 75, 100, 250, 500, 1000];
 	const stepAuto = (d: number) =>
 		(autoChoice = AUTO_STEPS[Math.max(0, Math.min(AUTO_STEPS.length - 1, AUTO_STEPS.indexOf(autoChoice) + d))]);
 	const BUYS: Mode[] = ['feature', 'normal', 'super', 'mystery'];
@@ -486,8 +512,10 @@
 	let moving = $state(false);
 	let popping = $state<Record<string, number>>({});
 	// Each winning cluster's share of the award, popped up at the cluster's centre (cells as
-	// fractions of the grid) with a burst of confetti; cleared when the board tumbles.
-	type ClusterPop = { id: number; x: number; y: number; amount: string };
+	// fractions of the grid) with a burst of confetti; cleared when the board tumbles. `s` sizes
+	// the pill by its share of the biggest cluster's award, so a late bonus board's crowd of
+	// small pills doesn't drown the one that matters.
+	type ClusterPop = { id: number; x: number; y: number; amount: string; s: number };
 	let clusterPops = $state<ClusterPop[]>([]);
 	let popId = 0;
 	const SPARKS = Array.from({ length: 16 }, (_, i) => {
@@ -502,13 +530,15 @@
 		logoBeat++;
 		const wins: any[] = event.wins ?? [];
 		const raw = wins.reduce((t, w) => t + (w.rawAward ?? 0), 0) || 1;
+		const top = Math.max(...wins.map((w) => w.rawAward ?? 0)) || 1;
 		clusterPops = wins.map((w) => {
 			const ps: any[] = w.positions ?? [];
 			const cx = ps.reduce((t, p) => t + p.reel, 0) / (ps.length || 1);
 			const cy = ps.reduce((t, p) => t + p.row, 0) / (ps.length || 1);
 			// Split the paid award by each cluster's raw share, so the pops add up to the win.
 			const award = ((w.rawAward ?? 0) * event.paidAward) / raw;
-			return { id: ++popId, x: (cx + 0.5) / 7, y: (cy + 0.5) / 7, amount: win(winMoney(roundBet, award)) };
+			const s = wins.length > 1 ? 0.74 + 0.26 * Math.sqrt((w.rawAward ?? 0) / top) : 1;
+			return { id: ++popId, x: (cx + 0.5) / 7, y: (cy + 0.5) / 7, amount: win(winMoney(roundBet, award)), s };
 		});
 		// The blobs the cluster paid on (fruitUnits, the paytable's "blob units"): counted as it
 		// connects, before this win's split adds more.
@@ -741,7 +771,8 @@
 	];
 	const BIG_WIN_LAND_MS = 1300;
 	const FREE_SPIN_WIN_PACE = 0.6;
-	const BIG_WIN_HOLD_MS = 2500;
+	// The counted amount stays up this long before the screen closes (a tap still closes it).
+	const BIG_WIN_HOLD_MS = 4500;
 	// `id`: each win screen is a fresh WinScreen ({#key}); two back to back would otherwise reuse
 	// one instance, and it lays out its tier once (a WILD title over the SWEET plaque).
 	let bigWin = $state<{ id: number; tier: WinTier; shown: number; final: number; speed: number } | null>(null);
@@ -1235,10 +1266,14 @@
 				// much that the prize can't be read.
 				const pace = Math.max(paceScale(), 0.5);
 				mystery = { tier: board.tier, pace };
-				// MysteryEgg bursts at 1750ms of the pace; the clip's crack peaks 80ms in.
-				sfx.play('crack', 1750 * pace - 80, 1.3);
-				// Its wobble builds up to the burst: taps that quicken and climb.
-				[900, 1200, 1420, 1580, 1680].forEach((ms, i) => sfx.play('land', ms * pace, 0.5 + i * 0.12, 1.2 + i * 0.12, true));
+				// Each knock is a tap and a small, high crack (louder and lower each time); the shudder
+				// after the third quickens and climbs; the burst is the full crack (it peaks 80ms in).
+				KNOCKS_MS.forEach((ms, i) => {
+					sfx.play('land', ms * pace, 0.45 + i * 0.12, 1 + i * 0.08, true);
+					sfx.play('crack', ms * pace - 80, 0.3 + i * 0.12, 1.7 - i * 0.15);
+				});
+				[3250, 3400, 3520, 3610].forEach((ms, i) => sfx.play('land', ms * pace, 0.4 + i * 0.1, 1.2 + i * 0.12, true));
+				sfx.play('crack', BURST_MS * pace - 80, 1.3);
 				await sleep(MYSTERY_MS * pace);
 				mystery = null;
 				if (disposed) return;
@@ -1246,10 +1281,8 @@
 			}
 			if (event.type === 'bonusStart') {
 				autoCount = 0;
-				// Mystery shows what its egg drew; every other trigger gets the free-spins card.
-				const count = event.freeSpins ?? 10;
-				if (activeMode === 'mystery') await presentCard({ kind: 'mystery', count, tier: board.tier });
-				else await presentCard({ kind: 'intro', count });
+				// Every bonus, won or bought, opens on the "you won" card: its name, rule and spins.
+				await presentCard({ kind: 'mystery', count: event.freeSpins ?? 10, tier: board.tier });
 				if (disposed) return;
 				continue;
 			}
@@ -1506,8 +1539,10 @@
 		// lands. Translate only: a scale (squash) would re-raster the board and its 49 blobs.
 		const board = document.querySelector<HTMLElement>('main .board');
 		board?.classList.add('dropping');
-		board
-			?.animate(
+		// The rim layer rides along with it.
+		const deco = document.querySelector<HTMLElement>('main .board-deco');
+		const drop = (el: HTMLElement | null) =>
+			el?.animate(
 				[
 					{ translate: '0 -1400px' },
 					{ translate: '0 -1400px', offset: 0.14, easing: 'cubic-bezier(0.55, 0, 0.9, 0.55)' },
@@ -1518,8 +1553,9 @@
 					{ translate: '0 0' },
 				],
 				FLY_MS + 200,
-			)
-			.finished.then(() => board.classList.remove('dropping'));
+			);
+		drop(deco);
+		drop(board)?.finished.then(() => board?.classList.remove('dropping'));
 		const dx = b.left - a.left,
 			dy = b.top - a.top,
 			k = b.width / a.width;
@@ -1629,6 +1665,7 @@
 		}
 	}
 	function cycleSpeed() {
+		turboHeld = null;
 		if (superTurbo || (turbo && jurisdiction.disabledSuperTurbo)) turbo = superTurbo = false;
 		else if (turbo) [turbo, superTurbo] = [false, true];
 		else turbo = true;
@@ -1731,7 +1768,7 @@
 >
 	<div
 		class="base-stage"
-		style={`width:${baseStage.w}px;height:${baseStage.h}px;--ex:${baseStage.h - (portrait ? PORTRAIT_H : phone ? PHONE.h : 670)}px;${phone ? `--W:${phoneLay.W}px;--H:${phoneLay.H}px;--c:${phoneLay.c};--pb-s:${phoneLay.s};--pb-x:${phoneLay.x}px;--pb-y:${phoneLay.y}px;` : ''}--k:${baseFit};transform:translate(-50%,-50%) scale(${baseFit})`}
+		style={`width:${baseStage.w}px;height:${baseStage.h}px;--ex:${baseStage.h - (portrait ? PORTRAIT_H : phone ? PHONE.h : 670)}px;${phone ? `--W:${phoneLay.W}px;--H:${phoneLay.H}px;--c:${phoneLay.c};--pb-s:${phoneLay.s};--pb-x:${phoneLay.x}px;--pb-y:${phoneLay.y}px;` : ''}--k:${baseFit};--ls:${logoScale.toFixed(3)};transform:translate(-50%,-50%) scale(${baseFit})`}
 	>
 		<div class="base-logo">{#if pixiScene}<PixiLogo {gaze} cheer={logoCheer} beat={logoBeat} />{:else}<Logo
 				uid="base-logo"
@@ -1896,11 +1933,14 @@
 							class="spark"
 							style={`--dx:${k.dx.toFixed(1)}px;--dy:${k.dy.toFixed(1)}px;width:${k.s}px;height:${k.s}px;background:${k.c}`}
 						></span>{/each}
-					<strong>{p.amount}</strong>
+					<strong style={`font-size:${(22 * p.s).toFixed(1)}px`}>{p.amount}</strong>
 				</div>
 			{/each}
 			</div>
 		</section>
+		<!-- The board's jelly rim, top gloss and drips: a layer of its own over the board, so the
+		     clip the board takes while blobs fall (.board.moving) doesn't cut the drips off. -->
+		<div class="board-deco" aria-hidden="true"></div>
 		{#if plaqueOn}
 			<div
 				class="win-plaque"
@@ -1972,11 +2012,11 @@
 			>
 			<button
 				class="bonus-button"
-				class:extra-on={extraChance}
+				class:extra-on={!!toggled}
 				bind:this={bonusBtn}
 				bind:clientWidth={bonusW}
 				disabled={locked || jurisdiction.disabledBuyFeature}
-				onclick={() => (extraChance ? (extraChance = false) : openModal('bonus'))}
+				onclick={() => (toggled ? (toggled = null) : openModal('bonus'))}
 				><span
 					style={bonusFit.k < 1
 						? `font-size:${bonusFit.k.toFixed(3)}em;letter-spacing:${(bonusFit.track * bonusFit.k).toFixed(2)}px`
@@ -2002,9 +2042,9 @@
 			<div class="bet-controls" class:coinless={betCoinless}>
 				<img class="bet-coins" src="./base/coins.svg" alt="" />
 				<div class="metric">
-					<!-- What a regular spin costs: doubled while the Extra feature is on. -->
+					<!-- What a regular spin costs: its mode's price while Extra Feature or Feature Spin is on. -->
 					<span class="metric-label bet-label">{tr('BET')}</span><strong
-						class:extra={extraChance}
+						class:extra={!!toggled}
 						style={hudFont(betText, 'bet', betCoinless ? COIN_ROOM : 0)}>{betText}</strong
 					>
 				</div>
@@ -2037,7 +2077,7 @@
 				class="hud-icon turbo-button"
 				aria-label={superTurbo ? tr('SUPER TURBO SPIN') : turbo ? tr('TURBO SPIN') : tr('TURBO')}
 				aria-pressed={turbo || superTurbo}
-				disabled={!!jurisdiction.disabledTurbo || inBonus}
+				disabled={!!jurisdiction.disabledTurbo}
 				onclick={cycleSpeed}
 				>{#if superTurbo}<img class="speed-icon" src="./base/speed-super.webp" alt="" />{:else if turbo}<span class="turbo-icon"
 						><img src="./base/speed-turbo.webp" alt="" /></span
@@ -2170,28 +2210,32 @@
 			<h2 class="bonus-title" id="modal-title">{tr('BUY BONUS')}</h2>
 			<div class="buy-cards" use:edgeFade>
 				<!-- Not a buy: a switch for every following regular spin, priced per spin. -->
-				<article class="buy-card" class:on={extraChance} style="--i:0">
+				<article class="buy-card" class:on={toggled === 'extra_chance'} style="--i:0">
 					<h3>{tr('EXTRA')}</h3>
 					<p>{tr('EXTRA DESC')}</p>
 					<div class="buy-art extra"><Blob symbol="STRAWBERRY" uid="buy-extra" /></div>
 					<b class="buy-price">{money(bet * MODES.extra_chance)}</b>
 					<button
 						class="buy-button activate"
-						class:on={extraChance}
-						aria-pressed={extraChance}
+						class:on={toggled === 'extra_chance'}
+						aria-pressed={toggled === 'extra_chance'}
 						disabled={autoCount > 0}
-						onclick={() => {
-							extraChance = !extraChance;
-							// Switching it on is the player's choice made: back to the board.
-							if (extraChance) closeModal();
-						}}
-						>{tr(extraChance ? 'DEACTIVATE' : 'ACTIVATE')}</button
+						onclick={() => toggleMode('extra_chance')}
+						>{tr(toggled === 'extra_chance' ? 'DEACTIVATE' : 'ACTIVATE')}</button
 					>
 				</article>
 				{#each BUYS as mode, j}{@const i = j + 1}
-					<article class="buy-card" style={`--i:${i}`}>
+					<article class="buy-card" class:on={toggled === mode} style={`--i:${i}`}>
 						<h3>{tr(mode.toUpperCase())}</h3>
-						<p>{tr(`${mode.toUpperCase()} DESC`)}</p>
+						{#if mode === 'mystery'}{@const d = oddsCopy(tr('MYSTERY DESC'))}
+							<p class="mystery-desc">
+								{d.lead}{#each d.odds as o}<span class="odds"
+										>{#if o.pct}<b>{o.pct}</b>{/if}<span><strong>{o.name}</strong>{#if o.what}&nbsp;– {o.what}{/if}</span></span
+									>{/each}{#if d.foot}<span class="foot">{d.foot}</span>{/if}
+							</p>
+						{:else}
+							<p>{tr(`${mode.toUpperCase()} DESC`)}</p>
+						{/if}
 						<div class={`buy-art ${mode}`}>
 							{#if mode === 'feature'}
 								{#each FEATURE_BLOBS as [x, y], j}<span class="feature-blob" style={`left:${x}px;top:${y}px`}
@@ -2208,14 +2252,26 @@
 							{/if}
 						</div>
 						<b class="buy-price">{money(bet * MODES[mode])}</b>
-						<button
-							class="buy-button"
-							disabled={balance < bet * MODES[mode]}
-							onclick={() => {
-								chosen = mode;
-								modal = 'confirm';
-							}}>{tr(mode === 'feature' ? 'ACTIVATE' : 'BUY')}</button
-						>
+						{#if mode === 'feature'}
+							<!-- A switch like Extra Feature's: the price shows on the HUD bet while it is on. -->
+							<button
+								class="buy-button activate"
+								class:on={toggled === 'feature'}
+								aria-pressed={toggled === 'feature'}
+								disabled={autoCount > 0}
+								onclick={() => toggleMode('feature')}
+								>{tr(toggled === 'feature' ? 'DEACTIVATE' : 'ACTIVATE')}</button
+							>
+						{:else}
+							<button
+								class="buy-button"
+								disabled={balance < bet * MODES[mode]}
+								onclick={() => {
+									chosen = mode;
+									modal = 'confirm';
+								}}>{tr('BUY')}</button
+							>
+						{/if}
 					</article>
 				{/each}
 			</div>
@@ -2294,8 +2350,8 @@
 								type="checkbox"
 								role="switch"
 								bind:checked={turbo}
-								onchange={() => turbo && (superTurbo = false)}
-								disabled={!!jurisdiction.disabledTurbo || inBonus}
+								onchange={() => ((turboHeld = null), turbo && (superTurbo = false))}
+								disabled={!!jurisdiction.disabledTurbo}
 							/></label
 						>
 						<label class="toggle-row"
@@ -2303,8 +2359,8 @@
 								type="checkbox"
 								role="switch"
 								bind:checked={superTurbo}
-								onchange={() => superTurbo && (turbo = false)}
-								disabled={!!(jurisdiction.disabledTurbo || jurisdiction.disabledSuperTurbo) || inBonus}
+								onchange={() => ((turboHeld = null), superTurbo && (turbo = false))}
+								disabled={!!(jurisdiction.disabledTurbo || jurisdiction.disabledSuperTurbo)}
 							/></label
 						>
 						<label class="toggle-row"

@@ -510,6 +510,9 @@ function rrect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h
 // Pad textures, the CSS cells: #4b3981 (#5a4596 split) with the depth gradient and a top
 // highlight, the scatter's inset gold glow, and the lit pad with its pink outer glow.
 const GLOW = 26;
+// The veil over the pads a win passes by: enough to lift the winners, light enough that the
+// rest of the board stays in colour (0.5 turned a busy bonus board grey).
+const VEIL = 0.32;
 type PadKind = 'pad' | 'split' | 'scatter' | 'split-scatter' | 'lit';
 function padTexture(kind: PadKind) {
 	const lit = kind === 'lit';
@@ -534,9 +537,9 @@ function padTexture(kind: PadKind) {
 		ctx.fill();
 		if (!lit) {
 			const g = ctx.createLinearGradient(0, 0, 0, CELL_H);
-			g.addColorStop(0, '#ffffff14');
+			g.addColorStop(0, '#ffffff1f');
 			g.addColorStop(0.4, '#ffffff00');
-			g.addColorStop(1, '#0000001f');
+			g.addColorStop(1, '#00000033');
 			ctx.fillStyle = g;
 			ctx.fill();
 		}
@@ -564,8 +567,11 @@ function padTexture(kind: PadKind) {
 			ctx.fillStyle = '#fece06';
 			ctx.fill('evenodd');
 		} else {
-			ctx.fillStyle = '#ffffff1f';
-			ctx.fillRect(0, B, CELL_W, 1);
+			// A lit top lip and a shaded foot: the pad reads as a socket, not a flat tile.
+			ctx.fillStyle = '#ffffff2e';
+			ctx.fillRect(0, B, CELL_W, 1.5);
+			ctx.fillStyle = '#00000030';
+			ctx.fillRect(0, CELL_H - B - 2, CELL_W, 2);
 		}
 		ctx.restore();
 	});
@@ -1575,7 +1581,7 @@ export class BoardView {
 		if (litKey !== this.litKey) {
 			this.litKey = litKey;
 			// Fading out keeps the old shape, so cells that were lit never darken on the way.
-			this.veil = { from: this.veilAlpha(now), to: lit.size ? 0.5 : 0, start: now };
+			this.veil = { from: this.veilAlpha(now), to: lit.size ? VEIL : 0, start: now };
 			if (lit.size) this.drawVeil(lit);
 		}
 		for (const c of this.cells) {

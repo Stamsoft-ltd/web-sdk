@@ -187,7 +187,7 @@ const en: Record<string, string> = {
 	'INFO UI MENU': 'Opens settings and game info.',
 	'INFO UI SOUND': 'In settings: turns sound on or off.',
 	'INFO UI MUSIC': 'In settings: turns music on or off.',
-	'INFO UI BONUS': 'Opens the bonus menu. While Extra Feature is on, it reads Deactivate and turns it off.',
+	'INFO UI BONUS': 'Opens the bonus menu. While Extra Feature or Feature Spin is on, it reads Deactivate and turns it off.',
 	'INFO UI INFO': 'In settings: opens the game info.',
 	'INFO UI PREV': 'Previous',
 	'INFO UI PREV DESC': 'Goes to the previous page.',

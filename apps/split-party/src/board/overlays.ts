@@ -5,7 +5,7 @@ import { bezier, keyframes, progress, EASE_IN_OUT, LINEAR, type Frame } from './
 import { BORDER, CELL_W, CELL_H, GRID_H, GRID_W, GRID_X, GRID_Y, cellX, cellY } from './geometry';
 import { DISPOSE } from './pixiApp';
 
-export type ClusterPop = { id: number; x: number; y: number; amount: string };
+export type ClusterPop = { id: number; x: number; y: number; amount: string; s?: number };
 
 const TEX_RES = 3;
 function canvasTexture(w: number, h: number, draw: (ctx: CanvasRenderingContext2D) => void) {
@@ -244,7 +244,7 @@ function teaseBubble() {
 }
 // ---- Layer ------------------------------------------------------------------------------------
 
-type Pop = { root: Container; pill: Sprite; sparks: Graphics[]; start: number };
+type Pop = { root: Container; pill: Sprite; sparks: Graphics[]; start: number; k: number };
 type Sweat = { root: Container; x: number; y: number };
 
 export class Overlays {
@@ -327,7 +327,7 @@ export class Overlays {
 			pill.anchor.set(0.5);
 			root.addChild(pill);
 			this.pops.addChild(root);
-			this.popViews.set(p.id, { root, pill, sparks, start: now });
+			this.popViews.set(p.id, { root, pill, sparks, start: now, k: p.s ?? 1 });
 		}
 		// Sweat beads during the relief sigh.
 		if (sweat.length && !this.sweatViews.size) this.relief = { start: now, ms: reliefMs };
@@ -418,7 +418,7 @@ export class Overlays {
 			const p = reduced ? 0.5 : Math.min(1, (now - v.start) / 1500);
 			const a = keyframes(AMOUNT, p, C_SPRING);
 			v.pill.alpha = a.a;
-			v.pill.scale.set(a.s / TEX_RES);
+			v.pill.scale.set((a.s * v.k) / TEX_RES);
 			v.pill.position.set(0, a.ty);
 			const sp = reduced ? 1 : Math.min(1, (now - v.start) / 1100);
 			const e = C_SPARK(sp);
