@@ -55,11 +55,8 @@
 		{ label: 'MENU', desc: 'INFO UI MENU DESC', icon: uiIcon('menu.svg') },
 		{ label: 'MUSIC', desc: 'INFO UI MUSIC DESC', icon: uiIcon('music.svg') },
 	];
-	const MULT_LADDER = [
-		'1x', '2x', '3x', '4x', '5x', '6x', '8x', '10x', '12x', '15x', '20x', '25x', '30x', '35x',
-		'40x', '50x', '60x', '70x', '80x', '120x', '150x', '200x', '250x', '300x', '350x', '400x',
-		'500x', '600x', '800x', '1000x',
-	];
+	import { MULTIPLIER_LADDER } from '../game/multiplierPresentation';
+	const MULT_LADDER = MULTIPLIER_LADDER.map(m => `${m}x`);
 
 	// Every number on these pages comes from game/config.ts (the app's copy of the math), never typed
 	// by hand — a hand-typed cell drifts from what the RGS pays (STAKE_REVIEW_LESSONS R-03).

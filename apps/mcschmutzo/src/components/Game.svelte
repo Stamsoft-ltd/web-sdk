@@ -25,6 +25,7 @@
 	import BoardWinPop from './BoardWinPop.svelte';
 	import FreeSpinIntroHtml from './FreeSpinIntroHtml.svelte';
 	import FreeSpinPanelHtml from './FreeSpinPanelHtml.svelte';
+	import BaseMultiplierHtml from './BaseMultiplierHtml.svelte';
 	import OrderNotesHtml from './OrderNotesHtml.svelte';
 	import WheelBonus from './WheelBonus.svelte';
 	import SauceWipeHtml from './SauceWipeHtml.svelte';
@@ -323,6 +324,7 @@
 			<FreeSpinIntroHtml />
 			<FreeSpinOutroHtml />
 			<FreeSpinPanelHtml />
+				<BaseMultiplierHtml />
 			<OrderNotesHtml />
 			<WheelBonus />
 			<FinalSpinHtml />

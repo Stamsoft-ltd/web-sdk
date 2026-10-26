@@ -1,3 +1,5 @@
+import { tick } from 'svelte';
+import { presentLine } from './multiplierPresentation';
 import _ from 'lodash';
 
 import { recordBookEvent, checkIsMultipleRevealEvents, type BookEventHandlerMap } from 'utils-book';
@@ -26,9 +28,16 @@ const revealHasFollowUp = (bookEvent: BookEvent, bookEvents: BookEvent[]) => {
 	for (const event of bookEvents.slice(at + 1)) {
 		if (event.type === 'reveal' || event.type === 'updateFreeSpin') return false;
 		if (event.type === 'winInfo' && event.wins.length > 0) return true;
-		if (event.type === 'lockRespinStart' || event.type === 'freeSpinTrigger' || event.type === 'freeSpinEnd')
+		if (
+			event.type === 'lockRespinStart' ||
+			event.type === 'freeSpinTrigger' ||
+			event.type === 'freeSpinEnd'
+		)
 			return true;
-		if (event.type === 'lockRespinUpdate' && (event.newLockedPositions.length > 0 || event.addedSteps > 0))
+		if (
+			event.type === 'lockRespinUpdate' &&
+			(event.newLockedPositions.length > 0 || event.addedSteps > 0)
+		)
 			return true;
 		if (event.type === 'updateGlobalMult' && event.addedSteps > 0) return true;
 	}
@@ -41,7 +50,8 @@ const winStartsLockRespin = (bookEvent: BookEvent, bookEvents: BookEvent[]) => {
 	const at = bookEvents.findIndex((event) => event.index === bookEvent.index);
 	for (const event of bookEvents.slice(at + 1)) {
 		if (event.type === 'lockRespinStart') return true;
-		if (event.type === 'reveal' || event.type === 'setWin' || event.type === 'freeSpinEnd') return false;
+		if (event.type === 'reveal' || event.type === 'setWin' || event.type === 'freeSpinEnd')
+			return false;
 	}
 	return false;
 };
@@ -109,7 +119,8 @@ const getWinLevelData = (winLevel: number): WinLevelData => {
 // count up in place.
 // The chef's reaction to a presented win: a nod for a plaque win, a laugh for a big win, the full
 // celebration from the EPIC tier (100×) up.
-const chefMoodForWin = (data: WinLevelData) => (data.level >= 8 ? 'hugeWin' : data.type === 'big' ? 'bigWin' : 'win');
+const chefMoodForWin = (data: WinLevelData) =>
+	data.level >= 8 ? 'hugeWin' : data.type === 'big' ? 'bigWin' : 'win';
 /** LEGENDARY (500×+) — every max win lands here too: the free-games chef's hat does a full flip. */
 const isTopWin = (data: WinLevelData) => data.level >= 10;
 /** The win cap (25,000×): only a win that reaches it exactly is a MAX WIN. */
@@ -141,7 +152,8 @@ const getWinLevelDataForAmount = (amount: number): WinLevelData => {
 };
 
 const winLevelSoundsPlay = ({ winLevelData }: { winLevelData: WinLevelData }) => {
-	if (winLevelData?.alias === 'max' || winLevelData?.alias === 'maxwin') eventEmitter.broadcastAsync({ type: 'uiHide' });
+	if (winLevelData?.alias === 'max' || winLevelData?.alias === 'maxwin')
+		eventEmitter.broadcastAsync({ type: 'uiHide' });
 	if (winLevelData?.sound?.sfx) {
 		eventEmitter.broadcast({ type: 'soundOnce', name: winLevelData.sound.sfx });
 	}
@@ -282,13 +294,7 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		await sequence(bookEvent.wins, async (win) => {
 			await animateSymbols({ positions: win.positions });
 		});
-		stateGame.paylineWins = bookEvent.wins.map((win) => ({
-			lineIndex: win.meta.lineIndex,
-			symbol: win.symbol,
-			path: [...win.positions]
-				.sort((left, right) => left.reel - right.reel)
-				.map(({ reel, row }) => ({ reel, row: row - 1 })),
-		}));
+		stateGame.paylineWins = bookEvent.wins.map(presentLine);
 		await waitForTimeout(stateBet.isTurbo ? WIN_BEAT_TURBO_MS : WIN_BEAT_MS);
 	},
 	setTotalWin: async (bookEvent: BookEventOfType<'setTotalWin'>) => {
@@ -374,7 +380,8 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.winCountUp = 0;
 		eventEmitter.broadcast({ type: 'freeSpinOutroShow' });
 		if (bookEvent.amount > 0) setChefMood(chefMoodForWin(winLevelData), isTopWin(winLevelData));
-		if (bookEvent.amount > 0 && winLevelData?.type !== 'big') eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_normal' });
+		if (bookEvent.amount > 0 && winLevelData?.type !== 'big')
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_win_normal' });
 		winLevelSoundsPlay({ winLevelData });
 		await eventEmitter.broadcastAsync({
 			type: 'freeSpinOutroCountUp',
@@ -440,14 +447,21 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.collectedScatters = bookEvent.collectedScatters;
 		stateGame.globalMultiplier = bookEvent.globalMult;
 		const newLocks = bookEvent.newLockedPositions.length > 0;
-		if (newLocks) eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_lock_grow', forcePlay: true });
+		if (newLocks)
+			eventEmitter.broadcast({ type: 'soundOnce', name: 'sfx_lock_grow', forcePlay: true });
 		if (newLocks && inFreeGames()) await hold(LOCK_SETTLE_MS);
 		if (bookEvent.addedSteps > 0) soupCheck = null;
 		if (import.meta.env.DEV && bookEvent.addedSteps > 0)
-			console.info('[pot] lockRespinUpdate', { addedSteps: bookEvent.addedSteps, globalMult: bookEvent.globalMult, multiplierPositions: bookEvent.multiplierPositions, soupsOnBoard: soupsOnBoard() });
+			console.info('[pot] lockRespinUpdate', {
+				addedSteps: bookEvent.addedSteps,
+				globalMult: bookEvent.globalMult,
+				multiplierPositions: bookEvent.multiplierPositions,
+				soupsOnBoard: soupsOnBoard(),
+			});
 		// The soups shoot NOW, while they're still in their cells (the next re-spin rolls them away) and
 		// before this spin's win is shown — not deferred to the end of the free spin.
-		if (bookEvent.addedSteps > 0 && inFreeGames()) {
+		if (bookEvent.addedSteps > 0) {
+			await tick(); // base readout must publish its shot target before flushing
 			queuePotShots(bookEvent.addedSteps, bookEvent.multiplierPositions);
 			await flushPot(stateGame.globalMultiplier);
 		}
@@ -467,9 +481,16 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 		stateGame.globalMultiplier = bookEvent.globalMult;
 		if (bookEvent.addedSteps > 0) soupCheck = null;
 		if (import.meta.env.DEV && bookEvent.addedSteps > 0)
-			console.info('[pot] updateGlobalMult', { source: bookEvent.source, addedSteps: bookEvent.addedSteps, previousGlobalMult: bookEvent.previousGlobalMult, globalMult: bookEvent.globalMult, soupsOnBoard: soupsOnBoard() });
+			console.info('[pot] updateGlobalMult', {
+				source: bookEvent.source,
+				addedSteps: bookEvent.addedSteps,
+				previousGlobalMult: bookEvent.previousGlobalMult,
+				globalMult: bookEvent.globalMult,
+				soupsOnBoard: soupsOnBoard(),
+			});
 		// (the wheel's steps aren't soups — they're shown by the wheel itself)
-		if (bookEvent.addedSteps > 0 && inFreeGames() && bookEvent.source !== 'wheel') {
+		if (bookEvent.addedSteps > 0 && bookEvent.source !== 'wheel') {
+			await tick();
 			queuePotShots(bookEvent.addedSteps, soupsOnBoard());
 			await flushPot(stateGame.globalMultiplier);
 		}
@@ -535,14 +556,58 @@ export const bookEventHandlerMap: BookEventHandlerMap<BookEvent, BookEventContex
 				| undefined;
 		}
 
-		const lastFreeSpinTriggerEvent = findLastBookEvent('freeSpinTrigger' as const);
-		const lastUpdateFreeSpinEvent = findLastBookEvent('updateFreeSpin' as const);
-		const lastSetTotalWinEvent = findLastBookEvent('setTotalWin' as const);
-		const lastUpdateGlobalMultEvent = findLastBookEvent('updateGlobalMult' as const);
-
-		if (lastFreeSpinTriggerEvent) await playBookEvent(lastFreeSpinTriggerEvent, { bookEvents });
-		if (lastUpdateFreeSpinEvent) playBookEvent(lastUpdateFreeSpinEvent, { bookEvents });
-		if (lastSetTotalWinEvent) playBookEvent(lastSetTotalWinEvent, { bookEvents });
-		if (lastUpdateGlobalMultEvent) playBookEvent(lastUpdateGlobalMultEvent, { bookEvents });
+		const trigger = findLastBookEvent('freeSpinTrigger' as const);
+		const wheel = findLastBookEvent('bonusWheel' as const);
+		const ended = findLastBookEvent('freeSpinEnd' as const);
+		const counter = findLastBookEvent('updateFreeSpin' as const);
+		const total = findLastBookEvent('setTotalWin' as const);
+		const mult = findLastBookEvent('updateGlobalMult' as const);
+		const reveal = findLastBookEvent('reveal' as const);
+		stateGame.bonusMode = (wheel || trigger) && !ended ? 'freegame' : null;
+		stateGame.globalMultiplier = ended ? 1 : (mult?.globalMult ?? wheel?.globalMult ?? 1);
+		resetPot(stateGame.globalMultiplier);
+		if (reveal) {
+			stateGame.gameType = reveal.gameType;
+			stateGameDerived.enhancedBoard.settle(reveal.board);
+		}
+		// Locks belong only to the latest ordinary/free spin, not an earlier bonus spin.
+		const newSpin = _.findLast(bookEvents, (e) => e.type === 'reveal' && e.gameType !== 'respin');
+		const currentLocks = bookEvents.filter((e) => e.index > (newSpin?.index ?? -1));
+		const start = _.findLast(
+			currentLocks,
+			(e): e is BookEventOfType<'lockRespinStart'> => e.type === 'lockRespinStart',
+		);
+		const locks = _.findLast(
+			currentLocks,
+			(e) =>
+				e.type === 'lockRespinStart' || e.type === 'lockRespinUpdate' || e.type === 'lockRespinEnd',
+		);
+		stateGame.lockedPositions = [];
+		stateGame.lockSymbol = start?.symbol;
+		stateGame.collectedScatters =
+			locks?.type === 'lockRespinUpdate' || locks?.type === 'lockRespinEnd'
+				? locks.collectedScatters
+				: 0;
+		if (locks?.type === 'lockRespinStart' || locks?.type === 'lockRespinEnd')
+			stateGame.lockedPositions = locks.lockedPositions;
+		else if (locks?.type === 'lockRespinUpdate') {
+			stateGame.lockedPositions = _.uniqBy(
+				[
+					...(start?.lockedPositions ?? []),
+					...currentLocks
+						.filter((e): e is BookEventOfType<'lockRespinUpdate'> => e.type === 'lockRespinUpdate')
+						.flatMap((e) => e.newLockedPositions),
+				],
+				(p) => `${p.reel}:${p.row}`,
+			);
+		}
+		if (stateGame.bonusMode === 'freegame') {
+			stateUi.freeSpinCounterShow = true;
+			stateUi.freeSpinCounterCurrent = counter ? counter.amount + 1 : 1;
+			stateUi.freeSpinCounterTotal = counter?.total ?? wheel?.freeSpins ?? trigger?.totalFs ?? 0;
+			stateGame.bonusTier =
+				wheel?.scatterEntry === 4 || (trigger?.positions.length ?? 0) >= 4 ? 'super' : 'normal';
+		}
+		if (total) stateBet.winBookEventAmount = total.amount;
 	},
 };

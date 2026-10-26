@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import type { Tween } from 'svelte/motion';
+import type { PaylinePresentation } from './multiplierPresentation';
 
 import { createEnhanceBoard, createReelForSpinning } from 'utils-slots';
 import { createGetWinLevelDataByWinLevelAlias } from 'utils-shared/winLevel';
@@ -129,12 +130,8 @@ export const stateGame = $state({
 	featureMessage: '',
 	// Which free-games mode is running: 3 scatters / bought Normal = 'normal', 4 scatters / Super = 'super'.
 	bonusTier: 'normal' as 'normal' | 'super',
-	paylineWins: [] as Array<{
-		lineIndex: number;
-		/** The paying symbol (picks the line's sauce, PaylineOverlay). */
-		symbol?: string;
-		path: Array<{ reel: number; row: number }>;
-	}>,
+	paylineWins: [] as PaylinePresentation[],
+
 	roundWin: 0,
 	// While a win screen (big-win pad / bonus total) counts up, the HUD WIN readout shows THIS value
 	// instead of roundWin, so the two never disagree. null = no win screen owns the readout.

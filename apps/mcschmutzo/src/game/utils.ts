@@ -1,5 +1,7 @@
 import _ from 'lodash';
 import { stateBet } from 'state-shared';
+import { stateGame } from './stateGame.svelte';
+import { resetPot } from './potState.svelte';
 import { createPlayBookUtils } from 'utils-book';
 import { createGetEmptyPaddedBoard } from 'utils-slots';
 
@@ -18,7 +20,15 @@ import type { RawSymbol, SymbolState } from './types';
 // general utils
 export const { getEmptyBoard } = createGetEmptyPaddedBoard({ reelsDimensions: BOARD_DIMENSIONS });
 export const { playBookEvent, playBookEvents } = createPlayBookUtils({ bookEventHandlerMap });
+export const resetRoundMultiplier = () => {
+	stateGame.globalMultiplier = 1;
+	stateGame.bonusMode = null;
+	stateGame.featureMessage = '';
+	stateGame.paylineWins = [];
+	resetPot(1);
+};
 export const playBet = async (bet: Bet) => {
+	if (bet.state[0]?.type !== 'createBonusSnapshot') resetRoundMultiplier();
 	stateBet.winBookEventAmount = 0;
 	await playBookEvents(bet.state);
 	eventEmitter.broadcast({ type: 'stopButtonEnable' });
@@ -26,6 +36,12 @@ export const playBet = async (bet: Bet) => {
 
 // resume bet
 const BOOK_EVENT_TYPES_TO_RESERVE_FOR_SNAPSHOT = [
+	'bonusWheel',
+	'freeSpinEnd',
+	'reveal',
+	'lockRespinStart',
+	'lockRespinUpdate',
+	'lockRespinEnd',
 	'updateGlobalMult',
 	'freeSpinTrigger',
 	'updateFreeSpin',

@@ -10,6 +10,8 @@
 	import { stateUi } from 'state-shared';
 
 	import { getContext } from '../game/context';
+	import { boardFrameScreenRect } from '../game/boardLogo';
+	import { orderNotesPlacement } from '../game/multiplierPresentation';
 
 	// Diner order notes pinned on the wall in the free space LEFT of the board (desktop base game only —
 	// in free games that column holds the printer / FREE SPINS / TOTAL WIN). The cream ticket shows a
@@ -20,7 +22,7 @@
 	// Same test as Background.svelte's special-bg switch (free-spin counter shown for the whole bonus,
 	// even while the per-spin gameType flips) — the notes belong to the REGULAR diner bg only.
 	const isFreegame = $derived(context.stateGame.gameType === 'freegame' || stateUi.freeSpinCounterShow);
-	const show = $derived(layoutType === 'desktop' && !isFreegame);
+	const show = $derived((layoutType === 'desktop' || layoutType === 'tablet') && !isFreegame);
 
 	const ORDERS = [
 		{ no: 127, table: 4, items: ['2x Smutz Burger', '1x Onion Rings', '1x Sausage', 'Large Smutz Cola'] },
@@ -123,28 +125,9 @@
 	);
 
 	// Place the pair in the gutter between the screen's left edge and the board.
-	const box = $derived.by(() => {
-		const canvas = context.stateLayoutDerived.canvasSizes();
-		const main = context.stateLayoutDerived.mainLayout();
-		const b = context.stateGameDerived.boardLayout();
-		const boardLeft = main.x - (main.width * main.scale) / 2 + (b.x - b.width / 2) * main.scale;
-		const boardTop = main.y - (main.height * main.scale) / 2 + (b.y - b.height / 2) * main.scale;
-		const boardH = b.height * main.scale;
-		const gutter = boardLeft;
-		// Pinned on the plain cream WALL, not the red/white awning: the desktop diner art is
-		// cover-scaled (1678×937), and in it the awning ends at 25% of the height and the darker lower
-		// wall panel starts at ~62%. The notes start just under the awning (27.5%) and are sized so the
-		// whole stack (ticket + pink sticky ≈ 1.45 × width tall) ends above that lower panel.
-		const artAsp = 1678 / 937;
-		const coverH = canvas.width / canvas.height > artAsp ? canvas.width / artAsp : canvas.height;
-		const artTop = (canvas.height - coverH) / 2;
-		const top = artTop + coverH * 0.275;
-		const room = coverH * (0.6 - 0.275);
-		const w = Math.min(gutter * 0.6, room / 1.45, 230);
-		void boardTop;
-		void boardH;
-		return { left: gutter / 2, top, w, canvasH: canvas.height };
-	});
+	const box = $derived(orderNotesPlacement(
+		boardFrameScreenRect(context), context.stateLayoutDerived.canvasSizes(),
+	));
 </script>
 
 {#if show && box.w > 70}

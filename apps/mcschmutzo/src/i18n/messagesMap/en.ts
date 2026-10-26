@@ -99,7 +99,7 @@ export default {
 	'INFO RESPIN BODY 2':
 		'If additional matching symbols land and extend the locked winning combination, those matching symbols are also locked and another Re-Spin is awarded. The Re-Spin sequence continues for as long as new matching symbols are added to the locked combination. A Re-Spin sequence ends when no additional matching symbols are added during a Re-Spin, or when all available reel positions become filled with the selected matching symbol.',
 	'INFO RESPIN BODY 3':
-		'All wins created during the Re-Spin sequence are added to the current game-round win.',
+		'The opening win selects the locked symbol. Once the Re-Spin sequence ends, the final board is evaluated and paid once using the active Win Multiplier. Intermediate boards do not pay separately.',
 	'INFO MULT TITLE': 'WIN MULTIPLIER',
 	'INFO MULT BODY 1':
 		'During Re-Spins and Free Games, McSchmutzo symbols may appear and increase the Win Multiplier. Each qualifying McSchmutzo symbol can add Win Multiplier steps. The Win Multiplier begins at 1x. The multiplier progresses through the following levels:',

@@ -17,15 +17,9 @@ export type PotShot = {
 };
 
 /** The Win Multiplier ladder (info page): each step moves one rung up. */
-export const MULT_LADDER = [
-	1, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 35, 40, 50, 60, 70, 80, 120, 150, 200, 250, 300, 350, 400, 500,
-	600, 800, 1000,
-];
-const climb = (mult: number, steps: number) => {
-	let i = MULT_LADDER.findLastIndex((m) => m <= mult);
-	if (i < 0) i = 0;
-	return MULT_LADDER[Math.min(MULT_LADDER.length - 1, i + steps)];
-};
+export { MULTIPLIER_LADDER as MULT_LADDER } from './multiplierPresentation';
+import { climbMultiplier, soupSteps } from './multiplierPresentation';
+import { stateGame } from './stateGame.svelte';
 
 // Soups that already shot during the current reveal (a later step event in the same spin must not
 // shoot the same soup again). Cleared by beginPotReveal at every reveal.
@@ -36,7 +30,11 @@ export const potState = $state({
 	/** The multiplier shown on the pot's base. */
 	mult: 1,
 	/** Set by SpecialMascot while the pot is on screen (desktop free games), canvas px. */
-	rect: null as null | { x: number; y: number; w: number; h: number },
+	rect: null as null | {
+		x: number; y: number; w: number; h: number;
+		/** HTML card receives shots above its top edge, not underneath its opaque surface. */
+		landing?: { x: number; y: number };
+	},
 	/**
 	 * The pot is the phone one, drawn in HTML OVER the canvas (FreeSpinPanelHtml): a shot's landing,
 	 * drawn on the canvas, would happen under it, so PotShots stops at the surface and the pot plays
@@ -80,18 +78,20 @@ export const queuePotShots = (steps: number, positions: { reel: number; row: num
 	if (steps <= 0) return;
 	const fresh = positions.filter((p) => !shotCells.has(potCellKey(p)));
 	if (positions.length && !fresh.length) {
-		if (import.meta.env.DEV) console.warn('[pot] step event for soups that already shot this spin', { steps, positions });
+		if (import.meta.env.DEV)
+			console.info('[pot] duplicate step report already animated', { steps, positions });
 		return;
 	}
 	if (!fresh.length) {
 		potState.pending.push({ steps });
 		return;
 	}
-	const each = Math.floor(steps / fresh.length);
-	let rest = steps - each * fresh.length;
-	for (const p of fresh) {
-		const s = each + (rest > 0 ? 1 : 0);
-		if (rest > 0) rest--;
+	const amounts = soupSteps(
+		steps,
+		fresh.map((p) => stateGame.board[p.reel]?.reelState.symbols[p.row]?.rawSymbol?.multiplier),
+	);
+	for (const [i, p] of fresh.entries()) {
+		const s = amounts[i];
 		if (s > 0) {
 			shotCells.add(potCellKey(p));
 			potState.pending.push({ reel: p.reel, row: p.row, steps: s });
@@ -113,7 +113,12 @@ export const flushPot = async (target: number) => {
 	// A shot must visibly raise the pot: steps that don't change the value (e.g. already at the top
 	// rung, or the same increase reported twice) fly no blob.
 	if (target <= potState.mult) {
-		if (import.meta.env.DEV) console.warn('[pot] soups added steps but the multiplier did not rise', { shots, from: potState.mult, target });
+		if (import.meta.env.DEV)
+			console.warn('[pot] soups added steps but the multiplier did not rise', {
+				shots,
+				from: potState.mult,
+				target,
+			});
 		potState.mult = target;
 		return;
 	}
@@ -121,7 +126,8 @@ export const flushPot = async (target: number) => {
 	let cum = 0;
 	shots.forEach((s, i) => {
 		cum += s.steps;
-		s.after = i === shots.length - 1 ? target : Math.min(target, climb(potState.mult, cum));
+		s.after =
+			i === shots.length - 1 ? target : Math.min(target, climbMultiplier(potState.mult, cum));
 	});
 	if (!potState.rect) {
 		potState.mult = target;
