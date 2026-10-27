@@ -5,6 +5,7 @@
 <script lang="ts">
 	import { fade, fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
+	import Blob from './Blob.svelte';
 	// Figma 11259:3576 (desktop 11195:8973 right of the board, phone 11075:34378 top left): the
 	// current spin's wins, newest on top. Each row is a cluster: how many blobs it held, the
 	// blob and what it paid. The box only shows once the spin has a win; then six slots show, so it never changes size, and a
@@ -85,7 +86,8 @@
 			<li class="spin-log-row" class:vacant={!s.r} aria-hidden={s.r ? undefined : 'true'} in:dropIn animate:slideDown>
 				{#if s.r}
 					<span class="spin-log-box">{s.r.units}</span>
-					<img src={`./symbols/${s.r.symbol}.webp`} alt={s.r.symbol} width="33" height="33" />
+					<!-- A live blob, so the premiums wear their gear here too. -->
+					<span class="spin-log-blob" role="img" aria-label={s.r.symbol}><Blob symbol={s.r.symbol} uid={`log-${s.r.id}`} /></span>
 					<strong style={`font-size:${amountSize(s.r.amount)}px`}>{s.r.amount}</strong>
 				{/if}
 			</li>
@@ -177,11 +179,10 @@
 		color: #fff;
 		text-transform: uppercase;
 	}
-	img {
+	.spin-log-blob {
 		flex: 0 0 var(--row-img, 33px);
 		width: var(--row-img, 33px);
 		height: var(--row-img, 33px);
-		object-fit: contain;
 	}
 	strong {
 		flex: 1;

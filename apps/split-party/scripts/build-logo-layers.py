@@ -1,9 +1,15 @@
 """Split the logo's paint splashes into their own layers so Logo.svelte can squash them.
 
-public/splash/logo.webp (Figma 11003:27691, untouched)
-  -> public/splash/logo-base.webp   the logo without the six side splashes
-  -> public/splash/logo-drop-N.webp each splash, cropped
-  -> src/lib/logo-layers.json       crops + anchors in the logo's 100x50 unit box
+art-src/splash/logo.webp (Figma 11003:27691, untouched, 872x436)
+art-src/splash/2x/logo.png  its Real-ESRGAN 3x (upscale-art.py), 2616x1308, scaled to 2x
+                            (1744: the splash shows the logo ~650 css px wide, 1300 at DPR 2)
+                            and cut when present
+  -> public/splash/hd/logo-base.webp   the logo without the six side splashes
+  -> public/splash/hd/logo-drop-N.webp each splash, cropped
+  -> src/lib/logo-layers.json          crops + anchors in the logo's 100x50 unit box
+
+The splashes are FOUND on the 872 master and the masks scaled up to cut the big copy, so the
+layers (and the json) are the master's whatever the upscaler does to the edges.
 
 The splashes are the colour regions outside the navy outline at the far left/right; a drop's
 anchor is where it touches the outline (it squashes from there), a free dot squashes about
@@ -19,8 +25,9 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-SRC = ROOT / 'public' / 'splash' / 'logo.webp'
-OUT_DIR = ROOT / 'public' / 'splash'
+SRC = ROOT / 'art-src' / 'splash' / 'logo.webp'
+HD = ROOT / 'art-src' / 'splash' / '2x' / 'logo.png'
+OUT_DIR = ROOT / 'public' / 'splash' / 'hd'
 OUT_JSON = ROOT / 'src' / 'lib' / 'logo-layers.json'
 SIDE = 0.24  # splashes live in the outer 24% of the width on each side
 
@@ -52,16 +59,27 @@ def dilate(mask, r):
     return out
 
 
+def up(mask, f):
+    h, w = mask.shape
+    im = Image.fromarray(mask.astype(np.uint8) * 255).resize((w * f, h * f), Image.BILINEAR)
+    return np.asarray(im) > 127
+
+
 def main():
     im = Image.open(SRC).convert('RGBA')
     a = np.asarray(im).copy()
     h, w = a.shape[:2]
+    f = 2 if HD.exists() else 1
+    big = np.asarray(Image.open(HD).convert('RGBA').resize((w * f, h * f), Image.LANCZOS)) if HD.exists() else a
+    big = big.copy()
+    assert big.shape[:2] == (h * f, w * f), big.shape
+    OUT_DIR.mkdir(exist_ok=True)
     lum = a[..., :3].astype(int).mean(2)
     al = a[..., 3]
     navy = (lum < 95) & (al > 60)
     lab, n = label((al > 60) & ~navy)
     k = 100 / w
-    base = a.copy()
+    base = big.copy()
     layers = []
     for i in range(1, n + 1):
         m = lab == i
@@ -72,10 +90,11 @@ def main():
         grab = dilate(m, 2) & ~navy & ~((lab > 0) & (lab != i))
         y0, y1 = ys.min() - 3, ys.max() + 4
         x0, x1 = xs.min() - 3, xs.max() + 4
-        crop = np.zeros((y1 - y0, x1 - x0, 4), np.uint8)
-        region = grab[y0:y1, x0:x1]
-        crop[region] = a[y0:y1, x0:x1][region]
-        base[grab] = 0
+        gbig = up(grab, f)
+        crop = np.zeros(((y1 - y0) * f, (x1 - x0) * f, 4), np.uint8)
+        region = gbig[y0 * f : y1 * f, x0 * f : x1 * f]
+        crop[region] = big[y0 * f : y1 * f, x0 * f : x1 * f][region]
+        base[gbig] = 0
         touch = m & dilate(navy, 2)
         ty, tx = np.nonzero(touch)
         anchored = len(tx) > 8
@@ -99,7 +118,7 @@ def main():
         name = f'logo-drop-{j}.webp'
         Image.fromarray(l.pop('crop')).save(OUT_DIR / name, 'WEBP', quality=90, method=6)
         l.pop('cx')
-        out.append({'src': f'./splash/{name}', **l})
+        out.append({'src': f'./splash/hd/{name}', **l})
         print(name, l)
     Image.fromarray(base).save(OUT_DIR / 'logo-base.webp', 'WEBP', quality=90, method=6)
     OUT_JSON.write_text(json.dumps({'width': 100, 'height': round(h * k, 2), 'drops': out}, indent='\t') + '\n')

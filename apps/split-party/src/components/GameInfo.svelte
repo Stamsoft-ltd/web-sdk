@@ -138,9 +138,9 @@
 				in:fly={{ x: 60 * dir, duration: 320, easing: cubicOut }}
 			>
 				{#if page === 0}
-					<img class="peeker teal" src="./info/peeker-teal.webp" alt="" />
-					<img class="peeker pink" src="./info/peeker-pink.webp" alt="" />
-					<img class="info-logo" src="./info/logo.webp" alt="Blob Split" />
+					<img class="peeker teal" src="./info/hd/peeker-teal.webp" alt="" />
+					<img class="peeker pink" src="./info/hd/peeker-pink.webp" alt="" />
+					<img class="info-logo" src="./info/hd/logo.webp" alt="Blob Split" />
 					<h2 id="modal-title">{tr('INFO OVERVIEW')}</h2>
 					<div class="lead">
 						<p>{tr('INFO OVERVIEW TEXT')}</p>

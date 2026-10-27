@@ -3,7 +3,7 @@
 	"height": 50.0,
 	"drops": [
 		{
-			"src": "./splash/logo-drop-0.webp",
+			"src": "./splash/hd/logo-drop-0.webp",
 			"x": 10.21,
 			"y": 19.72,
 			"w": 10.78,
@@ -13,7 +13,7 @@
 			"anchored": true
 		},
 		{
-			"src": "./splash/logo-drop-1.webp",
+			"src": "./splash/hd/logo-drop-1.webp",
 			"x": 11.47,
 			"y": 27.18,
 			"w": 11.47,
@@ -23,7 +23,7 @@
 			"anchored": true
 		},
 		{
-			"src": "./splash/logo-drop-2.webp",
+			"src": "./splash/hd/logo-drop-2.webp",
 			"x": 15.37,
 			"y": 34.06,
 			"w": 3.56,
@@ -33,7 +33,7 @@
 			"anchored": false
 		},
 		{
-			"src": "./splash/logo-drop-3.webp",
+			"src": "./splash/hd/logo-drop-3.webp",
 			"x": 81.19,
 			"y": 32.57,
 			"w": 7.8,
@@ -43,7 +43,7 @@
 			"anchored": true
 		},
 		{
-			"src": "./splash/logo-drop-4.webp",
+			"src": "./splash/hd/logo-drop-4.webp",
 			"x": 80.5,
 			"y": 22.36,
 			"w": 11.01,
@@ -53,7 +53,7 @@
 			"anchored": true
 		},
 		{
-			"src": "./splash/logo-drop-5.webp",
+			"src": "./splash/hd/logo-drop-5.webp",
 			"x": 85.21,
 			"y": 30.73,
 			"w": 3.78,

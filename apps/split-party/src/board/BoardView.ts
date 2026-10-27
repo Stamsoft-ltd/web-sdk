@@ -6,6 +6,8 @@
 import { Assets, Container, Graphics, GraphicsContext, Matrix, Sprite, Texture } from 'pixi.js';
 import EYES from '../lib/eyes.json';
 import FACES from '../lib/face-layers.json';
+import GEAR from '../lib/gear.json';
+import { PREMIUM_RIM } from '../lib/premium';
 import { bezier, keyframes, progress, EASE, EASE_IN_OUT, EASE_OUT, LINEAR, GRAVITY, SURPRISE_MS, type Frame } from './anim';
 import { crackPlan, prefix, sliver, type Pt } from './crackGeom';
 import { Overlays, type ClusterPop, type Tease } from './overlays';
@@ -101,6 +103,26 @@ type Cheek = { cx: number; cy: number; rx: number; ry: number };
 type Face = { base: string; brows: Part[]; mouth: Part | null; cheeks: Cheek[]; closed?: Part[] };
 const EYE_DATA = EYES as unknown as Record<string, Eye[]>;
 const FACE_DATA = FACES as unknown as Record<string, Face>;
+// The premium blobs' gear (scripts/build-premium-gear.py, Figma 11300:28009): crest, horns,
+// antennae, flower. A part's rect sits round (cx, cy), mirrored by `flip` then turned by `rot`
+// degrees; (px, py) is where it meets the body, which its motion pivots on.
+type GearKind = 'crest' | 'horn' | 'antenna' | 'flower';
+type Gear = {
+	src: string;
+	part: GearKind;
+	front: boolean;
+	cx: number;
+	cy: number;
+	rot: number;
+	flip: boolean;
+	x: number;
+	y: number;
+	w: number;
+	h: number;
+	px: number;
+	py: number;
+};
+const GEAR_DATA = GEAR as unknown as Record<string, Gear[]>;
 
 const layout = (units: number): number[][] =>
 	units === 1
@@ -592,6 +614,30 @@ const TINT: Record<string, string> = {
 	APPLE: '#f2d58c',
 };
 const tintAlpha = (units: number) => 0.14 + 0.035 * (units - 2);
+// The premium cells' rim and inset glow (inset 0 0 20.55px, 70%) over the plain pad.
+function premiumTexture(color: string) {
+	return canvasTexture(CELL_W, CELL_H, (ctx) => {
+		const B = 1.074;
+		const R = 8;
+		ctx.save();
+		rrect(ctx, B, B, CELL_W - 2 * B, CELL_H - 2 * B, R - B);
+		ctx.clip();
+		ctx.globalAlpha = 0.7;
+		ctx.shadowColor = color;
+		// The design's 20.55px at its 89.38px cell, on ours; device pixels (see the lit pad).
+		ctx.shadowBlur = 20.55 * (CELL_W / 89.38) * TEX_RES;
+		ctx.beginPath();
+		ctx.rect(-50, -50, CELL_W + 100, CELL_H + 100);
+		ctx.roundRect(B, B, CELL_W - 2 * B, CELL_H - 2 * B, R - B);
+		ctx.fillStyle = color;
+		ctx.fill('evenodd');
+		ctx.restore();
+		rrect(ctx, B / 2, B / 2, CELL_W - B, CELL_H - B, R - B / 2);
+		ctx.lineWidth = B;
+		ctx.strokeStyle = color;
+		ctx.stroke();
+	});
+}
 /** The pad's inside, white, lighter towards the foot: tinted per cell. */
 function tintTexture() {
 	return canvasTexture(CELL_W, CELL_H, (ctx) => {
@@ -636,7 +682,8 @@ function radialTexture(stops: [number, string][]) {
  *  the board and the scene's peeking blobs (Assets caches them, so a second call is free). */
 export async function loadBlobTextures() {
 	const srcs = new Set<string>();
-	for (const s of Object.keys(ART)) srcs.add(`./symbols/${s}.webp`);
+	for (const s of Object.keys(ART)) srcs.add(`./symbols/hd/${s}.webp`);
+	for (const g of Object.values(GEAR_DATA).flat()) srcs.add(g.src);
 	for (const f of Object.values(FACE_DATA)) {
 		srcs.add(f.base);
 		for (const p of [...f.brows, ...(f.closed ?? []), ...(f.mouth ? [f.mouth] : [])]) srcs.add(p.src);
@@ -670,6 +717,10 @@ export type BlobMode = {
 	wonder?: { x: number; y: number; since: number } | null;
 	/** A happy surprise (an egg landed in the teased column) started at this time. */
 	surprise?: number | null;
+	/** When the blob last landed from a fall (its gear springs from the impact). */
+	land?: number | null;
+	/** Falling (in, or out through the trap door): the air rushes up past it. */
+	air?: boolean;
 };
 type EyeView = { e: Eye; clip: Pt[]; pupil: SharedGraphics; lid: Container; joy: Container; lx: number; ly: number; last: number };
 
@@ -699,7 +750,9 @@ function drawPupil(g: GraphicsContext, e: Eye, clip: Pt[], cx: number, cy: numbe
 }
 type FacePart = { outer: Container; tilt: number; part: Part };
 type DaughterView = { anim: Container; parts: DaughterParts };
+type GearView = { anim: Container; g: Gear; seed: number };
 type DaughterParts = {
+	gear: GearView[];
 	eyes: EyeView[];
 	blush: Sprite[];
 	brows: FacePart[];
@@ -707,6 +760,139 @@ type DaughterParts = {
 	closed: Sprite[];
 	open: { c: Container; pupil: Container; part: Part }[];
 };
+
+// Gear motion, pivoting where each part meets the body. Angles are in the part's own frame, so
+// a mirrored pair moves symmetrically (negative turns an antenna's ball, positive a horn's tip,
+// outward). The win bounce and a landing kick each part's spring: a damped wobble from the
+// moment the body hits the ground, so the gear trails the body instead of moving with it.
+// Sine-shaped, so the kick builds from rest (a cosine would snap the part on the landing frame).
+const spring = (ms: number, period: number, decay: number) =>
+	ms < 0 ? 0 : Math.exp(-ms / decay) * Math.sin((2 * Math.PI * ms) / period);
+const GEAR_MOVE: Record<
+	GearKind,
+	{ sway: number; kick: number; period: number; decay: number; stretch: number; fright: number; quiver: number; shrink: number }
+> = {
+	// The crest leans with the breath, squashes on impact and whips back up; fright stands it on end.
+	crest: { sway: 3, kick: 7, period: 300, decay: 260, stretch: 0.2, fright: 0, quiver: 3, shrink: -0.2 },
+	// Antennae: a slow sway, a boing on every landing; frightened, they stiffen up and jitter.
+	antenna: { sway: 5, kick: -20, period: 260, decay: 300, stretch: 0.05, fright: 12, quiver: 4, shrink: 0 },
+	// Horns are rigid: they flex out on a landing and draw back in a fright.
+	horn: { sway: 0.8, kick: 7, period: 240, decay: 200, stretch: 0.08, fright: -10, quiver: 1, shrink: 0.1 },
+	// The flower nods, bobs on a landing; frightened, it wilts.
+	flower: { sway: 4, kick: 12, period: 320, decay: 280, stretch: 0.1, fright: -14, quiver: 0, shrink: 0.1 },
+};
+// The flower jumps: a crouch, a take-off, a float at the top, a drop and a bonk back onto the
+// head (in art units, round its base). Winning it rides each bounce, launched as the body
+// rises and landing FLOWER_LAG after the body does; at rest it hops on its own now and then.
+const FLOWER_HOP: Frame<{ ty: number; sx: number; sy: number; r: number }>[] = [
+	[0, { ty: 0, sx: 1, sy: 1, r: 0 }, EASE_IN_OUT],
+	[0.05, { ty: 0, sx: 1.1, sy: 0.86, r: 0 }, EASE_OUT],
+	[0.14, { ty: -3, sx: 0.92, sy: 1.12, r: -2 }, EASE_OUT],
+	[0.5, { ty: -12, sx: 1.02, sy: 0.98, r: -8 }, GRAVITY],
+	[0.84, { ty: 0, sx: 0.95, sy: 1.08, r: 3 }, LINEAR],
+	[0.89, { ty: 0.8, sx: 1.2, sy: 0.78, r: 0 }, EASE_IN_OUT],
+	[0.95, { ty: 0, sx: 0.96, sy: 1.06, r: 0 }, EASE_IN_OUT],
+	[1, { ty: 0, sx: 1, sy: 1, r: 0 }],
+];
+// Bonk (0.89 of the 960ms hop) 50ms after the body lands (0 of its own).
+const FLOWER_LAG = 960 + 50 - 0.89 * 960;
+const FLOWER_IDLE = { every: 5600, ms: 760, amp: 0.7 };
+// The crest rides the roller coaster: blown back and flapping in the wind of the ride before
+// the drop, streamed straight up by the updraft as it falls, and whipped forward by the stop
+// when it lands, wobbling out like hair after a sudden halt.
+const flap = (now: number) => 0.6 * Math.sin((now / 45) * Math.PI) + 0.4 * Math.sin((now / 71) * Math.PI);
+const CREST_WIND = { lean: -30, flap: 8, ms: 300 };
+const CREST_STOP = { whip: 32, period: 420, decay: 380, squash: 0.22 };
+
+function tickGear(v: GearView, now: number, m: BlobMode, breathe: number, delay: number, scared: boolean, cheering: boolean, surprised: boolean) {
+	const k = GEAR_MOVE[v.g.part];
+	let r = 0;
+	let sx = 1;
+	let sy = 1;
+	let ty = 0;
+	if (m.reduced) {
+		v.anim.rotation = 0;
+		v.anim.scale.set(1);
+		v.anim.position.set(v.g.px, v.g.py);
+		return;
+	}
+	const crest = v.g.part === 'crest';
+	if (crest && m.air) {
+		// Updraft: stretched up, narrow, fluttering.
+		r = 5 * flap(now);
+		sx = 0.86;
+		sy = 1.28 + 0.04 * flap(now + 30);
+	} else if (crest && scared && !m.mild) {
+		// The ride's wind: a gust leans it back, then it flaps.
+		const g = EASE_OUT(Math.min(1, (now - (m.scared ?? now)) / CREST_WIND.ms));
+		const f = flap(now);
+		r = (CREST_WIND.lean + CREST_WIND.flap * f) * g;
+		sx = 1 - 0.1 * g;
+		sy = 1 + (0.08 + 0.04 * f) * g;
+	} else if (scared) {
+		// Fright: set over 220ms, with a quiver (the body's shiver is 110ms).
+		const in_ = EASE_OUT(Math.min(1, (now - (m.scared ?? now)) / 220));
+		const q = Math.sin((now / (m.mild ? 85 : 55)) * Math.PI);
+		const mild = m.mild ? 0.4 : 1;
+		r = (k.fright * in_ + k.quiver * q) * mild;
+		sy = 1 - k.shrink * in_ * mild;
+		sx = 1 - Math.max(0, k.shrink) * 0.5 * in_ * mild;
+	} else {
+		// Idle sway on the blob's breath clock, a beat behind it, plus a slow wander of its own.
+		const t = cycle(now, breathe, delay - 0.12 * breathe);
+		r = k.sway * (0.7 * Math.sin(2 * Math.PI * t) + 0.3 * Math.sin((now + v.seed) / 900));
+		// Antennae twitch now and then (one quick boing every ~7s, offset per blob).
+		if (v.g.part === 'antenna') {
+			const tw = (now + v.seed * 13) % 7000;
+			r += k.kick * 0.45 * spring(tw - 6200, k.period, k.decay);
+		}
+		// The spring: from the last bounce landing (every 960ms of the win hop, its ground at 0),
+		// a surprise hop or a fall.
+		let since = -1;
+		let amp = 1;
+		if (cheering) since = (now - m.lit!) % 960;
+		else if (surprised) {
+			since = now - m.surprise! - SURPRISE_MS * 0.55;
+			amp = 0.8;
+		} else if (m.land != null) since = now - m.land;
+		// A spring has died out by then (the landing time stays on the blob for good).
+		if (since > 1500) since = -1;
+		const stopped = crest && !cheering && !surprised && since >= 0;
+		if (v.g.part === 'flower' && (cheering || since < 0)) {
+			// Winning: a jump on every bounce. At rest: a smaller one now and then.
+			let p = -1;
+			let a = 1;
+			if (cheering) p = ((((now - m.lit! - FLOWER_LAG) % 960) + 960) % 960) / 960;
+			else {
+				const t = (now + v.seed * 7) % FLOWER_IDLE.every;
+				if (t > FLOWER_IDLE.every - FLOWER_IDLE.ms) p = (t - FLOWER_IDLE.every + FLOWER_IDLE.ms) / FLOWER_IDLE.ms;
+				a = FLOWER_IDLE.amp;
+			}
+			if (p >= 0) {
+				const h = keyframes(FLOWER_HOP, p, LINEAR);
+				ty = h.ty * a;
+				r += h.r * a;
+				sx *= 1 + (h.sx - 1) * a;
+				sy *= 1 + (h.sy - 1) * a;
+			}
+		} else if (stopped) {
+			// The stop: thrown forward past upright and wobbling out; the updraft's stretch
+			// drops away fast instead of snapping.
+			const w = spring(since, CREST_STOP.period, CREST_STOP.decay);
+			r += CREST_STOP.whip * w;
+			sy *= 1 + 0.28 * Math.exp(-since / 60) - CREST_STOP.squash * Math.max(0, w);
+			sx *= 1 - 0.14 * Math.exp(-since / 60) + 0.1 * Math.max(0, w);
+		} else if (since >= 0) {
+			const w = amp * spring(since, k.period, k.decay);
+			r += k.kick * w;
+			sy *= 1 - k.stretch * w;
+			sx *= 1 + k.stretch * 0.4 * w;
+		}
+	}
+	v.anim.rotation = r * DEG;
+	v.anim.scale.set(sx, sy);
+	v.anim.position.set(v.g.px, v.g.py + ty);
+}
 
 export class BlobView {
 	root = new Container();
@@ -772,11 +958,32 @@ export class BlobView {
 			anim.addChild(place);
 			place.addChild(a);
 			this.divBody.addChild(anim);
-			const base = new Sprite(this.tex(face?.base ?? `./symbols/${symbol}.webp`));
+			const parts: DaughterParts = { gear: [], eyes: [], blush: [], brows: [], mouth: null, closed: [], open: [] };
+			const gear = GEAR_DATA[symbol] ?? [];
+			const addGear = (front: boolean) =>
+				gear.forEach((g, j) => {
+					if (g.front !== front) return;
+					const outer = new Container();
+					outer.position.set(g.cx, g.cy);
+					outer.scale.x = g.flip ? -1 : 1;
+					outer.rotation = g.rot * DEG;
+					const anim = new Container();
+					anim.pivot.set(g.px, g.py);
+					anim.position.set(g.px, g.py);
+					const sp = new Sprite(this.tex(g.src));
+					sp.position.set(g.x, g.y);
+					sp.width = g.w;
+					sp.height = g.h;
+					anim.addChild(sp);
+					outer.addChild(anim);
+					a.addChild(outer);
+					parts.gear.push({ anim, g, seed: this.lookDelay * 0.37 + j * 211 });
+				});
+			addGear(false);
+			const base = new Sprite(this.tex(face?.base ?? `./symbols/hd/${symbol}.webp`));
 			base.width = 100;
 			base.height = 100;
 			a.addChild(base);
-			const parts: DaughterParts = { eyes: [], blush: [], brows: [], mouth: null, closed: [], open: [] };
 			for (const c of face?.cheeks ?? []) {
 				const b = new Sprite(this.blushTex);
 				b.anchor.set(0.5);
@@ -909,6 +1116,7 @@ export class BlobView {
 				// the right eye's white (the painted ^^ it was cut for sat clear of it).
 				for (const o of parts.open) a.addChild(o.c);
 			}
+			addGear(true);
 			this.daughters.push({ anim, parts });
 		}
 		if (divide) {
@@ -1009,6 +1217,7 @@ export class BlobView {
 		const wonder = !sf && !scared && !cheering && !relieving && !m.reduced && m.wonder ? m.wonder : null;
 		const wk = wonder ? EASE_OUT(Math.min(1, (now - wonder.since) / 350)) : 0;
 		const joy = cheering ? cheer(now, m.lit!) : sf ? sf.grin : 0;
+		for (const g of f.gear) tickGear(g, now, m, this.breathe, this.breatheDelay, scared, cheering, sp >= 0 && sp < 1);
 		for (const b of f.blush) b.alpha = scared ? 0 : 1;
 		// Pupils: glance about, or a frightened dart (steps(2) over 160ms, shrunk to 70%).
 		for (const ev of f.eyes) {
@@ -1350,6 +1559,12 @@ type CellView = {
 	tint: Sprite;
 	tintFade: { from: number; to: number; at: number };
 	tintSym: string;
+	/** A premium blob's coloured rim and glow over the pad. */
+	gem: Sprite;
+	gemFade: { from: number; to: number; at: number };
+	gemSym: string;
+	/** When the blob last landed from a fall (its gear's spring). */
+	landAt: number | null;
 	/** The scar and tint show only over a blob at rest: hidden while it falls in or pops. */
 	restFade: { from: number; to: number; at: number };
 	/** The crack's own fade: it stays through pops and falls (splits stay on the tile), so only the egg hatch hides it. */
@@ -1378,6 +1593,7 @@ export class BoardView {
 	private blushTex!: Texture;
 	private chargeTex!: Texture;
 	private tintTex!: Texture;
+	private gemTex = {} as Record<string, Texture>;
 	private rimTex: Texture[] = [];
 	private layers = {
 		pads: new Container(),
@@ -1460,7 +1676,8 @@ export class BoardView {
 		stage.addChildAt(this.overlays.tease, stage.getChildIndex(this.layers.syms));
 		stage.addChild(this.overlays.pops);
 		this.tintTex = tintTexture();
-		for (const t of [this.tintTex, ...this.rimTex]) gl.initSource?.(t.source);
+		for (const [sym, color] of Object.entries(PREMIUM_RIM)) this.gemTex[sym] = premiumTexture(color);
+		for (const t of [this.tintTex, ...Object.values(this.gemTex), ...this.rimTex]) gl.initSource?.(t.source);
 		this.layers.syms.sortableChildren = true;
 		this.layers.lit.sortableChildren = true;
 		for (let col = 0; col < N; col++)
@@ -1474,7 +1691,11 @@ export class BoardView {
 				tint.scale.set(1 / TEX_RES);
 				tint.alpha = 0;
 				tint.visible = false;
-				pad.addChild(padPrev, padCur, tint);
+				const gem = new Sprite(Texture.EMPTY);
+				gem.scale.set(1 / TEX_RES);
+				gem.alpha = 0;
+				gem.visible = false;
+				pad.addChild(padPrev, padCur, tint, gem);
 				pad.position.set(cellX(col), cellY(row));
 				const crackHolder = new Container();
 				crackHolder.position.set(cellX(col) + BOX_X, cellY(row) + BOX_Y);
@@ -1499,6 +1720,10 @@ export class BoardView {
 					tint,
 					tintFade: { from: 0, to: 0, at: 0 },
 					tintSym: '',
+					gem,
+					gemFade: { from: 0, to: 0, at: 0 },
+					gemSym: '',
+					landAt: null,
 					restFade: { from: 1, to: 1, at: 0 },
 					crackFade: { from: 1, to: 1, at: 0 },
 					crackHolder,
@@ -1596,6 +1821,7 @@ export class BoardView {
 			if (!c.blob || c.blob.symbol !== symbol || (falls && key !== c.key)) {
 				this.setBlob(c, symbol, units, null);
 				c.fall = falls ? { start: now, drop: drop!, impact: s.wave.impact } : null;
+				c.landAt = null;
 				c.pop = null;
 				fresh = true;
 			} else if (units !== c.blob.units) {
@@ -1636,6 +1862,16 @@ export class BoardView {
 			if (tint !== c.tintFade.to) {
 				c.tintFade = { from: c.tint.alpha, to: tint, at: now };
 				c.tint.visible = true;
+			}
+			// Premium rim: over the plain and split pads (the egg and lit pads have their own).
+			const gem = (kind === 'pad' || kind === 'split') && PREMIUM_RIM[symbol] ? 1 : 0;
+			if (gem && c.gemSym !== symbol) {
+				c.gemSym = symbol;
+				c.gem.texture = this.gemTex[symbol];
+			}
+			if (gem !== c.gemFade.to) {
+				c.gemFade = { from: c.gem.alpha, to: gem, at: now };
+				c.gem.visible = true;
 			}
 			if (isLit && c.lit == null) {
 				c.lit = now;
@@ -1723,6 +1959,12 @@ export class BoardView {
 				if (p >= 1 && !f.to) c.tint.visible = false;
 				c.tint.alpha *= this.restAlpha(c.restFade, now, reduced);
 			}
+			if (c.gem.visible) {
+				const f = c.gemFade;
+				const p = reduced ? 1 : Math.min(1, Math.max(0, (now - f.at) / 200));
+				c.gem.alpha = (f.from + (f.to - f.from) * EASE(p)) * this.restAlpha(c.restFade, now, reduced);
+				if (p >= 1 && !f.to) c.gem.visible = false;
+			}
 			// A falling egg lights its pad as it lands.
 			if (c.eggPending && (!c.fall || reduced || now >= landsAt(c.fall))) {
 				c.eggPending = false;
@@ -1746,6 +1988,7 @@ export class BoardView {
 					const e = GRAVITY(Math.max(0, fp));
 					t = { tx: 0, ty: -1.05 * drop.rows * CELL_H * (1 - e), sx: 0.97 + 0.03 * e, sy: 1.06 - 0.06 * e, r: 0 };
 				} else {
+					c.landAt ??= landsAt(c.fall);
 					const ip = progress(now, start, drop.delay + drop.dur, impact);
 					if (ip >= 1) c.fall = null;
 					else t = keyframes(IMPACT, ip, LINEAR);
@@ -1788,6 +2031,8 @@ export class BoardView {
 					reduced,
 					wonder: this.wonder && { ...wonderGaze(this.wonder.col, c.col, c.row, now - this.wonder.since), since: this.wonder.since },
 					surprise: s.mood.surprise || null,
+					land: c.landAt,
+					air: inAir,
 				});
 			// No tint over an empty tile: gone as the blob pops, back once the next one lands. The
 			// scar stays: the split belongs to the tile, not the blob.
@@ -1818,7 +2063,7 @@ export class BoardView {
 				blob.root.alpha = 1 - smooth((y - CELL_H / 2 - (rimB - CELL_H / 2 - 8)) / (CELL_H / 2 + 8));
 				const box = y + 6 > rimB - 6 ? this.rim.bottom : this.layers.ghost;
 				if (blob.root.parent !== box) box.addChild(blob.root);
-				if (p < 1) blob.tick({ now, scared: gh.start, relief: null, lit: null, reduced });
+				if (p < 1) blob.tick({ now, scared: gh.start, relief: null, lit: null, reduced, air: true });
 				else blob.root.visible = false;
 			}
 		}
@@ -1833,7 +2078,7 @@ export class BoardView {
 		// A lit cell's pad, crack and blob sit in its litBox, off the stage the app destroys.
 		for (const c of this.cells) c.litBox.destroy(DISPOSE);
 		this.pixi.destroy();
-		for (const t of [...Object.values(this.pads), this.blushTex, this.chargeTex, this.tintTex, ...this.rimTex])
+		for (const t of [...Object.values(this.pads), this.blushTex, this.chargeTex, this.tintTex, ...Object.values(this.gemTex), ...this.rimTex])
 			t?.destroy(true);
 	}
 }

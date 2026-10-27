@@ -80,8 +80,8 @@
 	// The design's boxes [left, top, width, height] on the stage. Each badge box is its frame
 	// with the image overflowing it 13.14% upward, so the image box is used here.
 	type Layout = { badge: number[]; cloud: number[]; bubbles: [string, number[], boolean][] };
-	const PINK = './freespins/pink-bubble.webp';
-	const PURPLE = './win/bubble.webp';
+	const PINK = './freespins/hd/pink-bubble.webp';
+	const PURPLE = './win/hd/bubble.webp';
 	// [src, box, front]: front ones sit over the badge, the rest behind it.
 	const LAYOUTS: Record<CardKind, Layout> = {
 		intro: {
@@ -308,7 +308,7 @@
 			<img out:vanish|global class="still" {src} alt="" style={`${px(box)};--i:${i};${away(box, i)}`} />
 		{/each}
 		{#each peeks.filter((p) => !p.front) as p (p.id)}{@render peeker(p)}{/each}
-		<img class="badge" src="./freespins/badge.webp" alt="" style={px(L.badge)} />
+		<img class="badge" src="./freespins/hd/badge.webp" alt="" style={px(L.badge)} />
 		{#each fronts as [src, box]}
 			<img out:vanish|global class="still" {src} alt="" style={`${px(box)};--i:4;${away(box, 4)}`} />
 		{/each}
@@ -322,7 +322,7 @@
 				style={`left:${f.x}px;top:${f.y}px;width:${(f.pink ? f.s / 0.433 : f.s).toFixed(0)}px;--dx:${f.dx.toFixed(0)}px;--dy:${f.dy.toFixed(0)}px;animation-duration:${(f.dur * pace).toFixed(0)}ms`}
 			/>
 		{/each}
-		<img class="cloud" src="./freespins/cloud.webp" alt="" style={px(L.cloud)} />
+		<img class="cloud" src="./freespins/hd/cloud.webp" alt="" style={px(L.cloud)} />
 		{#if kind === 'intro'}
 			<div class="copy">
 				<strong class="title">{title}</strong>

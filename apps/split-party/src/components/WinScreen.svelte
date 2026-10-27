@@ -13,11 +13,11 @@
 	type Tier = {
 		color: string;
 		text: string;
-		/** The neon plate (win/plate.webp); its image is cropped the same way on every tier. */
+		/** The neon plate (win/hd/plate.webp); its image is cropped the same way on every tier. */
 		plate: Box;
-		/** The purple cloud on the plate (win/cloud.webp); MAX has none. */
+		/** The purple cloud on the plate (win/hd/cloud.webp); MAX has none. */
 		cloud?: Box;
-		/** The two big pink jelly bubbles behind the plaque (win/jelly.webp); MAX has none. */
+		/** The two big pink jelly bubbles behind the plaque (win/hd/jelly.webp); MAX has none. */
 		jelly: Box[];
 		drips: Drip[];
 		title: Box;
@@ -272,17 +272,17 @@
 					class:clip={p.clip !== null}
 					style={`width:${p.frame[0]}px;height:${p.frame[1]}px;rotate:${p.rot}deg;border-radius:${p.clip ?? 0}px`}
 				>
-					<img src={`./win/${p.src}.webp`} alt="" style={`width:${p.img[0]}px;height:${p.img[1]}px;--g:${p.giggle}s`} />
+					<img src={`./win/hd/${p.src}.webp`} alt="" style={`width:${p.img[0]}px;height:${p.img[1]}px;--g:${p.giggle}s`} />
 				</div>
 			</div>
 		{/each}
 		{#each t.jelly as j, i}
-			<div class="jelly" style={`${box(j)};z-index:${t.z.jelly};--i:${i}`}><img src="./win/jelly.webp" alt="" /></div>
+			<div class="jelly" style={`${box(j)};z-index:${t.z.jelly};--i:${i}`}><img src="./win/hd/jelly.webp" alt="" /></div>
 		{/each}
 		<div class="plaque" style={`z-index:${t.z.plaque};transform-origin:${t.plate[0]}px ${t.plate[1]}px`}>
-			<div class="plate" style={box(t.plate)}><img src="./win/plate.webp" alt="" style={crop(PLATE_CROP)} /></div>
+			<div class="plate" style={box(t.plate)}><img src="./win/hd/plate.webp" alt="" style={crop(PLATE_CROP)} /></div>
 			{#if t.cloud}
-				<div class="cloud" style={box(t.cloud)}><img src="./win/cloud.webp" alt="" /></div>
+				<div class="cloud" style={box(t.cloud)}><img src="./win/hd/cloud.webp" alt="" /></div>
 			{/if}
 		</div>
 		<!-- Same layer as the plate, after it: over the plate and cloud, under the words and amount. -->
@@ -295,14 +295,14 @@
 				class:on-amount={onAmount}
 				style={`${box(d.box)};z-index:${onAmount ? amountZ + 1 : t.z.drips};--w:${d.wob}s`}
 			>
-				<img src={`./win/${d.src}.webp`} alt="" style={`rotate:${d.rot}deg`} />
+				<img src={`./win/hd/${d.src}.webp`} alt="" style={`rotate:${d.rot}deg`} />
 			</div>
 		{/each}
 		<div class="title" style={`${box(t.title)};z-index:${t.z.title}`}>
-			<img src={`./win/title-${tier}.webp`} alt="" style={crop(t.titleCrop)} />
+			<img src={`./win/hd/title-${tier}.webp`} alt="" style={crop(t.titleCrop)} />
 		</div>
 		{#if t.win}
-			<div class="win-word" style={`${box(t.win)};z-index:${t.z.win}`}><img src={`./win/win-${tier}.webp`} alt="" /></div>
+			<div class="win-word" style={`${box(t.win)};z-index:${t.z.win}`}><img src={`./win/hd/win-${tier}.webp`} alt="" /></div>
 		{/if}
 	</div>
 </div>

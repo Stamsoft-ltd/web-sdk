@@ -30,10 +30,15 @@
 	// `night` is the Hidden tier's world: the same water at night, under a moon and stars.
 	let { night = false }: { night?: boolean } = $props();
 	const SKY = { w: 1200, h: 670 };
-	const A = './bonus/super/crisp';
+	const A = './bonus/super/hd';
 	let vw = $state(1200);
 	let vh = $state(670);
 	let scale = $derived(Math.max(vw / SKY.w, vh / SKY.h) * 1.04);
+	// Portrait's narrow slice puts the studio badge and logo over the top-centre moon: there it
+	// sits at the slice's top left instead (SceneView's SuperWorld.view).
+	let moonAt = $derived(
+		vh > vw ? `left:${((SKY.w - vw / scale) / 2 + 15).toFixed(1)}px;top:${((SKY.h - vh / scale) / 2 + 47).toFixed(1)}px` : '',
+	);
 
 	// The frame's clouds: 171-297px wide at y 18-194, all at 60%.
 	const NEAR = { src: './bonus/normal/crisp/cloud-puff.webp', w: [150, 185] as [number, number], alpha: [0.85, 0.85] as [number, number] };
@@ -149,7 +154,7 @@
 	{/each}
 	{#if night}
 		<div class="night"></div>
-		<div class="moon"></div>
+		<div class="moon" style={moonAt}></div>
 		{#each STARS as [x, y, size, dur, phase]}
 			<span
 				class="star"

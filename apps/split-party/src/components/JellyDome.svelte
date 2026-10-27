@@ -122,8 +122,8 @@
 		top: calc(var(--oy) * 0.55);
 		border-radius: 50%;
 		pointer-events: none;
-		/* The domes are painted soft (blur baked into the art): their spray matches. */
-		filter: blur(1.5px);
+		/* The domes carry a light baked blur (0.6 design px): their spray matches. */
+		filter: blur(0.5px);
 	}
 	.dome-ring {
 		width: 40%;

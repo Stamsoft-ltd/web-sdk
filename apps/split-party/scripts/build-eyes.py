@@ -18,7 +18,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-SYMBOLS = ROOT / 'public' / 'symbols'
+SYMBOLS = ROOT / 'public' / 'symbols' / 'hd'
 OUT = ROOT / 'src' / 'lib' / 'eyes.json'
 
 

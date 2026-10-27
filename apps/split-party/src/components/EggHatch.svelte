@@ -36,10 +36,10 @@
 		<span class="flash"></span>
 		{#each BITS as a, i}<span class="bit" style={`--a:${a}deg;--r:${22 + (i % 3) * 8}px;--spin:${(i % 2 ? 1 : -1) * 220}deg`}></span>{/each}
 		<div class="shell">
-			<img class="whole" src="./mystery/egg.webp" alt="" />
-			<img class="crack" src="./mystery/egg-crack.webp" alt="" />
-			<img class="bottom" src="./mystery/egg-bottom.webp" alt="" />
-			<img class="top" src="./mystery/egg-top.webp" alt="" />
+			<img class="whole" src="./mystery/hd/egg.webp" alt="" />
+			<img class="crack" src="./mystery/hd/egg-crack.webp" alt="" />
+			<img class="bottom" src="./mystery/hd/egg-bottom.webp" alt="" />
+			<img class="top" src="./mystery/hd/egg-top.webp" alt="" />
 		</div>
 	</div>
 {/each}

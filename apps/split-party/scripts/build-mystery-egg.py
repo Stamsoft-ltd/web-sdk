@@ -2,7 +2,7 @@
 
 art-src/mystery/egg.png  the Figma image fill, untouched (the splash's egg.webp is the same art
                          at 200px, too small for the centre-stage egg)
-  -> public/mystery/egg.webp         the whole egg, trimmed
+  -> public/mystery/hd/egg.webp         the whole egg, trimmed
   -> public/mystery/egg-top.webp     above the crack, with a cream shell rim on the cut
   -> public/mystery/egg-bottom.webp  below it
   -> public/mystery/egg-crack.webp   the crack itself, clipped to the egg, drawn over the whole
@@ -15,7 +15,8 @@ art-src/mystery/egg.png  the Figma image fill, untouched (the splash's egg.webp 
   -> public/mystery/egg-leak.webp    the crack's inner slit only (white, thinner than the core):
                                      MysteryEgg's mask for the light seeping through, so the
                                      light sits inside the dark edges instead of washing them out
-All four share one canvas, so they stack exactly.
+All four share one canvas, so they stack exactly. (hd/: new folder rather than new contents,
+browsers keep the old art under the old names.)
     python3 apps/split-party/scripts/build-mystery-egg.py
 """
 
@@ -25,8 +26,8 @@ import numpy as np
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / 'public' / 'mystery'
-W = 640  # px; drawn at up to ~290 css px (1920 wide), so 2x+ (the master's egg is 976 wide)
+OUT = ROOT / 'public' / 'mystery' / 'hd'
+W = 976  # px, the master's egg: drawn 270 stage px = 864 device px at 1920x1080 DPR 2
 K = W / 540  # the line widths below were tuned at 540
 CRACK_Y = 0.47  # of the egg's height
 RIM = '#fff4d6'

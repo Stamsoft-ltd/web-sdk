@@ -83,7 +83,7 @@
 	function dome([c, x, y, s]: readonly ['magenta' | 'green' | 'purple', number, number, number]) {
 		return {
 			// Under 120px the big dome's baked blur would shrink to nothing: use the small copy.
-			src: `./base/crisp/dome-${c}${s < 120 ? '-small' : ''}.webp`,
+			src: `./base/hd/dome-${c}${s < 120 ? '-small' : ''}.webp`,
 			color: { magenta: '#ea32df', green: '#5bed7c', purple: '#b241fb' }[c],
 			x: x + 0.06 * s,
 			y: y + 0.3 * s,
@@ -170,7 +170,7 @@
 	class="base-scene"
 	style={`width:${SKY.w}px;height:${SKY.h}px;transform:translate(-50%,-50%) scale(${scale})`}
 >
-	<img class="hills" src="./base/crisp/hills.webp" alt="" />
+	<img class="hills" src="./base/hd/hills.webp" alt="" />
 	{#each portrait ? [] : DOMES as d}
 		<JellyDome
 			src={d.src}
@@ -213,7 +213,7 @@
 	{/if}
 	{#each [{ x: 496, y: 183, w: 772, h: 309, flip: false }, { x: -187, y: 178, w: 795.2, h: 318, flip: true }] as s}
 		<div class="seascape" class:flip={s.flip} style={`left:${s.x}px;top:${s.y}px;width:${s.w}px;height:${s.h}px`}>
-			<img src="./base/crisp/seascape.webp" alt="" />
+			<img src="./base/hd/seascape.webp" alt="" />
 			{#each peeks.filter((p) => (p.island === 'left') === s.flip) as p (p.id)}
 				<span
 					class="peek"
@@ -221,7 +221,7 @@
 					><Blob symbol={p.symbol} uid={`peek-${p.id}`} /></span
 				>
 			{/each}
-			<img class="front" src="./base/crisp/seascape-front.webp" alt="" />
+			<img class="front" src="./base/hd/seascape-front.webp" alt="" />
 			{#each GLINTS as g}
 				<span
 					class="glint"

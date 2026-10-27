@@ -1,0 +1,100 @@
+{
+	"WATERMELON": [
+		{
+			"src": "./symbols/gear/hd/crest.webp",
+			"part": "crest",
+			"front": true,
+			"cx": 48.55,
+			"cy": 21.938,
+			"rot": 0,
+			"flip": false,
+			"x": -19.204,
+			"y": -14.542,
+			"w": 37.993,
+			"h": 29.75,
+			"px": 0.0,
+			"py": 13.961
+		}
+	],
+	"STRAWBERRY": [
+		{
+			"src": "./symbols/gear/hd/flower.webp",
+			"part": "flower",
+			"front": true,
+			"cx": 49.275,
+			"cy": 20.857,
+			"rot": 0,
+			"flip": false,
+			"x": -22.984,
+			"y": -16.229,
+			"w": 48.459,
+			"h": 32.986,
+			"px": -1.739,
+			"py": 11.594
+		}
+	],
+	"CHERRIES": [
+		{
+			"src": "./symbols/gear/hd/horn.webp",
+			"part": "horn",
+			"front": false,
+			"cx": 64.315,
+			"cy": 29.815,
+			"rot": -30,
+			"flip": false,
+			"x": -14.227,
+			"y": -13.498,
+			"w": 30.628,
+			"h": 27.912,
+			"px": -9.802,
+			"py": 9.192
+		},
+		{
+			"src": "./symbols/gear/hd/horn.webp",
+			"part": "horn",
+			"front": false,
+			"cx": 35.325,
+			"cy": 29.815,
+			"rot": 30,
+			"flip": true,
+			"x": -14.227,
+			"y": -13.498,
+			"w": 30.628,
+			"h": 27.912,
+			"px": -9.802,
+			"py": 9.192
+		}
+	],
+	"GRAPES": [
+		{
+			"src": "./symbols/gear/hd/antenna.webp",
+			"part": "antenna",
+			"front": false,
+			"cx": 21.87,
+			"cy": 24.395,
+			"rot": -10.45,
+			"flip": false,
+			"x": -12.885,
+			"y": -13.959,
+			"w": 24.259,
+			"h": 27.918,
+			"px": 3.665,
+			"py": 12.217
+		},
+		{
+			"src": "./symbols/gear/hd/antenna.webp",
+			"part": "antenna",
+			"front": false,
+			"cx": 78.564,
+			"cy": 24.395,
+			"rot": 10.45,
+			"flip": true,
+			"x": -12.885,
+			"y": -13.959,
+			"w": 24.259,
+			"h": 27.918,
+			"px": 3.665,
+			"py": 12.217
+		}
+	]
+}

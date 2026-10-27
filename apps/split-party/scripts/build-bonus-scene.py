@@ -19,9 +19,11 @@ art-src/bonus-super/*.png
   dome-purple.png   11174:5081  the purple jelly dome
   -> public/bonus/super/*.webp
 
-Blurred like the base scene (build-base-scene.py): the frame blurs every layer 2-2.5px, the
-base reads softer than that, so the same design-px sigmas are baked in at each image's own
-scale. Small copies (-small) exist where one source is drawn at very different sizes, since the
+Blurred like the base scene (build-base-scene.py): the frame blurs every layer 2-2.5px, which
+is 6-8 device px on a 1920x1080 retina screen and smeared the crisp masters (the "low quality
+resources" review, 2026-10-26), so only 0.6 design px is baked in, at each image's own scale.
+Sizes are 3.2x design px (stage 1.6 at 1920x1080, DPR 2), capped at each master's own (an
+upscaled master looked the same at display size, see upscale-art.py). Written to */hd/. Small copies (-small) exist where one source is drawn at very different sizes, since the
 baked blur shrinks with the image.
     python3 apps/split-party/scripts/build-bonus-scene.py
 """
@@ -33,14 +35,15 @@ from PIL import Image, ImageEnhance, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'art-src' / 'bonus'
-OUT = ROOT / 'public' / 'bonus' / 'normal' / 'crisp'
+OUT = ROOT / 'public' / 'bonus' / 'normal' / 'hd'
 # Fractions of the dome square kept: x0, y0, x1, y1 (the art spans x 8-92%, y 32-68%).
 CROP = (0.06, 0.3, 0.94, 0.7)
 # Close to the frames' own light blur, plus the base scene's colour lift (build-base-scene.py):
 # the earlier heavy soft focus read as a painterly style next to the crisp, glossy board.
 # Written to */crisp/ (new paths: browsers kept the soft art under the old ones). The clouds
 # are drawn by build-puff-clouds.py.
-BLUR = {'sunset': 1.0, 'water': 2.0, 'cliff': 2.0, 'dome': 1.5}
+BLUR = {'sunset': 0.6, 'water': 0.6, 'cliff': 0.6, 'dome': 0.6, 'island': 0.6}
+K = 3.2  # px per design px
 GRADE = {'saturation': 1.18, 'contrast': 1.06}
 
 
@@ -67,18 +70,23 @@ def blur(img, design_w, sigma):
     return Image.fromarray(np.dstack([rgb.clip(0, 255), a]).round().astype(np.uint8), 'RGBA')
 
 
+def master(folder, name):
+    return Image.open(folder / f'{name}.png')
+
+
 def sized(img, w):
+    w = min(w, img.width)
     return img.resize((w, round(w * img.height / img.width)), Image.LANCZOS)
 
 
 OUT.mkdir(parents=True, exist_ok=True)
-sunset = grade(Image.open(SRC / 'sunset.png').convert('RGBA'))
+sunset = grade(master(SRC, 'sunset').convert('RGBA'))
 save(blur(sunset, 1260, BLUR['sunset']).convert('RGB'), 'sunset')
-cliff = grade(Image.open(SRC / 'cliff.png').convert('RGBA'))
+cliff = grade(master(SRC, 'cliff').convert('RGBA'))
 # Big for the two tall cliffs (356 / 408 px), small for the 207px one.
-save(blur(sized(cliff, 816), 408, BLUR['cliff']), 'cliff')
-save(blur(sized(cliff, 414), 207, BLUR['cliff']), 'cliff-small')
-# Each colour at 2x its largest use, plus a small copy where it is also drawn small.
+save(blur(sized(cliff, round(K * 408)), 408, BLUR['cliff']), 'cliff')
+save(blur(sized(cliff, round(K * 207)), 207, BLUR['cliff']), 'cliff-small')
+# Each colour at K x its largest use, plus a small copy where it is also drawn small.
 # Drawn at half the frame's dome sizes (BonusNormal DOME_SCALE).
 DOMES = {'dome-blue': (145, 70), 'dome-green': (158, 75), 'dome-magenta': (255, None)}
 for name, (big, small) in DOMES.items():
@@ -86,21 +94,21 @@ for name, (big, small) in DOMES.items():
     s = dome.width
     dome = dome.crop(tuple(round(f * s) for f in CROP))
     w = CROP[2] - CROP[0]
-    save(blur(sized(dome, round(2 * big * w)), big * w, BLUR['dome']), name)
+    save(blur(sized(dome, round(K * big * w)), big * w, BLUR['dome']), name)
     if small:
-        save(blur(sized(dome, round(2 * small * w)), small * w, BLUR['dome']), f'{name}-small')
+        save(blur(sized(dome, round(K * small * w)), small * w, BLUR['dome']), f'{name}-small')
 
 # Super bonus.
 SUPER = ROOT / 'art-src' / 'bonus-super'
-OUT = ROOT / 'public' / 'bonus' / 'super' / 'crisp'
+OUT = ROOT / 'public' / 'bonus' / 'super' / 'hd'
 OUT.mkdir(parents=True, exist_ok=True)
-arches = grade(Image.open(SUPER / 'arches.png').convert('RGBA'))
+arches = grade(master(SUPER, 'arches').convert('RGBA'))
 save(blur(arches, 1202, BLUR['sunset']).convert('RGB'), 'arches')
-# The islands fly in front of the sky: a lighter blur, 2x their 142px.
-save(blur(sized(grade(Image.open(SUPER / 'island.png').convert('RGBA')), 284), 142, 1.0), 'island')
-water = grade(Image.open(SUPER / 'water.png').convert('RGBA'))
-save(blur(sized(water, 1350), 675, BLUR['water']), 'water')
-save(blur(sized(water, 686), 343, BLUR['water']), 'water-small')
+# The islands fly in front of the sky, K x their 142px.
+save(blur(sized(grade(Image.open(SUPER / 'island.png').convert('RGBA')), round(K * 142)), 142, BLUR['island']), 'island')
+water = grade(master(SUPER, 'water').convert('RGBA'))
+save(blur(sized(water, round(K * 675)), 675, BLUR['water']), 'water')
+save(blur(sized(water, round(K * 343)), 343, BLUR['water']), 'water-small')
 # Half the frame's dome sizes (BonusSuper DOME_SCALE).
 for src, name, size in (
     (SUPER / 'dome-purple.png', 'dome-purple', 159),
@@ -111,4 +119,4 @@ for src, name, size in (
     s = dome.width
     dome = dome.crop(tuple(round(f * s) for f in CROP))
     w = CROP[2] - CROP[0]
-    save(blur(sized(dome, round(2 * size * w)), size * w, BLUR['dome']), name)
+    save(blur(sized(dome, round(K * size * w)), size * w, BLUR['dome']), name)

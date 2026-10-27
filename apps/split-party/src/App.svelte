@@ -20,6 +20,7 @@
 	import Loading from './components/Loading.svelte';
 	import { preloadAll } from './lib/preload';
 	import { GRID_W, GRID_H } from './board/geometry';
+	import { PREMIUM_RIM } from './lib/premium';
 	import Logo from './components/Logo.svelte';
 	import GameInfo from './components/GameInfo.svelte';
 	import {
@@ -172,7 +173,7 @@
 	// ("100,000.00 ARS") can't push the bet steppers under the spin button. Slot widths are the
 	// stage px each layout leaves the text (see .metric / .bet-controls in style.css).
 	const HUD_FIT = {
-		land: { metric: 124, bet: 80, max: 24, face: "400 {}px 'Coiny'", track: 0 },
+		land: { metric: 117, bet: 80, max: 24, face: "400 {}px 'Coiny'", track: 0 },
 		// Phones on their side (.short): tighter metric padding and stepper gaps give back ~10px.
 		short: { metric: 134, bet: 88, max: 24, face: "400 {}px 'Coiny'", track: 0 },
 		popout: { metric: 290, bet: 230, max: 40, face: "400 {}px 'Coiny'", track: 0 },
@@ -292,7 +293,10 @@
 			measure.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
 			const text = label.toUpperCase();
 			const tw = measure.measureText(text).width + track * text.length;
-			const room = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 0.24 * el.clientHeight;
+			// The mark before the word (landscape) and its 8px gap take their share of the pill.
+			const mark = el.querySelector<HTMLElement>('.bonus-mark')?.offsetWidth;
+			const room =
+				el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 0.24 * el.clientHeight - (mark ? mark + 8 : 0);
 			bonusFit = { k: Math.min(1, room / tw), track };
 		});
 	});
@@ -1865,7 +1869,8 @@
 							class:lit
 							class:split={units > 1}
 							class:scatter={symbol === 'BASKET'}
-							style={`grid-column:${col + 1};grid-row:${row + 1}${mood.wonder != null ? watchVars(mood.wonder, col, row) : ''}`}
+							class:premium={!!PREMIUM_RIM[symbol]}
+							style={`grid-column:${col + 1};grid-row:${row + 1}${PREMIUM_RIM[symbol] ? `;--gem:${PREMIUM_RIM[symbol]}` : ''}${mood.wonder != null ? watchVars(mood.wonder, col, row) : ''}`}
 							data-units={units}
 						>
 							{#if !pixiBoard}
@@ -1938,8 +1943,8 @@
 			{/each}
 			</div>
 		</section>
-		<!-- The board's jelly rim, top gloss and drips: a layer of its own over the board, so the
-		     clip the board takes while blobs fall (.board.moving) doesn't cut the drips off. -->
+		<!-- The board's jelly rim and top gloss: a layer of its own over the board, so the clip the
+		     board takes while blobs fall (.board.moving) doesn't cut the rim off. -->
 		<div class="board-deco" aria-hidden="true"></div>
 		{#if plaqueOn}
 			<div
@@ -2017,7 +2022,7 @@
 				bind:clientWidth={bonusW}
 				disabled={locked || jurisdiction.disabledBuyFeature}
 				onclick={() => (toggled ? (toggled = null) : openModal('bonus'))}
-				><span
+				><img class="bonus-mark" src="./base/bonus-mark.svg" alt="" /><span
 					style={bonusFit.k < 1
 						? `font-size:${bonusFit.k.toFixed(3)}em;letter-spacing:${(bonusFit.track * bonusFit.k).toFixed(2)}px`
 						: ''}>{bonusLabel}</span
@@ -2040,7 +2045,7 @@
 			</div>
 			<span class="hud-divider bet-divider"></span>
 			<div class="bet-controls" class:coinless={betCoinless}>
-				<img class="bet-coins" src="./base/coins.svg" alt="" />
+				<img class="bet-coins" src="./base/coins-white.svg" alt="" />
 				<div class="metric">
 					<!-- What a regular spin costs: its mode's price while Extra Feature or Feature Spin is on. -->
 					<span class="metric-label bet-label">{tr('BET')}</span><strong
@@ -2065,7 +2070,7 @@
 				aria-label={q.replay ? tr('START REPLAY') : tr('INFO CTRL SPIN')}
 				disabled={q.replay ? busy || !replay : locked || !started}
 				onclick={() => (q.replay ? playReplay() : spin())}
-				><img class="spin-ring" src="./base/spin-ring.svg" alt="" /><img
+				><img
 					class="spin-arrow"
 					src="./base/spin-arrow.svg"
 					alt=""

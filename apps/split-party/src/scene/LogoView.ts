@@ -124,13 +124,13 @@ export class LogoView {
 		this.host = host;
 		this.unwatchMotion = watchReducedMotion((r) => (this.reduced = r));
 		if (!(await this.pixi.init({ resizeTo: host, antialias: true, resolution: this.measureRes() }))) return;
-		const srcs = ['./splash/logo-base.webp', ...LAYERS.drops.map((d) => d.src)];
+		const srcs = ['./splash/hd/logo-base.webp', ...LAYERS.drops.map((d) => d.src)];
 		const tex = new Map<string, Texture>();
 		await Promise.all(srcs.map(async (src) => tex.set(src, await Assets.load<Texture>({ src, data: { autoGenerateMipmaps: true } }))));
 		if (this.destroyed) return;
 		const gl = this.app.renderer.texture as unknown as { initSource?: (s: unknown) => void };
 		for (const t of tex.values()) gl.initSource?.(t.source);
-		const base = new Sprite(tex.get('./splash/logo-base.webp'));
+		const base = new Sprite(tex.get('./splash/hd/logo-base.webp'));
 		base.width = W;
 		base.height = H;
 		this.art.addChild(base);

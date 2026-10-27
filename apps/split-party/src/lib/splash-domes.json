@@ -1,7 +1,7 @@
 [
 	{
 		"node": "5006",
-		"src": "./splash/dome-5006.webp",
+		"src": "./splash/hd/dome-5006.webp",
 		"x": 74,
 		"y": 399,
 		"size": 210,
@@ -12,7 +12,7 @@
 	},
 	{
 		"node": "5007",
-		"src": "./splash/dome-5007.webp",
+		"src": "./splash/hd/dome-5007.webp",
 		"x": 24,
 		"y": 498,
 		"size": 106,
@@ -23,7 +23,7 @@
 	},
 	{
 		"node": "5008",
-		"src": "./splash/dome-5008.webp",
+		"src": "./splash/hd/dome-5008.webp",
 		"x": 284,
 		"y": 589,
 		"size": 106,
@@ -34,7 +34,7 @@
 	},
 	{
 		"node": "5009",
-		"src": "./splash/dome-5009.webp",
+		"src": "./splash/hd/dome-5009.webp",
 		"x": 972,
 		"y": 466,
 		"size": 106,
@@ -45,7 +45,7 @@
 	},
 	{
 		"node": "5010",
-		"src": "./splash/dome-5010.webp",
+		"src": "./splash/hd/dome-5010.webp",
 		"x": 1106,
 		"y": 548,
 		"size": 106,
@@ -56,7 +56,7 @@
 	},
 	{
 		"node": "5011",
-		"src": "./splash/dome-5011.webp",
+		"src": "./splash/hd/dome-5011.webp",
 		"x": 24,
 		"y": 539,
 		"size": 225,
@@ -67,7 +67,7 @@
 	},
 	{
 		"node": "5012",
-		"src": "./splash/dome-5012.webp",
+		"src": "./splash/hd/dome-5012.webp",
 		"x": 1036,
 		"y": 470,
 		"size": 148,
@@ -78,7 +78,7 @@
 	},
 	{
 		"node": "5013",
-		"src": "./splash/dome-5013.webp",
+		"src": "./splash/hd/dome-5013.webp",
 		"x": -84,
 		"y": 556,
 		"size": 192,
@@ -89,7 +89,7 @@
 	},
 	{
 		"node": "5014",
-		"src": "./splash/dome-5014.webp",
+		"src": "./splash/hd/dome-5014.webp",
 		"x": 938,
 		"y": 556,
 		"size": 192,

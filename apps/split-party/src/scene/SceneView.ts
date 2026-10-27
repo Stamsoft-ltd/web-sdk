@@ -467,6 +467,8 @@ abstract class World {
 	tick(now: number) {
 		for (const p of this.parts) p.tick(now);
 	}
+	/** The scene rect the screen shows (x, y, w, h in 1200×670 units), on every layout. */
+	view(_portrait: boolean, _slice: { x: number; y: number; w: number; h: number }) {}
 	destroy() {
 		this.timers.forEach(clearTimeout);
 		this.root.destroy(DISPOSE);
@@ -540,10 +542,10 @@ class BaseWorld extends World {
 	private peekId = 0;
 	constructor(ctx: Ctx, portrait: boolean, slice: { w: number; h: number }) {
 		super(ctx);
-		this.sprite('./base/crisp/hills.webp', -2, -3, 1204, 674);
+		this.sprite('./base/hd/hills.webp', -2, -3, 1204, 674);
 		const dome = ([c, x, y, s]: readonly [keyof typeof DOME_COLOR, number, number, number], fast: boolean) =>
 			new Dome(ctx, this.root, {
-				src: `./base/crisp/dome-${c}${s < 120 ? '-small' : ''}.webp`,
+				src: `./base/hd/dome-${c}${s < 120 ? '-small' : ''}.webp`,
 				color: DOME_COLOR[c],
 				x: x + 0.06 * s,
 				y: y + 0.3 * s,
@@ -586,11 +588,11 @@ class BaseWorld extends World {
 			box.position.set(s.flip ? s.x + s.w : s.x, s.y);
 			if (s.flip) box.scale.x = -1;
 			this.root.addChild(box);
-			this.sprite('./base/crisp/seascape.webp', 0, 0, s.w, s.h, false, box);
+			this.sprite('./base/hd/seascape.webp', 0, 0, s.w, s.h, false, box);
 			const peeks = new Container();
 			box.addChild(peeks);
 			this.peekLayers.push({ layer: peeks, w: s.w, h: s.h });
-			this.sprite('./base/crisp/seascape-front.webp', s.w / 2, 0, s.w / 2, s.h, false, box);
+			this.sprite('./base/hd/seascape-front.webp', s.w / 2, 0, s.w / 2, s.h, false, box);
 			for (const g of GLINTS) {
 				const sp = new Sprite(ctx.soft);
 				sp.anchor.set(0.5);
@@ -671,9 +673,9 @@ class BaseWorld extends World {
 }
 
 // Normal bonus (BonusNormal.svelte).
-const NA = './bonus/normal/crisp';
-const N_CLOUD: Look = { src: `${NA}/cloud-puff.webp`, w: [160, 190], alpha: [0.8, 0.8] };
-const N_FAR: Look = { src: `${NA}/cloud-puff.webp`, w: [110, 135], alpha: [0.65, 0.8] };
+const NA = './bonus/normal/hd';
+const N_CLOUD: Look = { src: './bonus/normal/crisp/cloud-puff.webp', w: [160, 190], alpha: [0.8, 0.8] };
+const N_FAR: Look = { src: './bonus/normal/crisp/cloud-puff.webp', w: [110, 135], alpha: [0.65, 0.8] };
 const N_LANES: Lane[] = [
 	{ far: false, y: [24, 40] },
 	{ far: true, y: [96, 112] },
@@ -765,9 +767,9 @@ class NormalWorld extends World {
 }
 
 // Super bonus (BonusSuper.svelte), and its night variant for the Hidden tier.
-const SA = './bonus/super/crisp';
-const S_NEAR: Look = { src: `${NA}/cloud-puff.webp`, w: [150, 185], alpha: [0.85, 0.85] };
-const S_FAR: Look = { src: `${NA}/cloud-puff.webp`, w: [100, 125], alpha: [0.65, 0.75] };
+const SA = './bonus/super/hd';
+const S_NEAR: Look = { src: './bonus/normal/crisp/cloud-puff.webp', w: [150, 185], alpha: [0.85, 0.85] };
+const S_FAR: Look = { src: './bonus/normal/crisp/cloud-puff.webp', w: [100, 125], alpha: [0.65, 0.75] };
 const S_LANES: Lane[] = [
 	{ far: true, y: [14, 26] },
 	{ far: false, y: [98, 112] },
@@ -818,6 +820,7 @@ class SuperWorld extends World {
 	private ripples: { s: Sprite; x: number; r: (typeof RIPPLES)[number]; sx: number }[] = [];
 	private bands: { s: Sprite; set: number; k: number }[] = [];
 	private stars: { s: Sprite; dur: number; delay: number; base: number }[] = [];
+	private moon: Sprite | null = null;
 	constructor(ctx: Ctx, night: boolean, bandTex: Texture[], night$: { overlay: Texture; moon: Texture; star: Texture }) {
 		super(ctx);
 		this.sprite(`${SA}/arches.webp`, 0, 0, 1202, 676);
@@ -882,7 +885,7 @@ class SuperWorld extends World {
 			o.width = SKY.w;
 			o.height = SKY.h;
 			this.root.addChild(o);
-			const moon = new Sprite(night$.moon);
+			const moon = (this.moon = new Sprite(night$.moon));
 			moon.anchor.set(0.5);
 			moon.scale.set(1 / TEX_RES);
 			moon.position.set(560 + 37, 52 + 37);
@@ -900,6 +903,13 @@ class SuperWorld extends World {
 		this.parts.push(new Clouds(ctx, this.root, S_LANES, SKY.w, S_NEAR, S_FAR));
 		// Birds by day only: the Hidden tier's night sky has its stars.
 		if (!night) this.parts.push(new Birds(ctx, this.root, [50, 180]));
+	}
+	// The design's moon is top centre, where portrait's narrow slice puts the studio badge and
+	// logo: there it moves to the slice's top left, over the board and clear of the logo stack
+	// (the FREE SPINS / TOTAL WIN panels hold the top right).
+	view(portrait: boolean, slice: { x: number; y: number }) {
+		if (portrait) this.moon?.position.set(slice.x + 52, slice.y + 84);
+		else this.moon?.position.set(560 + 37, 52 + 37);
 	}
 	tick(now: number) {
 		super.tick(now);
@@ -954,12 +964,12 @@ class SuperWorld extends World {
 
 // ---- Scene ------------------------------------------------------------------------------------
 
-const BASE_SRCS = ['./base/crisp/hills.webp', './base/crisp/seascape.webp', './base/crisp/seascape-front.webp', NEAR_LOOK.src, FAR_LOOK.src].concat(
-	...(['green', 'magenta', 'purple'] as const).map((c) => [`./base/crisp/dome-${c}.webp`, `./base/crisp/dome-${c}-small.webp`]),
+const BASE_SRCS = ['./base/hd/hills.webp', './base/hd/seascape.webp', './base/hd/seascape-front.webp', NEAR_LOOK.src, FAR_LOOK.src].concat(
+	...(['green', 'magenta', 'purple'] as const).map((c) => [`./base/hd/dome-${c}.webp`, `./base/hd/dome-${c}-small.webp`]),
 );
 const BONUS_SRCS = [
 	`${NA}/sunset.webp`,
-	`${NA}/cloud-puff.webp`,
+	'./bonus/normal/crisp/cloud-puff.webp',
 	`${NA}/cliff.webp`,
 	`${NA}/cliff-small.webp`,
 	`${NA}/dome-blue.webp`,
@@ -996,6 +1006,7 @@ export class SceneView {
 	private bandTex: Texture[] = [];
 	private nightTex!: { overlay: Texture; moon: Texture; star: Texture };
 	private dropTex = new Map<string, Texture>();
+	private shown = { portrait: false, slice: { x: 0, y: 0, w: SKY.w, h: SKY.h } };
 	frozen: number | null = null;
 
 	async init(host: HTMLElement) {
@@ -1008,8 +1019,9 @@ export class SceneView {
 		const ok = await this.pixi.init({
 			resizeTo: host,
 			antialias: false,
-			// The art is soft (blur baked into every layer), so past 1.5× more pixels only cost.
-			resolution: Math.min(1.5, devicePixelRatio || 1),
+			// The backdrops are soft (blur baked in), but the domes, puff clouds, birds and blobs
+			// are crisp: 1.5 drew them at 75% on a retina screen. 2 costs ~1.8× the fill.
+			resolution: Math.min(2, devicePixelRatio || 1),
 		});
 		if (!ok) return;
 		await Promise.all(
@@ -1122,6 +1134,8 @@ export class SceneView {
 		this.scene.position.set(vw / 2 - (SKY.w / 2) * scale, vh / 2 - (SKY.h / 2) * scale);
 		const portrait = vh > vw;
 		const slice = { w: vw / scale, h: vh / scale };
+		this.shown = { portrait, slice: { x: (SKY.w - slice.w) / 2, y: (SKY.h - slice.h) / 2, ...slice } };
+		for (const b of this.bonus) b.world.view(portrait, this.shown.slice);
 		// A phone's URL bar showing and hiding changes the slice's width by ~8% each way: build
 		// for the narrowest slice (wider ones just show a little more sky past it), and only
 		// rebuild when the slice gets narrower than that, much wider, or the orientation flips.
@@ -1145,6 +1159,7 @@ export class SceneView {
 		if (tier && !this.bonus.some((b) => b.tier === tier && b.to === 1)) {
 			const world =
 				tier === 'normal' ? new NormalWorld(this.ctx) : new SuperWorld(this.ctx, tier === 'hidden', this.bandTex, this.nightTex);
+			world.view(this.shown.portrait, this.shown.slice);
 			world.root.alpha = instant ? 1 : 0;
 			this.scene.addChild(world.root);
 			this.bonus.push({ world, tier, from: instant ? 1 : 0, to: 1, start: now });

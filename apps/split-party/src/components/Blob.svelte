@@ -2,6 +2,7 @@
 	import { untrack } from 'svelte';
 	import EYES from '../lib/eyes.json';
 	import FACES from '../lib/face-layers.json';
+	import GEAR from '../lib/gear.json';
 	import LiveEyes, { type Eye } from './LiveEyes.svelte';
 
 	let {
@@ -22,7 +23,7 @@
 		APPLE: ['#fff1cf', '#ffdb8f', 'sleep'],
 		BASKET: ['#fff7a4', '#e9a820', 'happy'],
 	};
-	// Figma 11003:24523 symbol art (public/symbols). Boxes are the design's symbol frames
+	// Figma 11003:24523 symbol art (public/symbols/hd, scripts/build-symbols.py). Boxes are the design's symbol frames
 	// in a 74-unit pad scaled to the 100-unit viewBox; PLUM's frame is drawn taller.
 	const ART: Record<string, [number, number, number, number]> = {
 		WATERMELON: [0, 0, 100, 100],
@@ -73,6 +74,10 @@
 		PLUM: [true, 16, 0],
 	};
 	let mood = $derived(MOOD[symbol]);
+	// The premium blobs' gear (scripts/build-premium-gear.py): crest, horns, antennae, flower,
+	// behind or over the body, each moving round where it meets it (BoardView's tickGear).
+	type Gear = { src: string; part: string; front: boolean; cx: number; cy: number; rot: number; flip: boolean; x: number; y: number; w: number; h: number; px: number; py: number };
+	let gear = $derived((GEAR as Record<string, Gear[]>)[symbol] ?? []);
 	// Angry faces scowl (brows dip inward); everyone else raises theirs.
 	let scowl = $derived(palette[2] === 'angry' || symbol === 'WATERMELON');
 	let faceDelay = $derived(`${-(((seed >>> 13) % 83) / 83) * 6.2}s`);
@@ -212,6 +217,14 @@
 	});
 </script>
 
+{#snippet gearPart(g: Gear)}
+	<g transform={`translate(${g.cx} ${g.cy}) rotate(${g.rot}) scale(${g.flip ? -1 : 1} 1)`}>
+		<g class={`gear gear-${g.part}`} style={`transform-origin:${g.px}px ${g.py}px`}>
+			<image href={g.src} x={g.x} y={g.y} width={g.w} height={g.h} preserveAspectRatio="none" />
+		</g>
+	</g>
+{/snippet}
+
 <svg viewBox="0 0 100 100" aria-hidden="true" class="blob-art" class:has-art={!!art} style={idle}>
 	<defs
 		><linearGradient id={`${uid}-g`} x1="0" y1="0" x2=".7" y2="1"
@@ -241,7 +254,8 @@
 				<g
 					transform={`translate(${art[0]} ${art[1]}) scale(${art[2] / 100} ${art[3] / 100})`}
 				>
-					<image href={face?.base ?? `./symbols/${symbol}.webp`} width="100" height="100" />
+					{#each gear.filter((g) => !g.front) as g}{@render gearPart(g)}{/each}
+					<image href={face?.base ?? `./symbols/hd/${symbol}.webp`} width="100" height="100" />
 					{#each face?.cheeks ?? [] as c}
 						<ellipse
 							class="blush"
@@ -312,6 +326,7 @@
 							</g>
 						{/each}
 					{/if}
+					{#each gear.filter((g) => g.front) as g}{@render gearPart(g)}{/each}
 				</g>
 			{:else}
 			<ellipse cx="50" cy="89" rx="36" ry="5" fill="#422267" opacity=".15" />
@@ -642,7 +657,295 @@
 		animation: none;
 		opacity: 1;
 	}
+	/* Gear (BoardView's GEAR_MOVE): degrees in the part's own frame, so a mirrored pair moves
+	   symmetrically. Idle: a sway on the blob's breath. Winning: a damped boing from each
+	   landing of the 0.96s bounce. Fright: set to its pose, quivering. */
+	.gear-crest {
+		--sway: 3deg;
+		--kick: 7deg;
+		--stretch: 0.2;
+		--fright: 0deg;
+		--quiver: 3deg;
+		--shrink: -0.2;
+	}
+	.gear-antenna {
+		--sway: 5deg;
+		--kick: -20deg;
+		--stretch: 0.05;
+		--fright: 12deg;
+		--quiver: 4deg;
+		--shrink: 0;
+	}
+	.gear-horn {
+		--sway: 0.8deg;
+		--kick: 7deg;
+		--stretch: 0.08;
+		--fright: -10deg;
+		--quiver: 1deg;
+		--shrink: 0.1;
+	}
+	.gear-flower {
+		--sway: 4deg;
+		--kick: 12deg;
+		--stretch: 0.1;
+		--fright: -14deg;
+		--quiver: 0deg;
+		--shrink: 0.1;
+	}
+	.gear {
+		animation: gear-sway var(--breathe, 3.2s) ease-in-out var(--breathe-delay, 0s) infinite;
+	}
+	@keyframes gear-sway {
+		0%,
+		100% {
+			rotate: calc(var(--sway) * -0.7);
+		}
+		50% {
+			rotate: calc(var(--sway) * 0.7);
+		}
+	}
+	:global(.cell.lit) .gear {
+		animation: gear-boing 0.96s linear infinite;
+	}
+	/* e^(-t/290ms)·sin(2πt/280ms) from each landing, sampled at its peaks and zeros. */
+	@keyframes gear-boing {
+		0%,
+		15%,
+		29%,
+		44%,
+		58%,
+		73%,
+		100% {
+			rotate: 0deg;
+			scale: 1;
+		}
+		7% {
+			rotate: calc(var(--kick) * 0.78);
+			scale: calc(1 + var(--stretch) * 0.31) calc(1 - var(--stretch) * 0.78);
+		}
+		22% {
+			rotate: calc(var(--kick) * -0.47);
+			scale: calc(1 - var(--stretch) * 0.19) calc(1 + var(--stretch) * 0.47);
+		}
+		36% {
+			rotate: calc(var(--kick) * 0.29);
+			scale: calc(1 + var(--stretch) * 0.12) calc(1 - var(--stretch) * 0.29);
+		}
+		51% {
+			rotate: calc(var(--kick) * -0.17);
+		}
+	}
+	/* The flower jumps (BoardView's FLOWER_HOP): crouch, take off, float, drop and bonk back onto
+	   the head. Winning: every bounce, landing 50ms after the body (the 156ms delay). At rest: a
+	   smaller hop at the end of every 5.6s, over the sway. */
+	.gear-flower {
+		animation:
+			gear-sway var(--breathe, 3.2s) ease-in-out var(--breathe-delay, 0s) infinite,
+			flower-idle-hop 5.6s linear var(--breathe-delay, 0s) infinite;
+	}
+	:global(.cell.lit) .gear-flower {
+		animation: flower-hop 0.96s linear 156ms infinite;
+	}
+	@keyframes flower-hop {
+		0% {
+			translate: 0 0;
+			scale: 1;
+			rotate: 0deg;
+			animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+		}
+		5% {
+			scale: 1.1 0.86;
+			animation-timing-function: cubic-bezier(0, 0, 0.58, 1);
+		}
+		14% {
+			translate: 0 -3px;
+			scale: 0.92 1.12;
+			rotate: -2deg;
+			animation-timing-function: cubic-bezier(0, 0, 0.58, 1);
+		}
+		50% {
+			translate: 0 -12px;
+			scale: 1.02 0.98;
+			rotate: -8deg;
+			animation-timing-function: cubic-bezier(0.11, 0, 0.5, 0);
+		}
+		84% {
+			translate: 0 0;
+			scale: 0.95 1.08;
+			rotate: 3deg;
+			animation-timing-function: linear;
+		}
+		89% {
+			translate: 0 0.8px;
+			scale: 1.2 0.78;
+			rotate: 0deg;
+			animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+		}
+		95% {
+			translate: 0 0;
+			scale: 0.96 1.06;
+			animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+		}
+		100% {
+			translate: 0 0;
+			scale: 1;
+			rotate: 0deg;
+		}
+	}
+	/* The same jump at 0.7, in the last 760ms of 5.6s (86.4%–100%); translate/scale only, so the
+	   sway keeps the rotation. */
+	@keyframes flower-idle-hop {
+		0%,
+		86.4% {
+			translate: 0 0;
+			scale: 1;
+			animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+		}
+		87.1% {
+			scale: 1.07 0.9;
+			animation-timing-function: cubic-bezier(0, 0, 0.58, 1);
+		}
+		88.3% {
+			translate: 0 -2.1px;
+			scale: 0.94 1.08;
+			animation-timing-function: cubic-bezier(0, 0, 0.58, 1);
+		}
+		93.2% {
+			translate: 0 -8.4px;
+			scale: 1.01 0.99;
+			animation-timing-function: cubic-bezier(0.11, 0, 0.5, 0);
+		}
+		97.8% {
+			translate: 0 0;
+			scale: 0.97 1.06;
+			animation-timing-function: linear;
+		}
+		98.5% {
+			translate: 0 0.6px;
+			scale: 1.14 0.85;
+			animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+		}
+		99.3% {
+			translate: 0 0;
+			scale: 0.97 1.04;
+		}
+		100% {
+			translate: 0 0;
+			scale: 1;
+		}
+	}
+	:global(:is(.grid.scared, .grid.nervous .cell:not(.lit))) .gear:not(.gear-crest),
+	:global(.grid.nervous .cell:not(.lit)) .gear-crest {
+		scale: calc(1 - max(var(--shrink), 0) * 0.5) calc(1 - var(--shrink));
+		animation: gear-fright 0.11s linear infinite;
+	}
+	/* The crest rides the roller coaster (BoardView's CREST_WIND / CREST_STOP): blown back and
+	   flapping before the drop, streamed up while falling, whipped forward by the stop on landing
+	   (then back to its sway). */
+	:global(.grid.scared) .gear-crest {
+		animation: crest-wind 0.3s ease-out both, crest-flap 0.29s linear 0.3s infinite;
+	}
+	/* Later animations win the property while they run: the stop takes over from the updraft
+	   when the blob lands (forwards only, so it doesn't hold its first frame through the fall),
+	   then the sway from the stop. */
+	:global(.sym.falling) .gear-crest {
+		animation:
+			crest-updraft 0.18s linear infinite,
+			crest-stop 1.1s linear var(--impact-delay, 0s) forwards,
+			gear-sway var(--breathe, 3.2s) ease-in-out calc(var(--impact-delay, 0s) + 1.1s) infinite;
+	}
+	:global(.sym.exiting) .gear-crest {
+		animation: crest-updraft 0.18s linear infinite;
+	}
+	@keyframes crest-wind {
+		from {
+			rotate: 0deg;
+			scale: 1;
+		}
+		to {
+			rotate: -30deg;
+			scale: 0.9 1.08;
+		}
+	}
+	@keyframes crest-flap {
+		0%,
+		100% {
+			rotate: -35deg;
+			scale: 0.9 1.06;
+		}
+		30% {
+			rotate: -23deg;
+			scale: 0.9 1.12;
+		}
+		60% {
+			rotate: -34deg;
+			scale: 0.9 1.05;
+		}
+		80% {
+			rotate: -26deg;
+			scale: 0.9 1.1;
+		}
+	}
+	@keyframes crest-updraft {
+		0%,
+		100% {
+			rotate: -4deg;
+			scale: 0.86 1.26;
+		}
+		50% {
+			rotate: 4deg;
+			scale: 0.86 1.31;
+		}
+	}
+	/* e^(-t/380ms)·sin(2πt/420ms) × 32deg at its peaks and zeros; the stretch drops away first. */
+	@keyframes crest-stop {
+		0% {
+			rotate: 0deg;
+			scale: 0.86 1.28;
+		}
+		9.5% {
+			rotate: 24.3deg;
+			scale: 1.07 0.84;
+		}
+		19% {
+			rotate: 0deg;
+			scale: 1;
+		}
+		28.6% {
+			rotate: -14.4deg;
+			scale: 1;
+		}
+		38% {
+			rotate: 0deg;
+		}
+		47.7% {
+			rotate: 8.5deg;
+			scale: 1.03 0.96;
+		}
+		57% {
+			rotate: 0deg;
+			scale: 1;
+		}
+		66.8% {
+			rotate: -4.9deg;
+		}
+		76%,
+		100% {
+			rotate: 0deg;
+			scale: 1;
+		}
+	}
+	@keyframes gear-fright {
+		0%,
+		100% {
+			rotate: calc(var(--fright) - var(--quiver));
+		}
+		50% {
+			rotate: calc(var(--fright) + var(--quiver));
+		}
+	}
 	@media (prefers-reduced-motion: reduce) {
+		.gear,
 		.divide-body,
 		.daughter,
 		.split-ring,

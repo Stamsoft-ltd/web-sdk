@@ -9,12 +9,16 @@ art-src/base/*.png (Figma image fills, untouched)
   -> public/base/seascape-front.webp  the island (bushes, grass, rock, and the water below it)
                     cut out of seascape.webp, drawn over the blobs that peek out from behind it
 
-Only a touch of blur is baked in, close to the frame's own (it blurs the seascapes and domes
-by 2px, the hills not at all), and the colours get a saturation/contrast lift (GRADE): the
+Only a touch of blur is baked in, well under the frame's own (it blurs the seascapes and domes
+by 2px, the hills not at all): 2 design px is ~6 device px on a 1920x1080 retina screen, which
+smeared the crisp masters into what reviewers called low quality (2026-10-26), so 0.6 keeps
+just a hint of depth behind the board, and the colours get a saturation/contrast lift (GRADE): the
 earlier heavy soft-focus pass made the backdrop read as a different, painterly style next to
 the crisp, glossy board and blobs. BLUR is in design px, baked at each image's own scale so
 the page doesn't run CSS filters. Written to public/base/crisp/ (new paths: browsers kept the
-soft art under the old ones). Domes are cropped to CROP (the same
+soft art under the old ones), now public/base/hd/. The hills are shown ~2.4x their master's
+size on a 1920x1080 retina screen, so they come from art-src/base/2x/hills.png (Real-ESRGAN,
+upscale-art.py) when present, at HILLS_W: past that the texture memory buys little. Domes are cropped to CROP (the same
 box for all three), which BaseScene.svelte mirrors when it places them.
     python3 apps/split-party/scripts/build-base-scene.py
 """
@@ -26,12 +30,14 @@ from PIL import Image, ImageEnhance, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'art-src' / 'base'
-OUT = ROOT / 'public' / 'base' / 'crisp'
+OUT = ROOT / 'public' / 'base' / 'hd'
 # Fractions of the dome square kept: x0, y0, x1, y1 (the art spans x 7.6-92%, y 32.2-68.3%).
 CROP = (0.06, 0.3, 0.94, 0.7)
 DOME_W = 560  # px; the largest dome is ~177 design px wide after the crop
 SEASCAPE_DESIGN_W = 772  # 11195:9215's width in the frame
-BLUR = {'hills': 1.0, 'seascape': 2.0, 'dome': 1.5}
+SEA_W = 2470  # px: 772 design px x 3.2 (stage 1.6 at 1920x1080, DPR 2), capped at the master's
+HILLS_W = 2560  # px; the master is 1677, its 2x 3354
+BLUR = {'seascape': 0.6, 'dome': 0.6}
 GRADE = {'saturation': 1.18, 'contrast': 1.06}
 
 
@@ -61,10 +67,18 @@ def blur(img, design_w, sigma):
 
 
 OUT.mkdir(exist_ok=True)
-hills = grade(Image.open(SRC / 'hills.png').convert('RGBA'))
-save(blur(hills, 1204, BLUR['hills']).convert('RGB'), 'hills')
-sea = grade(Image.open(SRC / 'seascape.png').convert('RGBA'))
-sea_out = blur(sea, SEASCAPE_DESIGN_W, BLUR['seascape']).resize((1544, round(1544 * sea.height / sea.width)), Image.LANCZOS)
+
+
+def master(name):
+    hd = SRC / '2x' / f'{name}.png'
+    return Image.open(hd if hd.exists() else SRC / f'{name}.png')
+
+
+hills = master('hills').convert('RGB')
+save(grade(hills.resize((HILLS_W, round(HILLS_W * hills.height / hills.width)), Image.LANCZOS)), 'hills')
+sea = grade(master('seascape').convert('RGBA'))
+sea_w = min(SEA_W, sea.width)
+sea_out = blur(sea, SEASCAPE_DESIGN_W, BLUR['seascape']).resize((sea_w, round(sea_w * sea.height / sea.width)), Image.LANCZOS)
 save(sea_out, 'seascape')
 # Island front: per column over the island (x 58-99.5%), everything from the top of its green
 # (the bushes and grass; the mountains behind are blue/purple) down is in front.

@@ -718,6 +718,12 @@ main {
 .scatter {
 	box-shadow: inset 0 0 9px #fece06;
 }
+/* The premium blobs' cells (Figma 11300:28009, BoardView's PREMIUM): a rim in the blob's colour
+   and its inset glow, 20.55px at the design's 89.38px cell. */
+.cell.premium:not(.lit) {
+	border-color: var(--gem);
+	box-shadow: inset 0 0 20.2px color-mix(in srgb, var(--gem) 70%, transparent);
+}
 .egg-hide {
 	position: absolute;
 	inset: 0;
@@ -804,7 +810,8 @@ main {
 	}
 }
 
-/* HUD (Group 174 at 40,533 in the frame); every control at its design offset. */
+/* HUD (Figma 11317:40778, 2026-10-26): a dark see-through strip along the foot of the stage, the
+   scenery showing through it, with dark-glass round buttons; every control at its design offset. */
 .hud {
 	inset: 0;
 	pointer-events: none;
@@ -814,15 +821,28 @@ main {
 	pointer-events: auto;
 }
 .hud-bar {
-	left: 40px;
-	top: 564px;
-	width: 1121px;
-	height: 80px;
+	/* The design's strip (-29, 588, 1343×82) runs past the frame on three sides: carried on to
+	   whatever the stage leaves showing round it. */
+	left: -600px;
+	right: -600px;
+	top: 588px;
+	bottom: -600px;
 	box-sizing: border-box;
-	background: #4b3981;
-	border: 3px solid #4b3981;
+	background: rgb(0 0 0 / 0.37);
 	border-radius: 10px;
 	pointer-events: none;
+	/* A hole behind the spin disc (centre and radius in the bar's own px, per layout): the disc is
+	   glass too, and over the strip it would read as two tones where the design has one. */
+	--hole-x: 1567px;
+	--hole-y: 23px;
+	--hole-r: 56px;
+	--hole: radial-gradient(
+		circle at var(--hole-x) var(--hole-y),
+		#0000 calc(var(--hole-r) - 0.5px),
+		#000 calc(var(--hole-r) + 0.5px)
+	);
+	-webkit-mask-image: var(--hole);
+	mask-image: var(--hole);
 }
 .hud-icon {
 	display: grid;
@@ -831,14 +851,14 @@ main {
 	height: 48px;
 	padding: 0;
 	box-sizing: border-box;
-	background: #4b3981;
-	border: 1px solid #a5a7ee;
+	background: rgb(0 0 0 / 0.4);
+	border: 0;
 	border-radius: 9999px;
 	color: #fff;
 }
 .menu-button {
-	left: 64px;
-	top: 580px;
+	left: 49px;
+	top: 606px;
 }
 .menu-button img {
 	width: 17.5px;
@@ -858,9 +878,9 @@ main {
 .menu-panel {
 	position: absolute;
 	z-index: 6;
-	left: 40px;
-	/* 12px clear of the HUD bar (top 564) it opens from, rather than resting on its edge. */
-	top: 338px;
+	left: 26px;
+	/* 12px clear of the HUD bar (top 588) it opens from, rather than resting on its edge. */
+	top: 362px;
 	width: 186px;
 	height: 214px;
 	box-sizing: border-box;
@@ -920,15 +940,20 @@ main {
 	height: 19.7px;
 }
 .bonus-button {
-	left: 123px;
-	top: 581px;
-	width: 143px;
-	height: 47px;
+	left: 109px;
+	top: 605px;
+	width: 164px;
+	height: 49px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	box-sizing: border-box;
 	/* Coiny's metrics sit the caps ~1.4px high (ink gap 65/76 at 4x); 3px top padding = 69/72, text snaps to whole px. */
 	padding: 3px 0 0;
-	border: 0;
+	border: 1px solid rgb(255 255 255 / 0.4);
 	border-radius: 24px;
-	background: #2bc4b4;
+	background: rgb(0 0 0 / 0.4);
 	font-family: 'Coiny', sans-serif;
 	font-weight: 400;
 	font-size: 17px;
@@ -937,10 +962,18 @@ main {
 	text-transform: uppercase;
 	color: #fff;
 }
+/* The Press Play mark before the word (Figma 11317:40907), held clear of Coiny's high caps. */
+.bonus-mark {
+	flex: none;
+	width: 10.44px;
+	height: 19px;
+	margin-top: -3px;
+}
+/* BALANCE, a rule, WIN: 35px apart, the second rule 35px past WIN. */
 .hud-metrics {
-	left: 294px;
-	top: 577px;
-	width: 285px;
+	left: 334px;
+	top: 605px;
+	width: 262.33px;
 	height: 49px;
 	display: flex;
 	align-items: center;
@@ -953,10 +986,11 @@ main {
 	box-sizing: border-box;
 	background: #a5a7ee80;
 	border-right: 1px solid #fff;
+	opacity: 0.3;
 }
 .bet-divider {
-	left: 616px;
-	top: 576px;
+	left: 631.33px;
+	top: 605px;
 }
 .metric {
 	display: flex;
@@ -972,7 +1006,7 @@ main {
 	line-height: 15px;
 	letter-spacing: 2px;
 	text-transform: uppercase;
-	color: #a5a7ee;
+	color: #fff;
 }
 .metric-label.bet-label {
 	font-family: 'Chakra Petch', 'Inter', sans-serif;
@@ -987,13 +1021,13 @@ main {
 	white-space: nowrap;
 }
 .bet-controls {
-	left: 653px;
-	top: 576px;
-	width: 230px;
+	left: 667.33px;
+	top: 605px;
+	width: 226.4px;
 	height: 49px;
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 10px;
 }
 .bet-controls .metric {
 	min-width: 0;
@@ -1004,6 +1038,9 @@ main {
 	flex: none;
 	width: 48.7px;
 	height: 48.7px;
+}
+.bet-controls .hud-icon + .hud-icon {
+	margin-left: 2px;
 }
 .bet-coins {
 	width: 24px;
@@ -1019,37 +1056,25 @@ main {
 	height: 13.85px;
 }
 .spin-button {
-	left: 894.5px;
-	top: 543.5px;
+	left: 911px;
+	top: 555px;
 	width: 112px;
 	height: 112px;
 	padding: 0;
 	border: 0;
 	border-radius: 50%;
-	background: none;
+	background: rgb(0 0 0 / 0.4);
 }
 .spin-button img {
 	position: absolute;
 }
-/* Disabled (a round or bonus playing): the same colour as the other disabled buttons (42% over
-   the bar's purple) but solid, so the scene doesn't show through where the disc leaves the bar:
-   the bar's purple at 58% laid over the disc. */
+/* Disabled (a round or bonus playing): the disc keeps its glass (faded, the scene would show
+   through where it leaves the bar); only the arrow dims, as much as the other disabled buttons. */
 .spin-button:disabled {
 	opacity: 1;
 }
-.spin-button:disabled::after {
-	content: '';
-	position: absolute;
-	inset: 0;
-	z-index: 2;
-	border-radius: 50%;
-	background: #4b3981;
-	opacity: 0.58;
-}
-.spin-ring {
-	inset: 0;
-	width: 112px;
-	height: 112px;
+.spin-button:disabled img {
+	opacity: 0.42;
 }
 .spin-arrow {
 	left: 22.5px;
@@ -1062,8 +1087,8 @@ main {
 	animation: rotate 0.7s linear infinite;
 }
 .turbo-button {
-	left: 1029px;
-	top: 577px;
+	left: 1043px;
+	top: 605px;
 }
 .turbo-icon {
 	position: relative;
@@ -1084,8 +1109,8 @@ main {
 	height: 29px;
 }
 .auto-button {
-	left: 1089px;
-	top: 577px;
+	left: 1103px;
+	top: 605px;
 	align-content: center;
 	gap: 2px;
 }
@@ -1175,12 +1200,12 @@ main {
 	top: 12px;
 }
 .portrait :is(.board, .board-deco) {
-	/* Centred with its jelly rim 16px off the screen's edges (the design ran the board edge to
-	   edge, which cut the rim off): 656 wide ×0.963 = 632 at 24. */
-	left: 24px;
+	/* Side to side as in Figma 11318:43227 (x 3–357 of 360): the jelly rim, 8.5px round the
+	   656px board, spans 5.7–674.3 of 680, so 673 wide ×0.9936 with the board at 14.1. */
+	left: 14.1px;
 	top: calc(242px + var(--ex) * 0.58);
 	transform-origin: 0 0;
-	scale: 0.963;
+	scale: 0.9936;
 }
 .portrait .round-detail {
 	left: 0;
@@ -1218,66 +1243,85 @@ main {
 	left: 483px;
 	top: 89.7px;
 }
+/* Control bar + bottom row: Figma 11318:43227 (360×577 game area under the 93px Stake chrome) at
+   ×1.889. A see-through strip the stage's width, its controls on it; under it a dark fade holding
+   BALANCE, the bet stepper and WIN in one flat row. Both ride down by 0.82 of the spare height,
+   the fade running on to the foot of the screen. One box draws both: the spin hole's mask clips
+   anything drawn outside it. */
 .portrait .hud-bar {
-	/* The control bar: 326×62.5 at top 435.8. */
-	left: 32px;
-	top: calc(823px + var(--ex) * 0.7);
-	width: 616px;
-	height: 118px;
-	border-radius: 19px;
+	/* The strip: 362×58 at (0, 457). The fade, Rectangle 338 (358×62 under it): black 57% at its
+	   foot to about 14% at its top; past the row it stays at 57% to the screen's edge. No blur. */
+	left: -600px;
+	right: -600px;
+	width: auto;
+	top: calc(863.3px + var(--ex) * 0.82);
+	bottom: auto;
+	height: calc(109.6px + 117.1px + var(--ex) * 0.18 + 600px);
+	border-radius: 0;
+	background:
+		linear-gradient(rgb(0 0 0 / 0.37), rgb(0 0 0 / 0.37)) 0 0 / 100% 109.6px no-repeat,
+		linear-gradient(rgb(0 0 0 / 0.14), rgb(0 0 0 / 0.57) 109.2px) 0 109.6px / 100% calc(100% - 109.6px) no-repeat;
+	/* The disc (279.6, 831.2, 158.7 across) from the bar's corner; the hole cuts the fade too. */
+	--hole-x: 958.95px;
+	--hole-y: 47.25px;
+	--hole-r: 79.35px;
 }
-/* A dark fade under the bottom row (11075:34383), no backdrop blur. */
 .portrait :is(.menu-button, .turbo-button, .auto-button) {
-	/* 34.9px icon buttons = the landscape 48px ones ×1.375. */
+	/* 34px buttons = the landscape 48px ones ×0.708, ×1.889. */
 	transform-origin: 0 0;
-	scale: 1.375;
+	scale: 1.338;
 }
 .portrait .menu-button {
-	left: 54px;
-	top: calc(848px + var(--ex) * 0.7);
+	left: 9.4px;
+	top: calc(887.8px + var(--ex) * 0.82);
 }
 .portrait .menu-panel {
-	left: 32px;
-	/* 12px clear of the control bar (top 823): 823 − 214 − 12. */
-	top: calc(597px + var(--ex) * 0.7);
+	left: 9.4px;
+	/* 12px clear of the strip (top 863.3): 863.3 − 214 − 12. */
+	top: calc(637.3px + var(--ex) * 0.82);
 }
 .portrait .bonus-button {
-	left: 134px;
-	top: calc(850px + var(--ex) * 0.7);
-	width: 115px;
-	height: 62px;
+	/* 82×34 at (51, 470): Coiny 11.8px, a 0.7px outline. */
+	left: 96.3px;
+	top: calc(887.8px + var(--ex) * 0.82);
+	width: 154.9px;
+	height: 64.2px;
 	padding-top: 4px;
-	border: 3.8px solid #4b3981;
-	border-radius: 45px;
-	font-size: 19.2px;
-	letter-spacing: 2.67px;
+	border-width: 1.3px;
+	border-radius: 31.5px;
+	font-size: 22.3px;
+	letter-spacing: 1.84px;
 }
 .portrait .spin-button {
-	/* 83×82 at (138, 425.7): the 112px button ×1.4, rising out of the bar. */
-	left: 261px;
-	top: calc(804px + var(--ex) * 0.7);
+	/* 84px at (148, 440): the 112px disc ×1.417, rising out of the strip; black 50% here. */
+	left: 279.6px;
+	top: calc(831.2px + var(--ex) * 0.82);
 	transform-origin: 0 0;
-	scale: 1.4;
+	scale: 1.417;
+	background: rgb(0 0 0 / 0.5);
 }
+/* Turbo and auto at (260, 473) / (306, 473); held on the menu's row (470), the design's 3px drop
+   reads as a slip. */
 .portrait .turbo-button {
-	left: 475px;
-	top: calc(850px + var(--ex) * 0.7);
+	left: 491.1px;
+	top: calc(887.8px + var(--ex) * 0.82);
 }
 .portrait .auto-button {
-	left: 560px;
-	top: calc(850px + var(--ex) * 0.7);
+	left: 578px;
+	top: calc(887.8px + var(--ex) * 0.82);
 }
-/* Bottom row at top 520: BALANCE box, the bet capsule, WIN box. */
+/* The row (350×45 at (5, 527)): BALANCE at its left, WIN at its right, flat on the fade. */
 .portrait .hud-metrics {
-	left: 32px;
-	top: calc(982px + var(--ex) * 0.82);
-	width: 616px;
-	height: 83px;
+	left: 9.4px;
+	top: calc(995.5px + var(--ex) * 0.82);
+	width: 661.2px;
+	height: 85px;
 }
 .portrait .hud-metrics .hud-divider,
 .portrait .bet-divider,
 .portrait .bet-coins,
-.portrait .bet-label {
+.portrait .bet-label,
+.portrait .bonus-mark {
 	display: none;
 }
 .portrait .hud-metrics .metric {
@@ -1286,11 +1330,7 @@ main {
 	height: 83px;
 	justify-content: center;
 	gap: 0;
-	padding: 0 16px 0 22px;
-	background: rgb(0 6 22 / 0.78);
-	border: 1px solid rgb(255 255 255 / 0.09);
-	border-radius: 15px;
-	box-shadow: 0 4px 19px rgb(0 0 0 / 0.55);
+	padding: 0 0 0 21.1px;
 }
 .portrait .hud-metrics .metric-label {
 	font: 500 20.8px/1.5 'Poppins', sans-serif;
@@ -1298,24 +1338,41 @@ main {
 	color: #fff;
 }
 .portrait .hud-metrics .metric strong {
-	/* Figma 11075:34545: Coiny 14px at ×1.889 (Coiny is aliased to Lilita). */
+	/* Coiny 14px at ×1.889 (Coiny is aliased to Lilita). */
 	font: 400 26.4px/1.5 'Coiny', sans-serif;
 	letter-spacing: 0.8px;
 }
+/* Group 230 (124×45 at (118, 527)): minus, the bet, plus; rules 11px out from either side. */
 .portrait .bet-controls {
-	left: 224px;
-	top: calc(982px + var(--ex) * 0.82);
-	width: 234px;
+	left: 222.9px;
+	top: calc(995.5px + var(--ex) * 0.82);
+	width: 234.2px;
 	height: 85px;
 	box-sizing: border-box;
-	padding: 0 16px;
+	padding: 0 14.9px 0 17px;
 	gap: 0;
-	background: #4b3981;
-	border-radius: 19px;
+	background: none;
+}
+.portrait .bet-controls::before,
+.portrait .bet-controls::after {
+	content: '';
+	position: absolute;
+	top: 9.4px;
+	width: 1px;
+	height: 66.1px;
+	background: #fff;
+	opacity: 0.3;
+}
+.portrait .bet-controls::before {
+	left: -21.8px;
+}
+.portrait .bet-controls::after {
+	right: -21.8px;
 }
 .portrait .bet-controls .hud-icon {
 	width: 47.4px;
 	height: 47.4px;
+	margin: 0;
 }
 .portrait .bet-controls .hud-icon:first-of-type {
 	order: -1;
@@ -1326,7 +1383,7 @@ main {
 	align-items: center;
 }
 .portrait .bet-controls .metric strong {
-	/* Figma 11075:34398: Coiny 14px/16.5 at ×1.889. */
+	/* Coiny 14px/16.5 at ×1.889. */
 	font: 400 26.4px/31.2px 'Coiny', sans-serif;
 	letter-spacing: 0;
 }
@@ -2350,7 +2407,7 @@ body * {
 /* Depth: the purple surfaces get a lit top edge, a darker rim below and a soft drop shadow,
    so the board, HUD and cards read as raised jelly slabs instead of flat fills. Gradients and
    shadows only (no filters), on elements that don't animate per frame. */
-:is(.hud-bar, .round-panel, .menu-panel, .buy-card, .portrait .bet-controls) {
+:is(.round-panel, .menu-panel, .buy-card) {
 	background-image: linear-gradient(#ffffff24, #ffffff00 48%, #1a083a2e);
 	box-shadow:
 		inset 0 2px 0 #ffffff33,
@@ -2399,6 +2456,10 @@ body * {
 .popout .hud-bar {
 	top: 452px;
 	height: 206px;
+	/* The disc scaled 0.95 from its top centre (600, 448). */
+	--hole-x: 1200px;
+	--hole-y: 49.2px;
+	--hole-r: 53.2px;
 }
 .popout :is(.menu-button, .turbo-button, .auto-button) {
 	top: 466px;
@@ -2587,15 +2648,15 @@ body * {
 /* The larger AUTO needs a wider ring: short landscape grows turbo + auto to 56px (same centres,
    turbo nudged left to keep the gap); the popout grows auto alone, centred on turbo's row. */
 .short :is(.turbo-button, .auto-button) {
-	top: 573px;
+	top: 601px;
 	width: 56px;
 	height: 56px;
 }
 .short .turbo-button {
-	left: 1019px;
+	left: 1033px;
 }
 .short .auto-button {
-	left: 1085px;
+	left: 1099px;
 }
 .popout .auto-button {
 	left: 1034px;
@@ -3154,18 +3215,21 @@ main:not(.portrait) .base-stage {
 	transform-origin: 0 0;
 	scale: calc(0.595 * var(--c));
 }
-/* The bet stepper stands beside the control bar, its foot on the bar's: plus, the bet, minus. */
+/* Right side, Figma 11318:45947 (measured from its render; the frame is drawn rotated): glass
+   like the desktop bar. The bet stepper stands beside the control bar, its foot level with the
+   bar's: plus, the bet, minus. */
 .phone .bet-controls {
-	left: calc(var(--W) - 143px * var(--c));
-	top: calc(var(--H) - 177px * var(--c));
-	width: 45px;
-	height: 134px;
+	/* 46×137 at (660, 181.5), 34px buttons 7px from its ends. */
+	left: calc(var(--W) - 140px * var(--c));
+	top: calc(var(--H) - 178.5px * var(--c));
+	width: 46px;
+	height: 137px;
 	box-sizing: border-box;
-	padding: 9px 0;
+	padding: 6.5px 0 7.5px;
 	flex-direction: column;
 	justify-content: space-between;
 	gap: 0;
-	background: #4b3981;
+	background: rgb(0 0 0 / 0.4);
 	border-radius: 10px;
 	transform-origin: 0 0;
 	scale: var(--c);
@@ -3173,59 +3237,60 @@ main:not(.portrait) .base-stage {
 .phone .bet-divider,
 .phone .bet-coins,
 .phone .bet-label,
+.phone .bonus-mark,
 .phone .hud-metrics .hud-divider {
 	display: none;
 }
 .phone .bet-controls .hud-icon {
-	width: 25.1px;
-	height: 25.1px;
+	width: 34px;
+	height: 34px;
+	margin: 0;
 }
 .phone .bet-controls .hud-icon:last-of-type {
 	order: -1;
 }
 .phone .bet-controls .hud-icon img {
-	width: 7.2px;
-	height: 7.2px;
+	width: 9.67px;
+	height: 9.67px;
 }
 .phone .bet-controls .hud-icon img.minus {
-	height: 1.1px;
+	height: 1.49px;
 }
 .phone .bet-controls .metric {
 	margin: 0;
 	align-items: center;
 }
 .phone .bet-controls .metric strong {
-	font: 700 14px/16.5px 'Poppins', sans-serif;
+	font: 400 14px/16.5px 'Coiny', sans-serif;
 	letter-spacing: 0;
 }
-/* BALANCE bottom left (137 wide), WIN bottom right (122): dark boxes, label and amount on one
-   line. The row spans the stage; each box is scaled at its own outer corner. */
+/* BALANCE bottom left (137×29 at (18, 325)), WIN bottom right (124×29, its right edge on the
+   bar's): black 50% boxes, label and amount on one line. The row spans the stage; each box is
+   scaled at its own outer corner. */
 .phone .hud-metrics {
 	left: 0;
-	top: calc(var(--H) - 35px * var(--c));
+	top: calc(var(--H) - 35.5px * var(--c));
 	width: var(--W);
-	height: 28px;
-	padding: 0 calc(20px * var(--c)) 0 calc(18px * var(--c));
+	height: 29px;
+	padding: 0 calc(14px * var(--c)) 0 calc(18px * var(--c));
 	box-sizing: border-box;
 }
 .phone .hud-metrics .metric {
 	box-sizing: border-box;
 	width: 137px;
-	height: 28px;
+	height: 29px;
 	flex-direction: row;
 	align-items: center;
 	justify-content: space-between;
 	gap: 4px;
-	padding: 0 6px 0 4px;
-	background: rgb(0 6 22 / 0.78);
-	border: 1px solid rgb(255 255 255 / 0.09);
+	padding: 0 8px;
+	background: rgb(0 0 0 / 0.5);
 	border-radius: 8px;
-	box-shadow: 0 2px 10px rgb(0 0 0 / 0.55);
 	transform-origin: 0 0;
 	scale: var(--c);
 }
 .phone .hud-metrics .metric + .hud-divider + .metric {
-	width: 122px;
+	width: 124px;
 	transform-origin: 100% 0;
 }
 .phone .hud-metrics .metric-label {
@@ -3238,15 +3303,19 @@ main:not(.portrait) .base-stage {
 	font: 500 12px/1 'Poppins', sans-serif;
 	letter-spacing: 0.42px;
 }
-/* Right column: the 62×280 control bar at its design size, its foot on the bet stepper's (42
-   above the stage's foot), the buttons packed down it as designed: menu, BONUS, the spin disc
-   overhanging it, turbo, auto. */
+/* Right column: the 65×285 control bar at (721.5, 35), its foot 40 above the stage's, the
+   buttons packed down it as designed: menu, BONUS overhanging it, the spin disc overhanging
+   it, turbo, auto. */
 .phone .hud-bar {
-	left: calc(var(--W) - 82px * var(--c));
-	top: calc(var(--H) - 322px * var(--c));
-	width: calc(62px * var(--c));
-	height: calc(280px * var(--c));
+	left: calc(var(--W) - 78.5px * var(--c));
+	top: calc(var(--H) - 325px * var(--c));
+	width: calc(65px * var(--c));
+	height: calc(285px * var(--c));
 	border-radius: 10px;
+	/* The disc's centre (755, 177) from the bar's corner. */
+	--hole-x: calc(33.5px * var(--c));
+	--hole-y: calc(142px * var(--c));
+	--hole-r: calc(42px * var(--c));
 }
 .phone :is(.menu-button, .turbo-button, .auto-button) {
 	/* 34px = the 48px buttons ×0.708. */
@@ -3254,43 +3323,45 @@ main:not(.portrait) .base-stage {
 	scale: calc(0.708 * var(--c));
 }
 .phone .menu-button {
-	left: calc(var(--W) - 68px * var(--c));
-	top: calc(var(--H) - 307px * var(--c));
+	left: calc(var(--W) - 62px * var(--c));
+	top: calc(var(--H) - 315px * var(--c));
 }
 .phone .menu-panel {
 	/* Opens left of the bar, its top on the bar's. */
-	left: calc(var(--W) - 88px * var(--c) - 186px);
-	top: calc(var(--H) - 322px * var(--c));
+	left: calc(var(--W) - 84.5px * var(--c) - 186px);
+	top: calc(var(--H) - 325px * var(--c));
 	transform-origin: 100% 0;
 	scale: calc(0.75 * var(--c));
 }
 .phone .bonus-button {
-	left: calc(var(--W) - 81.5px * var(--c));
-	top: calc(var(--H) - 263.5px * var(--c));
-	width: 61px;
-	height: 33px;
+	/* 72×29.85 at (719, 92.3): Coiny 10.4px, a 0.6px outline. */
+	left: calc(var(--W) - 81px * var(--c));
+	top: calc(var(--H) - 267.7px * var(--c));
+	width: 72px;
+	height: 29.85px;
 	padding-top: 2px;
-	border: 2px solid #4b3981;
-	border-radius: 24px;
+	border-width: 0.61px;
+	border-radius: 14.65px;
 	transform-origin: 0 0;
 	scale: var(--c);
-	font-size: max(10.2px, calc(6px / var(--k, 1) / var(--c)));
-	letter-spacing: 1.2px;
+	font-size: max(10.38px, calc(6px / var(--k, 1) / var(--c)));
+	letter-spacing: 0.85px;
 }
 .phone .spin-button {
-	/* 83px disc centred on the bar at design y 177: the 112px button ×0.741. */
-	left: calc(var(--W) - 92.5px * var(--c));
-	top: calc(var(--H) - 224.5px * var(--c));
+	/* 84px disc at (713, 135): the 112px button ×0.75, black 50% here. */
+	left: calc(var(--W) - 87px * var(--c));
+	top: calc(var(--H) - 225px * var(--c));
 	transform-origin: 0 0;
-	scale: calc(0.741 * var(--c));
+	scale: calc(0.75 * var(--c));
+	background: rgb(0 0 0 / 0.5);
 }
 .phone .turbo-button {
-	left: calc(var(--W) - 68px * var(--c));
-	top: calc(var(--H) - 131px * var(--c));
+	left: calc(var(--W) - 62px * var(--c));
+	top: calc(var(--H) - 129px * var(--c));
 }
 .phone .auto-button {
-	left: calc(var(--W) - 68px * var(--c));
-	top: calc(var(--H) - 87px * var(--c));
+	left: calc(var(--W) - 62px * var(--c));
+	top: calc(var(--H) - 83px * var(--c));
 }
 .phone .auto-button small {
 	font-size: max(8px, calc(5.5px / var(--k, 1) / 0.708 / var(--c)));
@@ -3331,16 +3402,6 @@ main:not(.portrait) .base-stage {
 }
 .board.celebrate + .board-deco::before {
 	filter: brightness(1.18) saturate(1.1);
-}
-/* Portrait only: open grass under the board, so drips hang off its foot. Landscape has none (the
-   HUD bar sits right under the board, and drips run down the sides read as tabs). */
-.portrait .board-deco::after {
-	top: calc(100% + 6px);
-	bottom: auto;
-	left: -6px;
-	right: -6px;
-	height: 46px;
-	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='668' height='46' viewBox='0 0 668 46'%3E%3Cdefs%3E%3ClinearGradient id='d' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%235b3dc9'/%3E%3Cstop offset='1' stop-color='%237f5ff0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M52.1 0C58.1 0 64.8 4.9 64.4 17.1A7 7 0 1 0 75.6 17.1C75.2 4.9 81.9 0 87.9 0ZM95.8 0C101.8 0 110.9 9.1 110.4 30.3A9.5 9.5 0 1 0 125.6 30.3C125.1 9.1 134.2 0 140.2 0ZM189.7 0C195.7 0 200.9 3.1 200.6 11.5A5.5 5.5 0 1 0 209.4 11.5C209.1 3.1 214.3 0 220.3 0ZM298.4 0C304.4 0 312.0 7.0 311.6 23.6A8 8 0 1 0 324.4 23.6C324.0 7.0 331.6 0 337.6 0ZM414.1 0C420.1 0 430.1 10.8 429.6 35.7A10.5 10.5 0 1 0 446.4 35.7C445.9 10.8 455.9 0 461.9 0ZM503.8 0C509.8 0 515.5 4.2 515.2 14.7A6 6 0 1 0 524.8 14.7C524.5 4.2 530.2 0 536.2 0ZM583.5 0C589.5 0 597.6 7.7 597.2 25.8A8.5 8.5 0 1 0 610.8 25.8C610.4 7.7 618.5 0 624.5 0Z' fill='url%28%23d%29' stroke='%232a1a72' stroke-width='2.2' stroke-linejoin='round'/%3E%3Cellipse cx='67.3' cy='19.9' rx='1.5' ry='2.5' fill='%23fff' fill-opacity='.55'/%3E%3Cellipse cx='114.4' cy='34.1' rx='2.1' ry='3.4' fill='%23fff' fill-opacity='.55'/%3E%3Cellipse cx='202.9' cy='13.7' rx='1.2' ry='2.0' fill='%23fff' fill-opacity='.55'/%3E%3Cellipse cx='315.0' cy='26.8' rx='1.8' ry='2.9' fill='%23fff' fill-opacity='.55'/%3E%3Cellipse cx='434.0' cy='39.9' rx='2.3' ry='3.8' fill='%23fff' fill-opacity='.55'/%3E%3Cellipse cx='517.7' cy='17.1' rx='1.3' ry='2.2' fill='%23fff' fill-opacity='.55'/%3E%3Cellipse cx='600.8' cy='29.2' rx='1.9' ry='3.1' fill='%23fff' fill-opacity='.55'/%3E%3C/svg%3E") no-repeat 0 0 / 100% 100%;
 }
 
 /* ---- Framed panels (2026-10-23 quality pass) ------------------------------------------------
@@ -3541,29 +3602,6 @@ main:not(.portrait) .base-stage {
 	display: block;
 	margin-top: 0.3em;
 	color: #b9a9f0;
-}
-/* BALANCE / WIN boxes (portrait, phone): framed like the other panels, not dark glass. */
-:is(.portrait, .phone) .hud-metrics .metric {
-	border: 3px solid transparent;
-	background:
-		linear-gradient(#ffffff14, #fff0 45%) padding-box,
-		linear-gradient(#30218c, #21146a) padding-box,
-		linear-gradient(#c4adff, #8a68f5 30%, #5a3bd2) border-box;
-	box-shadow:
-		0 0 0 2.5px #241063,
-		inset 0 0 0 1.5px #241063,
-		0 6px 16px #12063a80;
-}
-.phone .hud-metrics .metric {
-	border-width: 2px;
-	box-shadow:
-		0 0 0 1.5px #241063,
-		inset 0 0 0 1px #241063,
-		0 3px 8px #12063a80;
-}
-:is(.portrait, .phone) .hud-metrics .metric-label {
-	color: #ffe14d;
-	text-shadow: 0 1px 0 #1b0f55;
 }
 /* Demo pill on a landscape phone: the whole gap between the board's rim and the control bar,
    so it wraps to three lines instead of four. */

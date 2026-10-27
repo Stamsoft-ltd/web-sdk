@@ -1,49 +1,49 @@
 {
 	"APPLE": {
-		"base": "./symbols/face/APPLE-base.webp",
+		"base": "./symbols/hd/face/APPLE-base.webp",
 		"brows": [],
 		"mouth": {
-			"src": "./symbols/face/APPLE-mouth.webp",
+			"src": "./symbols/hd/face/APPLE-mouth.webp",
 			"x": 41.07,
 			"y": 58.48,
 			"w": 16.96,
 			"h": 8.04,
-			"cx": 49.33,
-			"cy": 62.81
+			"cx": 49.45,
+			"cy": 62.92
 		},
 		"cheeks": [],
 		"closed": []
 	},
 	"BLUEBERRY": {
-		"base": "./symbols/face/BLUEBERRY-base.webp",
+		"base": "./symbols/hd/face/BLUEBERRY-base.webp",
 		"brows": [
 			{
-				"src": "./symbols/face/BLUEBERRY-brow-0.webp",
+				"src": "./symbols/hd/face/BLUEBERRY-brow-0.webp",
 				"x": 30.36,
 				"y": 34.82,
 				"w": 12.95,
 				"h": 9.38,
-				"cx": 36.77,
-				"cy": 39.92
+				"cx": 36.88,
+				"cy": 40.03
 			},
 			{
-				"src": "./symbols/face/BLUEBERRY-brow-1.webp",
+				"src": "./symbols/hd/face/BLUEBERRY-brow-1.webp",
 				"x": 56.25,
 				"y": 34.82,
 				"w": 12.95,
 				"h": 8.93,
-				"cx": 62.17,
-				"cy": 39.52
+				"cx": 62.29,
+				"cy": 39.63
 			}
 		],
 		"mouth": {
-			"src": "./symbols/face/BLUEBERRY-mouth.webp",
+			"src": "./symbols/hd/face/BLUEBERRY-mouth.webp",
 			"x": 39.73,
 			"y": 58.48,
 			"w": 20.54,
 			"h": 14.29,
-			"cx": 49.78,
-			"cy": 65.9
+			"cx": 49.9,
+			"cy": 66.01
 		},
 		"cheeks": [
 			{
@@ -62,35 +62,35 @@
 		"closed": []
 	},
 	"CHERRIES": {
-		"base": "./symbols/face/CHERRIES-base.webp",
+		"base": "./symbols/hd/face/CHERRIES-base.webp",
 		"brows": [
 			{
-				"src": "./symbols/face/CHERRIES-brow-0.webp",
+				"src": "./symbols/hd/face/CHERRIES-brow-0.webp",
 				"x": 29.46,
 				"y": 41.96,
 				"w": 19.2,
 				"h": 12.95,
-				"cx": 39.09,
-				"cy": 47.56
+				"cx": 39.2,
+				"cy": 47.68
 			},
 			{
-				"src": "./symbols/face/CHERRIES-brow-1.webp",
+				"src": "./symbols/hd/face/CHERRIES-brow-1.webp",
 				"x": 50.89,
 				"y": 41.52,
 				"w": 18.3,
 				"h": 13.39,
-				"cx": 59.7,
-				"cy": 47.3
+				"cx": 59.81,
+				"cy": 47.41
 			}
 		],
 		"mouth": {
-			"src": "./symbols/face/CHERRIES-mouth.webp",
+			"src": "./symbols/hd/face/CHERRIES-mouth.webp",
 			"x": 38.84,
 			"y": 59.38,
 			"w": 21.88,
 			"h": 8.93,
-			"cx": 49.7,
-			"cy": 64.23
+			"cx": 49.81,
+			"cy": 64.34
 		},
 		"cheeks": [
 			{
@@ -109,35 +109,35 @@
 		"closed": []
 	},
 	"GRAPES": {
-		"base": "./symbols/face/GRAPES-base.webp",
+		"base": "./symbols/hd/face/GRAPES-base.webp",
 		"brows": [
 			{
-				"src": "./symbols/face/GRAPES-brow-0.webp",
+				"src": "./symbols/hd/face/GRAPES-brow-0.webp",
 				"x": 29.02,
 				"y": 38.39,
 				"w": 11.16,
 				"h": 7.14,
-				"cx": 34.25,
-				"cy": 41.48
+				"cx": 34.36,
+				"cy": 41.59
 			},
 			{
-				"src": "./symbols/face/GRAPES-brow-1.webp",
+				"src": "./symbols/hd/face/GRAPES-brow-1.webp",
 				"x": 59.82,
 				"y": 38.39,
 				"w": 10.71,
 				"h": 7.14,
-				"cx": 65.1,
-				"cy": 41.44
+				"cx": 65.21,
+				"cy": 41.55
 			}
 		],
 		"mouth": {
-			"src": "./symbols/face/GRAPES-mouth.webp",
+			"src": "./symbols/hd/face/GRAPES-mouth.webp",
 			"x": 41.07,
 			"y": 55.36,
 			"w": 18.3,
 			"h": 14.73,
-			"cx": 49.92,
-			"cy": 62.47
+			"cx": 50.04,
+			"cy": 62.58
 		},
 		"cheeks": [
 			{
@@ -155,55 +155,55 @@
 		],
 		"closed": [
 			{
-				"src": "./symbols/face/GRAPES-closed-0.webp",
+				"src": "./symbols/hd/face/GRAPES-closed-0.webp",
 				"x": 27.68,
 				"y": 48.21,
 				"w": 16.07,
 				"h": 10.27,
-				"cx": 35.62,
-				"cy": 53.12
+				"cx": 35.73,
+				"cy": 53.23
 			},
 			{
-				"src": "./symbols/face/GRAPES-closed-1.webp",
+				"src": "./symbols/hd/face/GRAPES-closed-1.webp",
 				"x": 55.8,
 				"y": 48.21,
 				"w": 16.07,
 				"h": 10.27,
-				"cx": 63.69,
-				"cy": 53.09
+				"cx": 63.8,
+				"cy": 53.2
 			}
 		]
 	},
 	"KIWI": {
-		"base": "./symbols/face/KIWI-base.webp",
+		"base": "./symbols/hd/face/KIWI-base.webp",
 		"brows": [
 			{
-				"src": "./symbols/face/KIWI-brow-0.webp",
+				"src": "./symbols/hd/face/KIWI-brow-0.webp",
 				"x": 31.25,
 				"y": 36.16,
 				"w": 11.16,
 				"h": 6.7,
-				"cx": 36.55,
-				"cy": 38.99
+				"cx": 36.66,
+				"cy": 39.1
 			},
 			{
-				"src": "./symbols/face/KIWI-brow-1.webp",
+				"src": "./symbols/hd/face/KIWI-brow-1.webp",
 				"x": 58.04,
 				"y": 36.16,
 				"w": 10.71,
 				"h": 6.7,
-				"cx": 63.11,
-				"cy": 38.99
+				"cx": 63.23,
+				"cy": 39.1
 			}
 		],
 		"mouth": {
-			"src": "./symbols/face/KIWI-mouth.webp",
+			"src": "./symbols/hd/face/KIWI-mouth.webp",
 			"x": 38.39,
 			"y": 55.8,
 			"w": 23.21,
 			"h": 14.73,
-			"cx": 49.66,
-			"cy": 63.37
+			"cx": 49.77,
+			"cy": 63.48
 		},
 		"cheeks": [
 			{
@@ -222,35 +222,35 @@
 		"closed": []
 	},
 	"LEMON": {
-		"base": "./symbols/face/LEMON-base.webp",
+		"base": "./symbols/hd/face/LEMON-base.webp",
 		"brows": [
 			{
-				"src": "./symbols/face/LEMON-brow-0.webp",
+				"src": "./symbols/hd/face/LEMON-brow-0.webp",
 				"x": 30.8,
 				"y": 36.16,
 				"w": 11.16,
 				"h": 6.7,
-				"cx": 36.07,
-				"cy": 39.01
+				"cx": 36.18,
+				"cy": 39.12
 			},
 			{
-				"src": "./symbols/face/LEMON-brow-1.webp",
+				"src": "./symbols/hd/face/LEMON-brow-1.webp",
 				"x": 57.59,
 				"y": 35.71,
 				"w": 11.16,
 				"h": 6.7,
-				"cx": 62.88,
-				"cy": 38.69
+				"cx": 62.99,
+				"cy": 38.8
 			}
 		],
 		"mouth": {
-			"src": "./symbols/face/LEMON-mouth.webp",
+			"src": "./symbols/hd/face/LEMON-mouth.webp",
 			"x": 38.39,
 			"y": 57.59,
 			"w": 23.21,
 			"h": 16.52,
-			"cx": 49.49,
-			"cy": 65.63
+			"cx": 49.6,
+			"cy": 65.75
 		},
 		"cheeks": [
 			{
@@ -269,35 +269,35 @@
 		"closed": []
 	},
 	"ORANGE": {
-		"base": "./symbols/face/ORANGE-base.webp",
+		"base": "./symbols/hd/face/ORANGE-base.webp",
 		"brows": [
 			{
-				"src": "./symbols/face/ORANGE-brow-0.webp",
+				"src": "./symbols/hd/face/ORANGE-brow-0.webp",
 				"x": 30.8,
 				"y": 33.48,
 				"w": 11.61,
 				"h": 8.48,
-				"cx": 36.63,
-				"cy": 37.97
+				"cx": 36.74,
+				"cy": 38.08
 			},
 			{
-				"src": "./symbols/face/ORANGE-brow-1.webp",
+				"src": "./symbols/hd/face/ORANGE-brow-1.webp",
 				"x": 54.46,
 				"y": 32.14,
 				"w": 11.61,
 				"h": 7.59,
-				"cx": 59.64,
-				"cy": 36.06
+				"cx": 59.75,
+				"cy": 36.17
 			}
 		],
 		"mouth": {
-			"src": "./symbols/face/ORANGE-mouth.webp",
+			"src": "./symbols/hd/face/ORANGE-mouth.webp",
 			"x": 45.09,
 			"y": 56.7,
 			"w": 11.16,
 			"h": 10.27,
-			"cx": 50.54,
-			"cy": 61.71
+			"cx": 50.65,
+			"cy": 61.82
 		},
 		"cheeks": [
 			{
@@ -316,35 +316,35 @@
 		"closed": []
 	},
 	"PLUM": {
-		"base": "./symbols/face/PLUM-base.webp",
+		"base": "./symbols/hd/face/PLUM-base.webp",
 		"brows": [
 			{
-				"src": "./symbols/face/PLUM-brow-0.webp",
+				"src": "./symbols/hd/face/PLUM-brow-0.webp",
 				"x": 32.59,
 				"y": 38.39,
 				"w": 8.48,
 				"h": 6.7,
-				"cx": 36.52,
-				"cy": 41.37
+				"cx": 36.63,
+				"cy": 41.48
 			},
 			{
-				"src": "./symbols/face/PLUM-brow-1.webp",
+				"src": "./symbols/hd/face/PLUM-brow-1.webp",
 				"x": 58.48,
 				"y": 38.39,
 				"w": 8.93,
 				"h": 6.7,
-				"cx": 63.02,
-				"cy": 41.24
+				"cx": 63.13,
+				"cy": 41.35
 			}
 		],
 		"mouth": {
-			"src": "./symbols/face/PLUM-mouth.webp",
+			"src": "./symbols/hd/face/PLUM-mouth.webp",
 			"x": 40.18,
 			"y": 55.36,
 			"w": 19.2,
 			"h": 13.84,
-			"cx": 49.2,
-			"cy": 62.33
+			"cx": 49.31,
+			"cy": 62.44
 		},
 		"cheeks": [
 			{
@@ -363,35 +363,35 @@
 		"closed": []
 	},
 	"STRAWBERRY": {
-		"base": "./symbols/face/STRAWBERRY-base.webp",
+		"base": "./symbols/hd/face/STRAWBERRY-base.webp",
 		"brows": [
 			{
-				"src": "./symbols/face/STRAWBERRY-brow-0.webp",
+				"src": "./symbols/hd/face/STRAWBERRY-brow-0.webp",
 				"x": 28.57,
 				"y": 35.71,
 				"w": 11.16,
 				"h": 7.14,
-				"cx": 34.01,
-				"cy": 39.01
+				"cx": 34.12,
+				"cy": 39.12
 			},
 			{
-				"src": "./symbols/face/STRAWBERRY-brow-1.webp",
+				"src": "./symbols/hd/face/STRAWBERRY-brow-1.webp",
 				"x": 58.04,
 				"y": 35.71,
 				"w": 11.16,
 				"h": 7.14,
-				"cx": 63.49,
-				"cy": 38.94
+				"cx": 63.6,
+				"cy": 39.05
 			}
 		],
 		"mouth": {
-			"src": "./symbols/face/STRAWBERRY-mouth.webp",
+			"src": "./symbols/hd/face/STRAWBERRY-mouth.webp",
 			"x": 39.73,
 			"y": 58.04,
 			"w": 17.86,
 			"h": 12.95,
-			"cx": 48.62,
-			"cy": 64.15
+			"cx": 48.73,
+			"cy": 64.27
 		},
 		"cheeks": [
 			{
@@ -410,35 +410,35 @@
 		"closed": []
 	},
 	"WATERMELON": {
-		"base": "./symbols/face/WATERMELON-base.webp",
+		"base": "./symbols/hd/face/WATERMELON-base.webp",
 		"brows": [
 			{
-				"src": "./symbols/face/WATERMELON-brow-0.webp",
+				"src": "./symbols/hd/face/WATERMELON-brow-0.webp",
 				"x": 25.0,
 				"y": 45.09,
 				"w": 22.32,
 				"h": 8.04,
-				"cx": 36.18,
-				"cy": 48.18
+				"cx": 36.29,
+				"cy": 48.29
 			},
 			{
-				"src": "./symbols/face/WATERMELON-brow-1.webp",
+				"src": "./symbols/hd/face/WATERMELON-brow-1.webp",
 				"x": 49.11,
 				"y": 44.2,
 				"w": 23.21,
 				"h": 8.04,
-				"cx": 60.75,
-				"cy": 47.97
+				"cx": 60.86,
+				"cy": 48.08
 			}
 		],
 		"mouth": {
-			"src": "./symbols/face/WATERMELON-mouth.webp",
+			"src": "./symbols/hd/face/WATERMELON-mouth.webp",
 			"x": 37.05,
 			"y": 58.93,
 			"w": 22.32,
 			"h": 9.82,
-			"cx": 47.94,
-			"cy": 64.17
+			"cx": 48.05,
+			"cy": 64.28
 		},
 		"cheeks": [
 			{

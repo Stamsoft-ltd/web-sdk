@@ -133,11 +133,11 @@
 		<!-- Two layers: one transform each (the drop, then the wobble). -->
 		<div class="fall">
 			<div class="egg">
-				<img class="whole" src="./mystery/egg.webp" alt="" />
-				{#each KNOCKS_MS as _, i}<img class={`crack c${i}`} src="./mystery/egg-crack.webp" alt="" />{/each}
+				<img class="whole" src="./mystery/hd/egg.webp" alt="" />
+				{#each KNOCKS_MS as _, i}<img class={`crack c${i}`} src="./mystery/hd/egg-crack.webp" alt="" />{/each}
 				<div class="leak">{#each KNOCKS_MS as _, i}<span class={`c${i}`}></span>{/each}</div>
-				<img class="bottom" src="./mystery/egg-bottom.webp" alt="" />
-				<img class="top" src="./mystery/egg-top.webp" alt="" />
+				<img class="bottom" src="./mystery/hd/egg-bottom.webp" alt="" />
+				<img class="top" src="./mystery/hd/egg-top.webp" alt="" />
 			</div>
 		</div>
 		{#each BITS as [a, r, s, spin]}
@@ -388,8 +388,8 @@
 		opacity: 0;
 		animation: m-show 1ms calc(var(--at) * var(--p)) forwards;
 		background: #fff3c4;
-		-webkit-mask: url('/mystery/egg-leak.webp') 0 0 / 100% 100% no-repeat;
-		mask: url('/mystery/egg-leak.webp') 0 0 / 100% 100% no-repeat;
+		-webkit-mask: url('/mystery/hd/egg-leak.webp') 0 0 / 100% 100% no-repeat;
+		mask: url('/mystery/hd/egg-leak.webp') 0 0 / 100% 100% no-repeat;
 	}
 	/* 3000ms from 1300 (knocks at 0, 26.7, 53.3 and 80%). */
 	@keyframes leak {

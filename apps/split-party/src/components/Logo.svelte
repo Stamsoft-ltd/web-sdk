@@ -34,7 +34,7 @@
 	<!-- Keyed on the win beat: every new win remounts it, restarting the bounce and splashes. -->
 	{#key cheer ? beat : -1}
 	<g class="jelly" style={`transform-origin:${LAYERS.width / 2}px ${LAYERS.height}px`}>
-	<image href="./splash/logo-base.webp" width={LAYERS.width} height={LAYERS.height} />
+	<image href="./splash/hd/logo-base.webp" width={LAYERS.width} height={LAYERS.height} />
 	{#each LAYERS.drops as d, i}
 		<g
 			class="drop"

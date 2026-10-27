@@ -128,7 +128,7 @@
 		style={`width:${SKY.w}px;height:${SKY.h}px;transform:translate(-50%,-50%) scale(${skyScale})`}
 	>
 		<div class="sky-base">
-			<img class="sky-bg" src="./splash/sky-bg.webp" alt="" />
+			<img class="sky-bg" src="./splash/hd/sky-bg.webp" alt="" />
 			<div class="sea" style={`top:${SEA_TOP}px`}>
 				{#each CAPS as c}
 					<span
@@ -159,10 +159,10 @@
 			<JellyDome src={d.src} x={d.x} y={d.y} w={d.size} ox={d.ox} oy={d.oy} color={d.color} pop={d.pop} />
 		{/each}
 		<!-- Islands 11174:5015 / 11174:5016; the baked blur margin is outside the art box. -->
-		<img class="island" src="./splash/island.webp" alt="" style="left:131px;top:39px;width:105px" />
+		<img class="island" src="./splash/hd/island.webp" alt="" style="left:131px;top:39px;width:105px" />
 		<img
 			class="island island-2"
-			src="./splash/island.webp"
+			src="./splash/hd/island.webp"
 			alt=""
 			style="left:996px;top:142px;width:90px"
 		/>
@@ -275,8 +275,8 @@
 		left: 0;
 		width: 1200px;
 		height: 170px;
-		/* The painting is soft-focus; unblurred caps and foam would read as stickers. */
-		filter: blur(1.2px);
+		/* The painting has a light baked blur (build-splash-sky.py); the caps and foam match it. */
+		filter: blur(0.5px);
 	}
 	/* A wave cap: swells in, stretches as it rolls a little shoreward, then breaks up. */
 	.sea-cap {

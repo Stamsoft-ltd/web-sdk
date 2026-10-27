@@ -10,14 +10,14 @@
 	// slopes are behind the board and the round panels, so the tops are the visible edge).
 	// Layers from scripts/build-bonus-scene.py (blur baked in).
 	const SKY = { w: 1200, h: 670 };
-	const A = './bonus/normal/crisp';
+	const A = './bonus/normal/hd';
 	let vw = $state(1200);
 	let vh = $state(670);
 	let scale = $derived(Math.max(vw / SKY.w, vh / SKY.h) * 1.04);
 
 	// The frame's clouds sit at y 26-103 and are 231-297px wide.
-	const CLOUD = { src: `${A}/cloud-puff.webp`, w: [160, 190] as [number, number], alpha: [0.8, 0.8] as [number, number] };
-	const FAR = { src: `${A}/cloud-puff.webp`, w: [110, 135] as [number, number], alpha: [0.65, 0.8] as [number, number] };
+	const CLOUD = { src: './bonus/normal/crisp/cloud-puff.webp', w: [160, 190] as [number, number], alpha: [0.8, 0.8] as [number, number] };
+	const FAR = { src: './bonus/normal/crisp/cloud-puff.webp', w: [110, 135] as [number, number], alpha: [0.65, 0.8] as [number, number] };
 	const CLOUD_LANES = [
 		{ far: false, y: [24, 40] as [number, number] },
 		{ far: true, y: [96, 112] as [number, number] },
