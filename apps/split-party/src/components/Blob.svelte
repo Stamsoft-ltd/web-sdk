@@ -2,6 +2,8 @@
 	import { untrack } from 'svelte';
 	import EYES from '../lib/eyes.json';
 	import FACES from '../lib/face-layers.json';
+	import MINI_EYES from '../lib/mini-eyes.json';
+	import MINI_FACES from '../lib/mini-face.json';
 	import GEAR from '../lib/gear.json';
 	import LiveEyes, { type Eye } from './LiveEyes.svelte';
 
@@ -9,7 +11,15 @@
 		symbol = 'ORANGE',
 		units = 1,
 		uid = 'blob',
-	}: { symbol?: string; units?: number; uid?: string } = $props();
+		cheer = false,
+	}: {
+		symbol?: string;
+		units?: number;
+		uid?: string;
+		/** Laughing on a win screen: the mouth opens and shuts in bursts, brows hop, the eyes
+		 *  squint ^^ on each burst and look up between. In step with WinScreen's 0.9s giggle. */
+		cheer?: boolean;
+	} = $props();
 	const palettes: Record<string, [string, string, string]> = {
 		WATERMELON: ['#83ff46', '#27ca43', 'sleep'],
 		CHERRIES: ['#ff6c89', '#f62d4b', 'angry'],
@@ -19,30 +29,31 @@
 		ORANGE: ['#ffd55e', '#ff941c', 'wow'],
 		LEMON: ['#ffed71', '#ffc327', 'happy'],
 		KIWI: ['#6ffff1', '#11cfb8', 'happy'],
-		PLUM: ['#999baa', '#45485e', 'wow'],
+		PLUM: ['#dedcf4', '#9c99d2', 'happy'],
 		APPLE: ['#fff1cf', '#ffdb8f', 'sleep'],
 		BASKET: ['#fff7a4', '#e9a820', 'happy'],
 	};
-	// Figma 11003:24523 symbol art (public/symbols/hd, scripts/build-symbols.py). Boxes are the design's symbol frames
-	// in a 74-unit pad scaled to the 100-unit viewBox; PLUM's frame is drawn taller.
+	// Symbol art (public/symbols/v3, scripts/build-symbol-masters.py + build-body-shapes.py + build-symbols.py). The masters
+	// carry the design's framing (Figma 11318:41751), so every box is the whole viewBox.
 	const ART: Record<string, [number, number, number, number]> = {
 		WATERMELON: [0, 0, 100, 100],
 		CHERRIES: [0, 0, 100, 100],
-		GRAPES: [0, -0.7, 100, 101.4],
+		GRAPES: [0, 0, 100, 100],
 		STRAWBERRY: [0, 0, 100, 100],
-		BLUEBERRY: [0, -0.7, 100, 101.4],
+		BLUEBERRY: [0, 0, 100, 100],
 		ORANGE: [0, 0, 100, 100],
-		LEMON: [0, -0.7, 100, 101.4],
-		KIWI: [0, -0.7, 100, 101.4],
-		PLUM: [0.7, -6.5, 98.6, 113],
+		LEMON: [0, 0, 100, 100],
+		KIWI: [0, 0, 100, 100],
+		PLUM: [0, 0, 100, 100],
 		APPLE: [0, 0, 100, 100],
 		// The scatter (math name BASKET) is the spotted egg (scripts/build-scatter-egg.py).
 		BASKET: [0, 0, 100, 100],
 	};
 	let palette = $derived(palettes[symbol] ?? palettes.ORANGE);
 	let art = $derived(ART[symbol]);
-	// Live eyes (scripts/build-eyes.py): only on full-size and half-size blobs, where they read.
-	let eyes = $derived(units <= 2 ? ((EYES as Record<string, Eye[]>)[symbol] ?? []) : []);
+	// Live eyes (scripts/build-eyes.py); split tiles use the small blobs' bigger set
+	// (scripts/build-mini-blobs.py).
+	let eyes = $derived(((units > 1 ? MINI_EYES : EYES) as Record<string, Eye[]>)[symbol] ?? []);
 	// Each blob gets its own look/blink phase so the board doesn't move in lockstep.
 	// FNV-1a plus a final avalanche: neighbouring uids (b-2-3, b-2-4) must land on unrelated
 	// phases, or the board breathes and blinks in column-by-column waves.
@@ -59,20 +70,11 @@
 	type Part = { src: string; x: number; y: number; w: number; h: number; cx: number; cy: number };
 	type Cheek = { cx: number; cy: number; rx: number; ry: number };
 	type Face = { base: string; brows: Part[]; mouth: Part | null; cheeks: Cheek[]; closed?: Part[] };
-	let face = $derived(units <= 2 ? (FACES as Record<string, Face>)[symbol] : undefined);
-	// Premium symbols (the top five in paytable.json) always look happy, low ones always
-	// unhappy. The painted faces don't all agree, so their own cut-out parts are re-posed:
-	// [flip the mouth (frown <-> smile), brow turn in degrees (+ = inner ends up, worried),
-	// brow lift]. Faces that already fit (Grapes, Strawberry, Apple) are left alone.
-	const MOOD: Record<string, [boolean, number, number]> = {
-		WATERMELON: [true, 16, -1.5],
-		CHERRIES: [true, 40, -3],
-		BLUEBERRY: [true, -14, 0],
-		ORANGE: [false, 18, 0],
-		LEMON: [true, 16, 0],
-		KIWI: [true, 16, 0],
-		PLUM: [true, 16, 0],
-	};
+	let face = $derived(((units > 1 ? MINI_FACES : FACES) as Record<string, Face>)[symbol]);
+	// Re-poses a symbol's cut-out face parts: [flip the mouth (frown <-> smile), brow turn in
+	// degrees (+ = inner ends up, worried), brow lift]. Empty since the 2026-10-28 redraw
+	// (Figma 11318:41751): each expression is now drawn on purpose and shown as painted.
+	const MOOD: Record<string, [boolean, number, number]> = {};
 	let mood = $derived(MOOD[symbol]);
 	// The premium blobs' gear (scripts/build-premium-gear.py): crest, horns, antennae, flower,
 	// behind or over the body, each moving round where it meets it (BoardView's tickGear).
@@ -211,6 +213,7 @@
 					s: from[2] / p[2],
 					axis: (Math.atan2(still ? py - by : cy - py, still ? px - bx : cx - px) * 180) / Math.PI,
 					split,
+					born: i < 0,
 				};
 			}),
 		};
@@ -225,7 +228,7 @@
 	</g>
 {/snippet}
 
-<svg viewBox="0 0 100 100" aria-hidden="true" class="blob-art" class:has-art={!!art} style={idle}>
+<svg viewBox="0 0 100 100" aria-hidden="true" class="blob-art" class:has-art={!!art} class:cheer style={idle}>
 	<defs
 		><linearGradient id={`${uid}-g`} x1="0" y1="0" x2=".7" y2="1"
 			><stop stop-color={palette[0]} /><stop offset="1" stop-color={palette[1]} /></linearGradient
@@ -244,6 +247,7 @@
 		<g
 			class="daughter"
 			class:dividing={!!d?.split}
+			class:born={!!d?.split && d.born}
 			class:sliding={!!d && !d.split}
 			style={d
 				? `--dx:${d.dx.toFixed(2)}px;--dy:${d.dy.toFixed(2)}px;--ds:${d.s.toFixed(3)};--axis:${d.axis.toFixed(1)}deg`
@@ -466,28 +470,29 @@
 		transform-origin: 50% 60%;
 		animation: divide-swell var(--divide-ms, 900ms) both;
 	}
-	/* --big 0→1 blends to a cleavage (1 → 2): the tile zooms up evenly instead of squashing,
-	   holds while the furrow pinches, then settles. */
+	/* --big 0→1 blends to a cleavage (1 → 2): the tile swells a touch evenly instead of squashing,
+	   holds while the furrow pinches, then settles. It stays inside its tile (BoardView
+	   swellFrames: a 1.2x zoom burst the tile and blew the art up). */
 	@keyframes divide-swell {
 		0% {
 			scale: 1;
 			animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
 		}
 		30% {
-			scale: calc(1.24 - 0.04 * var(--big)) calc(1.18 + 0.02 * var(--big));
+			scale: calc(1.08 - 0.02 * var(--big)) calc(1.04 + 0.01 * var(--big));
 		}
 		45% {
-			scale: 1.2 calc(1.22 - 0.02 * var(--big));
+			scale: 1.06 calc(1.06 - 0.01 * var(--big));
 		}
 		70% {
-			scale: calc(1.18 + 0.02 * var(--big));
+			scale: calc(1.05 + 0.01 * var(--big));
 			animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
 		}
 		84% {
-			scale: calc(0.93 + 0.04 * var(--big)) calc(1.05 - 0.08 * var(--big));
+			scale: calc(0.95 + 0.03 * var(--big)) calc(1.03 - 0.05 * var(--big));
 		}
 		93% {
-			scale: calc(1.03 - 0.02 * var(--big)) calc(0.98 + 0.03 * var(--big));
+			scale: calc(1.02 - 0.01 * var(--big)) calc(0.99 + 0.02 * var(--big));
 		}
 		100% {
 			scale: 1;
@@ -502,6 +507,23 @@
 	.daughter.sliding {
 		animation-name: divide-slide;
 	}
+	/* A newborn stacked on its parent doubled every outline: it cuts in as the two pull apart
+	   (BoardView tickDivide). */
+	.daughter.dividing.born {
+		animation:
+			divide-apart var(--divide-ms, 900ms) both,
+			divide-born var(--divide-ms, 900ms) linear both;
+	}
+	@keyframes divide-born {
+		0%,
+		29% {
+			opacity: 0;
+		}
+		34%,
+		100% {
+			opacity: 1;
+		}
+	}
 	/* translate runs in the cell's 100-unit viewBox; the stretch is along the split axis.
 	   Stacked on the parent the halves bulge along the axis (one blob getting long), stretch
 	   out into a peanut that pinches, snap apart with an overshoot and settle. */
@@ -515,13 +537,13 @@
 		}
 		26% {
 			transform: translate(var(--dx), var(--dy)) scale(var(--ds)) rotate(var(--axis))
-				scale(calc(1.22 - 0.16 * var(--big)), calc(0.84 + 0.13 * var(--big))) rotate(calc(-1 * var(--axis)));
+				scale(calc(1.12 - 0.08 * var(--big)), calc(0.9 + 0.08 * var(--big))) rotate(calc(-1 * var(--axis)));
 			animation-timing-function: cubic-bezier(0.5, 0, 0.7, 0.4);
 		}
 		46% {
 			transform: translate(calc(var(--dx) * (0.62 - 0.07 * var(--big))), calc(var(--dy) * (0.62 - 0.07 * var(--big))))
 				scale(calc(var(--ds) * (0.92 - 0.12 * var(--big)))) rotate(var(--axis))
-				scale(calc(1.5 - 0.5 * var(--big)), calc(0.7 + 0.3 * var(--big))) rotate(calc(-1 * var(--axis)));
+				scale(calc(1.32 - 0.32 * var(--big)), calc(0.8 + 0.2 * var(--big))) rotate(calc(-1 * var(--axis)));
 			animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
 		}
 		62% {
@@ -646,6 +668,102 @@
 		54%,
 		72% {
 			transform: translate(1.8px, -0.6px);
+		}
+	}
+	/* Cheering (win screens): a laugh in bursts on WinScreen's 0.9s giggle — ha-ha (mouth wide
+	   open, a little wider, then nearly shut, twice), then a held grin while the body rests.
+	   The brows hop with each "ha", the eyes squint ^^ through the burst and look up after it,
+	   the blush warms. Forced over the inline idle phases, like the board's lit cells. */
+	.cheer .mouth {
+		animation: cheer-laugh 0.9s ease-in-out var(--cheer-delay, 1s) infinite !important;
+	}
+	.cheer .brow {
+		animation: cheer-brow 0.9s ease-in-out var(--cheer-delay, 1s) infinite !important;
+	}
+	.cheer :global(.joy) {
+		animation: cheer-joy 0.9s ease-in-out var(--cheer-delay, 1s) infinite !important;
+	}
+	.cheer :global(.pupil) {
+		animation: none !important;
+		transform-box: fill-box;
+		transform-origin: center;
+		transform: translate(0, calc(var(--ly, 0.6px) * -1)) scale(1.12);
+	}
+	.cheer :global(.lid) {
+		animation: none !important;
+		transform: scaleY(0);
+	}
+	.cheer .blush {
+		animation: cheer-blush 0.9s ease-in-out var(--cheer-delay, 1s) infinite !important;
+	}
+	.cheer .open-eye {
+		animation: none;
+		opacity: 0;
+	}
+	.cheer .closed-eye {
+		animation: none;
+		opacity: 1;
+	}
+	@keyframes cheer-laugh {
+		0%,
+		100% {
+			transform: scale(1.04, 1);
+		}
+		10%,
+		34% {
+			transform: scale(1.14, 1.55);
+		}
+		22%,
+		46% {
+			transform: scale(1.08, 0.82);
+		}
+		58% {
+			transform: scale(1.12, 1.3);
+		}
+		74% {
+			transform: scale(1.06, 1.02);
+		}
+	}
+	@keyframes cheer-brow {
+		0%,
+		60%,
+		100% {
+			transform: none;
+		}
+		10%,
+		34% {
+			transform: translateY(-2.4px);
+		}
+		22%,
+		46% {
+			transform: translateY(-0.8px);
+		}
+	}
+	@keyframes cheer-joy {
+		0%,
+		62%,
+		100% {
+			transform: scaleY(0);
+		}
+		8%,
+		50% {
+			transform: scaleY(1);
+		}
+	}
+	@keyframes cheer-blush {
+		0%,
+		100% {
+			opacity: 0.85;
+		}
+		30% {
+			opacity: 1;
+			transform: scale(1.12);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.cheer :is(.mouth, .brow, .blush),
+		.cheer :global(.joy) {
+			animation: none !important;
 		}
 	}
 	/* Winning: the painted ^^ (Pixi squints on the hops; the DOM keeps it shut). */

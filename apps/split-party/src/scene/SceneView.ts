@@ -1,9 +1,9 @@
 // The game's backdrops drawn in Pixi: the base world (BaseScene.svelte) and the three bonus
-// worlds (BonusNormal.svelte, BonusSuper.svelte, its night variant), with their jelly domes
-// (JellyDome.svelte), drifting clouds (SkyClouds.svelte), water light, flying islands and the
-// blobs that peek out of the scenery. Same layouts, timings and keyframes as those components;
+// worlds (BonusNormal.svelte, BonusSuper.svelte, BonusHidden.svelte), with their jelly domes
+// (JellyDome.svelte), drifting clouds (SkyClouds.svelte), water light and the blobs that peek
+// out of the scenery. Same layouts, timings and keyframes as those components;
 // one canvas for all of them, the bonus world cross-fading over the base like App's fade.
-import { Assets, Container, Sprite, Texture } from 'pixi.js';
+import { Assets, BlurFilter, ColorMatrixFilter, Container, DisplacementFilter, Filter, GlProgram, Graphics, Matrix, Sprite, Texture, UniformGroup, type FilterSystem, type RenderSurface } from 'pixi.js';
 import { bezier, keyframes, progress, EASE_IN_OUT, type Frame, type Ease } from '../board/anim';
 import { BlobView, BLOB_BOX, blushTexture, loadBlobTextures } from '../board/BoardView';
 import { DISPOSE, PixiApp, textureLookup, watchReducedMotion } from '../board/pixiApp';
@@ -88,7 +88,7 @@ const mixWhite = (hex: string, k = 0.45) => {
 	return (ch(16) << 16) | (ch(8) << 8) | ch(0);
 };
 
-type Ctx = { tex: (src: string) => Texture; soft: Texture; ring: Texture; birds: Texture[]; drop: (c: string) => Texture; blob: { tex: (src: string) => Texture; blush: Texture }; reduced: boolean };
+type Ctx = { tex: (src: string) => Texture; soft: Texture; ring: Texture; birds: Texture[]; drop: (c: string) => Texture; blob: { tex: (src: string) => Texture; blush: Texture }; reduced: boolean; covered: (parent: Container, x: number, y: number, w: number, h: number) => boolean };
 type Ticker = { tick(now: number): void };
 
 // ---- Clouds (SkyClouds.svelte) -----------------------------------------------------------------
@@ -340,7 +340,11 @@ class Dome implements Ticker {
 		const next = { wait: 'blow', blow: 'rest', rest: 'burst', burst: 'wait' }[this.phase] as Dome['phase'];
 		this.phase = next;
 		this.since = now;
-		if (next === 'blow') (this.spray(now, false), (this.next = now + 950));
+		if (next === 'blow' && this.ctx.covered(this.parent, this.o.x, this.o.y, this.o.w, this.o.h)) {
+			// Mama stands here: no bubble may pop under her, try again later.
+			this.phase = 'wait';
+			this.next = now + rand(...this.o.wait);
+		} else if (next === 'blow') (this.spray(now, false), (this.next = now + 950));
 		else if (next === 'rest') this.next = now + rand(...this.o.rest);
 		else if (next === 'burst') (this.spray(now, true), (this.next = now + 420));
 		else this.next = now + rand(...this.o.wait);
@@ -484,12 +488,14 @@ abstract class World {
 	}
 }
 
-// Glints on the seascape's water band.
-const GLINTS = Array.from({ length: 16 }, (_, i) => {
+// Glints on the water band (11358:69611's open water, y ~380–480 in the frame).
+const GLINTS = Array.from({ length: 22 }, (_, i) => {
 	const h = Math.imul(i + 1, 2654435761) >>> 0;
-	const x = 8 + ((h % 1000) / 1000) * 80;
-	const y = (x > 56 ? 85 : 80) + (((h >>> 10) % 100) / 100) * (x > 56 ? 6 : 11);
-	return { x, y, w: 3 + ((h >>> 17) % 5), dur: 3.2 + ((h >>> 5) % 9) * 0.25, delay: -(((h >>> 13) % 40) / 10) };
+	const x = 2 + ((h % 1000) / 1000) * 92;
+	const y = 384 + (((h >>> 10) % 100) / 100) * 88;
+	// Wider and slower towards the shore, like the old band's near rows.
+	const near = (y - 384) / 88;
+	return { x, y, w: (3 + ((h >>> 17) % 5)) * (0.7 + 0.6 * near), dur: 3.2 + ((h >>> 5) % 9) * 0.25, delay: -(((h >>> 13) % 40) / 10) };
 });
 const GLINT: Frame<{ a: number; tx: number; sx: number }>[] = [
 	[0, { a: 0, tx: -10, sx: 0.4 }],
@@ -524,20 +530,367 @@ const BASE_DOMES = [
 	['magenta', 1058, 480, 56],
 	['purple', 1118, 492, 64],
 ] as const;
-// Portrait: three domes standing whole in the strip of grass under the bottom row. A row
-// higher only peeked out between the HUD's boxes, and the screen's edge cut a lower one.
+// Portrait: four domes on the open grass between the board and the HUD strip (its top at ~80%
+// of a phone's height), feet just above the strip, clear of the spin disc that rises out of it
+// in the middle. At the screen's foot they sat under the HUD's dark fade, one cut in half by
+// it, and the band itself stood empty.
 const PHONE_DOMES = [
-	['magenta', 0.11, 0.985, 66],
-	['purple', 0.5, 0.99, 60],
-	['green', 0.89, 0.985, 66],
+	['purple', 0.12, 0.78, 62],
+	['magenta', 0.3, 0.775, 46],
+	['green', 0.7, 0.78, 52],
+	['magenta', 0.89, 0.775, 54],
 ] as const;
 const DOME_COLOR = { magenta: '#ea32df', green: '#5bed7c', purple: '#b241fb' };
 const GRASS_Y = 505;
 const BASE_PEEK_MS = 4200;
+// The base sea's horizon (the far hills', volcano's and dome hill's feet, y ~373-375): what
+// stands on it is mirrored into the water about it, squashed a little.
+const SEA_HORIZON = 374;
+const REFLECT_SQUASH = 0.9;
+const BASE_REFLECTED = [
+	['./base/hd/far-hills.webp', 0, 68, 1011, 400],
+	['./base/hd/volcano.webp', 912, 92, 329, 329],
+	['./base/hd/dome-hill.webp', 814, 268, 267, 117],
+] as const;
+// Laid over the reflection: the water's colours (water-clear.webp's), see-through under the
+// horizon and opaque two thirds of the way down, so the reflection fades out with depth.
+const reflectFade = () =>
+	canvasTexture(4, 110, (ctx) => {
+		const g = ctx.createLinearGradient(0, 0, 0, 110);
+		g.addColorStop(0, 'rgba(1,204,255,0)');
+		g.addColorStop(0.3, 'rgba(0,192,255,.45)');
+		g.addColorStop(0.68, 'rgba(0,201,254,1)');
+		g.addColorStop(0.84, 'rgba(5,228,253,1)');
+		g.addColorStop(1, 'rgba(25,243,255,1)');
+		ctx.fillStyle = g;
+		ctx.fillRect(0, 0, 4, 110);
+	});
+/** Swells rolling in on the base sea: soft light dashes on bands that come from the horizon to
+ *  the shore (y 377–482), thin and slow far off, longer and softer up close (LiveSea's). */
+const SWELL_BANDS = 9;
+const SWELL_MS = 9000;
+const SWELL_DASHES = Array.from({ length: SWELL_BANDS }, (_, b) =>
+	Array.from({ length: 9 }, (_, i) => {
+		const h = Math.imul(b * 31 + i + 1, 2654435761) >>> 0;
+		return { x: (h % 1000) / 1000, len: 0.04 + ((h >>> 10) % 100) / 1000, k: ((h >>> 20) % 100) / 100 };
+	}),
+);
+class Swells implements Ticker {
+	private dashes: { s: Sprite; b: number; d: (typeof SWELL_DASHES)[number][number] }[] = [];
+	constructor(private ctx: Ctx, parent: Container) {
+		SWELL_DASHES.forEach((band, b) =>
+			band.forEach((d) => {
+				const s = new Sprite(ctx.soft);
+				s.anchor.set(0.5);
+				s.alpha = 0;
+				parent.addChild(s);
+				this.dashes.push({ s, b, d });
+			}),
+		);
+	}
+	tick(now: number) {
+		const R = this.ctx.reduced;
+		const t = now / 1000;
+		for (const { s, b, d } of this.dashes) {
+			const p = R ? (b + 0.5) / SWELL_BANDS : (now / SWELL_MS + b / SWELL_BANDS) % 1;
+			const x = (((d.x + (R ? 0 : t * (0.004 + 0.006 * d.k))) % 1) + 1) % 1;
+			s.x = x * SKY.w;
+			s.y = 377 + (482 - 377) * p ** 1.5;
+			s.width = SKY.w * d.len * (0.5 + p);
+			s.height = 0.8 + 3.2 * p;
+			s.alpha = 0.3 * Math.sin(p * Math.PI) * (0.6 + 0.4 * d.k);
+		}
+	}
+}
+// 11362:70732, the island on the right.
+const ISLAND = { x: 900, y: 268, w: 362, h: 181 };
+// Peek spots on its ridge, % of the island (x is the blob's centre, top its hidden box's top;
+// px/py the peek's offset, % of the blob): over the green hump, and sneaking out diagonally
+// from behind the left bush's right shoulder (user, 2026-10-29: not over the tree).
+const ISLAND_SPOTS = [
+	{ x: 47, top: 36, px: 0, py: -61, lean: -6 },
+	{ x: 30, top: 44, px: 85, py: -95, lean: 16 },
+];
+const ISLAND_PEEK = 26;
+
+const CRATER = { x: 1086, y: 180 };
+// The filter's vertex stage, pixi's own (its DisplacementFilter's): vFilterUv is the map
+// sprite's UV, so the flow map lies on the lava wherever it is drawn.
+const LAVA_VERT = `in vec2 aPosition;
+out vec2 vTextureCoord;
+out vec2 vFilterUv;
+uniform vec4 uInputSize;
+uniform vec4 uOutputFrame;
+uniform vec4 uOutputTexture;
+uniform mat3 uFilterMatrix;
+void main(void)
+{
+    vec2 position = aPosition * uOutputFrame.zw + uOutputFrame.xy;
+    position.x = position.x * (2.0 / uOutputTexture.x) - 1.0;
+    position.y = position.y * (2.0 * uOutputTexture.z / uOutputTexture.y) - uOutputTexture.z;
+    gl_Position = vec4(position, 0.0, 1.0);
+    vTextureCoord = aPosition * (uOutputFrame.zw * uInputSize.zw);
+    vFilterUv = (uFilterMatrix * vec3(vTextureCoord, 1.0)).xy;
+}`;
+// Lava's look and reach (premultiplied in, premultiplied out). The flow map: R down its own
+// stream (0 in the crater's pool, 1 at that stream's tip), G depth into a stream (0 at its
+// crust), B the stream's phase. The rock under it is bare (volcano.webp), so each drip only ever
+// runs downhill (user: "not to go back .. it's antiphysics"): it oozes from the upper stream
+// down to its tip, slowing as it goes, rests, then its lower part cools, darkens and fades into
+// the rock while the next drip sets off; ~11s round, the three out of step. Its edges stop
+// short of its middle, so the tip stays round, and the fresh tip runs a little hotter. Swells
+// of warmth ooze down inside; the lava cools a little as it goes, and is warmest in the crater.
+const LAVA_FRAG = `in vec2 vTextureCoord;
+in vec2 vFilterUv;
+out vec4 finalColor;
+uniform sampler2D uTexture;
+uniform sampler2D uMapTexture;
+uniform float uTime;
+void main()
+{
+    vec4 c = texture(uTexture, vTextureCoord);
+    vec3 m = texture(uMapTexture, vFilterUv).rgb;
+    float d = m.r;
+    float core = m.g;
+    float ph = m.b;
+    float t = fract(uTime / 11.0 + ph);
+    float grow = 1.0 - pow(1.0 - smoothstep(0.0, 0.62, t), 2.0);
+    float reach = mix(0.4, 1.03, grow);
+    float edge = reach - d - pow(1.0 - core, 1.5) * 0.14;
+    float set = smoothstep(0.8, 1.0, t) * smoothstep(0.36, 0.52, d);
+    float vis = smoothstep(0.0, 0.05, edge) * (1.0 - set);
+    float f = d * 2.0 - uTime * 0.16 + ph * smoothstep(0.0, 0.3, d);
+    float swell = pow(0.5 + 0.5 * sin(f * 6.2832), 2.0);
+    float cool = smoothstep(0.35, 1.0, d) * (1.0 - 0.5 * core) + (1.0 - core) * 0.3;
+    vec3 rgb = mix(c.rgb, c.rgb * vec3(0.9, 0.5, 0.58), clamp(cool, 0.0, 1.0) * 0.45);
+    float heat = core * (1.0 - 0.4 * d) * 0.3 * swell;
+    heat += (1.0 - smoothstep(0.0, 0.14, d)) * core * 0.12;
+    heat += (1.0 - smoothstep(0.0, 0.14, edge)) * step(0.001, d) * core * 0.3;
+    rgb += vec3(1.0, 0.82, 0.42) * c.a * heat;
+    rgb *= 1.0 - 0.35 * set;
+    finalColor = vec4(min(rgb, vec3(c.a)), c.a) * vis;
+}`;
+class LavaFilter extends Filter {
+	constructor(private map: Sprite) {
+		super({
+			glProgram: GlProgram.from({ vertex: LAVA_VERT, fragment: LAVA_FRAG, name: 'lava-filter' }),
+			resources: {
+				lavaUniforms: new UniformGroup({
+					uFilterMatrix: { value: new Matrix(), type: 'mat3x3<f32>' },
+					uTime: { value: 0, type: 'f32' },
+				}),
+				uMapTexture: map.texture.source,
+			},
+		});
+		map.renderable = false;
+	}
+	set time(t: number) {
+		this.resources.lavaUniforms.uniforms.uTime = t;
+	}
+	apply(fm: FilterSystem, input: Texture, output: RenderSurface, clear: boolean) {
+		fm.calculateSpriteMatrix(this.resources.lavaUniforms.uniforms.uFilterMatrix, this.map);
+		fm.applyFilter(this, input, output, clear);
+	}
+}
+
+/** The volcano's lava (volcano-lava.webp, its hot pixels cut out of the painting, with a
+ *  jelly gloss baked on) over the bare rock (volcano.webp, the lava painted out): glossy jelly
+ *  like the blobs (user, 2026-10-29: "in the whole style of the slot"), then made to move
+ *  ("now there is NO animation at all"): LavaFilter lets each drip ooze down and draw back
+ *  while soft warmth flows inside. The crater breathes a warm glow and now and then spits a few
+ *  embers that arc up and fall back. (The jelly bubbles that popped in the crater were cut:
+ *  "not very realistic".) */
+const EMBER_N = 6;
+class Lava implements Ticker {
+	private filter: LavaFilter;
+	private crater: Sprite;
+	private embers: { s: Sprite; start: number; ms: number; vx: number; vy: number }[] = [];
+	private nextBurst = 0;
+	constructor(private ctx: Ctx, parent: Container) {
+		const flow = new Container();
+		const lava = new Sprite(ctx.tex('./base/hd/volcano-lava.webp'));
+		lava.position.set(912, 92);
+		lava.width = lava.height = 329;
+		const map = new Sprite(ctx.tex('./base/hd/volcano-flow.webp'));
+		map.position.set(912, 92);
+		map.width = map.height = 329;
+		flow.addChild(lava, map);
+		this.filter = new LavaFilter(map);
+		flow.filters = [this.filter];
+		parent.addChild(flow);
+		// A warm haze over the crater's mouth, normal blend: added light on the blue sky went
+		// white-cyan, not lava-orange.
+		this.crater = new Sprite(ctx.soft);
+		this.crater.anchor.set(0.5);
+		this.crater.tint = '#ff8a3d';
+		this.crater.position.set(CRATER.x, CRATER.y + 1);
+		parent.addChild(this.crater);
+		for (let i = 0; i < EMBER_N; i++) {
+			const s = new Sprite(ctx.soft);
+			s.anchor.set(0.5);
+			s.tint = '#ffc45c';
+			s.alpha = 0;
+			parent.addChild(s);
+			this.embers.push({ s, start: -1e9, ms: 1, vx: 0, vy: 0 });
+		}
+	}
+	tick(now: number) {
+		const R = this.ctx.reduced;
+		this.filter.time = R ? 0 : now / 1000;
+		// Two uneven breaths, so the glow never pulses like a metronome.
+		const b = R ? 0.5 : 0.5 + 0.3 * Math.sin(now / 1300) + 0.2 * Math.sin(now / 530 + 1.1);
+		this.crater.alpha = 0.22 + 0.2 * b;
+		this.crater.width = 50 + 10 * b;
+		this.crater.height = 14 + 4 * b;
+		if (!R && now > this.nextBurst) {
+			// A small spit of 2-4 embers every 4-9s.
+			this.nextBurst = now + rand(4000, 9000);
+			let k = 2 + Math.floor(Math.random() * 3);
+			for (const e of this.embers) {
+				if (k === 0) break;
+				if (now - e.start < e.ms) continue;
+				e.start = now + rand(0, 260);
+				e.ms = rand(1100, 1700);
+				e.vx = rand(-14, 14);
+				e.vy = rand(16, 30);
+				k--;
+			}
+		}
+		for (const e of this.embers) {
+			const t = (now - e.start) / e.ms;
+			if (R || t < 0 || t > 1) {
+				e.s.alpha = 0;
+				continue;
+			}
+			// Up and over under gravity, cooling as it goes.
+			e.s.x = CRATER.x + e.vx * t;
+			e.s.y = CRATER.y - 2 - e.vy * 4 * t * (1 - t) * 1.2 + 10 * t * t;
+			const w = 3.2 * (1 - 0.5 * t);
+			e.s.width = e.s.height = w;
+			e.s.alpha = Math.min(1, t / 0.08) * (1 - t) ** 1.5;
+		}
+	}
+}
+
+/** Smoke from the volcano's crater (11362:70935's, at ~(1086, 179)): soft round puffs that
+ *  rise off the crater, swell, lean a little with the wind and thin out, overlapping into one
+ *  faint wisp. Very gentle: slow, pale, never a plume. The puffs share one cycle, evenly
+ *  staggered, so the column never gaps or bunches. Under reduced motion it holds still. The
+ *  hidden bonus's candy house wears a smaller copy on its chimney (`k` scales size and rise). */
+const SMOKE_MS = 10000;
+const SMOKE_N = 10;
+type SmokeAt = { x: number; y: number; k: number; tint: string; alpha: number };
+const CRATER_SMOKE: SmokeAt = { ...CRATER, k: 1, tint: '#fbf7ff', alpha: 0.5 };
+class Smoke implements Ticker {
+	private puffs: Sprite[] = [];
+	constructor(
+		private ctx: Ctx,
+		parent: Container,
+		private at: SmokeAt = CRATER_SMOKE,
+	) {
+		for (let i = 0; i < SMOKE_N; i++) {
+			const p = new Sprite(ctx.soft);
+			p.anchor.set(0.5);
+			p.tint = at.tint;
+			p.alpha = 0;
+			parent.addChild(p);
+			this.puffs.push(p);
+		}
+	}
+	tick(now: number) {
+		const t0 = this.ctx.reduced ? 0 : now;
+		const { x, y, k, alpha } = this.at;
+		this.puffs.forEach((p, i) => {
+			const t = cycle(t0, SMOKE_MS, (-i / SMOKE_N) * SMOKE_MS);
+			const e = 1 - (1 - t) ** 1.6; // quick off the crater, slowing as it thins
+			const w = k * (18 + 40 * t);
+			p.width = w;
+			p.height = w * 0.85;
+			p.x = x + k * (26 * e * e + 3 * Math.sin(t * 6 + i * 1.7));
+			p.y = y - 2 - k * 100 * e;
+			// In over the first tenth, out over the rest.
+			p.alpha = alpha * Math.min(1, t / 0.1) * (1 - t) ** 1.2;
+		});
+	}
+}
+
+/** 11362:70765, the sailboat: crosses the water from a random side (bow first, so flipped when
+ *  sailing left), slowly, riding a gentle swell (a small bob and roll) with a faint wake fanning
+ *  out behind it; behind the island, mama and the board; then rests a while off-screen. It
+ *  stays moored off-screen under reduced motion. */
+const WAKE_N = 7;
+const WAKE_MS = 3600;
+class Boat implements Ticker {
+	private s: Sprite;
+	private wake: Sprite[] = [];
+	private from = 0;
+	private to = 0;
+	private start = 0;
+	private ms = 0;
+	private next: number;
+	private sailing = false;
+	private dir = 1;
+	constructor(private ctx: Ctx, parent: Container) {
+		for (let i = 0; i < WAKE_N; i++) {
+			const w = new Sprite(ctx.soft);
+			w.anchor.set(0.5);
+			w.alpha = 0;
+			parent.addChild(w);
+			this.wake.push(w);
+		}
+		this.s = new Sprite(ctx.tex('./base/hd/boat.webp'));
+		// Origin on the keel's waterline, so the rock pivots in the water.
+		this.s.anchor.set(0.5, 0.86);
+		this.s.width = 77;
+		this.s.height = 67;
+		this.s.visible = false;
+		parent.addChild(this.s);
+		this.next = performance.now() + rand(600, 2000);
+	}
+	tick(now: number) {
+		if (!this.sailing) {
+			for (const w of this.wake) w.alpha = 0;
+			if (this.ctx.reduced || now < this.next) return;
+			this.dir = Math.random() < 0.5 ? 1 : -1;
+			this.from = this.dir > 0 ? -60 : SKY.w + 60;
+			this.to = this.dir > 0 ? SKY.w + 60 : -60;
+			this.start = now;
+			// Slow, like a small sailboat far off (user: ~30s crossings were "very fast").
+			this.ms = rand(55000, 70000);
+			this.s.scale.x = Math.abs(this.s.scale.x) * this.dir;
+			this.s.visible = this.sailing = true;
+		}
+		const t = (now - this.start) / this.ms;
+		if (t >= 1 || this.ctx.reduced) {
+			this.s.visible = this.sailing = false;
+			this.next = now + rand(4000, 10000);
+			return;
+		}
+		const x = this.from + (this.to - this.from) * t;
+		// A slow, gentle swell (~3s): a small bob, and a roll that lags it a little.
+		const swell = Math.sin(now / 480) + 0.3 * Math.sin(now / 1130 + 0.9);
+		this.s.x = x;
+		this.s.y = 341 + 67 * 0.86 + 1.1 * swell;
+		this.s.rotation = this.dir * (1.5 * Math.sin(now / 480 - 1.1) + 0.4 * Math.sin(now / 1700)) * DEG;
+		// The wake: rings left at the stern every WAKE_MS / WAKE_N, widening and fading.
+		const speed = (this.to - this.from) / this.ms;
+		this.wake.forEach((w, i) => {
+			const age = cycle(now, WAKE_MS, (-i / WAKE_N) * WAKE_MS);
+			const born = now - age * WAKE_MS;
+			if (born < this.start) return void (w.alpha = 0);
+			w.x = this.from + speed * (born - this.start) - this.dir * 22;
+			w.y = 341 + 67 * 0.86 + 1 + age * 2;
+			w.width = 16 + 54 * age;
+			w.height = 3 + 3 * age;
+			w.alpha = 0.3 * Math.min(1, age * 6) * (1 - age);
+		});
+	}
+}
 
 class BaseWorld extends World {
 	private glints: { s: Sprite; x: number; sx: number; dur: number; delay: number }[] = [];
-	private peekLayers: { layer: Container; w: number; h: number }[] = [];
+	private peekLayer = new Container();
+	private seaMap: Sprite | null = null;
 	private peeks: LivePeek[] = [];
 	private peekId = 0;
 	constructor(ctx: Ctx, portrait: boolean, slice: { w: number; h: number }) {
@@ -554,8 +907,10 @@ class BaseWorld extends World {
 				ox: 0.44 * s,
 				oy: 0.4 * s * 0.955,
 				first: fast ? [1500, 9000] : [4000, 25000],
-				rest: [2500, 6000],
-				wait: fast ? [6000, 18000] : [20000, 50000],
+				rest: fast ? [5000, 11000] : [2500, 6000],
+				wait: fast ? [1500, 4000] : [20000, 50000],
+				// Portrait's are the band's only life: up from the start, rarely gone for long.
+				shown: fast,
 			});
 		if (portrait) {
 			for (const [c, fx, fy, s] of PHONE_DOMES)
@@ -580,67 +935,89 @@ class BaseWorld extends World {
 			this.parts.push(new Clouds(ctx, this.root, BASE_CLOUD_LANES, SKY.w));
 			this.parts.push(new Birds(ctx, this.root, [80, 215]));
 		}
-		for (const s of [
-			{ x: 496, y: 183, w: 772, h: 309, flip: false },
-			{ x: -187, y: 178, w: 795.2, h: 318, flip: true },
-		]) {
-			const box = new Container();
-			box.position.set(s.flip ? s.x + s.w : s.x, s.y);
-			if (s.flip) box.scale.x = -1;
-			this.root.addChild(box);
-			this.sprite('./base/hd/seascape.webp', 0, 0, s.w, s.h, false, box);
-			const peeks = new Container();
-			box.addChild(peeks);
-			this.peekLayers.push({ layer: peeks, w: s.w, h: s.h });
-			this.sprite('./base/hd/seascape-front.webp', s.w / 2, 0, s.w / 2, s.h, false, box);
-			for (const g of GLINTS) {
-				const sp = new Sprite(ctx.soft);
-				sp.anchor.set(0.5);
-				const w = (g.w / 100) * s.w;
-				sp.width = w;
-				sp.height = 5;
-				const x = (g.x / 100) * s.w + w / 2;
-				sp.position.set(x, (g.y / 100) * s.h + 2.5);
-				sp.alpha = 0;
-				box.addChild(sp);
-				this.glints.push({ s: sp, x, sx: sp.scale.x, dur: g.dur * 1000, delay: g.delay * 1000 });
-			}
+		// The split backdrop (11362:70545), back to front: the water, the far hills on its
+		// horizon (cut off at x 1011 for the volcano), the smoking volcano and the dome hill at
+		// its foot, then the boat, and the right island with its peekers between its back and
+		// front. The design draws the boat under the volcano; it sails on the water in front of
+		// the horizon here, or its sail would vanish into the mountain's foot. Mama and the board
+		// are DOM over this canvas, so the boat passes behind them.
+		// A live sea (user: the painted one was "very still.. clear the image and animate the
+		// sea"): the water cleared of its painted streaks, the horizon's hills, volcano and dome
+		// hill mirrored into it and fading with depth, all rippled by a scrolling water map
+		// (SuperWorld's sea); Swells roll in over it.
+		const sea = new Container();
+		this.sprite('./base/hd/water-clear.webp', -9, 215, 1209, 403, false, sea);
+		const mirror = new Container();
+		for (const [src, x, y, w, h] of BASE_REFLECTED) {
+			const r = new Sprite(ctx.tex(src));
+			r.position.set(x, SEA_HORIZON + (SEA_HORIZON - y) * REFLECT_SQUASH);
+			r.width = w;
+			r.height = h * REFLECT_SQUASH;
+			r.scale.y *= -1;
+			mirror.addChild(r);
 		}
+		// Clipped to the water, half seen through it, and faded out with depth by the water's
+		// own colour laid over it (a sprite alpha mask here drew nothing).
+		mirror.alpha = 0.5;
+		const clip = new Graphics().rect(-20, SEA_HORIZON, 1240, 484 - SEA_HORIZON).fill('#fff');
+		sea.addChild(clip, mirror);
+		mirror.mask = clip;
+		const fade = new Sprite(reflectFade());
+		fade.position.set(-20, SEA_HORIZON);
+		fade.width = 1240;
+		fade.height = 484 - SEA_HORIZON;
+		sea.addChild(fade);
+		const seaMap = (this.seaMap = new Sprite(waterMap()));
+		seaMap.scale.set(2.4, 0.8);
+		sea.addChild(seaMap);
+		sea.filters = [new DisplacementFilter({ sprite: seaMap, scale: { x: 9, y: 3 } })];
+		this.root.addChild(sea);
+		this.sprite('./base/hd/far-hills.webp', 0, 68, 1011, 400);
+		this.sprite('./base/hd/volcano.webp', 912, 92, 329, 329);
+		this.parts.push(new Lava(ctx, this.root));
+		this.parts.push(new Smoke(ctx, this.root));
+		this.sprite('./base/hd/dome-hill.webp', 814, 268, 267, 117);
+		this.parts.push(new Swells(ctx, this.root));
+		for (const g of GLINTS) {
+			const sp = new Sprite(ctx.soft);
+			sp.anchor.set(0.5);
+			sp.width = g.w / 100 * SKY.w;
+			sp.height = 5;
+			const x = (g.x / 100) * SKY.w + sp.width / 2;
+			sp.position.set(x, g.y);
+			sp.alpha = 0;
+			this.root.addChild(sp);
+			this.glints.push({ s: sp, x, sx: sp.scale.x, dur: g.dur * 1000, delay: g.delay * 1000 });
+		}
+		this.parts.push(new Boat(ctx, this.root));
+		// The island is painted soft and hazy with distance; the blobs are crisp art. Unsoftened,
+		// a peeker read as a sticker on the painting (user, 2026-10-30: "the blob is not blurred
+		// enough"): edges as soft as the trees' around it, its contrast eased a touch toward the haze.
+		const haze = new ColorMatrixFilter();
+		haze.contrast(-0.08, false);
+		haze.brightness(1.06, true);
+		this.peekLayer.filters = [new BlurFilter({ strength: 0.6, quality: 3 }), haze];
+		this.root.addChild(this.peekLayer);
+		this.sprite('./base/hd/island.webp', ISLAND.x, ISLAND.y, ISLAND.w, ISLAND.h);
 		this.later(rand(4000, 12000), () => this.peek());
 	}
-	// Now and then a blob peeks out of an island (BaseScene.svelte's spots).
+	// Now and then a blob peeks out of the island (BaseScene.svelte's spots).
 	private peek() {
 		// Reduced motion, or hidden under a bonus world: nobody peeks, but the schedule runs on
 		// (so turning reduced motion off mid-game brings the peekers back).
 		if (this.ctx.reduced || !this.root.visible) return this.later(rand(3000, 8000), () => this.peek());
-		const island = Math.random() < 0.5 ? 'left' : 'right';
-		// The right island's bush row: head and eyes up over its tall left bush or its middle.
-		// (Sliding out sideways left the blob in the open at the screen's edge, or poking out
-		// above the row's short end bush.)
-		const bushLeft = { x: 76.6, top: 46.9, dx: 0, px: 0, py: -61, lean: -6 };
-		const bushTop = { x: 80.5, top: 46.9, dx: 0, px: 0, py: -61, lean: 6 };
-		// The left island (the mirrored seascape, so its % run right to left on screen): up over
-		// the green hill's ridge, head and eyes only, the right island's size. (Its slope is a
-		// soft diagonal: a blob there looked stuck in the hill, not behind it.)
-		const crest = { x: 67.1, top: 57, dx: 0, px: 0, py: -63, lean: -8 };
-		const spots =
-			island === 'right'
-				? Math.random() < 0.35
-					? [bushLeft, bushTop]
-					: [Math.random() < 0.5 ? bushLeft : bushTop]
-				: [crest];
-		const { layer, w, h } = this.peekLayers[island === 'left' ? 1 : 0];
+		const spots = Math.random() < 0.35 ? ISLAND_SPOTS : [pick(ISLAND_SPOTS)];
 		const now = performance.now();
 		spots.forEach((s, i) => {
-			const size = 0.032 * w;
+			const size = ISLAND_PEEK;
 			const pb = new PeekBlob(this.ctx, pick(PEEKERS), `peek-${this.peekId++}`, size);
-			layer.addChild(pb.root);
+			this.peekLayer.addChild(pb.root);
 			const p: LivePeek = {
 				pb,
 				// left/top place the box; the origin is 50% 90% of it.
-				x: (s.x / 100) * w + size * 0.5,
-				y: (s.top / 100) * h + size * 0.9,
-				frames: islandPeek(s.dx, s.px, s.py, s.lean),
+				x: ISLAND.x + (s.x / 100) * ISLAND.w,
+				y: ISLAND.y + (s.top / 100) * ISLAND.h + size * 0.9,
+				frames: islandPeek(0, s.px, s.py, s.lean),
 				start: now + i * rand(250, 700),
 				ms: BASE_PEEK_MS,
 				end: now + BASE_PEEK_MS + 800,
@@ -651,6 +1028,11 @@ class BaseWorld extends World {
 	}
 	tick(now: number) {
 		super.tick(now);
+		// The map drifts sideways and toward the viewer: the water's streaks waver and roll in.
+		if (this.seaMap && !this.ctx.reduced) {
+			this.seaMap.x = -cycle(now, 16000, 0) * 256 * 2.4;
+			this.seaMap.y = cycle(now, 7000, 0) * 128 * 0.8;
+		}
 		for (const g of this.glints) {
 			if (this.ctx.reduced) {
 				g.s.alpha = 0.4;
@@ -672,69 +1054,60 @@ class BaseWorld extends World {
 	}
 }
 
-// Normal bonus (BonusNormal.svelte).
+// Normal bonus (BonusNormal.svelte): Figma 11362:72643 (2026-10-29), the sunset blob-house
+// meadow. Layers from build-bonus-scene.py's normal-v2; the sky is the frame's gradient.
 const NA = './bonus/normal/hd';
-const N_CLOUD: Look = { src: './bonus/normal/crisp/cloud-puff.webp', w: [160, 190], alpha: [0.8, 0.8] };
-const N_FAR: Look = { src: './bonus/normal/crisp/cloud-puff.webp', w: [110, 135], alpha: [0.65, 0.8] };
-const N_LANES: Lane[] = [
-	{ far: false, y: [24, 40] },
-	{ far: true, y: [96, 112] },
-];
-const CLIFFS = [
-	[877, 181, 356, 364, false, false],
-	[-50, 128, 408, 417, true, false],
-	[-60, 390, 207, 212, true, true],
+const N_SKY = [
+	[0, '#985efb'],
+	[0.305, '#ce5cf3'],
+	[0.582, '#fc68cb'],
+	[0.74, '#fd80b3'],
+	[1, '#fd979b'],
 ] as const;
-const N_FOOT = { blue: 0.914, green: 0.952, magenta: 0.951 };
-const N_COLOR = { blue: '#3f7bff', green: '#5bed7c', magenta: '#ea32df' };
-const N_DOMES = [
-	['blue', 994, 380, 290],
-	['green', 1007, 484, 315],
-	['green', 845, 433, 149],
-	['blue', 904, 496, 146],
-	['blue', 42, 363, 290],
-	['blue', 291, 441, 133],
-	['magenta', -152, 337, 510],
+// The two pink clouds (297×99 at 60%): [x, y, sway px, sway period ms].
+const N_CLOUDS = [
+	[73, 6, 18, 23000],
+	[887, 118, 14, 31000],
 ] as const;
+// Peek spots right of the board, under the round panels: the blob's centre x and the crest's
+// edge there (measured from the art's alpha), behind the hill or behind the dunes.
 const N_SPOTS = [
-	{ x: 1073, edge: 206, lean: -8 },
-	{ x: 1133, edge: 203, lean: -6 },
-	{ x: 1027, edge: 217, lean: -10 },
-	{ x: 134, edge: 156, lean: 8 },
-	{ x: 66, edge: 153, lean: 6 },
+	{ x: 1062, edge: 411, lean: -8, back: true },
+	{ x: 1155, edge: 449, lean: -6, back: false },
+	{ x: 985, edge: 440, lean: -10, back: false },
 ];
-// Half the frame's size, standing on the same spot (the foot's centre stays put).
-function halfDome<C extends string>(c: C, fx: number, fy: number, fs: number, foot: number) {
-	const s = fs * 0.5;
-	const x = fx + fs / 2 - s / 2;
-	const y = fy + fs * (0.3 + 0.4 * foot) - s * (0.3 + 0.4 * foot);
-	return { x: x + 0.06 * s, y: y + 0.3 * s, w: 0.88 * s, h: 0.4 * s, oy: 0.4 * s * foot, ox: 0.44 * s };
-}
 class NormalWorld extends World {
-	private peekLayer = new Container();
+	private back = new Container();
+	private front = new Container();
+	private clouds: { s: Sprite; x: number; sway: number; ms: number }[] = [];
 	private peeks: (LivePeek & { spot: number })[] = [];
 	private peekId = 0;
 	constructor(ctx: Ctx) {
 		super(ctx);
-		this.sprite(`${NA}/sunset.webp`, -60, -30, 1260, 730);
-		this.parts.push(new Clouds(ctx, this.root, N_LANES, SKY.w, N_CLOUD, N_FAR));
-		this.parts.push(new Birds(ctx, this.root, [60, 170]));
-		this.root.addChild(this.peekLayer);
-		for (const [x, y, w, h, flip, small] of CLIFFS) this.sprite(`${NA}/cliff${small ? '-small' : ''}.webp`, x, y, w, h, flip);
-		for (const [c, fx, fy, fs] of N_DOMES) {
-			const g = halfDome(c, fx, fy, fs, N_FOOT[c]);
-			this.parts.push(
-				new Dome(ctx, this.root, {
-					src: `${NA}/dome-${c}${fs < 200 ? '-small' : ''}.webp`,
-					color: N_COLOR[c],
-					...g,
-					shown: true,
-					first: [2500, 16000],
-					rest: [3000, 7000],
-					wait: [9000, 26000],
-				}),
-			);
+		const sky = new Sprite(
+			canvasTexture(4, 496, (g) => {
+				const lg = g.createLinearGradient(0, 0, 0, 496);
+				for (const [o, c] of N_SKY) lg.addColorStop(o, c);
+				g.fillStyle = lg;
+				g.fillRect(0, 0, 4, 496);
+			}),
+		);
+		// Past the frame on every side, for the cover crop; the top colour carries up.
+		sky.position.set(-80, 0);
+		sky.width = 1360;
+		sky.height = 496;
+		this.root.addChild(new Graphics().rect(-80, -120, 1360, 121).fill(N_SKY[0][1]), sky);
+		for (const [x, y, sway, ms] of N_CLOUDS) {
+			const c = this.sprite(`${NA}/cloud.webp`, x, y, 297, 99);
+			c.alpha = 0.6;
+			this.clouds.push({ s: c, x, sway, ms });
 		}
+		this.parts.push(new Birds(ctx, this.root, [60, 170]));
+		this.root.addChild(this.back);
+		this.sprite(`${NA}/hills.webp`, 194, 248, 1023, 342);
+		this.sprite(`${NA}/house.webp`, -56, 102, 369, 379);
+		this.root.addChild(this.front);
+		this.sprite(`${NA}/dunes.webp`, -209, 315, 1497, 500);
 		this.later(rand(2000, 6000), () => this.peek());
 	}
 	private peek() {
@@ -748,13 +1121,14 @@ class NormalWorld extends World {
 			const s = N_SPOTS[i];
 			const now = performance.now();
 			const pb = new PeekBlob(this.ctx, pick(PEEKERS), `bonus-peek-${this.peekId++}`, 50);
-			this.peekLayer.addChild(pb.root);
+			(s.back ? this.back : this.front).addChild(pb.root);
 			this.peeks.push({ pb, spot: i, x: s.x, y: s.edge + 4 + 45, frames: cliffPeek(s.lean), start: now, ms: 4000, end: now + 4300 });
 		}
 		this.later(rand(5000, 14000), () => this.peek());
 	}
 	tick(now: number) {
 		super.tick(now);
+		for (const c of this.clouds) c.s.x = c.x + (this.ctx.reduced ? 0 : c.sway * Math.sin((now / c.ms) * Math.PI * 2));
 		this.peeks = this.peeks.filter((p) => {
 			if (now >= p.end) {
 				p.pb.root.destroy(DISPOSE);
@@ -766,224 +1140,300 @@ class NormalWorld extends World {
 	}
 }
 
-// Super bonus (BonusSuper.svelte), and its night variant for the Hidden tier.
+// Super bonus (BonusSuper.svelte): Figma 11300:27276 (2026-10-29), the pink sunset dunes. One
+// painting (build-bonus-scene.py), the normal bonus's pink cloud three times and a blue jelly
+// dome at the board's foot that now and then pops and blows back up.
 const SA = './bonus/super/hd';
-const S_NEAR: Look = { src: './bonus/normal/crisp/cloud-puff.webp', w: [150, 185], alpha: [0.85, 0.85] };
-const S_FAR: Look = { src: './bonus/normal/crisp/cloud-puff.webp', w: [100, 125], alpha: [0.65, 0.75] };
-const S_LANES: Lane[] = [
-	{ far: true, y: [14, 26] },
-	{ far: false, y: [98, 112] },
-	{ far: true, y: [188, 200] },
-];
-const ISLANDS = [
-	[154, 43, 142, 0],
-	[993, 103, 142, -5.5],
+// [x, y, w, h, sway px, sway period ms]
+const S_CLOUDS = [
+	[38, 31, 297, 99, 16, 27000],
+	[600, 103, 297, 99, 12, 34000],
+	[934, 26, 231, 77, 14, 23000],
 ] as const;
-const WATER = [
-	[489, 469, 675, 289, false, 0],
-	[124, 523, 343, 147, true, -4],
+// 11300:27289 at (291, 441) 133 square, its art cropped like every dome (CROP, x 6-94%, y 30-70%).
+const S_DOME = { x: 291, y: 441, s: 133, foot: 0.914 };
+const S_TREE = [978, 129, 331, 362] as const;
+// The tree's candies as fairy lights (user 2026-11-02: "make something with this tree, maybe to
+// light"): [x, y, size] in candy-tree.webp px (1199x1312), found by colour in the art, and the
+// candy's colour. A light wave runs round the crown from TREE_HUB; sparkles pop on them.
+const TREE_ART = [1199, 1312] as const;
+const TREE_HUB = [560, 470] as const;
+const TREE_ROOT = [620, 1290] as const;
+const TREE_LIGHTS = [
+	[513, 106, 160, 0xffd84a],
+	[640, 216, 104, 0xffd84a],
+	[200, 474, 62, 0xffd84a],
+	[501, 550, 164, 0xffd84a],
+	[847, 518, 62, 0xffd84a],
+	[887, 694, 100, 0xffd84a],
+	[263, 303, 194, 0x3ec8ff],
+	[832, 327, 108, 0x3ec8ff],
+	[988, 489, 160, 0x3ec8ff],
+	[344, 652, 104, 0x3ec8ff],
+	[469, 270, 66, 0xc46bff],
+	[131, 577, 108, 0xc46bff],
+	[720, 602, 108, 0xc46bff],
 ] as const;
-const S_FOOT = { blue: 0.914, purple: 0.953, magenta: 0.951 };
-const S_COLOR = { blue: '#3f7bff', purple: '#9b3dfb', magenta: '#ea32df' };
-const S_DOMES = [
-	['purple', -84, 252, 318],
-	['magenta', 278, 366, 172],
-	['blue', -178, 315, 563],
-	['blue', 827, 195, 563],
-] as const;
-const STARS = Array.from({ length: 38 }, (_, i) => {
-	const h = Math.imul(i + 7, 2246822519) >>> 0;
-	return [(h % 1000) * 1.2, ((h >>> 10) % 1000) * 0.3, 1.5 + ((h >>> 20) % 4) * 0.8, 2 + ((h >>> 5) % 30) / 10, -(((h >>> 15) % 40) / 10)] as const;
-});
-const RIPPLES = Array.from({ length: 46 }, (_, i) => {
-	const h = Math.imul(i + 1, 2654435761) >>> 0;
-	const d = (((h >>> 10) % 1000) / 1000) ** 0.8;
-	return {
-		x: -20 + ((h % 1000) / 1000) * 1200,
-		y: 452 + d * 214,
-		w: 14 + d * 70 + ((h >>> 17) % 20),
-		hgt: 1.5 + d * 3,
-		drift: 8 + d * 34,
-		alpha: 0.35 + d * 0.5,
-		dur: 3 + d * 3 + ((h >>> 5) % 9) * 0.25,
-		delay: -(((h >>> 13) % 60) / 10),
-	};
-});
-// One soft band of the swell: [period, clear up to, peak at, peak alpha].
-const BANDS = [
-	[22, 8, 14, 0x30 / 255, 3400],
-	[31, 12, 20, 0x22 / 255, 6100],
-] as const;
+// Gentle (user 2026-11-02: the first pass was "too aggressive"): a slow, shallow glow wave and
+// rare small sparkles.
+const TREE_WAVE_MS = 5600;
+const SPARKLE_MS = 1100;
+/** A seamless water map: R pushes sideways, G up/down; long horizontal swells with a finer
+ *  chop on top. Integer frequencies so it tiles. */
+function waterMap() {
+	const W = 256;
+	const H = 128;
+	const c = document.createElement('canvas');
+	c.width = W;
+	c.height = H;
+	const g = c.getContext('2d')!;
+	const img = g.createImageData(W, H);
+	const T = Math.PI * 2;
+	for (let y = 0; y < H; y++)
+		for (let x = 0; x < W; x++) {
+			const u = x / W;
+			const v = y / H;
+			const r = 0.55 * Math.sin(T * (2 * u + 5 * v)) + 0.3 * Math.sin(T * (5 * u - 9 * v) + 1.3) + 0.15 * Math.sin(T * (11 * u + 17 * v));
+			const gr = 0.6 * Math.sin(T * (3 * u + 7 * v) + 0.7) + 0.4 * Math.sin(T * (7 * u - 13 * v) + 2.1);
+			const k = (y * W + x) * 4;
+			img.data[k] = 128 + 127 * r;
+			img.data[k + 1] = 128 + 127 * gr;
+			img.data[k + 2] = 128;
+			img.data[k + 3] = 255;
+		}
+	g.putImageData(img, 0, 0);
+	const t = Texture.from(c);
+	t.source.addressMode = 'repeat';
+	return t;
+}
 class SuperWorld extends World {
-	private islands: { box: Container; img: Sprite; x: number; t: number }[] = [];
-	private water: { s: Sprite; x: number; t: number; sx: number; sy: number }[] = [];
-	private ripples: { s: Sprite; x: number; r: (typeof RIPPLES)[number]; sx: number }[] = [];
-	private bands: { s: Sprite; set: number; k: number }[] = [];
-	private stars: { s: Sprite; dur: number; delay: number; base: number }[] = [];
-	private moon: Sprite | null = null;
-	constructor(ctx: Ctx, night: boolean, bandTex: Texture[], night$: { overlay: Texture; moon: Texture; star: Texture }) {
+	private clouds: { s: Sprite; x: number; sway: number; ms: number }[] = [];
+	private tree = new Container();
+	private lights: { g: Graphics; phase: number }[] = [];
+	private sparkles: { g: Graphics; at: number; i: number }[] = [];
+	private sparkleNext = 0;
+	constructor(ctx: Ctx) {
 		super(ctx);
-		this.sprite(`${SA}/arches.webp`, 0, 0, 1202, 676);
-		const dome = ([c, fx, fy, fs]: (typeof S_DOMES)[number]) =>
+		// The painting's box (12, -16, 1185×686) falls short of the frame's sides: scaled about
+		// its centre to the frame's width.
+		this.sprite(`${SA}/dunes.webp`, 0, 327 - 347, 1200, 694);
+		for (const [x, y, w, h, sway, ms] of S_CLOUDS) {
+			const c = this.sprite(`${NA}/cloud.webp`, x, y, w, h);
+			c.alpha = 0.6;
+			this.clouds.push({ s: c, x, sway, ms });
+		}
+		this.parts.push(new Birds(ctx, this.root, [50, 180]));
+		// 11376:74001, the candy tree right of the board, its far side past the frame's edge. It
+		// sways a touch from its trunk, its candies lit like fairy lights.
+		const [tx, ty, tw, th] = S_TREE;
+		const k = tw / TREE_ART[0];
+		this.tree.pivot.set(TREE_ROOT[0] * k, TREE_ROOT[1] * k);
+		this.tree.position.set(tx + TREE_ROOT[0] * k, ty + TREE_ROOT[1] * k);
+		this.root.addChild(this.tree);
+		this.sprite(`${SA}/candy-tree.webp`, 0, 0, tw, th, false, this.tree);
+		for (const [x, y, size, color] of TREE_LIGHTS) {
+			const r = (size / 2) * k;
+			// A halo in the candy's colour, brightest just past its rim, and a hot white core.
+			const g = new Graphics()
+				.circle(0, 0, r * 1.45).fill({ color, alpha: 0.07 })
+				.circle(0, 0, r * 1.2).fill({ color, alpha: 0.12 })
+				.circle(0, 0, r * 0.4).fill({ color: 0xffffff, alpha: 0.16 });
+			g.blendMode = 'add';
+			g.position.set(x * k, y * k);
+			this.tree.addChild(g);
+			const phase = Math.atan2(y - TREE_HUB[1], x - TREE_HUB[0]) / (Math.PI * 2);
+			this.lights.push({ g, phase });
+		}
+		for (let i = 0; i < 3; i++) {
+			// A four-point star: two thin crossed diamonds.
+			const g = new Graphics()
+				.poly([0, -9, 1.6, -1.6, 9, 0, 1.6, 1.6, 0, 9, -1.6, 1.6, -9, 0, -1.6, -1.6]).fill(0xffffff)
+				.circle(0, 0, 2.6).fill(0xffffff);
+			g.blendMode = 'add';
+			g.visible = false;
+			this.tree.addChild(g);
+			this.sparkles.push({ g, at: -Infinity, i: 0 });
+		}
+		const { x, y, s, foot } = S_DOME;
+		const w = 0.88 * s;
+		const h = 0.4 * s;
+		this.parts.push(
 			new Dome(ctx, this.root, {
-				src: `${SA}/dome-${c}.webp`,
-				color: S_COLOR[c],
-				...halfDome(c, fx, fy, fs, S_FOOT[c]),
+				src: `${SA}/dome-blue.webp`,
+				color: '#3f7bff',
+				x: x + 0.06 * s,
+				y: y + 0.3 * s,
+				w,
+				h,
+				ox: w / 2,
+				oy: h * foot,
 				shown: true,
 				first: [2000, 12000],
 				rest: [3000, 7000],
 				wait: [1500, 5000],
-			});
-		for (const d of S_DOMES.slice(0, 2)) this.parts.push(dome(d));
-		for (const [x, y, s, t] of ISLANDS) {
-			const box = new Container();
-			box.position.set(x, y);
-			const img = new Sprite(ctx.tex(`${SA}/island.webp`));
-			img.anchor.set(0.5);
-			img.width = img.height = s;
-			img.position.set(s / 2, s / 2);
-			box.addChild(img);
-			this.root.addChild(box);
-			this.islands.push({ box, img, x, t: t * 1000 });
-		}
-		for (const [x, y, w, h, small, t] of WATER) {
-			const s = new Sprite(ctx.tex(`${SA}/water${small ? '-small' : ''}.webp`));
-			s.anchor.set(0.5);
-			s.width = w;
-			s.height = h;
-			s.position.set(x + w / 2, y + h / 2);
-			this.root.addChild(s);
-			this.water.push({ s, x: x + w / 2, t: t * 1000, sx: s.scale.x, sy: s.scale.y });
-		}
-		// The swell: soft bands rolling toward the viewer, faded in under the horizon.
-		const swell = new Container();
-		swell.position.set(0, 448);
-		swell.alpha = 0.45;
-		this.root.addChild(swell);
-		BANDS.forEach(([period], set) => {
-			for (let k = 0; k <= Math.ceil(228 / period) + 1; k++) {
-				const s = new Sprite(bandTex[set]);
-				s.width = 1200;
-				s.height = period;
-				swell.addChild(s);
-				this.bands.push({ s, set, k });
-			}
-		});
-		for (const r of RIPPLES) {
-			const s = new Sprite(ctx.soft);
-			s.anchor.set(0.5);
-			s.width = r.w;
-			s.height = r.hgt;
-			s.position.set(r.x + r.w / 2, r.y + r.hgt / 2);
-			s.alpha = 0;
-			this.root.addChild(s);
-			this.ripples.push({ s, x: r.x + r.w / 2, r, sx: s.scale.x });
-		}
-		for (const d of S_DOMES.slice(2)) this.parts.push(dome(d));
-		if (night) {
-			const o = new Sprite(night$.overlay);
-			o.width = SKY.w;
-			o.height = SKY.h;
-			this.root.addChild(o);
-			const moon = (this.moon = new Sprite(night$.moon));
-			moon.anchor.set(0.5);
-			moon.scale.set(1 / TEX_RES);
-			moon.position.set(560 + 37, 52 + 37);
-			this.root.addChild(moon);
-			for (const [x, y, size, dur, phase] of STARS) {
-				const s = new Sprite(night$.star);
-				s.anchor.set(0.5);
-				const base = size / 4 / TEX_RES;
-				s.scale.set(base);
-				s.position.set(x + size / 2, y + size / 2);
-				this.root.addChild(s);
-				this.stars.push({ s, dur: dur * 1000, delay: phase * 1000, base });
-			}
-		}
-		this.parts.push(new Clouds(ctx, this.root, S_LANES, SKY.w, S_NEAR, S_FAR));
-		// Birds by day only: the Hidden tier's night sky has its stars.
-		if (!night) this.parts.push(new Birds(ctx, this.root, [50, 180]));
-	}
-	// The design's moon is top centre, where portrait's narrow slice puts the studio badge and
-	// logo: there it moves to the slice's top left, over the board and clear of the logo stack
-	// (the FREE SPINS / TOTAL WIN panels hold the top right).
-	view(portrait: boolean, slice: { x: number; y: number }) {
-		if (portrait) this.moon?.position.set(slice.x + 52, slice.y + 84);
-		else this.moon?.position.set(560 + 37, 52 + 37);
+			}),
+		);
 	}
 	tick(now: number) {
 		super.tick(now);
 		const R = this.ctx.reduced;
-		for (const i of this.islands) {
-			const sway = R ? 0.5 : EASE_IN_OUT(1 - Math.abs(1 - 2 * cycle(now, 17000, i.t)));
-			i.box.x = i.x - 16 + 32 * sway;
-			const bob = R ? 0 : EASE_IN_OUT(1 - Math.abs(1 - 2 * cycle(now, 6500, i.t)));
-			i.img.y = i.img.height / 2 - 11 * bob;
-			i.img.rotation = (-2 + 4.5 * bob) * DEG;
+		for (const c of this.clouds) c.s.x = c.x + (R ? 0 : c.sway * Math.sin((now / c.ms) * Math.PI * 2));
+		this.tree.rotation = R ? 0 : 0.004 * Math.sin(now / 2600);
+		// The wave: each light glows softly, and brightens as the wave passes its angle round the hub.
+		const w = now / TREE_WAVE_MS;
+		for (const { g, phase } of this.lights) {
+			const p = R ? 0 : Math.max(0, Math.cos((w - phase) * Math.PI * 2));
+			const on = p ** 2;
+			g.alpha = 0.3 + 0.45 * on;
+			g.scale.set(0.97 + 0.06 * on);
 		}
-		for (const w of this.water) {
-			const k = R ? 0.5 : EASE_IN_OUT(1 - Math.abs(1 - 2 * cycle(now, 7000, w.t)));
-			w.s.alpha = 0.75 + 0.25 * k;
-			w.s.x = w.x - 26 + 52 * k;
-			w.s.scale.set(w.sx * (0.94 + 0.14 * k), w.sy * (1.03 - 0.11 * k));
+		if (R) {
+			for (const s of this.sparkles) s.g.visible = false;
+			return;
 		}
-		for (const b of this.bands) {
-			const [period, , peak, , ms] = BANDS[b.set];
-			const off = R ? 0 : cycle(now, ms, 0) * period;
-			const y = -period + b.k * period + off;
-			b.s.y = y;
-			// mask: linear-gradient(#0000, #000 35%) over the 228px swell.
-			b.s.alpha = Math.max(0, Math.min(1, (y + peak) / (0.35 * 228)));
+		// Sparkles: one pops on a random candy every so often, grows, turns and fades.
+		const k = S_TREE[2] / TREE_ART[0];
+		if (now >= this.sparkleNext) {
+			const s = this.sparkles.find((x) => now - x.at > SPARKLE_MS);
+			if (s) {
+				s.at = now;
+				s.i = Math.floor(Math.random() * TREE_LIGHTS.length);
+				const [x, y, size] = TREE_LIGHTS[s.i];
+				s.g.position.set((x + size * 0.18) * k, (y - size * 0.2) * k);
+			}
+			this.sparkleNext = now + 1800 + Math.random() * 2400;
 		}
-		for (const r of this.ripples) {
-			if (R) {
-				r.s.alpha = 0.3;
+		for (const s of this.sparkles) {
+			const t = (now - s.at) / SPARKLE_MS;
+			s.g.visible = t >= 0 && t < 1;
+			if (!s.g.visible) continue;
+			const b = Math.sin(t * Math.PI);
+			s.g.scale.set(0.25 + 0.4 * b);
+			s.g.alpha = 0.7 * b;
+			s.g.rotation = t * 0.5;
+		}
+	}
+}
+
+// Hidden bonus: Figma 11174:6525, the neon blue cavern (user, 2026-10-27; it had been the Super
+// world at night). Layers in the frame's order, boxes as the frame places them.
+const HA = './bonus/hidden/hd';
+const H_BACK = [
+	['mound-a', -90, 178, 432, 432],
+] as const;
+const H_GLOWS = [
+	[721, 258],
+	[1094, 346],
+	[780, 92],
+	[320, 106],
+	[134, 92],
+	[150, 229],
+	[965, 61],
+] as const;
+const H_GEM = [70, 258, 229, 305] as const;
+// [x, y, size]: the dome art is the frame's square; its foot sits at 68% of it.
+const H_DOME_FOOT = 0.682;
+const H_FRONT = [
+	['mound-a', -78, 274, 296, 296],
+	['dome', 92, 335, 314, 314],
+	['mound-b', -155, 324, 551, 551],
+] as const;
+const H_DOME_COLOR = '#ea32df';
+// 11381:76399 (2026-10-29), the blue candy house right of the board, its far side past the
+// frame's edge; it took the place of the right-hand domes and mound-c (the frame dropped them).
+// Its chimney (the purple cap, art x 262-608, y 100-230 of 1349x1166) smokes a little: the
+// puffs start behind the cap's crown (art ~435, 140) and rise out over it.
+const H_HOUSE = [965, 130, 457, 395] as const;
+const H_SMOKE: SmokeAt = { x: 1112, y: 178, k: 0.6, tint: '#e6deff', alpha: 0.5 };
+class HiddenWorld extends World {
+	private glows: { g: Graphics; dur: number; delay: number }[] = [];
+	private gem: Sprite;
+	constructor(ctx: Ctx) {
+		super(ctx);
+		// A touch past the frame's own box (-35, -10, 1235x690), so no layout shows its edge.
+		this.sprite(`${HA}/cavern.webp`, -40, -14, 1250, 700);
+		for (const [src, x, y, w, h] of H_BACK) this.sprite(`${HA}/${src}.webp`, x, y, w, h);
+		H_GLOWS.forEach(([x, y], i) => {
+			// The frame's 16px glow: a #04DAFD dot blurred 2, drawn as a core in two soft rings.
+			const g = new Graphics()
+				.circle(0, 0, 13).fill({ color: 0x04dafd, alpha: 0.14 })
+				.circle(0, 0, 9).fill({ color: 0x04dafd, alpha: 0.45 })
+				.circle(0, 0, 5.5).fill({ color: 0x9ff3ff, alpha: 0.95 });
+			g.position.set(x + 8, y + 8);
+			this.root.addChild(g);
+			this.glows.push({ g, dur: 2400 + ((i * 7) % 5) * 380, delay: i * 530 });
+		});
+		this.gem = this.sprite(`${HA}/gem.webp`, ...H_GEM);
+		this.gem.anchor.set(0.5);
+		this.gem.position.set(H_GEM[0] + H_GEM[2] / 2, H_GEM[1] + H_GEM[3] / 2);
+		for (const [src, x, y, w, h] of H_FRONT) {
+			if (src !== 'dome') {
+				this.sprite(`${HA}/${src}.webp`, x, y, w, h);
 				continue;
 			}
-			const v = keyframes(
-				[
-					[0, { a: 0, tx: -r.r.drift, sx: 0.35 }],
-					[0.4, { a: r.r.alpha, tx: 0, sx: 1 }],
-					[0.65, { a: r.r.alpha * 0.6, tx: r.r.drift * 0.6, sx: 0.85 }],
-					[1, { a: 0, tx: -r.r.drift, sx: 0.35 }],
-				],
-				cycle(now, r.r.dur * 1000, r.r.delay * 1000),
-				EASE_IN_OUT,
+			this.parts.push(
+				new Dome(ctx, this.root, {
+					src: `${HA}/dome.webp`,
+					color: H_DOME_COLOR,
+					x,
+					y,
+					w,
+					h,
+					ox: w / 2,
+					oy: h * H_DOME_FOOT,
+					shown: true,
+					first: [2500, 14000],
+					rest: [3000, 7000],
+					wait: [9000, 24000],
+				}),
 			);
-			r.s.alpha = v.a;
-			r.s.x = r.x + v.tx;
-			r.s.scale.x = r.sx * v.sx;
 		}
-		for (const s of this.stars) {
-			const k = R ? 1 : alternate(now, s.dur, s.delay, EASE_IN_OUT);
-			s.s.alpha = 0.25 + 0.75 * k;
-			s.s.scale.set(s.base * (0.6 + 0.5 * k));
+		this.parts.push(new Smoke(ctx, this.root, H_SMOKE));
+		this.sprite(`${HA}/candy-house.webp`, ...H_HOUSE);
+	}
+	tick(now: number) {
+		super.tick(now);
+		const R = this.ctx.reduced;
+		for (const { g, dur, delay } of this.glows) {
+			const k = R ? 1 : alternate(now, dur, delay, EASE_IN_OUT);
+			g.alpha = 0.45 + 0.55 * k;
+			g.scale.set(0.8 + 0.3 * k);
 		}
+		// The jelly gem floats a little.
+		const b = R ? 0 : Math.sin(now / 1100);
+		this.gem.y = H_GEM[1] + H_GEM[3] / 2 - 5 * b;
+		this.gem.rotation = R ? 0 : 0.025 * Math.sin(now / 1700);
 	}
 }
 
 // ---- Scene ------------------------------------------------------------------------------------
 
-const BASE_SRCS = ['./base/hd/hills.webp', './base/hd/seascape.webp', './base/hd/seascape-front.webp', NEAR_LOOK.src, FAR_LOOK.src].concat(
+const BASE_SRCS = [
+	'./base/hd/hills.webp',
+	'./base/hd/volcano.webp',
+	'./base/hd/volcano-lava.webp',
+	'./base/hd/volcano-flow.webp',
+	'./base/hd/dome-hill.webp',
+	'./base/hd/water-clear.webp',
+	'./base/hd/far-hills.webp',
+	'./base/hd/island.webp',
+	'./base/hd/boat.webp', NEAR_LOOK.src, FAR_LOOK.src].concat(
 	...(['green', 'magenta', 'purple'] as const).map((c) => [`./base/hd/dome-${c}.webp`, `./base/hd/dome-${c}-small.webp`]),
 );
 const BONUS_SRCS = [
-	`${NA}/sunset.webp`,
-	'./bonus/normal/crisp/cloud-puff.webp',
-	`${NA}/cliff.webp`,
-	`${NA}/cliff-small.webp`,
-	`${NA}/dome-blue.webp`,
-	`${NA}/dome-blue-small.webp`,
-	`${NA}/dome-green.webp`,
-	`${NA}/dome-green-small.webp`,
-	`${NA}/dome-magenta.webp`,
-	`${SA}/arches.webp`,
-	`${SA}/island.webp`,
-	`${SA}/water.webp`,
-	`${SA}/water-small.webp`,
+	`${NA}/hills.webp`,
+	`${NA}/house.webp`,
+	`${NA}/cloud.webp`,
+	`${NA}/dunes.webp`,
+	`${SA}/dunes.webp`,
 	`${SA}/dome-blue.webp`,
-	`${SA}/dome-magenta.webp`,
-	`${SA}/dome-purple.webp`,
+	`${SA}/candy-tree.webp`,
+	`${HA}/cavern.webp`,
+	`${HA}/candy-house.webp`,
+	`${HA}/mound-a.webp`,
+	`${HA}/mound-b.webp`,
+	`${HA}/gem.webp`,
+	`${HA}/dome.webp`,
 ];
 const FADE_MS = 700;
 
@@ -1003,8 +1453,6 @@ export class SceneView {
 	private host: HTMLElement | null = null;
 	private destroyed = false;
 	private extra: Texture[] = [];
-	private bandTex: Texture[] = [];
-	private nightTex!: { overlay: Texture; moon: Texture; star: Texture };
 	private dropTex = new Map<string, Texture>();
 	private shown = { portrait: false, slice: { x: 0, y: 0, w: SKY.w, h: SKY.h } };
 	frozen: number | null = null;
@@ -1035,61 +1483,7 @@ export class SceneView {
 		const soft = softTexture();
 		const birds = birdTextures();
 		const ring = ringTexture();
-		this.bandTex = BANDS.map(([period, clear, peak, alpha]) =>
-			canvasTexture(4, period, (ctx) => {
-				const g = ctx.createLinearGradient(0, 0, 0, period);
-				g.addColorStop(0, 'rgba(255,255,255,0)');
-				g.addColorStop(clear / period, 'rgba(255,255,255,0)');
-				g.addColorStop(peak / period, `rgba(255,255,255,${alpha})`);
-				g.addColorStop(1, 'rgba(255,255,255,0)');
-				ctx.fillStyle = g;
-				ctx.fillRect(0, 0, 4, period);
-			}),
-		);
-		this.nightTex = {
-			overlay: canvasTexture(4, 128, (ctx) => {
-				const g = ctx.createLinearGradient(0, 0, 0, 128);
-				g.addColorStop(0, 'rgba(11,6,48,.9)');
-				g.addColorStop(0.55, 'rgba(27,15,85,.7)');
-				g.addColorStop(1, 'rgba(18,10,60,.8)');
-				ctx.fillStyle = g;
-				ctx.fillRect(0, 0, 4, 128);
-			}),
-			moon: canvasTexture(74 + 120, 74 + 120, (ctx) => {
-				ctx.translate(60, 60);
-				ctx.save();
-				ctx.shadowColor = 'rgba(255,244,196,.33)';
-				ctx.shadowBlur = 40 * TEX_RES;
-				// The halo shape sits off-canvas and only its glow lands here. The path takes the
-				// transform when it is built, so translate before arc().
-				ctx.shadowOffsetX = 4000 * TEX_RES;
-				ctx.translate(-4000, 0);
-				ctx.beginPath();
-				ctx.arc(37, 37, 37 + 14, 0, Math.PI * 2);
-				ctx.fill();
-				ctx.restore();
-				const g = ctx.createRadialGradient(74 * 0.38, 74 * 0.36, 0, 74 * 0.38, 74 * 0.36, Math.hypot(0.62, 0.64) * 74);
-				g.addColorStop(0, '#fffbe8');
-				g.addColorStop(0.6, '#f3e7b8');
-				g.addColorStop(1, '#d9c98f');
-				ctx.beginPath();
-				ctx.arc(37, 37, 37, 0, Math.PI * 2);
-				ctx.fillStyle = g;
-				ctx.fill();
-			}),
-			// A 4px star with its 6px glow (box-shadow 0 0 6px 1px #ffffffaa).
-			star: canvasTexture(20, 20, (ctx) => {
-				ctx.shadowColor = 'rgba(255,255,255,.67)';
-				ctx.shadowBlur = 6 * TEX_RES;
-				ctx.beginPath();
-				ctx.arc(10, 10, 2, 0, Math.PI * 2);
-				ctx.fillStyle = '#fff';
-				ctx.fill();
-				ctx.shadowBlur = 0;
-				ctx.fill();
-			}),
-		};
-		this.extra = [blush, soft, ring, ...birds, ...this.bandTex, ...Object.values(this.nightTex)];
+		this.extra = [blush, soft, ring, ...birds];
 		this.ctx = {
 			tex: textureLookup('SceneView', this.textures, blobTex),
 			soft,
@@ -1102,6 +1496,19 @@ export class SceneView {
 			},
 			blob: { tex: textureLookup('SceneView', blobTex), blush },
 			reduced: this.reduced,
+			// Whether a box (in `parent`) sits under App's mama (her canvas reaches past her box,
+			// and a dome's spray flies about half its width round it).
+			covered: (parent, x, y, w, h) => {
+				const a = document.querySelector('.base-mama')?.getBoundingClientRect();
+				if (!a?.width) return false;
+				const c = this.app.canvas.getBoundingClientRect();
+				const k = c.width / (this.app.screen.width || 1);
+				const p0 = parent.toGlobal({ x, y });
+				const p1 = parent.toGlobal({ x: x + w, y: y + h });
+				const [l, t, r, b] = [c.left + p0.x * k, c.top + p0.y * k, c.left + p1.x * k, c.top + p1.y * k];
+				const m = (r - l) * 0.6 + a.width * 0.15;
+				return r + m > a.left && l - m < a.right && b + m > a.top && t - m < a.bottom;
+			},
 		};
 		// Upload up front (pixi 8.8.1 has no working PrepareSystem): a bonus world's first frame
 		// must not stall on 10MB of texture uploads.
@@ -1158,7 +1565,11 @@ export class SceneView {
 		for (const b of this.bonus) if (b.to !== 0) Object.assign(b, { from: this.fadeOf(b, now), to: 0, start: now });
 		if (tier && !this.bonus.some((b) => b.tier === tier && b.to === 1)) {
 			const world =
-				tier === 'normal' ? new NormalWorld(this.ctx) : new SuperWorld(this.ctx, tier === 'hidden', this.bandTex, this.nightTex);
+				tier === 'normal'
+					? new NormalWorld(this.ctx)
+					: tier === 'hidden'
+						? new HiddenWorld(this.ctx)
+						: new SuperWorld(this.ctx);
 			world.view(this.shown.portrait, this.shown.slice);
 			world.root.alpha = instant ? 1 : 0;
 			this.scene.addChild(world.root);

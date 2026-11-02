@@ -1,23 +1,12 @@
 """Bonus scene layers for BonusNormal.svelte and BonusSuper.svelte.
 
-Normal bonus: Figma 11174:5578 ("Background 22").
+Normal bonus: Figma 11362:72643 (2026-10-29; it was 11174:5578's sunset, cliffs and domes),
+art-src/bonus/normal-v2/*.png, see below. art-src/bonus/dome-blue.png (a 1254 square, the dome
+in y 32-68% of it) is the Super bonus's dome; the old cliff/sunset/dome sources stay in art-src.
 
-art-src/bonus/*.png (Figma image fills, untouched)
-  sunset.png        11174:5579  the sky, sun and pink hills, full frame
-  cloud.png         11174:5580..5582  the pink cloud (used three times)
-  cliff.png         11174:5583..5585  the candy cliff with lime slime (used three times, two mirrored)
-  dome-*.png        11174:5586..5592  the blue / green / magenta jelly domes (1254 square, the dome
-                    sits in y 32-68% of it)
-  -> public/bonus/normal/*.webp
-
-Super bonus: Figma 11174:5079 ("Background 18"); it reuses the cloud and the blue and magenta
-domes from art-src/bonus.
-art-src/bonus-super/*.png
-  arches.png        11174:5080  the sunset arches over calm water, full frame
-  island.png        11174:5083 / 5553  the floating melting-jelly island (1254 square)
-  water.png         11174:5084 / 5085  the pink-purple sheen lying on the water
-  dome-purple.png   11174:5081  the purple jelly dome
-  -> public/bonus/super/*.webp
+Super bonus: Figma 11300:27276 (2026-10-29; it was 11174:5079's arches over water).
+art-src/bonus-super/dunes.png  11346:48354  the pink sunset dunes, full frame
+  + the normal-v2 cloud and art-src/bonus/dome-blue.png -> public/bonus/super/hd/*.webp
 
 Blurred like the base scene (build-base-scene.py): the frame blurs every layer 2-2.5px, which
 is 6-8 device px on a 1920x1080 retina screen and smeared the crisp masters (the "low quality
@@ -42,8 +31,13 @@ CROP = (0.06, 0.3, 0.94, 0.7)
 # the earlier heavy soft focus read as a painterly style next to the crisp, glossy board.
 # Written to */crisp/ (new paths: browsers kept the soft art under the old ones). The clouds
 # are drawn by build-puff-clouds.py.
-BLUR = {'sunset': 0.6, 'water': 0.6, 'cliff': 0.6, 'dome': 0.6, 'island': 0.6}
+# 0.3 since 2026-11-02 (quality pass: at 0.6 the cut-outs measured 4-7x softer than the crisp
+# symbols and logo beside them).
+BLUR = {'sunset': 0.3, 'water': 0.3, 'cliff': 0.3, 'dome': 0.3, 'island': 0.3}
 K = 3.2  # px per design px
+# Width caps on the big layers' textures (GPU memory): full-frame paintings, and the wide strips.
+FULL_W = 2560
+STRIP_W = 3072
 GRADE = {'saturation': 1.18, 'contrast': 1.06}
 
 
@@ -71,7 +65,9 @@ def blur(img, design_w, sigma):
 
 
 def master(folder, name):
-    return Image.open(folder / f'{name}.png')
+    """The Real-ESRGAN 2x master when there is one (upscale-art.py), else the Figma fill."""
+    hd = folder / '2x' / f'{name}.png'
+    return Image.open(hd if hd.exists() else folder / f'{name}.png')
 
 
 def sized(img, w):
@@ -80,43 +76,44 @@ def sized(img, w):
 
 
 OUT.mkdir(parents=True, exist_ok=True)
-sunset = grade(master(SRC, 'sunset').convert('RGBA'))
-save(blur(sunset, 1260, BLUR['sunset']).convert('RGB'), 'sunset')
-cliff = grade(master(SRC, 'cliff').convert('RGBA'))
-# Big for the two tall cliffs (356 / 408 px), small for the 207px one.
-save(blur(sized(cliff, round(K * 408)), 408, BLUR['cliff']), 'cliff')
-save(blur(sized(cliff, round(K * 207)), 207, BLUR['cliff']), 'cliff-small')
-# Each colour at K x its largest use, plus a small copy where it is also drawn small.
-# Drawn at half the frame's dome sizes (BonusNormal DOME_SCALE).
-DOMES = {'dome-blue': (145, 70), 'dome-green': (158, 75), 'dome-magenta': (255, None)}
-for name, (big, small) in DOMES.items():
-    dome = grade(Image.open(SRC / f'{name}.png').convert('RGBA'))
-    s = dome.width
-    dome = dome.crop(tuple(round(f * s) for f in CROP))
-    w = CROP[2] - CROP[0]
-    save(blur(sized(dome, round(K * big * w)), big * w, BLUR['dome']), name)
-    if small:
-        save(blur(sized(dome, round(K * small * w)), small * w, BLUR['dome']), f'{name}-small')
+# The normal bonus redrawn (Figma 11362:72643, 2026-10-29): a gradient sky (drawn live), the
+# blob house, the rolling hills, two pink clouds and the dunes, replacing the sunset, cliffs and
+# domes. art-src/bonus/normal-v2/*.png, the frame's image fills:
+#   hills.png  11362:72645 (194, 248, 1023x342)   house.png 11362:72646 (-56, 102, 369x379)
+#   cloud.png  11362:72647 / 72648 (297x99, 60%)  dunes.png 11362:72649 (-209, 315, 1497x500)
+V2 = ROOT / 'art-src' / 'bonus' / 'normal-v2'
+for name, design_w in (('hills', 1023), ('house', 369), ('cloud', 297), ('dunes', 1497)):
+    img = grade(master(V2, name).convert('RGBA'))
+    save(blur(sized(img, min(STRIP_W, round(K * design_w))), design_w, BLUR['sunset']), name)
 
 # Super bonus.
 SUPER = ROOT / 'art-src' / 'bonus-super'
 OUT = ROOT / 'public' / 'bonus' / 'super' / 'hd'
 OUT.mkdir(parents=True, exist_ok=True)
-arches = grade(master(SUPER, 'arches').convert('RGBA'))
-save(blur(arches, 1202, BLUR['sunset']).convert('RGB'), 'arches')
-# The islands fly in front of the sky, K x their 142px.
-save(blur(sized(grade(Image.open(SUPER / 'island.png').convert('RGBA')), round(K * 142)), 142, BLUR['island']), 'island')
-water = grade(master(SUPER, 'water').convert('RGBA'))
-save(blur(sized(water, round(K * 675)), 675, BLUR['water']), 'water')
-save(blur(sized(water, round(K * 343)), 343, BLUR['water']), 'water-small')
+# Redrawn 2026-10-29 as Figma 11300:27276: one painting, dunes.png (11346:48354, opaque), plus
+# the normal-v2 cloud and the blue dome (11300:27289 = art-src/bonus/dome-blue.png).
+dunes = grade(master(SUPER, 'dunes').convert('RGBA'))
+save(blur(sized(dunes, min(FULL_W, round(K * 1200))), 1185, BLUR['sunset']).convert('RGB'), 'dunes')
 # Half the frame's dome sizes (BonusSuper DOME_SCALE).
-for src, name, size in (
-    (SUPER / 'dome-purple.png', 'dome-purple', 159),
-    (SRC / 'dome-magenta.png', 'dome-magenta', 86),
-    (SRC / 'dome-blue.png', 'dome-blue', 282),
-):
-    dome = grade(Image.open(src).convert('RGBA'))
-    s = dome.width
-    dome = dome.crop(tuple(round(f * s) for f in CROP))
-    w = CROP[2] - CROP[0]
-    save(blur(sized(dome, round(K * size * w)), size * w, BLUR['dome']), name)
+# The blue dome at the frame's 133px (it was drawn at half of 563).
+dome = grade(Image.open(SRC / 'dome-blue.png').convert('RGBA'))
+s = dome.width
+dome = dome.crop(tuple(round(f * s) for f in CROP))
+w = CROP[2] - CROP[0]
+save(blur(sized(dome, round(K * 133 * w)), 133 * w, BLUR['dome']), 'dome-blue')
+
+# Hidden bonus: Figma 11174:6525 ("Hidden"), the neon blue cavern (user, 2026-10-27; it had
+# been the Super world at night). art-src/bonus/hidden/*.png, the frame's image fills:
+#   cavern.png   11174:6526  the cavern and its glowing floor, full frame
+#   mound-a.png  11174:6527 / 6536  the light indigo mound;  mound-b.png 11174:6538 the dark one;
+#   mound-c.png  11174:6541  the tall dark mound (drawn squashed, 551x435)
+#   gem.png      11174:6535  the cyan jelly gem;  dome.png 11174:6537 / 6539 / 6540 the magenta dome
+# Kept as the frame's squares (no dome crop), so the Figma boxes place them as they are.
+HIDDEN = ROOT / 'art-src' / 'bonus' / 'hidden'
+OUT = ROOT / 'public' / 'bonus' / 'hidden' / 'hd'
+OUT.mkdir(parents=True, exist_ok=True)
+cavern = grade(master(HIDDEN, 'cavern').convert('RGBA'))
+save(blur(sized(cavern, FULL_W), 1235, BLUR['sunset']).convert('RGB'), 'cavern')
+for name, size in (('mound-a', 432), ('mound-b', 551), ('gem', 229), ('dome', 314)):
+    img = grade(master(HIDDEN, name).convert('RGBA'))
+    save(blur(sized(img, round(K * size)), size, BLUR['dome']), name)

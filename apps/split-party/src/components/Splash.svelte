@@ -2,7 +2,9 @@
 	import { onMount } from 'svelte';
 	import Logo from './Logo.svelte';
 	import Blob from './Blob.svelte';
+	import JellyText from './JellyText.svelte';
 	import JellyDome from './JellyDome.svelte';
+	import LiveSea from './LiveSea.svelte';
 	import SkyClouds from './SkyClouds.svelte';
 	import DOMES from '../lib/splash-domes.json';
 
@@ -89,6 +91,23 @@
 	// layer over it brings it to life: wave caps that swell and roll shoreward, glints near
 	// the horizon, and foam that laps the beach. SEA_TOP is the layer's offset in frame px.
 	const SEA_TOP = 380;
+	// The painted water is cleared and drawn live (LiveSea): it starts under whatever stands on
+	// the horizon (WATER_TOP, measured from sky-bg every 25 frame px: the arch and island bases
+	// on the left, the island on the right) and runs into the foam (SHORE). Its colours are the
+	// painting's own, sampled down x 300/600.
+	const WATER_TOP = [
+		397, 397, 408, 388, 393, 394, 396, 395, 396, 397, 397, 397, 397, 388, 388, 388, 388, 388, 388, 388, 388, 388, 387, 387, 387,
+		388, 387, 387, 388, 388, 388, 388, 388, 389, 390, 390, 388, 388, 388, 388, 388, 406, 407, 410, 411, 411, 422, 426, 423,
+	];
+	const SEA_STOPS: [number, string][] = [
+		[388, '#8adaf8'],
+		[398, '#50bffa'],
+		[420, '#3bbbfc'],
+		[444, '#1dc5fb'],
+		[470, '#20dcfe'],
+		[492, '#2be3fd'],
+		[512, '#60edfb'],
+	];
 	// Shore foam centre line, traced from sky-bg every 50 frame px.
 	const SHORE = [494, 497, 500, 504, 508, 514, 517, 521, 525, 527, 526, 524, 522, 518, 516, 515, 515, 516, 520, 521, 521, 518, 517, 515, 510];
 	const shorePath = (dy: number) => {
@@ -129,6 +148,17 @@
 	>
 		<div class="sky-base">
 			<img class="sky-bg" src="./splash/hd/sky-bg.webp" alt="" />
+			<LiveSea
+				src="./splash/hd/sky-bg.webp"
+				w={SKY.w}
+				y0={384}
+				y1={532}
+				horizon={388}
+				top={WATER_TOP}
+				shore={SHORE.map((y) => y - 2)}
+				stops={SEA_STOPS}
+				scale={skyScale}
+			/>
 			<div class="sea" style={`top:${SEA_TOP}px`}>
 				{#each CAPS as c}
 					<span
@@ -191,7 +221,7 @@
 					><span class="peek-face"><Blob symbol="LEMON" uid="peek-yellow" /></span></span
 				>
 				<img class="card-frame" src="./splash/panel.webp" alt="" />
-				<h2 class="card-title green long" data-shine={tr('SPLASH SPLIT TITLE')} style={titleFit(tr('SPLASH SPLIT TITLE'), 23, 12)}>{tr('SPLASH SPLIT TITLE')}</h2>
+				<h2 class="card-title green long" data-shine={tr('SPLASH SPLIT TITLE')} style={titleFit(tr('SPLASH SPLIT TITLE'), 23, 12)}><JellyText text={tr('SPLASH SPLIT TITLE')} look="green" /></h2>
 				<!-- One blob dividing over and over, up to the tile's 6. -->
 				<span class="split-art" aria-hidden="true"><Blob symbol="KIWI" units={splitUnits} uid="splash-split" /></span>
 				<p class="card-copy">{tr('SPLASH SPLIT TEXT')}</p>
@@ -199,7 +229,7 @@
 
 			<div class="card card-2" class:active={slide === 1}>
 				<img class="card-frame" src="./splash/panel.webp" alt="" />
-				<h2 class="card-title yellow maxwin" data-shine={tr('SPLASH MAX TITLE')} style={titleFit(tr('SPLASH MAX TITLE'), 36, 8)}>{tr('SPLASH MAX TITLE')}</h2>
+				<h2 class="card-title yellow maxwin" data-shine={tr('SPLASH MAX TITLE')} style={titleFit(tr('SPLASH MAX TITLE'), 36, 8)}><JellyText text={tr('SPLASH MAX TITLE')} look="gold" /></h2>
 				<strong class="max-big" data-shine={maxWinText}>{maxWinText}</strong>
 				<p class="card-copy max-copy">{tr('SPLASH MAX TEXT')}</p>
 			</div>
@@ -212,7 +242,7 @@
 					><span class="peek-face"><Blob symbol="GRAPES" uid="peek-purple" /></span></span
 				>
 				<img class="card-frame" src="./splash/panel.webp" alt="" />
-				<h2 class="card-title pink long" data-shine={tr('SPLASH BONUS TITLE')} style={titleFit(tr('SPLASH BONUS TITLE'), 23, 12)}>{tr('SPLASH BONUS TITLE')}</h2>
+				<h2 class="card-title pink long" data-shine={tr('SPLASH BONUS TITLE')} style={titleFit(tr('SPLASH BONUS TITLE'), 23, 12)}><JellyText text={tr('SPLASH BONUS TITLE')} look="pink" /></h2>
 				<div class="egg" aria-hidden="true"><div class="egg-body"><img src="./splash/egg.webp" alt="" /></div></div>
 				<p class="card-copy">{tr('SPLASH BONUS TEXT')}</p>
 			</div>

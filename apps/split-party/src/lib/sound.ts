@@ -1,5 +1,5 @@
 // The game's audio on Web Audio (public/audio, from "Sounds Gorgo Blob Split_slot"): short
-// effects, a looping bed (base or bonus music, crossfaded) and one-shot music stings (win
+// effects, a looping bed (base music or the bonus world's own, crossfaded) and one-shot music stings (win
 // music, bonus completed) that duck the bed while they play. Sound and Music are the menu's
 // two toggles. Everything loads in the background: until a clip has decoded, playing it is
 // a no-op, so audio can never hold up the game.
@@ -18,7 +18,8 @@ export type Sfx =
 	| 'tick'
 	| 'thud'
 	| 'heart';
-export type Bed = 'base' | 'bonus';
+/** The base game's music, or each bonus world's (normal, super, hidden). */
+export type Bed = 'base' | 'normal' | 'super' | 'hidden';
 export type Sting = 'win' | 'bigWin' | 'bonusEnd';
 
 const FILES: Record<Exclude<Sfx, keyof typeof ALIAS> | Bed | Sting, string> = {
@@ -32,7 +33,10 @@ const FILES: Record<Exclude<Sfx, keyof typeof ALIAS> | Bed | Sting, string> = {
 	pop: 'blobs-pop',
 	winSmall: 'win-small',
 	base: 'music-base',
-	bonus: 'music-bonus',
+	// The super and hidden tracks are the normal one reworked (scripts/build-bonus-music.py).
+	normal: 'music-bonus',
+	super: 'music-bonus-super',
+	hidden: 'music-bonus-hidden',
 	win: 'music-win',
 	bigWin: 'music-big-win',
 	bonusEnd: 'bonus-completed',
@@ -52,7 +56,9 @@ const LEVEL: Partial<Record<Sfx | Bed | Sting, number>> = {
 	thud: 1.1,
 	heart: 0.9,
 	base: 0.45,
-	bonus: 0.45,
+	normal: 0.45,
+	super: 0.45,
+	hidden: 0.45,
 	win: 0.85,
 	bigWin: 0.95,
 	bonusEnd: 0.85,
@@ -67,8 +73,9 @@ const ALIAS = {
 	heart: ['land', 0.5],
 } as const satisfies Record<string, [clip: Sfx, rate: number]>;
 // Seconds each pass of a bed overlaps the next: music-base fades out over its last ~0.45s, so
-// a plain loop dipped to silence once per pass; music-bonus (v2, 20.8s) ends on the beat.
-const BED_XF: Record<Bed, number> = { base: 0.5, bonus: 0.03 };
+// a plain loop dipped to silence once per pass; music-bonus (v2, 20.8s) ends on the beat, and
+// its two reworks are rendered to loop.
+const BED_XF: Record<Bed, number> = { base: 0.5, normal: 0.03, super: 0.03, hidden: 0.03 };
 const BED_DUCK = 0.2;
 const FADE_S = 0.4;
 // The same effect fired again within this window (a column's blobs, several eggs) is dropped.
@@ -82,6 +89,11 @@ let master: DynamicsCompressorNode;
 const buffers = new Map<string, AudioBuffer>();
 let sfxOn = false;
 let musicOn = false;
+// The menu's volume sliders (0..1), applied on the buses squared so the slider sounds even.
+let sfxLevel = 1;
+let musicLevel = 1;
+const sfxGain = () => (sfxOn ? sfxLevel ** 2 : 0);
+const musicGain = () => (musicOn ? musicLevel ** 2 : 0);
 let bedWant: Bed | null = null;
 let bed: { name: Bed; gain: GainNode; srcs: Set<AudioBufferSourceNode>; timer: number } | null = null;
 let stings = 0;
@@ -140,8 +152,8 @@ function openContext() {
 	sfxBus = ctx.createGain();
 	musicBus = ctx.createGain();
 	bedBus = ctx.createGain();
-	sfxBus.gain.value = sfxOn ? 1 : 0;
-	musicBus.gain.value = musicOn ? 1 : 0;
+	sfxBus.gain.value = sfxGain();
+	musicBus.gain.value = musicGain();
 	// A limiter over everything: a big cascade stacks pops, landings and the win music.
 	master = ctx.createDynamicsCompressor();
 	master.threshold.value = -6;
@@ -164,13 +176,15 @@ const ramp = (g: GainNode, to: number, s = FADE_S) => {
 	g.gain.linearRampToValueAtTime(to, t + s);
 };
 
-export function setSfx(on: boolean) {
+export function setSfx(on: boolean, level = sfxLevel) {
 	sfxOn = on;
-	if (ctx) ramp(sfxBus, on ? 1 : 0, 0.05);
+	sfxLevel = Math.max(0, Math.min(1, level));
+	if (ctx) ramp(sfxBus, sfxGain(), 0.05);
 }
-export function setMusic(on: boolean) {
+export function setMusic(on: boolean, level = musicLevel) {
 	musicOn = on;
-	if (ctx) ramp(musicBus, on ? 1 : 0, 0.25);
+	musicLevel = Math.max(0, Math.min(1, level));
+	if (ctx) ramp(musicBus, musicGain(), 0.25);
 }
 
 /** Plays an effect now, or `delayMs` from now (queued: stopPending() drops it). `pitch`
@@ -212,7 +226,7 @@ export function stopPending() {
 	pending.clear();
 }
 
-/** The looping bed: base or bonus music, crossfaded; null fades it out. */
+/** The looping bed: base or a bonus world's music, crossfaded; null fades it out. */
 export function setBed(name: Bed | null) {
 	bedWant = name;
 	if (!ctx || bed?.name === name) return;

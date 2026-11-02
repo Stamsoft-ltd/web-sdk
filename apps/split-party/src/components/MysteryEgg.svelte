@@ -11,6 +11,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Blob from './Blob.svelte';
+	import PixiMama from './PixiMama.svelte';
 
 	// Mystery buy reveal: the mystery egg (Figma 11174:5039) drops in and sits still, then takes
 	// four knocks, each opening the crack further from the middle out while a light that cycles
@@ -61,6 +62,22 @@
 		}
 	};
 	walk(0, count, 1);
+
+	// Mama watches beside the egg (user, 2026-10-27): on the edge of her seat, wondering what it
+	// will be, through the knocks; when it bursts and the blobs climb out she laughs and claps.
+	let mamaHope = $state(true);
+	let mamaWin = $state(false);
+	let mamaBeat = $state(0);
+	let narrow = $state(false);
+	onMount(() => {
+		narrow = matchMedia('(max-width: 760px)').matches;
+		const t = [
+			setTimeout(() => (mamaHope = false), BURST_MS * pace),
+			setTimeout(() => ((mamaWin = true), mamaBeat++), RISE_AT * pace),
+			setTimeout(() => mamaBeat++, (RISE_AT + RISE_MS + depth * SPLIT_GAP) * pace),
+		];
+		return () => t.forEach(clearTimeout);
+	});
 
 	let blobs: HTMLElement[] = $state([]);
 	onMount(() => {
@@ -120,24 +137,91 @@
 		[-170, 140, 16, 160],
 		[-95, 290, 14, -320],
 	];
+	// The backdrop (user, 2026-10-27: "add some nice background"): a mystery stage in the game's
+	// jelly colours, never the drawn tier's (nothing may give the tier away before the burst).
+	// Bubbles drift up [x %, size px, seconds, delay s, colour], question marks float
+	// [x %, y %, size px, tilt deg], and sparkles twinkle [x %, y %, size px, delay s].
+	const BG_BUBBLES = [
+		[6, 34, 13, 0, '#ff7ce5'],
+		[15, 18, 10, 3.5, '#7fd8ff'],
+		[24, 52, 16, 7, '#b26bff'],
+		[33, 14, 11, 1.8, '#ffe36b'],
+		[61, 22, 12, 5.2, '#7fd8ff'],
+		[70, 46, 15, 2.6, '#ff7ce5'],
+		[79, 16, 10, 8.1, '#b26bff'],
+		[88, 30, 13, 4.4, '#5bed7c'],
+		[95, 20, 11, 0.9, '#ff7ce5'],
+		[45, 12, 12, 9.3, '#b26bff'],
+		[54, 26, 14, 11, '#ffe36b'],
+		[2, 20, 12, 6.3, '#7fd8ff'],
+	] as const;
+	const MARKS = [
+		[13, 22, 92, -14],
+		[86, 18, 70, 12],
+		[78, 72, 110, 8],
+		[22, 78, 64, -6],
+		[64, 9, 48, 18],
+		[36, 10, 40, -20],
+	] as const;
+	// Dust in the beam: [x, y from the centre px, drift px, seconds, delay s], inside its cone.
+	const MOTES = [
+		[-60, -220, 14, 6, 0],
+		[40, -300, -10, 7.5, 2.2],
+		[-110, -40, 18, 6.8, 4.1],
+		[120, -120, -16, 8, 1.3],
+		[10, -380, 12, 7, 5.6],
+		[-150, 60, 10, 6.4, 3],
+		[160, 30, -12, 7.2, 0.7],
+		[-20, -150, -8, 6.2, 6.4],
+	] as const;
+	const SPARKS = [
+		[9, 12, 10, 0],
+		[28, 30, 7, 1.1],
+		[40, 70, 9, 2.3],
+		[57, 84, 7, 0.6],
+		[71, 34, 11, 1.7],
+		[90, 56, 8, 2.9],
+		[18, 60, 8, 3.4],
+		[83, 88, 10, 0.3],
+		[50, 6, 8, 2],
+		[96, 8, 7, 1.4],
+	] as const;
 	// Droplets in the tier's colour.
 	const DROPS = Array.from({ length: 12 }, (_, i) => [i * 30 + 8, 150 + ((i * 37) % 90), 8 + ((i * 5) % 9)]);
 </script>
 
 <div class={`mystery ${tier}`} style={`--p:${pace}`} aria-live="polite">
-	<div class="veil"></div>
+	<div class="veil">
+		<div class="spot"></div>
+		{#each MOTES as [x, y, dx, dur, delay]}
+			<span class="mote" style={`left:calc(50% + ${x}px);top:calc(50% + ${y}px);--dx:${dx}px;--dur:${dur}s;--delay:${-delay}s`}></span>
+		{/each}
+		{#each MARKS as [x, y, size, tilt], i}
+			<span class="mark" style={`left:${x}%;top:${y}%;font-size:${size}px;--tilt:${tilt}deg;--i:${i}`}>?</span>
+		{/each}
+		{#each BG_BUBBLES as [x, size, dur, delay, color]}
+			<span class="bg-bubble" style={`left:${x}%;width:${size}px;height:${size}px;--c:${color};--dur:${dur}s;--delay:${-delay}s`}></span>
+		{/each}
+		{#each SPARKS as [x, y, size, delay]}
+			<span class="spark" style={`left:${x}%;top:${y}%;width:${size}px;height:${size}px;--delay:${-delay}s`}></span>
+		{/each}
+	</div>
+	<div class="mama">
+		<PixiMama instant edge={mamaHope} win={mamaWin} beat={mamaBeat} gaze={mamaWin ? null : narrow ? { x: 0.6, y: -0.8 } : { x: 1, y: -0.2 }} />
+	</div>
 	<div class="stage">
 		<div class="rays"></div>
+		<div class="podium"></div>
 		<div class="flash"></div>
 		<div class="glow"><span class="normal"></span><span class="super"></span><span class="hidden"></span></div>
 		<!-- Two layers: one transform each (the drop, then the wobble). -->
 		<div class="fall">
 			<div class="egg">
-				<img class="whole" src="./mystery/hd/egg.webp" alt="" />
-				{#each KNOCKS_MS as _, i}<img class={`crack c${i}`} src="./mystery/hd/egg-crack.webp" alt="" />{/each}
+				<img class="whole" src="./mystery/v3/egg.webp" alt="" />
+				{#each KNOCKS_MS as _, i}<img class={`crack c${i}`} src="./mystery/v3/egg-crack.webp" alt="" />{/each}
 				<div class="leak">{#each KNOCKS_MS as _, i}<span class={`c${i}`}></span>{/each}</div>
-				<img class="bottom" src="./mystery/hd/egg-bottom.webp" alt="" />
-				<img class="top" src="./mystery/hd/egg-top.webp" alt="" />
+				<img class="bottom" src="./mystery/v3/egg-bottom.webp" alt="" />
+				<img class="top" src="./mystery/v3/egg-top.webp" alt="" />
 			</div>
 		</div>
 		{#each BITS as [a, r, s, spin]}
@@ -186,8 +270,207 @@
 	.veil {
 		position: absolute;
 		inset: 0;
-		background: radial-gradient(closest-side, #2a124fcc, #120a2ee6);
+		/* Opaque: nothing of the board behind shows through the reveal (user, 2026-10-27). */
+		background:
+			radial-gradient(60% 45% at 50% 46%, #4a1f86, #fff0),
+			radial-gradient(120% 40% at 50% 110%, #ff7ce533, #fff0 60%),
+			radial-gradient(closest-side, #2a124f, #120a2e);
+		overflow: hidden;
 		animation: m-fade calc(450ms * var(--p)) both;
+	}
+	/* Darkened edges over everything in the backdrop. */
+	.veil::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(75% 70% at 50% 48%, #0000 55%, #07031acc);
+	}
+	/* A spotlight from above onto the egg. A cone, not a cut-out: its apex sits off-screen
+	   above, its sides fall off softly (a conic gradient's feathered stops), the air in it fades
+	   with distance from the lamp and brightens again where it lands, a pool of light spills
+	   round the podium, and dust drifts slowly through the beam. It breathes, never swings. */
+	.spot {
+		position: absolute;
+		inset: 0;
+		/* Pointing straight down (180deg) from 15deg left of it; stops in 0-30deg (negative
+		   ones don't wrap: they cut the cone in half). */
+		background: conic-gradient(
+			from 165deg at 50% -38%,
+			#fff0 0deg,
+			#ffeefa0a 4deg,
+			#ffeefa26 9deg,
+			#fff3fb33 15deg,
+			#ffeefa26 21deg,
+			#ffeefa0a 26deg,
+			#fff0 30deg
+		);
+		-webkit-mask: linear-gradient(#000c, #0006 40%, #000d 66%, #0003 92%, #0000);
+		mask: linear-gradient(#000c, #0006 40%, #000d 66%, #0003 92%, #0000);
+		animation: m-breathe 5.5s ease-in-out infinite alternate;
+	}
+	/* Where it lands: an oval pool on the floor round the podium, and the lamp's glare above. */
+	.spot::before,
+	.spot::after {
+		content: '';
+		position: absolute;
+		left: 50%;
+		border-radius: 50%;
+	}
+	.spot::before {
+		top: calc(50% + 70px);
+		width: 620px;
+		height: 150px;
+		margin-left: -310px;
+		background: radial-gradient(closest-side, #ffd9f566, #ff9fe626 55%, #fff0);
+	}
+	.spot::after {
+		top: -90px;
+		width: 360px;
+		height: 160px;
+		margin-left: -180px;
+		background: radial-gradient(closest-side, #fff8, #ffe2f622 60%, #fff0);
+	}
+	@keyframes m-breathe {
+		from {
+			opacity: 0.85;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+	.mote {
+		position: absolute;
+		width: 3px;
+		height: 3px;
+		border-radius: 50%;
+		background: #fff;
+		box-shadow: 0 0 4px #fff;
+		opacity: 0;
+		animation: m-mote var(--dur) ease-in-out var(--delay) infinite;
+	}
+	@keyframes m-mote {
+		0% {
+			opacity: 0;
+			transform: translate(0, 0);
+		}
+		30%,
+		70% {
+			opacity: 0.5;
+		}
+		100% {
+			opacity: 0;
+			transform: translate(var(--dx), -60px);
+		}
+	}
+	/* Big faint question marks, bobbing. */
+	.mark {
+		position: absolute;
+		font-family: 'Coiny', sans-serif;
+		line-height: 1;
+		color: #ffffff12;
+		-webkit-text-stroke: 2px #ffffff1a;
+		rotate: var(--tilt);
+		animation: m-bob 4.6s ease-in-out calc(var(--i) * -0.8s) infinite alternate;
+	}
+	@keyframes m-bob {
+		to {
+			transform: translateY(-14px) rotate(6deg);
+		}
+	}
+	/* Jelly bubbles drifting up the screen. */
+	.bg-bubble {
+		position: absolute;
+		top: 100%;
+		border-radius: 50%;
+		background: radial-gradient(circle at 32% 30%, #fffc 0 10%, color-mix(in srgb, var(--c), transparent 45%) 30%, color-mix(in srgb, var(--c), transparent 80%));
+		box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--c), transparent 40%);
+		animation: m-rise var(--dur) linear var(--delay) infinite;
+	}
+	@keyframes m-rise {
+		from {
+			transform: translate(0, 0);
+		}
+		50% {
+			transform: translate(22px, -60vh);
+		}
+		to {
+			transform: translate(-10px, -125vh);
+		}
+	}
+	/* Four-point sparkles, twinkling. */
+	.spark {
+		position: absolute;
+		background: #fff;
+		clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+		animation: m-twinkle 2.4s ease-in-out var(--delay) infinite;
+	}
+	@keyframes m-twinkle {
+		0%,
+		100% {
+			opacity: 0.1;
+			transform: scale(0.5);
+		}
+		50% {
+			opacity: 0.9;
+			transform: scale(1) rotate(45deg);
+		}
+	}
+	/* The jelly podium the egg lands on: a glossy oval with a lit rim and a soft shadow. */
+	.podium {
+		position: absolute;
+		left: 50%;
+		top: 87%;
+		width: 330px;
+		height: 74px;
+		margin-left: -165px;
+		border-radius: 50%;
+		/* Its top, lit from straight above by the spotlight: brightest in the middle. */
+		background:
+			radial-gradient(48% 34% at 50% 40%, #ffe4f8b3, #fff0),
+			radial-gradient(closest-side, #ff9be9, #d24fe0 62%, #9a2bc4);
+		/* Then its side, the drum under the top in shade (offset copies of the oval: a
+		   pseudo-element at z -1 would paint over the top inside this stacking context), its
+		   shadow on the floor and a little glow. */
+		box-shadow:
+			inset 0 3px 0 #ffffff80,
+			inset 0 -6px 10px #6b168f,
+			0 9px 0 #a93ad2,
+			0 18px 0 #7a22a6,
+			0 22px 0 #4f1272,
+			0 34px 34px #000b,
+			0 0 50px #ff7ce540;
+		animation: m-fade calc(450ms * var(--p)) both;
+	}
+	/* Where the egg stands on it. */
+	.podium::after {
+		content: '';
+		position: absolute;
+		left: 26%;
+		right: 26%;
+		top: 10%;
+		height: 44%;
+		border-radius: 50%;
+		background: radial-gradient(closest-side, #3d0a5c99, #3d0a5c00);
+	}
+	/* Mama low to the egg's left (below it on a narrow screen), a little under her board size
+	   (182x200): user, 2026-10-27, "more to the left and bottom ... reduce her with 20%". */
+	.mama {
+		position: absolute;
+		left: calc(50% - 480px);
+		top: calc(50% - 30px);
+		width: 174px;
+		height: 192px;
+		animation: m-fade calc(450ms * var(--p)) both;
+	}
+	@media (max-width: 760px) {
+		/* Bottom left, clear of the podium (centred under it, its rim cut her head off: user
+		   2026-11-02), looking up at the egg. */
+		.mama {
+			left: calc(50% - 178px);
+			top: calc(50% + 172px);
+			width: 131px;
+			height: 144px;
+		}
 	}
 	@keyframes m-fade {
 		from {
@@ -344,26 +627,41 @@
 	}
 	/* The crack grows from the middle out, one width per knock: four copies of the art, each
 	   cut wider (static clip-paths) and switched on at its knock, so only opacity animates. */
+	/* Each knock's copy shows the crack out to --cut from each side, its ends feathered so the
+	   short early cracks taper off instead of stopping square. */
+	.crack,
+	.leak span {
+		--feather: linear-gradient(
+			90deg,
+			#0000 calc(var(--cut) - 2%),
+			#000 calc(var(--cut) + 5%),
+			#000 calc(100% - var(--cut) - 5%),
+			#0000 calc(100% - var(--cut) + 2%)
+		);
+	}
 	.crack {
 		opacity: 0;
+		-webkit-mask: var(--feather);
+		mask: var(--feather);
 		animation:
 			m-show 1ms calc(var(--at) * var(--p)) forwards,
 			m-hide 1ms calc(4300ms * var(--p)) forwards;
 	}
 	:is(.crack, .leak span).c0 {
 		--at: 1300ms;
-		clip-path: inset(0 41% 0 41%);
+		--cut: 40%;
 	}
 	:is(.crack, .leak span).c1 {
 		--at: 2100ms;
-		clip-path: inset(0 29% 0 29%);
+		--cut: 28%;
 	}
 	:is(.crack, .leak span).c2 {
 		--at: 2900ms;
-		clip-path: inset(0 15% 0 15%);
+		--cut: 14%;
 	}
 	:is(.crack, .leak span).c3 {
 		--at: 3700ms;
+		--cut: -8%;
 	}
 	@keyframes m-show {
 		to {
@@ -371,12 +669,13 @@
 		}
 	}
 	/* Light leaking out along the crack lines, white so it can't tell the tier: a fill masked by
-	   the crack's inner slit (egg-leak.webp, cut per knock like the crack), haloed by a static drop-shadow; it flares at
+	   the crack's inner slit (egg-leak.webp, feathered per knock like the crack), haloed by a
+	   static drop-shadow; it flares at
 	   each knock and settles a little brighter each time. */
 	.leak {
 		position: absolute;
 		inset: 0;
-		filter: drop-shadow(0 0 9px #fff6c880);
+		filter: drop-shadow(0 0 2px #fff6dc) drop-shadow(0 0 8px #fff3c880);
 		opacity: 0;
 		animation:
 			leak calc(3000ms * var(--p)) calc(1300ms * var(--p)) ease-out forwards,
@@ -387,9 +686,15 @@
 		inset: 0;
 		opacity: 0;
 		animation: m-show 1ms calc(var(--at) * var(--p)) forwards;
-		background: #fff3c4;
-		-webkit-mask: url('/mystery/hd/egg-leak.webp') 0 0 / 100% 100% no-repeat;
-		mask: url('/mystery/hd/egg-leak.webp') 0 0 / 100% 100% no-repeat;
+		background: #fff6dc;
+		-webkit-mask:
+			url('/mystery/v3/egg-leak.webp') 0 0 / 100% 100% no-repeat,
+			var(--feather);
+		-webkit-mask-composite: source-in;
+		mask:
+			url('/mystery/v3/egg-leak.webp') 0 0 / 100% 100% no-repeat,
+			var(--feather);
+		mask-composite: intersect;
 	}
 	/* 3000ms from 1300 (knocks at 0, 26.7, 53.3 and 80%). */
 	@keyframes leak {

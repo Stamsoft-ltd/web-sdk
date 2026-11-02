@@ -2,21 +2,20 @@
 
 art-src/mystery/egg.png  the Figma image fill, untouched (the splash's egg.webp is the same art
                          at 200px, too small for the centre-stage egg)
-  -> public/mystery/hd/egg.webp         the whole egg, trimmed
-  -> public/mystery/egg-top.webp     above the crack, with a cream shell rim on the cut
-  -> public/mystery/egg-bottom.webp  below it
-  -> public/mystery/egg-crack.webp   the crack itself, clipped to the egg, drawn over the whole
-                                     egg before it breaks: an irregular fracture from an impact
-                                     point in the middle (thick there, tapering to the sides),
-                                     a dark core over a lit lower lip and a soft shadow, and
-                                     hairline branches, densest round the impact. MysteryEgg
-                                     reveals it from the middle out, so what is drawn near the
-                                     centre is what the first knock shows.
-  -> public/mystery/egg-leak.webp    the crack's inner slit only (white, thinner than the core):
+  -> public/mystery/v3/egg.webp         the whole egg, trimmed
+  -> public/mystery/v3/egg-top.webp     above the crack, its cut edge the shell's thickness
+  -> public/mystery/v3/egg-bottom.webp  below it
+  -> public/mystery/v3/egg-crack.webp   the crack itself, clipped to the egg, drawn over the whole
+                                        egg before it breaks. Cartoon, like the scatter tile's
+                                        hatched egg (user, 2026-10-27): one bold zigzag of sharp
+                                        teeth right round the egg, widest at the knock, no
+                                        hairlines. MysteryEgg reveals it from the middle out,
+                                        knock by knock, light glowing in its slit.
+  -> public/mystery/v3/egg-leak.webp    the crack's inner slit only (white, thinner than the core):
                                      MysteryEgg's mask for the light seeping through, so the
                                      light sits inside the dark edges instead of washing them out
-All four share one canvas, so they stack exactly. (hd/: new folder rather than new contents,
-browsers keep the old art under the old names.)
+All share one canvas, so they stack exactly. (v3/: a new folder rather than new contents under
+hd/ or v2/, as browsers keep the old art under the old names.)
     python3 apps/split-party/scripts/build-mystery-egg.py
 """
 
@@ -26,13 +25,13 @@ import numpy as np
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / 'public' / 'mystery' / 'hd'
+OUT = ROOT / 'public' / 'mystery' / 'v3'
 W = 976  # px, the master's egg: drawn 270 stage px = 864 device px at 1920x1080 DPR 2
 K = W / 540  # the line widths below were tuned at 540
 CRACK_Y = 0.47  # of the egg's height
-RIM = '#fff4d6'
-CORE = (42, 14, 62)  # the crack's dark core
-LIP = (255, 246, 220)  # the broken shell's lit lower edge
+CORE = (46, 14, 72)  # the crack's dark gap and outline
+CREAM = (255, 242, 196)  # the shell's broken edge, lit
+AMBER = (240, 168, 64)  # the same edge in shade, towards the egg's paint
 import os
 SEED = int(os.environ.get('CRACK_SEED', 101))  # the fracture is random but fixed: change it for another crack
 
@@ -42,24 +41,22 @@ egg = egg.crop(egg.getchannel('A').point(lambda a: 255 if a > 8 else 0).getbbox(
 egg = egg.resize((W, round(W * egg.height / egg.width)), Image.LANCZOS)
 w, h = egg.size
 rng = np.random.default_rng(SEED)
-# The fracture: from the impact point (the middle) out to each side in uneven jagged steps,
-# a little past both edges so the halves close. Each step turns against the last (a shell
-# breaks in short facets) and the line drifts no more than ±6% of the height off CRACK_Y.
+# The break: sharp teeth alternating up and down from the middle out to each side, a little past
+# both edges so the halves close. Uneven on purpose (a regular zigzag read as sewn-on trim):
+# each tooth 4-11% of the width wide and 2.5-8% of the height tall.
 CX, CY = w * 0.5, h * CRACK_Y
 
 
 def run(direction):
-    pts, x, y, up = [], CX, CY, rng.random() < 0.5
+    pts, x, up = [], CX, rng.random() < 0.5
     while -12 * K < x < w + 12 * K:
-        x += direction * w * rng.uniform(0.025, 0.09)
-        y += h * rng.uniform(0.004, 0.05) * (-1 if up else 1)
-        y = min(max(y, CY - h * 0.06), CY + h * 0.06)
-        up = not up if rng.random() < 0.58 else up
-        pts.append((x, y))
+        x += direction * w * rng.uniform(0.04, 0.11)
+        pts.append((x, CY + h * rng.uniform(0.025, 0.08) * (-1 if up else 1) * 0.5))
+        up = not up
     return pts
 
 
-zig = run(-1)[::-1] + [(CX, CY)] + run(1)
+zig = run(-1)[::-1] + [(CX, CY + h * 0.025)] + run(1)
 
 
 def half(top):
@@ -69,11 +66,13 @@ def half(top):
     ImageDraw.Draw(mask).polygon(zig + edge[::-1] if top else zig + edge[::-1], fill=255)
     part = egg.copy()
     part.putalpha(ImageChops.multiply(egg.getchannel('A'), mask))
-    # Cream shell rim along the cut, kept inside the part.
-    rim = Image.new('L', (w, h), 0)
-    ImageDraw.Draw(rim).line(zig, fill=255, width=round(14 * K), joint='curve')
-    rim = ImageChops.multiply(rim, part.getchannel('A'))
-    part.paste(Image.new('RGBA', (w, h), RIM), (0, 0), rim)
+    # The cut edge is the shell's thickness: amber, cream over it, a dark outline on the break
+    # itself (each a line along the cut, kept inside the part, so half its width shows).
+    for colour, width in ((AMBER, 30), (CREAM, 22), (CORE, 7)):
+        band = Image.new('L', (w, h), 0)
+        ImageDraw.Draw(band).line(zig, fill=255, width=round(width * K), joint='curve')
+        band = ImageChops.multiply(band, part.getchannel('A'))
+        part.paste(Image.new('RGBA', (w, h), colour + (255,)), (0, 0), band)
     return part
 
 
@@ -83,8 +82,9 @@ half(False).save(OUT / 'egg-bottom.webp', quality=90, method=6)
 
 
 def taper(x):
-    # Line width factor: 1 at the impact, 0.6 at the egg's sides.
-    return 0.6 + 0.4 * max(0.0, 1 - abs(x - CX) / (w * 0.5)) ** 1.4
+    # Line width factor: 1 at the impact, 0.45 at the egg's sides (a break opens widest where
+    # it was knocked).
+    return 0.45 + 0.55 * max(0.0, 1 - abs(x - CX) / (w * 0.5)) ** 1.2
 
 
 def stroke(d, pts, width, fill, dy=0.0, end=0.35):
@@ -98,62 +98,20 @@ def stroke(d, pts, width, fill, dy=0.0, end=0.35):
         d.ellipse([x1 - r, y1 + dy - r, x1 + r, y1 + dy + r], fill=fill)
 
 
-def branch(x, y, angle, length, forks):
-    # A hairline: 2-4 jagged steps along `angle`, sometimes forking once.
-    pts, out = [(x, y)], []
-    steps = rng.integers(2, 5)
-    for _ in range(steps):
-        angle += rng.uniform(-0.6, 0.6)
-        x += np.cos(angle) * length / steps
-        y += np.sin(angle) * length / steps
-        pts.append((x, y))
-    out.append(pts)
-    if forks and rng.random() < 0.6:
-        k = rng.integers(1, len(pts) - 1) if len(pts) > 2 else 1
-        out += branch(*pts[k], angle + rng.choice([-1, 1]) * rng.uniform(0.5, 0.9), length * 0.5, False)
-    return out
-
-
-# Hairlines: four off the impact (two up, two down, as a knock from inside stars a shell),
-# then a few forks along the line, likelier and longer near the middle.
-hairs = []
-for a in (-np.pi / 2 + rng.uniform(-0.8, -0.25), -np.pi / 2 + rng.uniform(0.25, 0.8), np.pi / 2 + rng.uniform(-0.8, -0.25), np.pi / 2 + rng.uniform(0.25, 0.8)):
-    hairs += branch(CX, CY, a, w * rng.uniform(0.06, 0.095), True)
-for x, y in zig[1:-1]:
-    near = 1 - abs(x - CX) / (w * 0.5)
-    if 0 < x < w and abs(x - CX) > w * 0.04 and rng.random() < 0.1 + 0.3 * near:
-        a = rng.choice([-1, 1]) * rng.uniform(0.9, 2.2)
-        hairs += branch(x, y, a, w * rng.uniform(0.03, 0.045 + 0.03 * near), True)
-
-shade = Image.new('L', (w, h), 0)  # soft dent shadow round the fracture
-slit = Image.new('L', (w, h), 0)
-lip = Image.new('L', (w, h), 0)
+# Over the whole egg: a soft shadow round the break and the dark gap itself. No shell edge here:
+# a cream lip under the gap, with the light in it, read as striped tape; the edge shows on the
+# broken halves instead.
+shade = Image.new('L', (w, h), 0)
 core = Image.new('L', (w, h), 0)
-ds, dl, dc, dt = ImageDraw.Draw(shade), ImageDraw.Draw(lip), ImageDraw.Draw(core), ImageDraw.Draw(slit)
-stroke(ds, zig, 26 * K, 255)
-stroke(dl, zig, 13 * K, 255, dy=3 * K)
-stroke(dc, zig, 11 * K, 255)
-stroke(dt, zig, 3.6 * K, 255)
-# The impact chip: an irregular bit of shell knocked in, filled with the core colour.
-chip = [
-    (CX + np.cos(t) * r * w, CY + np.sin(t) * r * w * 0.8)
-    for t, r in zip(np.linspace(0, 2 * np.pi, 9)[:-1] + rng.uniform(-0.2, 0.2, 8), rng.uniform(0.016, 0.03, 8))
-]
-dl.polygon([(x, y + 2.5 * K) for x, y in chip], fill=255)
-dc.polygon(chip, fill=255)
-dt.polygon([(CX + (x - CX) * 0.5, CY + (y - CY) * 0.5) for x, y in chip], fill=255)
-ds.ellipse([CX - w * 0.06, CY - w * 0.05, CX + w * 0.06, CY + w * 0.05], fill=255)
-for pts in hairs:
-    stroke(ds, pts, 14 * K, 255, end=0.3)
-    stroke(dl, pts, 7 * K, 255, dy=2 * K, end=0.3)
-    stroke(dc, pts, 6 * K, 255, end=0.3)
-    stroke(dt, pts, 1.8 * K, 255, end=0.3)
+slit = Image.new('L', (w, h), 0)
+stroke(ImageDraw.Draw(shade), zig, 34 * K, 255, end=1)
+stroke(ImageDraw.Draw(core), zig, 16 * K, 255, end=1)
+stroke(ImageDraw.Draw(slit), zig, 2.6 * K, 255, end=1)
 alpha = egg.getchannel('A')
-shade = ImageChops.multiply(shade.filter(ImageFilter.GaussianBlur(5 * K)).point(lambda v: v * 0.32), alpha)
-lip = ImageChops.multiply(lip.filter(ImageFilter.GaussianBlur(0.6 * K)).point(lambda v: v * 0.85), alpha)
-core = ImageChops.multiply(core.filter(ImageFilter.GaussianBlur(0.5 * K)).point(lambda v: v * 0.94), alpha)
+shade = ImageChops.multiply(shade.filter(ImageFilter.GaussianBlur(6 * K)).point(lambda v: v * 0.3), alpha)
+core = ImageChops.multiply(core.filter(ImageFilter.GaussianBlur(0.5 * K)), alpha)
 crack = Image.new('RGBA', (w, h), (0, 0, 0, 0))
-for colour, a in ((CORE, shade), (LIP, lip), (CORE, core)):
+for colour, a in ((CORE, shade), (CORE, core)):
     layer = Image.new('RGBA', (w, h), colour)
     layer.putalpha(a)
     crack.alpha_composite(layer)

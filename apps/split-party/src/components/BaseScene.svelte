@@ -2,10 +2,12 @@
 	import { onMount } from 'svelte';
 	import Blob from './Blob.svelte';
 	import JellyDome from './JellyDome.svelte';
+	import LiveSea from './LiveSea.svelte';
 	import SkyClouds from './SkyClouds.svelte';
 
 	// Base-game backdrop, Figma 11195:8973 (1200×670), cover-scaled behind the stage like the
-	// splash sky: the hills, the island seascape twice (11195:9215, and 11195:9216 mirrored),
+	// splash sky: the hills, the split seascape of 11362:70545 (water, far hills, the smoking
+	// volcano and its dome hill, the right island) with its sailboat,
 	// the splash's drifting clouds in place of the frame's static ones, and the jelly domes
 	// along the bottom: hidden most of the time, each now and then blows up, sits a few
 	// seconds and bursts, like the splash's but rarer.
@@ -57,18 +59,15 @@
 		] as const
 	).map(dome);
 	// Portrait sees none of those: its own domes, placed as [colour, x, foot y] fractions of the
-	// visible slice and a size in scene px, sit on the grass between the HUD bar and the
-	// balance row and along the bottom edge, and pop more often so a phone player sees them.
+	// visible slice and a size in scene px, sit on the grass between the board and the HUD
+	// strip (as SceneView's PHONE_DOMES), and pop more often so a phone player sees them.
 	// Feet never go above GRASS_Y (the seascape's water ends just above it).
 	const GRASS_Y = 505;
 	const PHONE_DOMES = [
-		['purple', 0.13, 0.868, 62],
-		['magenta', 0.36, 0.865, 50],
-		['green', 0.66, 0.868, 58],
-		['magenta', 0.89, 0.865, 52],
-		['green', 0.08, 0.995, 64],
-		['purple', 0.5, 1.0, 72],
-		['magenta', 0.88, 0.995, 58],
+		['purple', 0.12, 0.78, 62],
+		['magenta', 0.3, 0.775, 46],
+		['green', 0.7, 0.78, 52],
+		['magenta', 0.89, 0.775, 54],
 	] as const;
 	let phoneDomes = $derived(
 		PHONE_DOMES.map(([c, fx, fy, s]) =>
@@ -92,37 +91,60 @@
 		};
 	}
 
-	// Light on the seascape's water (its band is y 76–94% of the image): glints that swell and
-	// drift, kept inside the band and off the island on the right (no mask: placed instead).
-	const GLINTS = Array.from({ length: 16 }, (_, i) => {
+	// Light on the water band (11358:69611's open water, y ~380–480 in the frame): glints that
+	// swell and drift. Same placements as SceneView's.
+	const GLINTS = Array.from({ length: 22 }, (_, i) => {
 		const h = Math.imul(i + 1, 2654435761) >>> 0;
-		const x = 8 + ((h % 1000) / 1000) * 80;
-		const y = (x > 56 ? 85 : 80) + (((h >>> 10) % 100) / 100) * (x > 56 ? 6 : 11);
+		const x = 2 + ((h % 1000) / 1000) * 92;
+		const y = 384 + (((h >>> 10) % 100) / 100) * 88;
+		const near = (y - 384) / 88;
 		return {
 			x,
 			y,
-			w: 3 + ((h >>> 17) % 5),
+			w: (3 + ((h >>> 17) % 5)) * (0.7 + 0.6 * near),
 			dur: 3.2 + ((h >>> 5) % 9) * 0.25,
 			delay: -(((h >>> 13) % 40) / 10),
 		};
 	});
 
-	// Now and then a blob peeks out of an island: on the right island one or two step out
-	// sideways from behind the bush cluster (never over its top), on the left one slides in
-	// from the screen's left edge behind the slope. They sit in the seascape's own % space, between seascape.webp and its island
-	// cut-out (seascape-front.webp), so the island hides their lower half. The left island is
-	// the mirrored seascape (its outer half is off-screen), so its spot is on the right of the
-	// art and +dx slides toward the screen's left.
-	// x/top place the hidden blob (% of the seascape); dx is where it starts and px/py where it
-	// peeks to, both % of its own box.
-	type Spot = { x: number; top: number; dx: number; px: number; py: number; lean: number };
-	type Peek = Spot & { id: number; island: 'left' | 'right'; symbol: string; delay: number };
+	// 11362:70732, the island on the right. Now and then a blob peeks up over its ridge, between
+	// the water and the island, so the island hides its lower half. x is the blob's centre and
+	// top its hidden box's top, % of the island; px/py the peek's offset, % of the blob. The
+	// second sneaks out diagonally from behind the left bush (SceneView's ISLAND_SPOTS).
+	const ISLAND = { x: 900, y: 268, w: 362, h: 181 };
+	const SPOTS = [
+		{ x: 47, top: 36, px: 0, py: -61, lean: -6 },
+		{ x: 30, top: 44, px: 85, py: -95, lean: 16 },
+	];
+	const PEEK_SIZE = 26;
+	type Peek = (typeof SPOTS)[number] & { id: number; symbol: string; delay: number };
 	const PEEK_MS = 4200;
 	const PEEKERS = ['WATERMELON', 'CHERRIES', 'GRAPES', 'STRAWBERRY', 'BLUEBERRY', 'KIWI', 'LEMON'];
 	const rand = (a: number, b: number) => a + Math.random() * (b - a);
 	const pick = <T,>(xs: T[]) => xs[Math.floor(Math.random() * xs.length)];
 	let peeks = $state<Peek[]>([]);
 	let peekId = 0;
+	// 11358:69762, the sailboat: crosses the water from a random side, bow first, behind the
+	// island, mama and the board; rests off-screen between trips.
+	// Smoke from the volcano's crater (~(1086, 179)): SceneView's Smoke, as evenly staggered
+	// CSS puffs on one 10s cycle.
+	const SMOKE_MS = 10000;
+	const SMOKE_N = 10;
+	// The live sea (SceneView's, without the reflection): LiveSea's water in the cleared water's
+	// colours (water-clear.webp, sampled at x 1000) and its swells, from the horizon (374) to the
+	// grass (484).
+	const SEA_STOPS: [number, string][] = [
+		[374, '#0a8fc4'],
+		[380, '#009bcf'],
+		[388, '#01ccff'],
+		[398, '#00beff'],
+		[438, '#00c6fe'],
+		[458, '#00d6ff'],
+		[468, '#05e4fd'],
+		[480, '#19f3ff'],
+	];
+	let boat = $state<{ id: number; right: boolean; ms: number } | null>(null);
+	let boatId = 0;
 	onMount(() => {
 		if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 		const timers = new Set<ReturnType<typeof setTimeout>>();
@@ -131,25 +153,8 @@
 			timers.add(t);
 		};
 		const peek = () => {
-			const island = Math.random() < 0.5 ? 'left' : 'right';
-			// Bushes span x 76–86% with their top at y 46.5%; the grass beside them is at y ~50%
-			// on the left and drops to ~55% on the right, so the right-hand spot sits lower.
-			const bushLeft: Spot = { x: 78.4, top: 46, dx: 0, px: -125, py: 0, lean: -9 };
-			const bushRight: Spot = { x: 82.2, top: 49.5, dx: 0, px: 120, py: 0, lean: 9 };
-			const spots: Spot[] =
-				island === 'right'
-					? Math.random() < 0.35
-						? [bushLeft, bushRight]
-						: [Math.random() < 0.5 ? bushLeft : bushRight]
-					: // Behind the slope where it meets the screen edge (top y 56–60%), leaning in.
-						[{ x: 67, top: 58.8, dx: 100, px: 0, py: -84, lean: -12 }];
-			const fresh = spots.map((s, i) => ({
-				id: peekId++,
-				island,
-				symbol: pick(PEEKERS),
-				...s,
-				delay: i * rand(250, 700),
-			})) as Peek[];
+			const spots = Math.random() < 0.35 ? SPOTS : [pick(SPOTS)];
+			const fresh = spots.map((s, i) => ({ id: peekId++, symbol: pick(PEEKERS), ...s, delay: i * rand(250, 700) }));
 			peeks = [...peeks, ...fresh];
 			// By id: the items in `peeks` are $state proxies, not the objects pushed.
 			const ids = fresh.map((p) => p.id);
@@ -157,6 +162,12 @@
 			later(rand(10000, 28000), peek);
 		};
 		later(rand(4000, 12000), peek);
+		const sail = () => {
+			const ms = rand(55000, 70000);
+			boat = { id: boatId++, right: Math.random() < 0.5, ms };
+			later(ms, () => ((boat = null), later(rand(4000, 10000), sail)));
+		};
+		later(rand(600, 2000), sail);
 		return () => timers.forEach(clearTimeout);
 	});
 </script>
@@ -184,6 +195,7 @@
 			first={[4000, 25000]}
 			rest={[2500, 6000]}
 			wait={[20000, 50000]}
+			avoid=".base-mama"
 		/>
 	{/each}
 	{#if portrait}
@@ -211,25 +223,43 @@
 	{:else}
 		<SkyClouds lanes={CLOUD_LANES} width={SKY.w} />
 	{/if}
-	{#each [{ x: 496, y: 183, w: 772, h: 309, flip: false }, { x: -187, y: 178, w: 795.2, h: 318, flip: true }] as s}
-		<div class="seascape" class:flip={s.flip} style={`left:${s.x}px;top:${s.y}px;width:${s.w}px;height:${s.h}px`}>
-			<img src="./base/hd/seascape.webp" alt="" />
-			{#each peeks.filter((p) => (p.island === 'left') === s.flip) as p (p.id)}
-				<span
-					class="peek"
-					style={`left:${p.x}%;top:${p.top}%;--dx:${p.dx}%;--px:${p.px}%;--py:${p.py}%;--lean:${p.lean}deg;animation-duration:${PEEK_MS}ms;animation-delay:${p.delay.toFixed(0)}ms`}
-					><Blob symbol={p.symbol} uid={`peek-${p.id}`} /></span
-				>
-			{/each}
-			<img class="front" src="./base/hd/seascape-front.webp" alt="" />
-			{#each GLINTS as g}
-				<span
-					class="glint"
-					style={`left:${g.x.toFixed(1)}%;top:${g.y.toFixed(1)}%;width:${g.w}%;animation-duration:${g.dur.toFixed(2)}s;animation-delay:${g.delay.toFixed(2)}s`}
-				></span>
-			{/each}
-		</div>
+	<LiveSea w={SKY.w} y0={370} y1={486} horizon={374} top={[374, 374]} shore={[484, 484]} stops={SEA_STOPS} scale={scale} />
+	<img class="layer" src="./base/hd/far-hills.webp" alt="" style="left:0;top:68px;width:1011px;height:400px" />
+	<img class="layer" src="./base/hd/volcano.webp" alt="" style="left:912px;top:92px;width:329px;height:329px" />
+	<!-- The lava (gloss baked on) over the bare rock, only ever running downhill: the crater and
+	     upper streams stay, and a copy oozes down over them to the tips, then cools and fades
+	     into the rock (SceneView's Lava does it per drip; here one mask slides down the layer). -->
+	<img class="layer lava" src="./base/hd/volcano-lava.webp" alt="" style="left:912px;top:92px;width:329px;height:329px" />
+	<img class="layer lava flow" src="./base/hd/volcano-lava.webp" alt="" style="left:912px;top:92px;width:329px;height:329px" />
+	<span class="crater-glow"></span>
+	{#each Array.from({ length: SMOKE_N }, (_, i) => i) as i}
+		<span
+			class="smoke"
+			style={`animation-duration:${SMOKE_MS}ms;animation-delay:${((-i / SMOKE_N) * SMOKE_MS).toFixed(0)}ms`}
+		></span>
 	{/each}
+	<img class="layer" src="./base/hd/dome-hill.webp" alt="" style="left:814px;top:268px;width:267px;height:117px" />
+	{#each GLINTS as g}
+		<span
+			class="glint"
+			style={`left:${(g.x * 12).toFixed(1)}px;top:${g.y.toFixed(1)}px;width:${(g.w * 12).toFixed(1)}px;animation-duration:${g.dur.toFixed(2)}s;animation-delay:${g.delay.toFixed(2)}s`}
+		></span>
+	{/each}
+	{#if boat}
+		{#key boat.id}
+			<span class="boat" class:left={!boat.right} style={`animation-duration:${boat.ms.toFixed(0)}ms`}
+				><img src="./base/hd/boat.webp" alt="" /></span
+			>
+		{/key}
+	{/if}
+	{#each peeks as p (p.id)}
+		<span
+			class="peek"
+			style={`left:${(ISLAND.x + (p.x / 100) * ISLAND.w - PEEK_SIZE / 2).toFixed(1)}px;top:${(ISLAND.y + (p.top / 100) * ISLAND.h).toFixed(1)}px;width:${PEEK_SIZE}px;--dx:0%;--px:${p.px}%;--py:${p.py}%;--lean:${p.lean}deg;animation-duration:${PEEK_MS}ms;animation-delay:${p.delay.toFixed(0)}ms`}
+			><Blob symbol={p.symbol} uid={`peek-${p.id}`} /></span
+		>
+	{/each}
+	<img class="layer" src="./base/hd/island.webp" alt="" style={`left:${ISLAND.x}px;top:${ISLAND.y}px;width:${ISLAND.w}px;height:${ISLAND.h}px`} />
 </div>
 </div>
 
@@ -269,30 +299,153 @@
 		position: absolute;
 		height: 0;
 	}
-	.seascape {
+	.layer {
 		position: absolute;
 	}
-	.seascape.flip {
-		transform: scaleX(-1);
+	/* The mask is twice the layer's height, opaque over its top half: slid up by p of the
+	   layer's height, it shows the top 1 - p. The crater sits in the top 20%, the longest tip
+	   at ~66%. */
+	.lava {
+		mask-image: linear-gradient(#000 0 47%, #0000 50%);
+		mask-size: 100% 200%;
+		mask-repeat: no-repeat;
+		mask-position: 0 42%;
 	}
-	.seascape img {
+	.lava.flow {
+		animation: lava-ooze 11s infinite;
+	}
+	@keyframes lava-ooze {
+		0% {
+			mask-position: 0 42%;
+			opacity: 1;
+			animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1);
+		}
+		62% {
+			mask-position: 0 0%;
+			opacity: 1;
+		}
+		80% {
+			mask-position: 0 0%;
+			opacity: 1;
+			filter: none;
+		}
+		100% {
+			mask-position: 0 0%;
+			opacity: 0;
+			filter: brightness(0.65);
+		}
+	}
+	@keyframes lava-glow {
+		0%,
+		100% {
+			opacity: 0.1;
+		}
+		35% {
+			opacity: 0.32;
+		}
+		55% {
+			opacity: 0.2;
+		}
+		75% {
+			opacity: 0.36;
+		}
+	}
+	.crater-glow {
+		position: absolute;
+		left: 1050px;
+		top: 170px;
+		width: 72px;
+		height: 24px;
+		background: radial-gradient(closest-side, #ff8a3d, #ff8a3d88 55%, #ff8a3d00);
+		animation: lava-glow 4s ease-in-out infinite;
+	}
+	/* A soft round puff, 58×49 at full size, centred on the crater; drawn at full size and
+	   scaled so the transform stays on the compositor. SceneView's Smoke curve, sampled. */
+	.smoke {
+		position: absolute;
+		left: 1057px;
+		top: 153.5px;
+		width: 58px;
+		height: 49px;
+		background: radial-gradient(closest-side, #fbf7ff, #fbf7ff88 55%, #fbf7ff00);
+		opacity: 0;
+		animation: smoke linear infinite;
+	}
+	@keyframes smoke {
+		0% {
+			opacity: 0;
+			transform: translate(0, 0) scale(0.31);
+		}
+		10% {
+			opacity: 0.45;
+			transform: translate(0.4px, -16px) scale(0.38);
+		}
+		35% {
+			opacity: 0.3;
+			transform: translate(5px, -50px) scale(0.55);
+		}
+		65% {
+			opacity: 0.14;
+			transform: translate(15px, -81px) scale(0.76);
+		}
+		100% {
+			opacity: 0;
+			transform: translate(26px, -100px) scale(1);
+		}
+	}
+	/* Origin on the keel's waterline (86% down the 77×67 box), so the rock pivots in the water. */
+	.boat {
+		position: absolute;
+		left: 0;
+		top: 341px;
+		width: 77px;
+		height: 67px;
+		animation: sail linear both;
+	}
+	.boat.left {
+		animation-name: sail-left;
+	}
+	.boat img {
 		display: block;
 		width: 100%;
 		height: 100%;
+		transform-origin: 50% 86%;
+		animation: bob 3s ease-in-out infinite;
 	}
-	.seascape img.front {
-		position: absolute;
-		left: 50%;
-		top: 0;
-		width: 50%;
+	.boat.left img {
+		scale: -1 1;
 	}
-	/* Far away, so about one bush bump wide (3.2% of the seascape, 8% of its height), and as
-	   soft as the painting around it. */
+	@keyframes sail {
+		from {
+			transform: translateX(-98px);
+		}
+		to {
+			transform: translateX(1222px);
+		}
+	}
+	@keyframes sail-left {
+		from {
+			transform: translateX(1222px);
+		}
+		to {
+			transform: translateX(-98px);
+		}
+	}
+	@keyframes bob {
+		0%,
+		100% {
+			transform: translateY(-1.1px) rotate(-1.5deg);
+		}
+		50% {
+			transform: translateY(1.1px) rotate(1.5deg);
+		}
+	}
+	/* Far away, so about one bush wide, and as soft and hazy as the painting around it
+	   (SceneView's peek filters). */
 	.peek {
 		position: absolute;
-		width: 3.2%;
 		aspect-ratio: 1;
-		filter: blur(0.6px);
+		filter: blur(0.5px) contrast(0.92) brightness(1.06);
 		transform-origin: 50% 90%;
 		animation: peek ease-in-out both;
 	}
@@ -348,6 +501,16 @@
 		.glint {
 			animation: none;
 			opacity: 0.4;
+		}
+		.smoke {
+			animation-play-state: paused;
+		}
+		.lava,
+		.crater-glow {
+			animation: none;
+		}
+		.lava.flow {
+			mask-position: 0 0%;
 		}
 	}
 </style>

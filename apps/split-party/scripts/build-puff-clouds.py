@@ -10,7 +10,6 @@ Each keeps its predecessor's aspect and body placement (base at ~86% of the heig
 lanes and sizes in SkyClouds / SceneView / the bonus scenes still hold. New file names, since
 browsers kept the old art under the old ones.
   -> public/splash/cloud-puff.webp, cloud-puff-far.webp     (sky palette)
-  -> public/bonus/normal/crisp/cloud-puff.webp                   (sunset palette)
     python3 apps/split-party/scripts/build-puff-clouds.py
 """
 
@@ -100,4 +99,5 @@ def cloud(size, lobes, palette, blur, name):
 # up to 300 frame px, so 2x here).
 cloud((1640, 624), NEAR, 'sky', 1.6, 'splash/cloud-puff.webp')
 cloud((760, 328), FAR, 'sky', 3.2, 'splash/cloud-puff-far.webp')
-cloud((1188, 396), SUNSET, 'sunset', 3.0, 'bonus/normal/crisp/cloud-puff.webp')
+# The sunset puff (bonus/normal/crisp/cloud-puff.webp) went with the old normal/super bonus
+# worlds (2026-10-29): both now draw the design's own pink cloud.

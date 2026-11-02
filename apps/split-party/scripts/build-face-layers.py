@@ -1,9 +1,9 @@
 """Cut each symbol's painted brows and mouth into their own layers so Blob.svelte can move them.
 
-public/symbols/hd/<S>.webp (untouched; build-symbols.py)
-  -> public/symbols/hd/face/<S>-base.webp    the art with brows + mouth painted over in body colour
-  -> public/symbols/hd/face/<S>-brow-N.webp  each brow, cropped
-  -> public/symbols/hd/face/<S>-mouth.webp   the mouth (with tongue), cropped
+public/symbols/v3/<S>.webp (untouched; build-symbols.py)
+  -> public/symbols/v3/face/<S>-base.webp    the art with brows + mouth painted over in body colour
+  -> public/symbols/v3/face/<S>-brow-N.webp  each brow, cropped
+  -> public/symbols/v3/face/<S>-mouth.webp   the mouth (with tongue), cropped
   -> src/lib/face-layers.json             crops in the symbol's 100x100 unit box
 
 Features are the dark strokes on the face outside the eyes (eyes.json from build-eyes.py):
@@ -26,7 +26,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-SYMBOLS = ROOT / 'public' / 'symbols' / 'hd'
+SYMBOLS = ROOT / 'public' / 'symbols' / 'v3'
 OUT_DIR = SYMBOLS / 'face'
 EYES = json.loads((ROOT / 'src' / 'lib' / 'eyes.json').read_text())
 OUT_JSON = ROOT / 'src' / 'lib' / 'face-layers.json'
@@ -106,7 +106,7 @@ def layer(a, mask, k, name):
     crop[region] = a[y0:y1, x0:x1][region]
     Image.fromarray(crop).save(OUT_DIR / name, 'WEBP', quality=92, method=6)
     return {
-        'src': f'./symbols/hd/face/{name}',
+        'src': f'./symbols/v3/face/{name}',
         'x': round(x0 * k, 2),
         'y': round(y0 * k, 2),
         'w': round((x1 - x0) * k, 2),
@@ -188,7 +188,7 @@ def build(path):
             brows.append(m)
         elif cy > eye_bot - 2 and (mouth is None or m.sum() > mouth.sum()):
             mouth = m
-    out = {'base': f'./symbols/hd/face/{s}-base.webp', 'brows': [], 'mouth': None, 'cheeks': cheeks(a, lum, body_lum, eye_bot, k)}
+    out = {'base': f'./symbols/v3/face/{s}-base.webp', 'brows': [], 'mouth': None, 'cheeks': cheeks(a, lum, body_lum, eye_bot, k)}
     hole = np.zeros(full.shape[:2], bool)
     brows.sort(key=lambda m: np.nonzero(m)[1].mean())
     for j, m in enumerate(brows):

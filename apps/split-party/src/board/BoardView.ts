@@ -2,15 +2,18 @@
 // live faces, plus every board motion (falls, trap-door exit, pops, cell division, fright,
 // relief, win bounce). It reproduces Blob.svelte, Crack.svelte, LiveEyes.svelte and the board
 // rules in style.css frame for frame; App drives it with a snapshot of its board state and
-// keeps cluster pops and sweat drops in the DOM over it.
-import { Assets, Container, Graphics, GraphicsContext, Matrix, Sprite, Texture } from 'pixi.js';
+// keeps cluster pops in the DOM over it.
+import { Assets, Container, Graphics, GraphicsContext, Matrix, Mesh, MeshGeometry, Sprite, Texture } from 'pixi.js';
 import EYES from '../lib/eyes.json';
 import FACES from '../lib/face-layers.json';
 import GEAR from '../lib/gear.json';
-import { PREMIUM_RIM } from '../lib/premium';
+import MINI_EYES from '../lib/mini-eyes.json';
+import MINI_FACES from '../lib/mini-face.json';
+import { BLOB_TINT, PREMIUM_RIM } from '../lib/premium';
 import { bezier, keyframes, progress, EASE, EASE_IN_OUT, EASE_OUT, LINEAR, GRAVITY, SURPRISE_MS, type Frame } from './anim';
 import { crackPlan, prefix, sliver, type Pt } from './crackGeom';
 import { Overlays, type ClusterPop, type Tease } from './overlays';
+import { Splats } from './splats';
 
 import { CELL_W, CELL_H, MARGIN, VIEW_W, VIEW_H, cellX, cellY } from './geometry';
 import { DISPOSE, PixiApp, SharedGraphics, textureLookup, watchReducedMotion } from './pixiApp';
@@ -40,7 +43,6 @@ export type BoardSnap = {
 	/** tease: columns held back while the eggs could still add up (the scatter tease). */
 	wave: { id: number; drops: Drop[][]; impact: number; tease?: Tease[] };
 	ghost: { id: number; cells: GhostCell[] } | null;
-	awaiting: boolean;
 	scared: boolean;
 	/** Nervous while tiles split: the fright face and a small tremble, winners excepted. */
 	nervous: boolean;
@@ -52,8 +54,6 @@ export type BoardSnap = {
 	reliefMs: number;
 	removeMs: number;
 	pops: ClusterPop[];
-	/** Cells whose blob breaks a sweat during the relief sigh. */
-	sweat: string[];
 	/** Trigger eggs hatching (components/EggHatch.svelte draws them): the board's own egg hides. */
 	hatched: string[];
 	/** The scatter tease's moods (App's `mood`): the column being wondered about, and the
@@ -66,25 +66,17 @@ export type BoardSnap = {
 const ART: Record<string, [number, number, number, number]> = {
 	WATERMELON: [0, 0, 100, 100],
 	CHERRIES: [0, 0, 100, 100],
-	GRAPES: [0, -0.7, 100, 101.4],
+	GRAPES: [0, 0, 100, 100],
 	STRAWBERRY: [0, 0, 100, 100],
-	BLUEBERRY: [0, -0.7, 100, 101.4],
+	BLUEBERRY: [0, 0, 100, 100],
 	ORANGE: [0, 0, 100, 100],
-	LEMON: [0, -0.7, 100, 101.4],
-	KIWI: [0, -0.7, 100, 101.4],
-	PLUM: [0.7, -6.5, 98.6, 113],
+	LEMON: [0, 0, 100, 100],
+	KIWI: [0, 0, 100, 100],
+	PLUM: [0, 0, 100, 100],
 	APPLE: [0, 0, 100, 100],
 	BASKET: [0, 0, 100, 100],
 };
-const MOOD: Record<string, [boolean, number, number]> = {
-	WATERMELON: [true, 16, -1.5],
-	CHERRIES: [true, 40, -3],
-	BLUEBERRY: [true, -14, 0],
-	ORANGE: [false, 18, 0],
-	LEMON: [true, 16, 0],
-	KIWI: [true, 16, 0],
-	PLUM: [true, 16, 0],
-};
+const MOOD: Record<string, [boolean, number, number]> = {};
 type Eye = {
 	hull: string;
 	top: number;
@@ -103,6 +95,10 @@ type Cheek = { cx: number; cy: number; rx: number; ry: number };
 type Face = { base: string; brows: Part[]; mouth: Part | null; cheeks: Cheek[]; closed?: Part[] };
 const EYE_DATA = EYES as unknown as Record<string, Eye[]>;
 const FACE_DATA = FACES as unknown as Record<string, Face>;
+// Split tiles' small blobs (scripts/build-mini-blobs.py): bigger eyes, bolder brows and mouth,
+// an outline and a contact shadow, cut at their own size rather than the symbol shrunk.
+const MINI_EYE_DATA = MINI_EYES as unknown as Record<string, Eye[]>;
+const MINI_FACE_DATA = MINI_FACES as unknown as Record<string, Face>;
 // The premium blobs' gear (scripts/build-premium-gear.py, Figma 11300:28009): crest, horns,
 // antennae, flower. A part's rect sits round (cx, cy), mirrored by `flip` then turned by `rot`
 // degrees; (px, py) is where it meets the body, which its motion pivots on.
@@ -180,7 +176,8 @@ function pairing(old: number[][], next: number[][]) {
 	walk(0, [], 0);
 	return best;
 }
-type Daughter = { dx: number; dy: number; s: number; axis: number; split: boolean };
+/** src: the old layout's blob it came from (the parent for a newborn). */
+type Daughter = { dx: number; dy: number; s: number; axis: number; split: boolean; src: number; born: boolean };
 type Divide = { start: number; ms: number; big: number; from: Daughter[]; pop: { x: number; y: number; r: number } };
 // Blob.svelte's division plan for a units increase.
 function planDivide(prev: number, next: number, start: number, ms: number): Divide {
@@ -207,6 +204,7 @@ function planDivide(prev: number, next: number, start: number, ms: number): Divi
 			const i = pair.indexOf(j);
 			const from = i >= 0 ? old[i] : parent;
 			const split = from === parent;
+			const src = old.indexOf(from);
 			const [cx, cy] = centre(p);
 			const [px, py] = centre(from);
 			const still = Math.hypot(cx - px, cy - py) < 1;
@@ -216,6 +214,8 @@ function planDivide(prev: number, next: number, start: number, ms: number): Divi
 				s: from[2] / p[2],
 				axis: Math.atan2(still ? py - by : cy - py, still ? px - bx : cx - px),
 				split,
+				src,
+				born: i < 0,
 			};
 		}),
 	};
@@ -227,6 +227,59 @@ function seedOf(uid: string) {
 	h = Math.imul(h ^ (h >>> 16), 0x85ebca6b);
 	h = Math.imul(h ^ (h >>> 13), 0xc2b2ae35);
 	return (h ^ (h >>> 16)) >>> 0;
+}
+
+// ---- Shape genes ----------------------------------------------------------------------------
+// A split tile's blobs are siblings, not copies: each small blob's body is warped by its own
+// genes (lean, height, width, a lumpy top). A blob keeps its genes through later splits and a
+// newborn takes its parent's with a mutation, so a family drifts apart a little each split.
+// A whole (1-unit) blob is always the symbol's own shape. The face rides the warp rigidly.
+type Gene = { lean: number; tall: number; wide: number; lump: number; phase: number };
+const PLAIN: Gene = { lean: 0, tall: 0, wide: 0, lump: 0, phase: 0 };
+const clamp1 = (v: number) => Math.max(-1, Math.min(1, v));
+const jitter = () => (Math.random() + Math.random() - 1) * 0.75;
+function mutate(g: Gene): Gene {
+	return {
+		lean: clamp1(g.lean + jitter()),
+		tall: clamp1(g.tall + jitter()),
+		wide: clamp1(g.wide + jitter()),
+		lump: Math.max(0, Math.min(1, g.lump + jitter() * 0.8)),
+		phase: Math.random() * Math.PI * 2,
+	};
+}
+/** Genes for a tile that arrives already split: the first blob plain, the rest its offspring. */
+const family = (n: number): Gene[] => Array.from({ length: n }, (_, j) => (j ? mutate(PLAIN) : PLAIN));
+const FEET = 92;
+/** Where an art-space point moves under the genes (art units, 0–100, feet at y 92). */
+function warp(g: Gene, x: number, y: number): [number, number] {
+	const h = Math.max(0, Math.min(1, (FEET - y) / FEET));
+	const dx = g.lean * 9 * h ** 1.6 + g.wide * 0.13 * (x - 50) * (1 - 0.6 * h);
+	const dy = -g.tall * 0.15 * (FEET - y) + g.lump * 4.5 * Math.sin((x / 100) * Math.PI * 3 + g.phase) * h ** 4;
+	return [x + dx, y + dy];
+}
+const GRID = 9;
+function warpedBody(tex: Texture, g: Gene) {
+	const n = GRID + 1;
+	const positions = new Float32Array(n * n * 2);
+	const uvs = new Float32Array(n * n * 2);
+	const indices = new Uint32Array(GRID * GRID * 6);
+	for (let j = 0; j < n; j++)
+		for (let i = 0; i < n; i++) {
+			const k = (j * n + i) * 2;
+			const [x, y] = warp(g, (i / GRID) * 100, (j / GRID) * 100);
+			positions[k] = x;
+			positions[k + 1] = y;
+			uvs[k] = i / GRID;
+			uvs[k + 1] = j / GRID;
+		}
+	let q = 0;
+	for (let j = 0; j < GRID; j++)
+		for (let i = 0; i < GRID; i++) {
+			const a = j * n + i;
+			indices.set([a, a + 1, a + n, a + 1, a + n + 1, a + n], q);
+			q += 6;
+		}
+	return new Mesh({ geometry: new MeshGeometry({ positions, uvs, indices }), texture: tex });
 }
 
 // ---- Motion tables (style.css / Blob.svelte keyframes) --------------------------------------
@@ -252,9 +305,13 @@ const IMPACT: Frame<TS>[] = [
 	[0.76, { ...ID, ty: -0.015 * CELL_H, sx: 0.98, sy: 1.03 }],
 	[1, ID],
 ];
+// Swells, then bursts at the peak (the jelly splash, splats.ts, takes over from there).
+const POP_BURST = 0.32;
 const POP: Frame<{ s: number; r: number; a: number }>[] = [
 	[0, { s: 1, r: 0, a: 1 }],
-	[0.32, { s: 1.24, r: 0, a: 1 }],
+	[0.26, { s: 1.24, r: -4 * DEG, a: 1 }],
+	[POP_BURST, { s: 1.32, r: 0, a: 1 }],
+	[0.5, { s: 0.35, r: 12 * DEG, a: 0 }],
 	[1, { s: 0, r: 12 * DEG, a: 0 }],
 ];
 const SHIVER: Frame<TS>[] = [
@@ -296,6 +353,31 @@ const SURPRISE_HOP: Frame<TS>[] = [
 	[0.6, { ...ID, sx: 1.04, sy: 0.97 }],
 	[1, ID],
 ];
+// After a division the newborns hop out of the parent's shadow and land: stretch on take-off,
+// squash on the landing, a wobble to rest. The parent answers with a smaller bob. Pivoted on
+// each blob's feet, staggered by NEWBORN_STAGGER per sibling.
+const NEWBORN_MS = 620;
+const NEWBORN_STAGGER = 70;
+const NEWBORN: Frame<TS>[] = [
+	[0, ID],
+	[0.12, { ...ID, sx: 1.12, sy: 0.86 }],
+	[0.34, { ...ID, ty: -16, sx: 0.88, sy: 1.15 }],
+	[0.52, { ...ID, ty: 0, sx: 0.96, sy: 1.06 }],
+	[0.62, { ...ID, sx: 1.2, sy: 0.8 }],
+	[0.76, { ...ID, ty: -3, sx: 0.95, sy: 1.06 }],
+	[0.88, { ...ID, sx: 1.03, sy: 0.97 }],
+	[1, ID],
+];
+const PARENT_BOB: Frame<TS>[] = [
+	[0, ID],
+	[0.3, { ...ID, ty: -5, sx: 0.95, sy: 1.06 }],
+	[0.55, { ...ID, sx: 1.07, sy: 0.93 }],
+	[0.8, { ...ID, sx: 0.99, sy: 1.01 }],
+	[1, ID],
+];
+// Siblings breathe on their own: a small out-of-phase sway over the tile's breath.
+const SIB_MS = 2300;
+const SIB_M = new Matrix();
 // Surprise (wide eyes, brows up, mouth open) peaks fast; the grin takes over from 45%.
 const SURPRISE_FACE: Frame<{ wide: number; grin: number }>[] = [
 	[0, { wide: 0, grin: 0 }],
@@ -355,13 +437,16 @@ const RELIEF_MOUTH: Frame<{ sx: number; sy: number }>[] = [
 	[0.72, { sx: 1.18, sy: 0.78 }],
 	[1, { sx: 1, sy: 1 }],
 ];
+// The swell is an anticipation inside the tile, not a zoom: at 1.2x+ (with the stacked halves'
+// stretch on top) the blob burst its tile, the tile clip cut it flat and its art was blown up
+// past its texture (user, 2026-10-30: "the zoom before split ... break quality a lot").
 const swellFrames = (B: number): Frame<{ sx: number; sy: number }>[] => [
 	[0, { sx: 1, sy: 1 }, C_SWELL0],
-	[0.3, { sx: 1.24 - 0.04 * B, sy: 1.18 + 0.02 * B }],
-	[0.45, { sx: 1.2, sy: 1.22 - 0.02 * B }],
-	[0.7, { sx: 1.18 + 0.02 * B, sy: 1.18 + 0.02 * B }, C_SWELL70],
-	[0.84, { sx: 0.93 + 0.04 * B, sy: 1.05 - 0.08 * B }],
-	[0.93, { sx: 1.03 - 0.02 * B, sy: 0.98 + 0.03 * B }],
+	[0.3, { sx: 1.08 - 0.02 * B, sy: 1.04 + 0.01 * B }],
+	[0.45, { sx: 1.06, sy: 1.06 - 0.01 * B }],
+	[0.7, { sx: 1.05 + 0.01 * B, sy: 1.05 + 0.01 * B }, C_SWELL70],
+	[0.84, { sx: 0.95 + 0.03 * B, sy: 1.03 - 0.05 * B }],
+	[0.93, { sx: 1.02 - 0.01 * B, sy: 0.99 + 0.02 * B }],
 	[1, { sx: 1, sy: 1 }],
 ];
 // Daughter keyframes: t = share of (dx, dy), s = uniform scale, k = how much of the split
@@ -369,8 +454,8 @@ const swellFrames = (B: number): Frame<{ sx: number; sy: number }>[] => [
 type DK = { t: number; s: number; k: number; a: number; b: number };
 const apartFrames = (B: number, ds: number): Frame<DK>[] => [
 	[0, { t: 1, s: ds, k: 0, a: 1, b: 1 }, C_APART0],
-	[0.26, { t: 1, s: ds, k: 1, a: 1.22 - 0.16 * B, b: 0.84 + 0.13 * B }, C_APART26],
-	[0.46, { t: 0.62 - 0.07 * B, s: ds * (0.92 - 0.12 * B), k: 1, a: 1.5 - 0.5 * B, b: 0.7 + 0.3 * B }, C_APART46],
+	[0.26, { t: 1, s: ds, k: 1, a: 1.12 - 0.08 * B, b: 0.9 + 0.08 * B }, C_APART26],
+	[0.46, { t: 0.62 - 0.07 * B, s: ds * (0.92 - 0.12 * B), k: 1, a: 1.32 - 0.32 * B, b: 0.8 + 0.2 * B }, C_APART46],
 	[0.62, { t: -0.14 + 0.08 * B, s: 1 + 0.04 * B, k: 1, a: 0.78 + 0.22 * B, b: 1.2 - 0.2 * B }],
 	[0.76, { t: 0.05, s: 1 - 0.02 * B, k: 1, a: 1.08 - 0.08 * B, b: 0.94 + 0.06 * B }],
 	[0.88, { t: 0, s: 1, k: 1, a: 0.97 + 0.03 * B, b: 1.03 - 0.03 * B }],
@@ -557,14 +642,7 @@ function padTexture(kind: PadKind) {
 		rrect(ctx, 0, 0, CELL_W, CELL_H, R);
 		ctx.fillStyle = lit ? '#6a4cc0' : kind.startsWith('split') ? '#5a4596' : '#4b3981';
 		ctx.fill();
-		if (!lit) {
-			const g = ctx.createLinearGradient(0, 0, 0, CELL_H);
-			g.addColorStop(0, '#ffffff1f');
-			g.addColorStop(0.4, '#ffffff00');
-			g.addColorStop(1, '#00000033');
-			ctx.fillStyle = g;
-			ctx.fill();
-		}
+		if (!lit) padMaterial(ctx, R);
 		// Border.
 		rrect(ctx, B / 2, B / 2, CELL_W - B, CELL_H - B, R - B / 2);
 		ctx.lineWidth = B;
@@ -598,21 +676,61 @@ function padTexture(kind: PadKind) {
 		ctx.restore();
 	});
 }
+// The pad's material (all but the lit pad), over its base colour: a soft jelly socket. Light
+// from above: the body deepens to the foot, the rim casts a shadow in at the top and the floor
+// bounces a little light back up at the foot, a broad dull gloss sits top-left, and a fine
+// fixed speckle keeps the surface from reading as a flat fill. Calm on purpose: nothing moves
+// and nothing sparkles (board shine was rejected as noisy).
+function padMaterial(ctx: CanvasRenderingContext2D, R: number) {
+	const W = CELL_W;
+	const H = CELL_H;
+	ctx.save();
+	ctx.clip();
+	const g = ctx.createLinearGradient(0, 0, 0, H);
+	g.addColorStop(0, '#ffffff24');
+	g.addColorStop(0.42, '#ffffff00');
+	g.addColorStop(1, '#0a002e47');
+	ctx.fillStyle = g;
+	ctx.fillRect(0, 0, W, H);
+	// Gloss: a wide, faint oval high on the left.
+	const gl = ctx.createRadialGradient(W * 0.3, H * 0.1, 0, W * 0.3, H * 0.1, W * 0.5);
+	gl.addColorStop(0, '#ffffff1c');
+	gl.addColorStop(1, '#ffffff00');
+	ctx.save();
+	ctx.scale(1, 0.55);
+	ctx.fillStyle = gl;
+	ctx.fillRect(0, 0, W, H / 0.55);
+	ctx.restore();
+	// Bounce light along the foot.
+	const bl = ctx.createLinearGradient(0, H * 0.82, 0, H);
+	bl.addColorStop(0, '#b9a2ff00');
+	bl.addColorStop(1, '#b9a2ff1a');
+	ctx.fillStyle = bl;
+	ctx.fillRect(0, H * 0.82, W, H * 0.18);
+	// Speckle: the same seeded grain on every pad.
+	let seed = 7;
+	const rnd = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+	for (let i = 0; i < 70; i++) {
+		ctx.fillStyle = rnd() < 0.5 ? '#ffffff0d' : '#0000000f';
+		ctx.beginPath();
+		ctx.arc(rnd() * W, rnd() * H, 0.5 + rnd() * 1.1, 0, Math.PI * 2);
+		ctx.fill();
+	}
+	// The rim's shadow falling in from the top edge (a frame round the pad, its shadow only).
+	ctx.shadowColor = '#0b032ab3';
+	ctx.shadowBlur = 5 * TEX_RES;
+	ctx.shadowOffsetY = 2 * TEX_RES;
+	ctx.beginPath();
+	ctx.rect(-40, -40, W + 80, H + 80);
+	ctx.roundRect(0, 0, W, H, R);
+	ctx.fillStyle = '#000';
+	ctx.fill('evenodd');
+	ctx.restore();
+}
 // A split tile wears its fruit's colour over the pad, deeper the more it has split, so a
 // late-bonus board reads as patches of colour rather than 49 crowds of small blobs. Sampled
 // from the symbol art (mean of its saturated pixels; APPLE and PLUM by eye, being pale).
-const TINT: Record<string, string> = {
-	WATERMELON: '#5ee357',
-	CHERRIES: '#f62d30',
-	GRAPES: '#c457f5',
-	STRAWBERRY: '#f96db2',
-	BLUEBERRY: '#2ca6f8',
-	ORANGE: '#fb9e24',
-	LEMON: '#faca36',
-	KIWI: '#24d8cc',
-	PLUM: '#a9a6e6',
-	APPLE: '#f2d58c',
-};
+const TINT = BLOB_TINT;
 const tintAlpha = (units: number) => 0.14 + 0.035 * (units - 2);
 // The premium cells' rim and inset glow (inset 0 0 20.55px, 70%) over the plain pad.
 function premiumTexture(color: string) {
@@ -682,9 +800,10 @@ function radialTexture(stops: [number, string][]) {
  *  the board and the scene's peeking blobs (Assets caches them, so a second call is free). */
 export async function loadBlobTextures() {
 	const srcs = new Set<string>();
-	for (const s of Object.keys(ART)) srcs.add(`./symbols/hd/${s}.webp`);
+	// Faced symbols draw their face base; the painted art is only BASKET's.
+	for (const s of Object.keys(ART)) if (!FACE_DATA[s]) srcs.add(`./symbols/hd/${s}.webp`);
 	for (const g of Object.values(GEAR_DATA).flat()) srcs.add(g.src);
-	for (const f of Object.values(FACE_DATA)) {
+	for (const f of [...Object.values(FACE_DATA), ...Object.values(MINI_FACE_DATA)]) {
 		srcs.add(f.base);
 		for (const p of [...f.brows, ...(f.closed ?? []), ...(f.mouth ? [f.mouth] : [])]) srcs.add(p.src);
 	}
@@ -749,7 +868,7 @@ function drawPupil(g: GraphicsContext, e: Eye, clip: Pt[], cx: number, cy: numbe
 	if (hi.length > 2) g.poly(flat(hi), true).fill('#fff');
 }
 type FacePart = { outer: Container; tilt: number; part: Part };
-type DaughterView = { anim: Container; parts: DaughterParts };
+type DaughterView = { anim: Container; parts: DaughterParts; gene: Gene; born: boolean };
 type GearView = { anim: Container; g: Gear; seed: number };
 type DaughterParts = {
 	gear: GearView[];
@@ -902,6 +1021,8 @@ export class BlobView {
 	private ring: Graphics | null = null;
 	private drops: Graphics[] = [];
 	private divide: Divide | null = null;
+	/** When the last division landed: the newborn hop runs from here. */
+	private hatched = -Infinity;
 	get dividing() {
 		return this.divide != null;
 	}
@@ -922,6 +1043,8 @@ export class BlobView {
 		readonly units: number,
 		uid: string,
 		divide: Divide | null = null,
+		/** Genes to keep: the replaced blob's in a division (newborns mutate them), or a copy's. */
+		parent: Gene[] | null = null,
 	) {
 		const seed = seedOf(uid);
 		this.lookDelay = -((seed % 97) / 97) * 5600;
@@ -937,17 +1060,34 @@ export class BlobView {
 		this.divBody.position.set(50, 60);
 		this.root.addChild(this.body);
 		this.body.addChild(this.divBody);
-		this.build(divide);
+		this.build(divide, parent);
 	}
 
-	private build(divide: Divide | null) {
+	get genes() {
+		return this.daughters.map((d) => d.gene);
+	}
+
+	private build(divide: Divide | null, parent: Gene[] | null) {
 		const { symbol, units } = this;
 		const art = ART[symbol] ?? ART.ORANGE;
-		const face = units <= 2 ? FACE_DATA[symbol] : undefined;
-		const eyes = units <= 2 ? (EYE_DATA[symbol] ?? []) : [];
+		const face = (units > 1 ? MINI_FACE_DATA : FACE_DATA)[symbol];
+		const eyes = (units > 1 ? MINI_EYE_DATA : EYE_DATA)[symbol] ?? [];
 		const mood = MOOD[symbol];
 		this.divide = divide;
-		for (const [x, y, s] of layout(units)) {
+		const lay = layout(units);
+		const genes =
+			units === 1
+				? [PLAIN]
+				: divide && parent
+					? divide.from.map((f) => (f.born ? mutate(parent[f.src] ?? PLAIN) : (parent[f.src] ?? PLAIN)))
+					: parent?.length === units
+						? parent
+						: family(units);
+		for (const [di, [x, y, s]] of lay.entries()) {
+			const gene = genes[di] ?? PLAIN;
+			const shift = warp(gene, 50, 55);
+			const fx = shift[0] - 50;
+			const fy = shift[1] - 55;
 			const anim = new Container();
 			const place = new Container();
 			place.position.set(x, y);
@@ -964,7 +1104,7 @@ export class BlobView {
 				gear.forEach((g, j) => {
 					if (g.front !== front) return;
 					const outer = new Container();
-					outer.position.set(g.cx, g.cy);
+					outer.position.set(...warp(gene, g.cx, g.cy));
 					outer.scale.x = g.flip ? -1 : 1;
 					outer.rotation = g.rot * DEG;
 					const anim = new Container();
@@ -980,17 +1120,24 @@ export class BlobView {
 					parts.gear.push({ anim, g, seed: this.lookDelay * 0.37 + j * 211 });
 				});
 			addGear(false);
-			const base = new Sprite(this.tex(face?.base ?? `./symbols/hd/${symbol}.webp`));
-			base.width = 100;
-			base.height = 100;
-			a.addChild(base);
+			const baseTex = this.tex(face?.base ?? `./symbols/hd/${symbol}.webp`);
+			if (gene === PLAIN) {
+				const base = new Sprite(baseTex);
+				base.width = 100;
+				base.height = 100;
+				a.addChild(base);
+			} else a.addChild(warpedBody(baseTex, gene));
+			// The face sits rigid on the warped body, moved with the point under its middle.
+			const faceC = new Container();
+			faceC.position.set(fx, fy);
+			a.addChild(faceC);
 			for (const c of face?.cheeks ?? []) {
 				const b = new Sprite(this.blushTex);
 				b.anchor.set(0.5);
 				b.position.set(c.cx, c.cy);
 				b.width = c.rx * 3;
 				b.height = c.ry * 2.5;
-				a.addChild(b);
+				faceC.addChild(b);
 				parts.blush.push(b);
 			}
 			for (const e of eyes) {
@@ -1026,7 +1173,7 @@ export class BlobView {
 						.quadraticCurveTo(hx, e.top - 1.8 * unit, e.right - 0.8 * unit, my + 1.4 * unit)
 						.stroke({ width: 1.6 * unit, color: e.pupil, cap: 'round' }),
 				);
-				a.addChild(white, pupil, lid, joy);
+				faceC.addChild(white, pupil, lid, joy);
 				parts.eyes.push({
 					e,
 					clip: convex(hull),
@@ -1045,7 +1192,7 @@ export class BlobView {
 					sp.position.set(c.x, c.y);
 					sp.width = c.w;
 					sp.height = c.h;
-					a.addChild(sp);
+					faceC.addChild(sp);
 					parts.closed.push(sp);
 					const o = new Container();
 					const ox = c.x + c.w / 2;
@@ -1071,7 +1218,7 @@ export class BlobView {
 							.fill('#fff'),
 					);
 					o.addChild(pu);
-					a.addChild(o);
+					faceC.addChild(o);
 					parts.open.push({ c: o, pupil: pu, part: c });
 				}
 				face.brows.forEach((b, j) => {
@@ -1090,7 +1237,7 @@ export class BlobView {
 					sp.height = b.h;
 					m.addChild(sp);
 					outer.addChild(m);
-					a.addChild(outer);
+					faceC.addChild(outer);
 					parts.brows.push({ outer, tilt: j ? 1 : -1, part: b });
 				});
 				if (face.mouth) {
@@ -1109,15 +1256,15 @@ export class BlobView {
 					sp.height = mo.h;
 					m.addChild(sp);
 					outer.addChild(m);
-					a.addChild(outer);
+					faceC.addChild(outer);
 					parts.mouth = { outer, tilt: 0, part: mo };
 				}
 				// GRAPES' drawn-open eyes go over the mouth: its sprite's top corner reaches under
 				// the right eye's white (the painted ^^ it was cut for sat clear of it).
-				for (const o of parts.open) a.addChild(o.c);
+				for (const o of parts.open) faceC.addChild(o.c);
 			}
 			addGear(true);
-			this.daughters.push({ anim, parts });
+			this.daughters.push({ anim, parts, gene, born: !!divide?.from[di]?.born });
 		}
 		if (divide) {
 			const q = divide.pop;
@@ -1159,6 +1306,7 @@ export class BlobView {
 		this.body.rotation = t.r;
 
 		this.tickDivide(now, m.reduced);
+		this.tickSiblings(now, m);
 		const relief = m.relief && m.lit == null && !surprised ? m.relief : null;
 		const rp = relief ? progress(now, relief.start, this.reliefDelay, relief.ms) : -1;
 		const scaredMs = m.scared != null ? now - m.scared : 0;
@@ -1185,6 +1333,10 @@ export class BlobView {
 				.scale(v.s, v.s)
 				.translate(cx + f.dx * v.t, cy + f.dy * v.t);
 			d.anim.setFromMatrix(mx);
+			// A newborn stacked exactly on its parent drew every outline and eye twice (a blurred
+			// double): it appears as the two start to pull apart, in a quick cut (a slow fade over
+			// its parent is the double again), under the charge glow.
+			d.anim.alpha = f.born && f.split ? smooth((p - 0.29) / 0.05) : 1;
 		});
 		if (this.ring) {
 			this.ring.alpha = keyframes(RING_OP, p).v;
@@ -1199,13 +1351,48 @@ export class BlobView {
 		}
 		if (p >= 1) {
 			this.divide = null;
+			this.hatched = now;
 			this.divBody.scale.set(1);
-			for (const d of this.daughters) d.anim.setFromMatrix(new Matrix());
+			for (const d of this.daughters) {
+				d.anim.setFromMatrix(new Matrix());
+				d.anim.alpha = 1;
+			}
 			this.ring?.destroy();
 			this.ring = null;
 			for (const g of this.drops) g.destroy();
 			this.drops = [];
 		}
+	}
+
+	/** Newborn hops after a division, then each sibling's own small sway. Feet stay planted. */
+	private tickSiblings(now: number, m: BlobMode) {
+		if (this.divide || this.units < 2 || m.reduced) return;
+		const lay = layout(this.units);
+		const quiet = m.lit == null && m.scared == null;
+		this.daughters.forEach((d, j) => {
+			const [x, y, s] = lay[j];
+			const fx = x + 50 * s;
+			const fy = y + FEET * s;
+			let t: TS = ID;
+			const since = now - this.hatched - j * NEWBORN_STAGGER;
+			const ms = d.born ? NEWBORN_MS : NEWBORN_MS * 0.8;
+			if (since >= 0 && since < ms) t = keyframes(d.born ? NEWBORN : PARENT_BOB, since / ms, EASE_IN_OUT);
+			else if (quiet) {
+				const w = Math.sin(((now + j * 731 + this.breatheDelay) / SIB_MS) * Math.PI * 2);
+				t = { tx: 0, ty: 0, sx: 1 - 0.025 * w, sy: 1 + 0.03 * w, r: 0.02 * w * (j % 2 ? 1 : -1) };
+			}
+			if (t === ID) {
+				if (!d.anim.localTransform.isIdentity()) d.anim.setFromMatrix(SIB_M.identity());
+				return;
+			}
+			d.anim.setFromMatrix(
+				SIB_M.identity()
+					.translate(-fx, -fy)
+					.scale(t.sx, t.sy)
+					.rotate(t.r)
+					.translate(fx + t.tx, fy + t.ty * s * 2),
+			);
+		});
 	}
 
 	private tickFace(f: DaughterParts, now: number, m: BlobMode, rp: number, scaredMs: number) {
@@ -1489,8 +1676,11 @@ class CrackView {
 		// Halo: .3, pulsing to .55 twice after the beat.
 		const hp = (el - D) / 2600;
 		this.halo.alpha = hp > 0 && hp < 2 ? 0.3 + 0.25 * EASE_IN_OUT(1 - Math.abs(1 - 2 * (hp - Math.floor(hp)))) : 0.3;
-		// Settle to a faint scar after two beats; fade with the blobs when the tile is harvested.
-		const settle = 1 - 0.65 * EASE_OUT(Math.min(1, Math.max(0, (el - 2 * D) / 900)));
+		// Settle to a faint scar after two beats (its pink glow gone, so a split board doesn't
+		// read as tiles ruled into boxes); fade with the blobs when the tile is harvested.
+		const sk = EASE_OUT(Math.min(1, Math.max(0, (el - 2 * D) / 900)));
+		const settle = 1 - 0.75 * sk;
+		this.halo.alpha *= 1 - sk;
 		const target = popped ? 0 : 1;
 		if (target !== this.fade.to) {
 			const cur = this.popAlpha(now);
@@ -1578,7 +1768,7 @@ type CellView = {
 	crack: CrackView | null;
 	key: number;
 	fall: { start: number; drop: Drop; impact: number } | null;
-	pop: { start: number; delay: number; ms: number } | null;
+	pop: { start: number; delay: number; ms: number; burst?: boolean } | null;
 	lit: number | null;
 };
 
@@ -1605,6 +1795,7 @@ export class BoardView {
 		ghost: new Container(),
 	};
 	private overlays = new Overlays();
+	private splats = new Splats();
 	/** Falling blobs near the top rim, and the old board's copy near the bottom one, are moved in
 	 *  here while there: a mask over just that strip, not a filter pass over the whole board. */
 	private rim = { top: new Container(), bottom: new Container() };
@@ -1670,14 +1861,13 @@ export class BoardView {
 			box.mask = m;
 			box.visible = false;
 		}
-		// Over the pads, like the DOM cell's sweat bead (z 2); pops above all.
-		stage.addChildAt(this.overlays.sweat, stage.getChildIndex(this.layers.lit));
 		// The teased column glows over its empty pads, under the blobs dropping into it.
 		stage.addChildAt(this.overlays.tease, stage.getChildIndex(this.layers.syms));
+		stage.addChild(this.splats.root);
 		stage.addChild(this.overlays.pops);
 		this.tintTex = tintTexture();
 		for (const [sym, color] of Object.entries(PREMIUM_RIM)) this.gemTex[sym] = premiumTexture(color);
-		for (const t of [this.tintTex, ...Object.values(this.gemTex), ...this.rimTex]) gl.initSource?.(t.source);
+		for (const t of [this.tintTex, ...Object.values(this.gemTex), ...this.rimTex, ...this.splats.textures]) gl.initSource?.(t.source);
 		this.layers.syms.sortableChildren = true;
 		this.layers.lit.sortableChildren = true;
 		for (let col = 0; col < N; col++)
@@ -1825,7 +2015,8 @@ export class BoardView {
 				c.pop = null;
 				fresh = true;
 			} else if (units !== c.blob.units) {
-				this.setBlob(c, symbol, units, units > c.blob.units ? planDivide(c.blob.units, units, now, s.divideMs) : null);
+				const divide = units > c.blob.units ? planDivide(c.blob.units, units, now, s.divideMs) : null;
+				this.setBlob(c, symbol, units, divide, divide ? c.blob.genes : null);
 			}
 			c.key = key;
 			// Crack: torn open anew whenever the tile's count changes. A blob arriving already split
@@ -1884,16 +2075,18 @@ export class BoardView {
 				this.layers.syms.addChild(c.sym);
 				c.litBox.removeFromParent();
 			}
-			c.sym.visible = !s.awaiting;
 		}
-		this.overlays.update(now, s.pops, s.sweat, s.reliefMs);
+		this.overlays.update(now, s.pops);
 		// Ghost board: the trap-door copy falling out.
 		if (s.ghost?.id !== this.ghosts?.id) {
 			for (const g of this.ghosts?.items ?? []) g.blob.destroy();
 			this.ghosts = null;
 			if (s.ghost) {
 				const items = s.ghost.cells.map((g) => {
-					const blob = new BlobView(this.tex, this.blushTex, g.symbol, g.units, `g-${s.ghost!.id}-${g.col}-${g.row}`);
+					// The leaving board keeps its shapes: copy the genes off the cell if it still holds it.
+					const was = this.cells.find((c) => c.col === g.col && c.row === g.row)?.blob;
+					const genes = was?.symbol === g.symbol && was.units === g.units ? was.genes : null;
+					const blob = new BlobView(this.tex, this.blushTex, g.symbol, g.units, `g-${s.ghost!.id}-${g.col}-${g.row}`, null, genes);
 					blob.root.position.set(cellX(g.col) + CELL_W / 2, cellY(g.row) + CELL_H);
 					this.layers.ghost.addChild(blob.root);
 					return { blob, g };
@@ -1914,9 +2107,9 @@ export class BoardView {
 		c.padFade = now;
 	}
 
-	private setBlob(c: CellView, symbol: string, units: number, divide: Divide | null) {
+	private setBlob(c: CellView, symbol: string, units: number, divide: Divide | null, parent: Gene[] | null = null) {
 		c.blob?.destroy();
-		c.blob = new BlobView(this.tex, this.blushTex, symbol, units, `b-${c.col}-${c.row}`, divide);
+		c.blob = new BlobView(this.tex, this.blushTex, symbol, units, `b-${c.col}-${c.row}`, divide, parent);
 		c.sym.addChild(c.blob.root);
 	}
 
@@ -1977,6 +2170,10 @@ export class BoardView {
 			if (c.pop && !reduced) {
 				const p = progress(now, c.pop.start, c.pop.delay, c.pop.ms);
 				const v = p < 0 ? POP[0][1] : keyframes(POP, p, C_POP);
+			if (p >= POP_BURST && !c.pop.burst) {
+				c.pop.burst = true;
+				if (c.blob) this.splats.burst(cellX(c.col) + CELL_W / 2, cellY(c.row) + CELL_H * 0.55, c.blob.symbol, now);
+			}
 				t = { tx: 0, ty: 0, sx: v.s, sy: v.s, r: v.r };
 				alpha = v.a;
 			} else if (c.pop) alpha = 0;
@@ -2049,6 +2246,7 @@ export class BoardView {
 		}
 		this.rim.top.visible = this.rim.top.children.length > 1;
 		this.overlays.tick(now, reduced);
+		this.splats.tick(now);
 		const gh = this.ghosts;
 		if (gh) {
 			this.layers.ghost.visible = !reduced;
@@ -2075,6 +2273,7 @@ export class BoardView {
 		this.unwatchMotion?.();
 		removeEventListener('resize', this.onResize);
 		this.overlays.destroy();
+		this.splats.destroy();
 		// A lit cell's pad, crack and blob sit in its litBox, off the stage the app destroys.
 		for (const c of this.cells) c.litBox.destroy(DISPOSE);
 		this.pixi.destroy();

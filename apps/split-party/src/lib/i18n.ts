@@ -90,6 +90,12 @@ const en: Record<string, string> = {
 	EXTRA_CHANCE: 'Extra Feature',
 	DEACTIVATE: 'Deactivate',
 	'EXTRA DESC': 'Double your bet for twice the chance of triggering a Bonus Feature.',
+	// The buy menu's cards (Figma 11402:9764): two lines each; the full rules stay in the *_DESC copy.
+	'EXTRA CARD': 'Twice the chance to trigger a bonus, on every spin.',
+	'FEATURE CARD': 'One spin with random Split levels, up to 6 Blobs per tile.',
+	'NORMAL CARD': 'Tiles start with 1 Blob and split up to 6. Upgrades last the whole bonus.',
+	'SUPER CARD': 'Tiles start with 2 Blobs and split up to 6. Upgrades last the whole bonus.',
+	'MYSTERY CARD': 'One of three bonuses at random, each with 10 Free Spins.',
 	ACTIVATE: 'Activate',
 	'COMING SOON': 'Coming soon',
 	'TURBO SPIN': 'Turbo spin',

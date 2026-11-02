@@ -131,7 +131,12 @@
 		"NET POSITION": "الصافي",
 		"SPIN WINS": "أرباح الدورات",
 		"SPIN WIN": "ربح الدورة",
-		"INFO UI INFO": "في الإعدادات: يفتح معلومات اللعبة."
+		"INFO UI INFO": "في الإعدادات: يفتح معلومات اللعبة.",
+		"EXTRA CARD": "ضعف فرصة تفعيل المكافأة في كل دورة.",
+		"FEATURE CARD": "دورة واحدة بمستويات انقسام عشوائية، حتى 6 Blob لكل خانة.",
+		"NORMAL CARD": "تبدأ الخانات بـ 1 Blob وتنقسم حتى 6. تبقى الترقيات طوال المكافأة.",
+		"SUPER CARD": "تبدأ الخانات بـ 2 Blob وتنقسم حتى 6. تبقى الترقيات طوال المكافأة.",
+		"MYSTERY CARD": "واحدة من ثلاث مكافآت عشوائيًا، لكل منها 10 دورات مجانية."
 	},
 	"da": {
 		"BONUS": "Bonus",
@@ -265,7 +270,12 @@
 		"NET POSITION": "Netto",
 		"SPIN WINS": "Spingevinster",
 		"SPIN WIN": "Spingevinst",
-		"INFO UI INFO": "I indstillinger: åbner spilinfo."
+		"INFO UI INFO": "I indstillinger: åbner spilinfo.",
+		"EXTRA CARD": "Dobbelt chance for at udløse en bonus på hvert spin.",
+		"FEATURE CARD": "Ét spin med tilfældige Split-niveauer, op til 6 Blobs pr. felt.",
+		"NORMAL CARD": "Felter starter med 1 Blob og deler sig op til 6. Opgraderinger varer hele bonussen.",
+		"SUPER CARD": "Felter starter med 2 Blobs og deler sig op til 6. Opgraderinger varer hele bonussen.",
+		"MYSTERY CARD": "En af tre bonusser tilfældigt, hver med 10 gratisspins."
 	},
 	"de": {
 		"INFO LEGAL BODY 1": "Eine Fehlfunktion macht alle Gewinne und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Im Falle einer Verbindungsunterbrechung lade das Spiel neu, um noch nicht abgeschlossene Runden zu beenden.",
@@ -399,7 +409,12 @@
 		"NET POSITION": "Netto",
 		"SPIN WINS": "Spin-Gewinne",
 		"SPIN WIN": "Spin-Gewinn",
-		"INFO UI INFO": "In den Einstellungen: öffnet die Spielinfos."
+		"INFO UI INFO": "In den Einstellungen: öffnet die Spielinfos.",
+		"EXTRA CARD": "Doppelte Chance auf einen Bonus bei jedem Spin.",
+		"FEATURE CARD": "Ein Spin mit zufälligen Split-Stufen, bis zu 6 Blobs pro Feld.",
+		"NORMAL CARD": "Felder starten mit 1 Blob und teilen sich bis zu 6. Upgrades gelten den ganzen Bonus.",
+		"SUPER CARD": "Felder starten mit 2 Blobs und teilen sich bis zu 6. Upgrades gelten den ganzen Bonus.",
+		"MYSTERY CARD": "Einer von drei Boni per Zufall, jeder mit 10 Freispielen."
 	},
 	"es": {
 		"INFO LEGAL BODY 1": "Cualquier mal funcionamiento anula todos los premios y jugadas. Se requiere una conexión a internet estable. En caso de desconexión, recarga el juego para terminar las rondas incompletas.",
@@ -533,7 +548,12 @@
 		"NET POSITION": "Neto",
 		"SPIN WINS": "Premios por giro",
 		"SPIN WIN": "Premio del giro",
-		"INFO UI INFO": "En ajustes: abre la información del juego."
+		"INFO UI INFO": "En ajustes: abre la información del juego.",
+		"EXTRA CARD": "El doble de probabilidades de activar un bono en cada giro.",
+		"FEATURE CARD": "Un giro con niveles de división aleatorios, hasta 6 Blobs por casilla.",
+		"NORMAL CARD": "Las casillas empiezan con 1 Blob y se dividen hasta 6. Las mejoras duran todo el bono.",
+		"SUPER CARD": "Las casillas empiezan con 2 Blobs y se dividen hasta 6. Las mejoras duran todo el bono.",
+		"MYSTERY CARD": "Uno de tres bonos al azar, cada uno con 10 giros gratis."
 	},
 	"fi": {
 		"BONUS": "Bonus",
@@ -667,7 +687,12 @@
 		"NET POSITION": "Netto",
 		"SPIN WINS": "Pyöräytysvoitot",
 		"SPIN WIN": "Pyöräytysvoitto",
-		"INFO UI INFO": "Asetuksissa: avaa pelin tiedot."
+		"INFO UI INFO": "Asetuksissa: avaa pelin tiedot.",
+		"EXTRA CARD": "Kaksinkertainen mahdollisuus bonukseen joka kierroksella.",
+		"FEATURE CARD": "Yksi kierros satunnaisilla jakotasoilla, jopa 6 Blobia ruutua kohden.",
+		"NORMAL CARD": "Ruudut alkavat 1 Blobilla ja jakautuvat jopa 6:ksi. Päivitykset kestävät koko bonuksen.",
+		"SUPER CARD": "Ruudut alkavat 2 Blobilla ja jakautuvat jopa 6:ksi. Päivitykset kestävät koko bonuksen.",
+		"MYSTERY CARD": "Yksi kolmesta bonuksesta satunnaisesti, kussakin 10 ilmaiskierrosta."
 	},
 	"fr": {
 		"INFO LEGAL BODY 1": "Tout dysfonctionnement annule tous les gains et toutes les parties. Une connexion Internet stable est requise. En cas de déconnexion, rechargez le jeu pour terminer les tours inachevés.",
@@ -801,7 +826,12 @@
 		"NET POSITION": "Net",
 		"SPIN WINS": "Gains par tour",
 		"SPIN WIN": "Gain du tour",
-		"INFO UI INFO": "Dans les réglages : ouvre les infos du jeu."
+		"INFO UI INFO": "Dans les réglages : ouvre les infos du jeu.",
+		"EXTRA CARD": "Deux fois plus de chances de déclencher un bonus à chaque tour.",
+		"FEATURE CARD": "Un tour avec des niveaux de division aléatoires, jusqu’à 6 Blobs par case.",
+		"NORMAL CARD": "Les cases commencent avec 1 Blob et se divisent jusqu’à 6. Les améliorations durent tout le bonus.",
+		"SUPER CARD": "Les cases commencent avec 2 Blobs et se divisent jusqu’à 6. Les améliorations durent tout le bonus.",
+		"MYSTERY CARD": "Un des trois bonus au hasard, chacun avec 10 tours gratuits."
 	},
 	"hi": {
 		"BONUS": "बोनस",
@@ -935,7 +965,12 @@
 		"NET POSITION": "शुद्ध",
 		"SPIN WINS": "स्पिन जीतें",
 		"SPIN WIN": "स्पिन जीत",
-		"INFO UI INFO": "सेटिंग्स में: गेम जानकारी खोलता है।"
+		"INFO UI INFO": "सेटिंग्स में: गेम जानकारी खोलता है।",
+		"EXTRA CARD": "हर स्पिन पर बोनस ट्रिगर करने की दोगुनी संभावना।",
+		"FEATURE CARD": "रैंडम स्प्लिट लेवल वाला एक स्पिन, हर टाइल पर 6 Blobs तक।",
+		"NORMAL CARD": "टाइलें 1 Blob से शुरू होकर 6 तक स्प्लिट होती हैं। अपग्रेड पूरे बोनस तक रहते हैं।",
+		"SUPER CARD": "टाइलें 2 Blobs से शुरू होकर 6 तक स्प्लिट होती हैं। अपग्रेड पूरे बोनस तक रहते हैं।",
+		"MYSTERY CARD": "तीन में से एक रैंडम बोनस, हर एक में 10 फ्री स्पिन।"
 	},
 	"id": {
 		"BONUS": "Bonus",
@@ -1069,7 +1104,12 @@
 		"NET POSITION": "Bersih",
 		"SPIN WINS": "Kemenangan putaran",
 		"SPIN WIN": "Kemenangan putaran",
-		"INFO UI INFO": "Di pengaturan: membuka info game."
+		"INFO UI INFO": "Di pengaturan: membuka info game.",
+		"EXTRA CARD": "Peluang dua kali lipat memicu bonus di setiap putaran.",
+		"FEATURE CARD": "Satu putaran dengan level Split acak, hingga 6 Blob per petak.",
+		"NORMAL CARD": "Petak dimulai dengan 1 Blob dan membelah hingga 6. Peningkatan berlaku sepanjang bonus.",
+		"SUPER CARD": "Petak dimulai dengan 2 Blob dan membelah hingga 6. Peningkatan berlaku sepanjang bonus.",
+		"MYSTERY CARD": "Salah satu dari tiga bonus secara acak, masing-masing dengan 10 Putaran Gratis."
 	},
 	"ja": {
 		"BONUS": "ボーナス",
@@ -1203,7 +1243,12 @@
 		"NET POSITION": "収支",
 		"SPIN WINS": "スピン勝利",
 		"SPIN WIN": "スピン勝利",
-		"INFO UI INFO": "設定内：ゲーム情報を開きます。"
+		"INFO UI INFO": "設定内：ゲーム情報を開きます。",
+		"EXTRA CARD": "毎スピン、ボーナス発動のチャンスが2倍。",
+		"FEATURE CARD": "ランダムな分裂レベルの1スピン、タイルごとに最大6体のブロブ。",
+		"NORMAL CARD": "タイルは1体のブロブから始まり最大6体に分裂。アップグレードはボーナス中ずっと有効。",
+		"SUPER CARD": "タイルは2体のブロブから始まり最大6体に分裂。アップグレードはボーナス中ずっと有効。",
+		"MYSTERY CARD": "3つのボーナスからランダムに1つ、それぞれフリースピン10回。"
 	},
 	"ko": {
 		"BONUS": "보너스",
@@ -1337,7 +1382,12 @@
 		"NET POSITION": "순손익",
 		"SPIN WINS": "스핀 당첨",
 		"SPIN WIN": "스핀 당첨",
-		"INFO UI INFO": "설정에서: 게임 정보를 엽니다."
+		"INFO UI INFO": "설정에서: 게임 정보를 엽니다.",
+		"EXTRA CARD": "매 스핀 보너스 발동 확률이 두 배.",
+		"FEATURE CARD": "무작위 분열 레벨로 1회 스핀, 타일당 최대 6개의 블롭.",
+		"NORMAL CARD": "타일은 블롭 1개로 시작해 최대 6개로 분열합니다. 업그레이드는 보너스 내내 유지됩니다.",
+		"SUPER CARD": "타일은 블롭 2개로 시작해 최대 6개로 분열합니다. 업그레이드는 보너스 내내 유지됩니다.",
+		"MYSTERY CARD": "세 가지 보너스 중 하나를 무작위로, 각각 프리 스핀 10회."
 	},
 	"pl": {
 		"BONUS": "Bonus",
@@ -1471,7 +1521,12 @@
 		"NET POSITION": "Netto",
 		"SPIN WINS": "Wygrane ze spinów",
 		"SPIN WIN": "Wygrana ze spinu",
-		"INFO UI INFO": "W ustawieniach: otwiera informacje o grze."
+		"INFO UI INFO": "W ustawieniach: otwiera informacje o grze.",
+		"EXTRA CARD": "Dwa razy większa szansa na bonus przy każdym spinie.",
+		"FEATURE CARD": "Jeden spin z losowymi poziomami podziału, do 6 Blobów na pole.",
+		"NORMAL CARD": "Pola zaczynają z 1 Blobem i dzielą się do 6. Ulepszenia trwają cały bonus.",
+		"SUPER CARD": "Pola zaczynają z 2 Blobami i dzielą się do 6. Ulepszenia trwają cały bonus.",
+		"MYSTERY CARD": "Jeden z trzech bonusów losowo, każdy z 10 darmowymi spinami."
 	},
 	"pt": {
 		"BONUS": "Bônus",
@@ -1605,7 +1660,12 @@
 		"NET POSITION": "Líquido",
 		"SPIN WINS": "Ganhos por giro",
 		"SPIN WIN": "Ganho do giro",
-		"INFO UI INFO": "Nas configurações: abre as informações do jogo."
+		"INFO UI INFO": "Nas configurações: abre as informações do jogo.",
+		"EXTRA CARD": "O dobro de chance de ativar um bônus em cada giro.",
+		"FEATURE CARD": "Um giro com níveis de divisão aleatórios, até 6 Blobs por casa.",
+		"NORMAL CARD": "As casas começam com 1 Blob e se dividem até 6. As melhorias duram todo o bônus.",
+		"SUPER CARD": "As casas começam com 2 Blobs e se dividem até 6. As melhorias duram todo o bônus.",
+		"MYSTERY CARD": "Um de três bônus aleatoriamente, cada um com 10 giros grátis."
 	},
 	"ru": {
 		"BONUS": "Бонус",
@@ -1739,7 +1799,12 @@
 		"NET POSITION": "Итог",
 		"SPIN WINS": "Выигрыши спинов",
 		"SPIN WIN": "Выигрыш спина",
-		"INFO UI INFO": "В настройках: открывает информацию об игре."
+		"INFO UI INFO": "В настройках: открывает информацию об игре.",
+		"EXTRA CARD": "Вдвое больше шанс запустить бонус в каждом вращении.",
+		"FEATURE CARD": "Одно вращение со случайными уровнями деления, до 6 Blob на клетку.",
+		"NORMAL CARD": "Клетки начинают с 1 Blob и делятся до 6. Улучшения действуют весь бонус.",
+		"SUPER CARD": "Клетки начинают с 2 Blob и делятся до 6. Улучшения действуют весь бонус.",
+		"MYSTERY CARD": "Один из трёх бонусов случайно, в каждом 10 бесплатных вращений."
 	},
 	"tr": {
 		"BONUS": "Bonus",
@@ -1873,7 +1938,12 @@
 		"NET POSITION": "Net",
 		"SPIN WINS": "Dönüş kazançları",
 		"SPIN WIN": "Dönüş kazancı",
-		"INFO UI INFO": "Ayarlarda: oyun bilgisini açar."
+		"INFO UI INFO": "Ayarlarda: oyun bilgisini açar.",
+		"EXTRA CARD": "Her çevirmede bonusu tetikleme şansı iki katı.",
+		"FEATURE CARD": "Rastgele bölünme seviyeli bir çevirme, kare başına 6 Blob'a kadar.",
+		"NORMAL CARD": "Kareler 1 Blob ile başlar ve 6'ya kadar bölünür. Yükseltmeler bonus boyunca sürer.",
+		"SUPER CARD": "Kareler 2 Blob ile başlar ve 6'ya kadar bölünür. Yükseltmeler bonus boyunca sürer.",
+		"MYSTERY CARD": "Üç bonustan biri rastgele, her biri 10 Bedava Çevirme ile."
 	},
 	"vi": {
 		"BONUS": "Thưởng",
@@ -2007,7 +2077,12 @@
 		"NET POSITION": "Ròng",
 		"SPIN WINS": "Thắng mỗi lượt quay",
 		"SPIN WIN": "Thắng lượt quay",
-		"INFO UI INFO": "Trong cài đặt: mở thông tin trò chơi."
+		"INFO UI INFO": "Trong cài đặt: mở thông tin trò chơi.",
+		"EXTRA CARD": "Gấp đôi cơ hội kích hoạt thưởng ở mỗi vòng quay.",
+		"FEATURE CARD": "Một vòng quay với cấp phân chia ngẫu nhiên, tối đa 6 Blobs mỗi ô.",
+		"NORMAL CARD": "Các ô bắt đầu với 1 Blob và phân chia tới 6. Nâng cấp kéo dài suốt vòng thưởng.",
+		"SUPER CARD": "Các ô bắt đầu với 2 Blobs và phân chia tới 6. Nâng cấp kéo dài suốt vòng thưởng.",
+		"MYSTERY CARD": "Ngẫu nhiên một trong ba vòng thưởng, mỗi vòng có 10 Vòng Quay Miễn Phí."
 	},
 	"zh": {
 		"BONUS": "奖励",
@@ -2141,6 +2216,11 @@
 		"NET POSITION": "净额",
 		"SPIN WINS": "旋转赢奖",
 		"SPIN WIN": "本次旋转赢奖",
-		"INFO UI INFO": "在设置中：打开游戏信息。"
+		"INFO UI INFO": "在设置中：打开游戏信息。",
+		"EXTRA CARD": "每次旋转触发奖励的几率翻倍。",
+		"FEATURE CARD": "一次随机分裂等级的旋转，每格最多 6 个 Blob。",
+		"NORMAL CARD": "格子从 1 个 Blob 开始，最多分裂为 6 个。升级在整个奖励中有效。",
+		"SUPER CARD": "格子从 2 个 Blob 开始，最多分裂为 6 个。升级在整个奖励中有效。",
+		"MYSTERY CARD": "随机获得三种奖励之一，每种含 10 次免费旋转。"
 	}
 }

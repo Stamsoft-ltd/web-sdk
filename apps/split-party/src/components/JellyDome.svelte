@@ -19,6 +19,7 @@
 		first = [900, 3400],
 		rest = [2500, 7500],
 		wait = [1200, 4800],
+		avoid,
 	}: {
 		src: string;
 		x: number;
@@ -35,7 +36,18 @@
 		first?: Range;
 		rest?: Range;
 		wait?: Range;
+		/** Skip a blow-up while the dome sits under this element (a selector), e.g. mama. */
+		avoid?: string;
 	} = $props();
+	let el = $state<HTMLDivElement>();
+	function blocked() {
+		const a = avoid ? document.querySelector(avoid)?.getBoundingClientRect() : null;
+		const b = el?.getBoundingClientRect();
+		if (!a?.width || !b) return false;
+		// Its droplets fly about half its width round it, and her canvas reaches past her box.
+		const m = b.width * 0.6 + a.width * 0.15;
+		return b.right + m > a.left && b.left - m < a.right && b.bottom + m > a.top && b.top - m < a.bottom;
+	}
 
 	type Phase = 'wait' | 'blow' | 'rest' | 'burst';
 	const rand = (a: number, b: number) => a + Math.random() * (b - a);
@@ -58,6 +70,7 @@
 		let timer: ReturnType<typeof setTimeout>;
 		const later = (ms: number, fn: () => void) => (timer = setTimeout(fn, ms));
 		const step = (next: Phase) => {
+			if (next === 'blow' && blocked()) next = 'wait';
 			phase = next;
 			n++;
 			if (next === 'blow' || next === 'burst') spray = drops();
@@ -72,6 +85,7 @@
 </script>
 
 <div
+	bind:this={el}
 	class="dome"
 	style={`left:${x}px;top:${y}px;width:${w}px;height:${h}px;--ox:${ox}px;--oy:${oy}px;--c:${color}`}
 >

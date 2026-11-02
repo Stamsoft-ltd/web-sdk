@@ -27,7 +27,8 @@ ROOT = Path(__file__).resolve().parent.parent
 ART = ROOT / 'art-src'
 OUT = ROOT / 'public' / 'splash' / 'hd'
 K = 3.2  # px per design px (stage 1.6 at 1920x1080, DPR 2)
-BLUR = 0.6  # design px
+BLUR = 0.3  # design px (0.6 until the 2026-11-02 quality pass)
+FULL_W = 2560  # the sky's texture width cap (GPU memory)
 DOMES = {
     '5006': ('magenta', 186),
     '5007': ('magenta', 82),
@@ -62,11 +63,14 @@ def framed(master, box, margin):
 
 
 OUT.mkdir(parents=True, exist_ok=True)
-sky = Image.open(ART / 'splash' / 'sky.png').convert('RGB')
+# The Real-ESRGAN 2x master when there is one (upscale-art.py).
+sky = Image.open(next(p for p in (ART / 'splash' / '2x' / 'sky.png', ART / 'splash' / 'sky.png') if p.exists())).convert('RGB')
 k = sky.width / 1209  # px per design px, the master's own
 sky = sky.resize((round(1209 * k), round(680 * k)), Image.LANCZOS).filter(ImageFilter.GaussianBlur(BLUR * k))
 frame = Image.new('RGB', (round(1200 * k), round(670 * k)))
 frame.paste(sky, (round(-4.5 * k), round(-9 * k)))
+if frame.width > FULL_W:
+    frame = frame.resize((FULL_W, round(FULL_W * frame.height / frame.width)), Image.LANCZOS)
 save(frame, 'sky-bg')
 masters = {c: Image.open(ART / 'base' / f'dome-{c}.png') for c in ('magenta', 'green', 'purple')}
 for node, (colour, box) in DOMES.items():

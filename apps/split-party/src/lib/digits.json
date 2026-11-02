@@ -1,0 +1,75 @@
+{
+	"h": 200,
+	"glyphs": {
+		"0": {
+			"src": "./digits/v2/0.webp",
+			"w": 166,
+			"h": 200
+		},
+		"1": {
+			"src": "./digits/v2/1.webp",
+			"w": 155,
+			"h": 200
+		},
+		"2": {
+			"src": "./digits/v2/2.webp",
+			"w": 144,
+			"h": 200
+		},
+		"3": {
+			"src": "./digits/v2/3.webp",
+			"w": 153,
+			"h": 200
+		},
+		"4": {
+			"src": "./digits/v2/4.webp",
+			"w": 155,
+			"h": 200
+		},
+		"5": {
+			"src": "./digits/v2/5.webp",
+			"w": 146,
+			"h": 200
+		},
+		"6": {
+			"src": "./digits/v2/6.webp",
+			"w": 154,
+			"h": 200
+		},
+		"7": {
+			"src": "./digits/v2/7.webp",
+			"w": 141,
+			"h": 194
+		},
+		"8": {
+			"src": "./digits/v2/8.webp",
+			"w": 158,
+			"h": 200
+		},
+		"9": {
+			"src": "./digits/v2/9.webp",
+			"w": 151,
+			"h": 200
+		},
+		".": {
+			"src": "./digits/v2/dot.webp",
+			"w": 62,
+			"h": 62
+		},
+		",": {
+			"src": "./digits/v2/comma.webp",
+			"w": 71,
+			"h": 82
+		},
+		"$": {
+			"src": "./digits/v2/dollar.webp",
+			"w": 148,
+			"h": 237
+		},
+		"x": {
+			"src": "./digits/v2/times.webp",
+			"w": 151,
+			"h": 145
+		}
+	}
+}

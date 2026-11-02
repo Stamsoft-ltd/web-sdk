@@ -7,9 +7,6 @@
 	/** A blob peeking out: centre, rotation, its frame (clip radius, or null for no clip) and
 	    the image's size centred in that frame. */
 	type Peeker = { src: string; c: [number, number]; rot: number; frame: [number, number]; clip: number | null; img: [number, number] };
-	/** A drip of slime hanging off the plate or the amount box: box (the design's unrotated
-	    frame, centred), its rotation, and which art (drip-4 the long drip, drip-5 the splat). */
-	type Drip = { src: 'drip-4' | 'drip-5'; box: Box; rot: number };
 	type Tier = {
 		color: string;
 		text: string;
@@ -19,7 +16,8 @@
 		cloud?: Box;
 		/** The two big pink jelly bubbles behind the plaque (win/hd/jelly.webp); MAX has none. */
 		jelly: Box[];
-		drips: Drip[];
+		/** The tier word and the WIN word: the design's 2026-10-27 glossy lettering (win/hd/
+		    title2-*, win2-*), boxes from Figma 11324:47859…47882. */
 		title: Box;
 		titleCrop?: Crop;
 		win: Box;
@@ -27,7 +25,7 @@
 		amount?: Box;
 		peekers: Peeker[];
 		/** Paint order, as the design stacks it (it differs by tier). */
-		z: { amount: number; peekers: number; jelly: number; plaque: number; drips: number; title: number; win: number };
+		z: { amount: number; peekers: number; jelly: number; plaque: number; title: number; win: number };
 	};
 	const P = (src: string, cx: number, cy: number, rot: number, frame: [number, number], clip: number | null, img: [number, number]): Peeker => ({
 		src,
@@ -45,12 +43,9 @@
 	const bare = (src: string, cx: number, cy: number, rot: number, w: number, h = w) => P(src, cx, cy, rot, [w, h], null, [w, h]);
 	// The plate's image fill (Figma CROP): its top 13.14% is cut off.
 	const PLATE_CROP: Crop = [0, -13.14, 100, 113.14];
-	// The right drip is the long drip turned on its side; the amount box's corner drip is the same art.
-	const left = (box: Box): Drip => ({ src: 'drip-5', box, rot: 0 });
-	const right = (box: Box): Drip => ({ src: 'drip-4', box, rot: 107.35 });
-	const AMOUNT_DRIP: Drip = { src: 'drip-4', box: [778.49, 529.7, 93.94, 73.56], rot: 18.42 };
-	// Bottom to top: amount box, its drip, jelly bubbles, blobs, plate + cloud, side drips, words.
-	const STACK = { amount: 0, peekers: 3, jelly: 2, plaque: 4, drips: 6, title: 7, win: 8 };
+	// Bottom to top: amount box, jelly bubbles, blobs, plate + cloud, words. (The design's slime
+	// drips were removed on request, 2026-10-27.)
+	const STACK = { amount: 0, peekers: 3, jelly: 2, plaque: 4, title: 7, win: 8 };
 	// From the Figma screens (1200×670), measured with the plugin API (rotations are the
 	// design's, flipped to CSS's clockwise): sweet 11271:5808, wild 11271:5476, epic 11271:5211,
 	// mythic 11008:29144, legendary 11008:29646, max 11008:30148.
@@ -64,10 +59,9 @@
 				[407.22, 275, 342.43, 343.34],
 				[800.33, 275, 343.34, 343.34],
 			],
-			drips: [left([355.96, 372.57, 105.53, 102.01]), right([840.94, 381.73, 111.02, 86.94]), AMOUNT_DRIP],
-			title: [599.88, 295.48, 311.75, 104.96],
-			titleCrop: [0, -67.15, 100, 223],
-			win: [600.08, 372.32, 243.03, 108.71],
+			title: [602.5, 293.5, 439, 137],
+			titleCrop: [0, -14.71, 100, 126.51],
+			win: [599, 387, 264, 198],
 			peekers: [
 				bare('sym-5', 331.77, 289.41, -43.58, 122.75),
 				bare('sym-7', 608, 185.5, 0, 157),
@@ -84,9 +78,9 @@
 				[388.5, 275, 375, 376],
 				[819, 275, 376, 376],
 			],
-			drips: [left([331.91, 374.98, 115.83, 111.97]), right([864.24, 385.04, 121.86, 95.43]), AMOUNT_DRIP],
-			title: [599.63, 298.22, 373.26, 166.43],
-			win: [602.05, 391.53, 287.62, 127.65],
+			title: [601.5, 281.5, 361, 161],
+			titleCrop: [-0.05, -33.54, 100.09, 168.32],
+			win: [600.5, 393, 327, 146],
 			peekers: [bare('sym-5', 290.41, 289.41, -43.58, 142.05), bare('sym-7b', 609, 174.5, 0, 157), TEAL(909.44, 299.25, 29.53)],
 			z: STACK,
 		},
@@ -99,10 +93,8 @@
 				[383.7, 248.32, 379.41, 379.41],
 				[818.93, 248.32, 379.41, 379.41],
 			],
-			drips: [left([321, 380, 124, 120]), right([879.02, 375.37, 145.4, 113.87]), AMOUNT_DRIP],
-			title: [604.5, 274.09, 347, 140.19],
-			titleCrop: [0, -47.01, 100, 185.64],
-			win: [611.96, 373.13, 331.92, 148.27],
+			title: [600.5, 271.5, 433, 171],
+			win: [602, 400.5, 342, 153],
 			peekers: [bare('sym-5', 273.41, 275.41, -43.58, 142.05), bare('sym-4b774', 609, 163.5, 0, 157), TEAL(934.44, 276.25, 29.53)],
 			z: STACK,
 		},
@@ -115,10 +107,8 @@
 				[354.32, 248.32, 430.64, 430.64],
 				[848.32, 248.32, 430.64, 430.64],
 			],
-			drips: [left([317.77, 396.53, 135.55, 131.07]), right([888.48, 382.2, 178.79, 140.01]), AMOUNT_DRIP],
-			title: [603.98, 270.79, 567.95, 177.58],
-			titleCrop: [-0.05, -41.32, 100.09, 180.17],
-			win: [603.48, 396.8, 433.66, 193.71],
+			title: [600.5, 262.5, 571, 205],
+			win: [600.5, 401.5, 383, 171],
 			peekers: [bare('sym-5', 239.83, 247.83, -24.1, 142.05), bare('sym-9', 609, 131.5, 0, 168, 169), TEAL(938.44, 244.25, 29.53)],
 			z: STACK,
 		},
@@ -131,27 +121,22 @@
 				[331.95, 213.95, 467.9, 467.9],
 				[868.69, 213.95, 467.9, 467.9],
 			],
-			drips: [left([258.64, 377.2, 147.27, 142.41]), right([895.57, 371.39, 194.26, 152.13]), AMOUNT_DRIP],
-			title: [599.55, 246.52, 567.1, 189.03],
-			win: [599.55, 363.61, 363.36, 162.78],
+			title: [613, 257.5, 700, 233],
+			win: [600, 393.5, 418, 187],
 			peekers: [bare('sym-f4061', 600.5, 95.5, 0, 157), PINK(226.55, 199.96, -29.72), TEAL(1010.44, 212.25, 29.53)],
-			// Here the blobs peek from behind the jelly bubbles.
-			z: { ...STACK, peekers: 1 },
+			// The design has the blobs behind the jelly bubbles here, but the right bubble hid the
+			// teal one almost whole (user 2026-11-02: "this blob is not seen well"): in front, as
+			// on the other tiers.
+			z: STACK,
 		},
-		// MAX: the wide plate alone (no cloud, no jelly), the blobs behind everything, and the
-		// drips hanging over the words.
+		// MAX: the wide plate alone (no cloud, no jelly), the blobs behind everything.
 		max: {
 			color: '#9bf715',
 			text: '#9bf715',
 			plate: [600.5, 354, 1159, 512],
 			jelly: [],
-			drips: [
-				left([199.64, 406.2, 147.27, 142.41]),
-				right([1009.78, 389.22, 231, 180.9]),
-				{ ...AMOUNT_DRIP, box: [780.18, 522.74, 93.94, 73.56] },
-			],
-			title: [598, 223, 590, 236],
-			win: [597.5, 379.5, 561, 221],
+			title: [600, 208.5, 578, 259],
+			win: [599.5, 388.5, 491, 219],
 			peekers: [
 				bare('sym-f4061', 629.87, 77.87, 0, 197.74),
 				PINK(203.24, 205.13, -30.5, [157.336, 139.736], 162.357, 18.824),
@@ -159,7 +144,7 @@
 				bare('sym-9', 418.63, 116.63, -12.06, 176.32),
 				bare('sym-7b', 894.36, 129.36, 30.9, 175.51),
 			],
-			z: { amount: 1, peekers: 0, jelly: 0, plaque: 3, drips: 6, title: 4, win: 5 },
+			z: { amount: 1, peekers: 0, jelly: 0, plaque: 3, title: 4, win: 5 },
 		},
 	};
 	// Jelly bubbles: the opening fountain, then per second (WinFxView). A few for the smallest
@@ -176,11 +161,12 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import Blob from './Blob.svelte';
 
 	// Big-win screen: the scene dims, the neon plate (and its cloud) zooms out and pops into
 	// place with the pink jelly bubbles swelling up behind it, the tier word drops in from the
 	// top while WIN rises from the bottom, happy blobs climb out from behind and keep giggling,
-	// the slime drips wobble, small jelly bubbles shower out (drawn live in Pixi,
+	// small jelly bubbles shower out (drawn live in Pixi,
 	// scene/WinFxView.ts), and the amount box pops up and counts.
 	// Art from scripts/build-win-screens.py. `speed` scales every beat (turbo).
 	let {
@@ -211,6 +197,17 @@
 	const box = ([cx, cy, w, h]: Box) => `left:${cx - w / 2}px;top:${cy - h / 2}px;width:${w}px;height:${h}px`;
 	const crop = (c?: Crop) => (c ? `left:${c[0]}%;top:${c[1]}%;width:${c[2]}%;height:${c[3]}%` : '');
 
+	// The design's peekers are the board's blobs in happy poses; they're drawn live (Blob) so the
+	// faces laugh with the giggle instead of hopping as painted pictures.
+	const PEEK_SYMBOL: Record<string, string> = {
+		'sym-2': 'KIWI',
+		'sym-4b774': 'CHERRIES',
+		'sym-5': 'STRAWBERRY',
+		'sym-7': 'BLUEBERRY',
+		'sym-7b': 'WATERMELON',
+		'sym-9': 'GRAPES',
+		'sym-f4061': 'LEMON',
+	};
 	// Peekers rise out from toward the plate's middle.
 	const [pcx, pcy] = t.plate;
 	const peekers = t.peekers.map((p, i) => ({
@@ -220,9 +217,8 @@
 		giggle: (i * 0.37 + rand(0, 0.3)).toFixed(2),
 	}));
 
-	// The live bubbles (scene/WinFxView.ts) on a canvas just over the plate. The drips are the
-	// design's own art now, so it draws none. Without WebGL the screen plays without bubbles.
-	const drips = t.drips.map((d, i) => ({ ...d, wob: (i * 0.53 + rand(0, 0.4)).toFixed(2) }));
+	// The live bubbles (scene/WinFxView.ts) on a canvas just over the plate (no drips: anchors
+	// stay empty). Without WebGL the screen plays without bubbles.
 	// Over the live bubbles, so they pass behind the number.
 	const amountZ = Math.max(t.z.amount, t.z.plaque + 1);
 	let fxHost = $state<HTMLDivElement>();
@@ -262,7 +258,7 @@
 		<!-- Over the slime canvas, so falling drops and bubbles pass behind the number. -->
 		<div class="amount" style={`${box(AMOUNT)};z-index:${amountZ}`}>
 			<!-- Sized for the final amount, so the count-up doesn't shrink as it grows. -->
-			<strong style={`font-size:${(AMOUNT[2] / 399) * Math.min(59.33, 330 / (0.62 * Math.max(1, final.length)))}px`}>{amount}</strong>
+			<strong class:landed={amount === final} style={`font-size:${(AMOUNT[2] / 399) * Math.min(59.33, 330 / (0.62 * Math.max(1, final.length)))}px`}>{amount}</strong>
 		</div>
 		<!-- Behind the plaque: they climb out from behind it, then laugh. -->
 		{#each peekers as p, i}
@@ -272,7 +268,11 @@
 					class:clip={p.clip !== null}
 					style={`width:${p.frame[0]}px;height:${p.frame[1]}px;rotate:${p.rot}deg;border-radius:${p.clip ?? 0}px`}
 				>
-					<img src={`./win/hd/${p.src}.webp`} alt="" style={`width:${p.img[0]}px;height:${p.img[1]}px;--g:${p.giggle}s`} />
+					<span
+						class="peek-blob"
+						style={`width:${p.img[0]}px;height:${p.img[1]}px;--g:${p.giggle}s;--cheer-delay:calc(1s + ${p.giggle}s)`}
+						><Blob symbol={PEEK_SYMBOL[p.src] ?? 'KIWI'} uid={`win-peek-${i}`} cheer /></span
+					>
 				</div>
 			</div>
 		{/each}
@@ -287,29 +287,22 @@
 		</div>
 		<!-- Same layer as the plate, after it: over the plate and cloud, under the words and amount. -->
 		<div class="fx" bind:this={fxHost} style={`z-index:${t.z.plaque}`}></div>
-		{#each drips as d, i}
-			<!-- The amount box's corner drip hangs with the box; the side drips hang off the plate. -->
-			{@const onAmount = i === drips.length - 1}
-			<div
-				class="drip"
-				class:on-amount={onAmount}
-				style={`${box(d.box)};z-index:${onAmount ? amountZ + 1 : t.z.drips};--w:${d.wob}s`}
-			>
-				<img src={`./win/hd/${d.src}.webp`} alt="" style={`rotate:${d.rot}deg`} />
-			</div>
-		{/each}
 		<div class="title" style={`${box(t.title)};z-index:${t.z.title}`}>
-			<img src={`./win/hd/title-${tier}.webp`} alt="" style={crop(t.titleCrop)} />
+			<img src={`./win/hd/title2-${tier}.webp`} alt="" style={crop(t.titleCrop)} />
+			<span class="shine" style={`${crop(t.titleCrop)};--src:url(./win/hd/title2-${tier}.webp)`}></span>
 		</div>
 		{#if t.win}
-			<div class="win-word" style={`${box(t.win)};z-index:${t.z.win}`}><img src={`./win/hd/win-${tier}.webp`} alt="" /></div>
+			<div class="win-word" style={`${box(t.win)};z-index:${t.z.win}`}>
+				<img src={`./win/hd/win2-${tier}.webp`} alt="" />
+				<span class="shine" style={`--src:url(./win/hd/win2-${tier}.webp)`}></span>
+			</div>
 		{/if}
 	</div>
 </div>
 
 <style>
 	/* Beats (ms at speed 1): dim 0-300, plaque 100-800, peekers from 350, title 450-1100,
-	   WIN 650-1300, amount box 900-1400 (the count-up runs from App), drips 650-1250; the
+	   WIN 650-1300, amount box 900-1400 (the count-up runs from App); the
 	   bubbles (WinFxView) fountain from the plate's landing on. */
 	.win-screen {
 		position: fixed;
@@ -354,7 +347,8 @@
 	}
 	.plate img,
 	.title img,
-	.win-word img {
+	.win-word img,
+	.win-word .shine {
 		position: absolute;
 		left: 0;
 		top: 0;
@@ -386,18 +380,20 @@
 		}
 	}
 	.cloud img,
-	.jelly img,
-	.drip img {
+	.jelly img {
 		display: block;
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 	}
-	/* The pink jelly bubbles swell up behind the plate as it lands, then bob, out of step. */
+	/* The pink jelly bubbles swell up behind the plate as it lands, wobble like jelly balloons,
+	   then let go and float up off the screen swaying, and a fresh one swells back in behind the
+	   plate (user 2026-11-02: "make those balloons fly away"). Each on its own beat. */
 	.jelly {
+		transform-origin: 50% 90%;
 		animation:
 			ws-swell calc(650ms * var(--spd)) calc((180ms + var(--i) * 70ms) * var(--spd)) both,
-			ws-bob 3.2s ease-in-out calc(1s + var(--i) * 1.1s) infinite;
+			ws-bob calc(3.6s + var(--i) * 0.7s) linear calc((830ms + var(--i) * 70ms) * var(--spd)) infinite;
 	}
 	@keyframes ws-swell {
 		0% {
@@ -416,60 +412,123 @@
 			transform: none;
 		}
 	}
+	/* 0-22% a jelly wobble in place; 22-76% released: it rises faster and faster, swaying, and
+	   leaves the top; 76-100% a new one swells up from the plate. Translate % is the bubble's own
+	   size, so it clears the screen at every stage scale. */
 	@keyframes ws-bob {
 		0%,
 		100% {
 			translate: 0 0;
 			scale: 1;
+			rotate: 0deg;
+			opacity: 1;
+			animation-timing-function: ease-in-out;
 		}
-		50% {
-			translate: 0 -6px;
-			scale: 1.015 0.985;
+		8% {
+			translate: 0 2px;
+			scale: 1.07 0.92;
+			rotate: -2deg;
+			animation-timing-function: ease-in-out;
 		}
-	}
-	/* The drips ooze down off the plate once it has landed, then hang there wobbling. They
-	   grow from their top edge, where they meet the slime. */
-	.drip {
-		transform-origin: 50% 15%;
-		animation:
-			ws-ooze calc(600ms * var(--spd)) calc(650ms * var(--spd)) both,
-			ws-wobble 2.4s ease-in-out calc(1.4s + var(--w)) infinite;
-	}
-	.drip.on-amount {
-		animation-delay: calc(900ms * var(--spd)), calc(1.6s + var(--w));
-	}
-	@keyframes ws-ooze {
-		0% {
+		16% {
+			translate: 0 -10px;
+			scale: 0.95 1.07;
+			rotate: 2deg;
+			animation-timing-function: ease-in-out;
+		}
+		22% {
+			translate: 0 0;
+			scale: 1.05 0.95;
+			rotate: 0deg;
+			animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6);
+		}
+		38% {
+			translate: 6% -22%;
+			scale: 0.96 1.05;
+			rotate: 5deg;
+			animation-timing-function: linear;
+		}
+		56% {
+			translate: -5% -70%;
+			scale: 1.02 0.98;
+			rotate: -4deg;
+			animation-timing-function: linear;
+		}
+		76% {
+			translate: 4% -150%;
+			scale: 0.94 1.04;
+			rotate: 3deg;
+			opacity: 1;
+		}
+		76.1% {
+			translate: 0 0;
+			scale: 0.2;
+			rotate: 0deg;
 			opacity: 0;
-			transform: scale(0.5, 0.2);
 			animation-timing-function: cubic-bezier(0.3, 0.7, 0.4, 1);
 		}
-		60% {
+		90% {
+			translate: 0 0;
+			scale: 1.08 0.95;
 			opacity: 1;
-			transform: scale(0.94, 1.08);
+			animation-timing-function: ease-in-out;
 		}
-		100% {
-			transform: none;
-		}
+	}
+	/* The tier word falls in from the top, the WIN word shoots up from the bottom. */
+	/* Once landed they stay alive: a slow jelly wobble (on `scale`/`rotate`, so it composes with
+	   the entrance's `transform`), out of step between the two words, and a shine sweeping
+	   across the lettering now and then. */
+	.title {
+		animation:
+			ws-from-top calc(650ms * var(--spd)) calc(220ms * var(--spd)) both,
+			ws-wobble 2.6s ease-in-out calc(900ms * var(--spd)) infinite;
+	}
+	.win-word {
+		animation:
+			ws-from-bottom calc(650ms * var(--spd)) calc(380ms * var(--spd)) both,
+			ws-wobble 2.6s ease-in-out calc(900ms * var(--spd) + 0.65s) infinite reverse;
 	}
 	@keyframes ws-wobble {
 		0%,
 		100% {
 			scale: 1;
+			rotate: 0deg;
 		}
-		35% {
-			scale: 0.97 1.05;
+		25% {
+			scale: 1.045 0.965;
+			rotate: -1.3deg;
 		}
-		65% {
-			scale: 1.02 0.98;
+		50% {
+			scale: 0.985 1.03;
+			rotate: 0deg;
+		}
+		75% {
+			scale: 1.035 0.975;
+			rotate: 1.3deg;
 		}
 	}
-	/* The tier word falls in from the top, the WIN word shoots up from the bottom. */
-	.title {
-		animation: ws-from-top calc(650ms * var(--spd)) calc(220ms * var(--spd)) both;
+	/* The word's own alpha masks a white band that sweeps left to right. */
+	.shine {
+		position: absolute;
+		pointer-events: none;
+		-webkit-mask: var(--src) center / 100% 100% no-repeat;
+		mask: var(--src) center / 100% 100% no-repeat;
+		background: linear-gradient(105deg, #fff0 45%, #fff9 50%, #fff0 55%) no-repeat;
+		background-size: 300% 100%;
+		background-position: 150% 0;
+		animation: ws-shine 3.2s ease-in-out calc(1.2s * var(--spd)) infinite;
 	}
-	.win-word {
-		animation: ws-from-bottom calc(650ms * var(--spd)) calc(380ms * var(--spd)) both;
+	.win-word .shine {
+		animation-delay: calc(1.2s * var(--spd) + 0.35s);
+	}
+	@keyframes ws-shine {
+		0% {
+			background-position: 150% 0;
+		}
+		35%,
+		100% {
+			background-position: -50% 0;
+		}
 	}
 	@keyframes ws-from-top {
 		0% {
@@ -527,7 +586,7 @@
 	.peek-frame.clip {
 		overflow: hidden;
 	}
-	.peek-frame img {
+	.peek-blob {
 		display: block;
 		flex: none;
 		transform-origin: 50% 90%;
@@ -576,6 +635,22 @@
 		border: 4px solid var(--c);
 		border-radius: 17.8px;
 		animation: ws-pop calc(500ms * var(--spd)) calc(560ms * var(--spd)) both;
+	}
+	/* The count-up done: the number gives one jelly beat, then a slow slight breath. */
+	.amount strong.landed {
+		animation:
+			ws-beat 450ms cubic-bezier(0.3, 1.6, 0.5, 1) both,
+			ws-breathe 1.5s ease-in-out 450ms infinite alternate;
+	}
+	@keyframes ws-beat {
+		40% {
+			transform: scale(1.14, 1.08);
+		}
+	}
+	@keyframes ws-breathe {
+		to {
+			transform: scale(1.04);
+		}
 	}
 	.amount strong {
 		font-family: 'Coiny', sans-serif;

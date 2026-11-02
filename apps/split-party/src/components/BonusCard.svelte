@@ -15,7 +15,7 @@
 	//   end      the bonus total once the free spins finish, Figma 11233:12287
 	import { onMount } from 'svelte';
 	import Blob from './Blob.svelte';
-
+	import JellyText from './JellyText.svelte';
 	let {
 		kind,
 		title,
@@ -23,10 +23,13 @@
 		count = 10,
 		sub,
 		amount = '',
+		total = 0,
+		format,
 		bonus = '',
 		desc = '',
 		blobs = 1,
 		symbol = 'GRAPES',
+		tier = '',
 		pace = 1,
 		prompt = '',
 		onskip,
@@ -40,11 +43,17 @@
 		sub: string;
 		/** end: the formatted total. */
 		amount?: string;
+		/** end: the total as a number and its formatter, to count it up as it rises; without
+		 * them `amount` shows as is. */
+		total?: number;
+		format?: (v: number) => string;
 		/** mystery: the drawn bonus's name and rule line, and its starting blobs per tile. */
 		bonus?: string;
 		desc?: string;
 		blobs?: number;
 		symbol?: string;
+		/** mystery: the bonus tier ('normal' | 'super' | 'hidden'): its palette and backdrop. */
+		tier?: string;
 		pace?: number;
 		/** A line at the bottom once the card has built up ("Press to continue"). */
 		prompt?: string;
@@ -242,13 +251,49 @@
 	let peeks = $state<Peek[]>([]);
 	let peekId = 0;
 
+	// The medallion's tile starts as one blob and splits into the tier's starting blobs once
+	// the medal has landed: the card shows the bonus's rule happening, not just its number.
+	const MEDAL_SPLIT_MS = 1500;
+	// end: the total counts up fast from when it starts rising (.total's delay), easing out, then
+	// pulses once and keeps breathing until the press.
+	const COUNT_AT_MS = 950;
+	const COUNT_MS = 750;
+	let shown = $state(0);
+	let counted = $state(false);
+	let totalText = $derived(format && total > 0 ? format(counted ? total : shown) : amount);
+	let medalUnits = $state(1);
+	// Super's rays and Hidden's night sky: seeded once per card.
+	const STARS = Array.from({ length: 18 }, () => ({
+		x: rand(40, 1160),
+		y: rand(10, 640),
+		s: rand(6, 16),
+		d: rand(0, 2.4),
+		t: rand(1.4, 2.6),
+	}));
+
 	onMount(() => {
-		if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+			medalUnits = blobs;
+			counted = true;
+			return;
+		}
 		const timers = new Set<ReturnType<typeof setTimeout>>();
 		const later = (ms: number, fn: () => void) => {
 			const t = setTimeout(() => (timers.delete(t), fn()), ms * pace);
 			timers.add(t);
 		};
+		if (blobs > 1) later(MEDAL_SPLIT_MS, () => (medalUnits = blobs));
+		let raf = 0;
+		if (kind === 'end')
+			later(COUNT_AT_MS, () => {
+				const t0 = performance.now();
+				raf = requestAnimationFrame(function step(now) {
+					const t = Math.min(1, (now - t0) / (COUNT_MS * pace));
+					shown = total * (1 - (1 - t) ** 3);
+					if (t < 1) raf = requestAnimationFrame(step);
+					else counted = true;
+				});
+			});
 		const fly = () => {
 			if (flyers.length < 22) {
 				const f = flyer();
@@ -283,7 +328,10 @@
 			later(rand(450, 1100), peek);
 		};
 		later(1400, peek);
-		return () => timers.forEach(clearTimeout);
+		return () => {
+			timers.forEach(clearTimeout);
+			cancelAnimationFrame(raf);
+		};
 	});
 </script>
 
@@ -301,9 +349,16 @@
 {/snippet}
 
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
-<div class={`bonus-card ${kind}`} style={`--p:${pace};--min:${minText.toFixed(1)}px`} onclick={onskip}>
+<div class={`bonus-card ${kind} ${tier ? `t-${tier}` : ''}`} style={`--p:${pace};--min:${minText.toFixed(1)}px`} onclick={onskip}>
 	<div class="dim"></div>
 	<div class="frame" style={`transform:translate(-50%,-50%) scale(${fit})`}>
+		{#if tier === 'super'}<div class="rays"></div>{/if}
+		{#if tier === 'hidden'}
+			{#each STARS as st}<i
+					class="star"
+					style={`left:${st.x.toFixed(0)}px;top:${st.y.toFixed(0)}px;--s:${st.s.toFixed(1)}px;--d:${st.d.toFixed(2)}s;--t:${st.t.toFixed(2)}s`}
+				></i>{/each}
+		{/if}
 		{#each backs as [src, box], i}
 			<img out:vanish|global class="still" {src} alt="" style={`${px(box)};--i:${i};${away(box, i)}`} />
 		{/each}
@@ -325,33 +380,33 @@
 		<img class="cloud" src="./freespins/hd/cloud.webp" alt="" style={px(L.cloud)} />
 		{#if kind === 'intro'}
 			<div class="copy">
-				<strong class="title">{title}</strong>
+				<strong class="title"><JellyText text={title} /></strong>
 				<span class="won">{won}</span>
-				<span class="spins"><b>{count}</b>{sub}</span>
+				<span class="spins"><b><JellyText text={String(count)} look="green" /></b>{sub}</span>
 			</div>
 		{:else if kind === 'mystery'}
 			<div class="copy big">
-				<strong class="title">{title}</strong>
+				<strong class="title"><JellyText text={title} /></strong>
 				<span class="won">{won}</span>
 				<div class="boxes">
 					<div class="box bonus-box">
-						<b>{bonus}</b>
+						<b><JellyText text={bonus} look="teal" /></b>
 						<p>{desc}</p>
 					</div>
-					<div class="box spins-box"><b>{count}</b><span>{sub}</span></div>
+					<div class="box spins-box"><b><JellyText text={String(count)} look="pink" /></b><span>{sub}</span></div>
 				</div>
 			</div>
 			<!-- The medallion: the tiles' starting blobs as "Nx" beside a tile split that far. -->
 			<div class="medal">
 				<img src="./freespins/medal.svg" alt="" />
 				<span class="medal-pill">{blobs}x</span>
-				<span class="medal-blob"><Blob {symbol} units={blobs} uid="card-medal" /></span>
+				<span class="medal-blob"><Blob {symbol} units={medalUnits} uid="card-medal" /></span>
 			</div>
 		{:else}
 			<div class="copy big">
-				<strong class="title">{title}</strong>
+				<strong class="title"><JellyText text={title} /></strong>
 				<span class="won">{won}</span>
-				<span class="total">{amount}</span>
+				<span class="total" class:counted><JellyText text={totalText} /></span>
 			</div>
 		{/if}
 		{#if kind === 'mystery'}
@@ -526,14 +581,13 @@
 	.copy > * {
 		filter: drop-shadow(0 4px 0 #2a124f) drop-shadow(0 0 14px rgb(42 18 79 / 0.6));
 	}
+	/* The display lines (title, spins, bonus name, total) are JellyText, the win screens' jelly
+	   lettering (user 2026-10-29: "improve the lettering in the Bonus screens"), so the parents
+	   carry only size and motion. */
 	.title {
 		font-weight: 400;
 		font-size: 56px;
 		line-height: 1.1;
-		background: linear-gradient(#fff 12%, #ffe36b 52%, #ff9d1c);
-		-webkit-background-clip: text;
-		background-clip: text;
-		color: transparent;
 		animation: fs-from-top calc(500ms * var(--p)) cubic-bezier(0.3, 1.4, 0.5, 1) calc(700ms * var(--p)) both;
 	}
 	.won {
@@ -555,10 +609,6 @@
 		font-weight: 400;
 		font-size: 92px;
 		line-height: 1;
-		background: linear-gradient(#fff 10%, #b6ff5c 50%, #2bc4b4);
-		-webkit-background-clip: text;
-		background-clip: text;
-		color: transparent;
 	}
 	@keyframes fs-from-top {
 		from {
@@ -675,8 +725,6 @@
 		/* Coiny's own line box is ~1.6em; Figma's frame packs it tighter. */
 		line-height: 1.2;
 		letter-spacing: 1.44px;
-		background: none;
-		color: #fff;
 	}
 	.big .won {
 		margin: 0;
@@ -740,11 +788,23 @@
 	.total {
 		font-size: 84px;
 		line-height: 1.1;
-		background: linear-gradient(#fff 12%, #ffe36b 52%, #ff9d1c);
-		-webkit-background-clip: text;
-		background-clip: text;
-		color: transparent;
 		animation: fs-from-bottom calc(600ms * var(--p)) cubic-bezier(0.3, 1.4, 0.5, 1) calc(950ms * var(--p)) both;
+	}
+	/* Counted: one pop as it lands, then a slow, slight breath while it waits for the press. */
+	.total.counted {
+		animation:
+			fs-total-pop 420ms cubic-bezier(0.3, 1.6, 0.5, 1) both,
+			fs-total-breathe 1.6s ease-in-out 420ms infinite alternate;
+	}
+	@keyframes fs-total-pop {
+		40% {
+			transform: scale(1.12);
+		}
+	}
+	@keyframes fs-total-breathe {
+		to {
+			transform: scale(1.04);
+		}
 	}
 	/* Figma 11020:33179: the 170.6 ring centred on x 605.3 at y 29, the "Nx" pill at (539, 90)
 	   and the art box (597, 74) 73×79, here the tile split into the starting blobs. */
@@ -792,10 +852,103 @@
 	.sky {
 		z-index: 1;
 	}
+	.medal-blob {
+		--divide-ms: calc(1100ms * var(--p));
+	}
+
+	/* Each bonus tier opens in its own colours: the card's neon and bubbles hue-turned from the
+	   art's magenta, its boxes and medal pill recoloured to match. Normal is lagoon blue, Super
+	   sunset gold under turning rays (sepia first: the art mixes magenta and violet, which a
+	   plain hue turn splits into two colours), Hidden stays magenta on a night sky with twinkling stars.
+	   hue-rotate is a colour matrix, so it composites with the art's own transform animations. */
+	.t-normal :is(.badge, .cloud, .still, .flyer) {
+		filter: hue-rotate(-70deg) saturate(1.1);
+	}
+	.t-super :is(.badge, .cloud, .still, .flyer) {
+		filter: sepia(1) saturate(3.4) hue-rotate(8deg) brightness(1.04);
+	}
+	.t-hidden :is(.badge, .cloud, .still, .flyer) {
+		filter: saturate(1.15) brightness(0.92);
+	}
+	.t-normal .box {
+		border-color: #6cc4ff;
+		background: #12447f;
+	}
+	.t-super .box {
+		border-color: #ffc062;
+		background: #8a4a12;
+	}
+	.t-hidden .box {
+		border-color: #c46bff;
+		background: #3b1470;
+	}
+	.t-normal .bonus-box b {
+		color: #eafffb;
+	}
+	.t-super .bonus-box b {
+		color: #ffe9a8;
+	}
+	.t-normal .medal-pill {
+		background: #5ff0df;
+	}
+	.t-super .medal-pill {
+		background: #ffc24d;
+		color: #6b3a0e;
+		border-color: #6b3a0e;
+	}
+	.t-hidden .medal-pill {
+		background: #ff7ae0;
+		color: #3b1470;
+		border-color: #3b1470;
+	}
+	.t-hidden .dim {
+		background: radial-gradient(120% 90% at 50% 45%, #1a0b3dcc, #05021aee);
+	}
+	.rays {
+		left: 600px;
+		top: 300px;
+		width: 1500px;
+		height: 1500px;
+		margin: -750px 0 0 -750px;
+		border-radius: 50%;
+		background: repeating-conic-gradient(#ffd36a33 0deg 7deg, #ffd36a00 7deg 20deg);
+		mask-image: radial-gradient(closest-side, #000 18%, #0000 72%);
+		animation:
+			fs-fade calc(600ms * var(--p)) calc(300ms * var(--p)) both,
+			rays-turn 24s linear infinite;
+	}
+	@keyframes rays-turn {
+		to {
+			rotate: 360deg;
+		}
+	}
+	.star {
+		width: var(--s);
+		height: var(--s);
+		margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2);
+		background: radial-gradient(closest-side, #fff, #ffd9ff 30%, #ff8ae600 70%);
+		clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+		animation:
+			fs-fade calc(500ms * var(--p)) calc(400ms * var(--p)) both,
+			star-twinkle var(--t) ease-in-out var(--d) infinite;
+	}
+	@keyframes star-twinkle {
+		50% {
+			opacity: 0.25;
+			scale: 0.6;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.rays,
+		.star {
+			animation: fs-fade 300ms both;
+		}
+	}
 	@media (prefers-reduced-motion: reduce) {
 		.medal,
 		.boxes,
 		.total,
+		.total.counted,
 		.badge,
 		.still,
 		.cloud,

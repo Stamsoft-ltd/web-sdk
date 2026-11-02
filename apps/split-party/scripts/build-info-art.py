@@ -2,8 +2,9 @@
 
 art-src/splash/2x/logo.png      the splash logo's Real-ESRGAN 3x (upscale-art.py)
   -> public/info/hd/logo.webp          855x428 (was 570; shown 304 css px at 1920x1080)
-art-src/symbols/STRAWBERRY.png  -> public/info/hd/peeker-pink.webp  840 (was 560; shown 319)
-art-src/symbols/KIWI.png        -> public/info/hd/peeker-teal.webp  768 (was 512)
+art-src/symbols/STRAWBERRY.png  -> public/info/hd/peeker-pink2.webp  840 (was 560; shown 319)
+art-src/symbols/KIWI.png        -> public/info/hd/peeker-teal2.webp  768 (was 512)
+(the 2 suffix: the 2026-10-28 symbol redraw, renamed so caches miss)
 hd/: new folder rather than new contents, browsers keep the old art under the old names.
     python3 apps/split-party/scripts/build-info-art.py
 """
@@ -16,8 +17,8 @@ ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / 'public' / 'info' / 'hd'
 JOBS = {
     'logo': (ROOT / 'art-src' / 'splash' / '2x' / 'logo.png', 855),
-    'peeker-pink': (ROOT / 'art-src' / 'symbols' / 'STRAWBERRY.png', 840),
-    'peeker-teal': (ROOT / 'art-src' / 'symbols' / 'KIWI.png', 768),
+    'peeker-pink2': (ROOT / 'art-src' / 'symbols' / 'STRAWBERRY.png', 840),
+    'peeker-teal2': (ROOT / 'art-src' / 'symbols' / 'KIWI.png', 768),
 }
 
 OUT.mkdir(parents=True, exist_ok=True)

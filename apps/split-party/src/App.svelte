@@ -5,13 +5,19 @@
 	import Blob from './components/Blob.svelte';
 	import Crack from './components/Crack.svelte';
 	import EggHatch from './components/EggHatch.svelte';
+	import JellyNumber from './components/JellyNumber.svelte';
 	import { SURPRISE_MS } from './board/anim';
 	import PixiBoard from './components/PixiBoard.svelte';
 	import PixiScene from './components/PixiScene.svelte';
+	import BonusSwap from './components/BonusSwap.svelte';
 	import PixiLogo from './components/PixiLogo.svelte';
+	import PixiMama from './components/PixiMama.svelte';
+	import { candyWarp } from './lib/candyWarp';
 	import BaseScene from './components/BaseScene.svelte';
 	import BonusNormal from './components/BonusNormal.svelte';
 	import BonusSuper from './components/BonusSuper.svelte';
+	import JellyText from './components/JellyText.svelte';
+	import BonusHidden from './components/BonusHidden.svelte';
 	import MysteryEgg, { BURST_MS, KNOCKS_MS, MYSTERY_MS, START_BLOBS } from './components/MysteryEgg.svelte';
 	import BonusCard, { CARD_BUILD_MS, type CardKind } from './components/BonusCard.svelte';
 	import WinScreen, { type WinTier } from './components/WinScreen.svelte';
@@ -19,8 +25,8 @@
 	import Splash from './components/Splash.svelte';
 	import Loading from './components/Loading.svelte';
 	import { preloadAll } from './lib/preload';
-	import { GRID_W, GRID_H } from './board/geometry';
-	import { PREMIUM_RIM } from './lib/premium';
+	import { GRID_W, GRID_H, CELL_W, CELL_H, GAP, PAD_L, PAD_T } from './board/geometry';
+	import { BLOB_TINT, PREMIUM_RIM, shade } from './lib/premium';
 	import Logo from './components/Logo.svelte';
 	import GameInfo from './components/GameInfo.svelte';
 	import {
@@ -68,12 +74,40 @@
 	let bets = $state([0.1, 0.2, 0.5, 1, 2, 5, 10]);
 	let busy = $state(false);
 	let mystery = $state<{ tier: string; pace: number } | null>(null);
+	// The world on screen trails board.tier: a bonus's world is switched in under BonusSwap's
+	// cover (swapWorld), once the bonus starts and again once its total has been seen. Outside a
+	// round (a resume, a reset) it just follows.
+	type SceneTier = '' | 'normal' | 'super' | 'hidden';
+	let sceneTier = $state<SceneTier>('');
+	let swap = $state<{ style: 'normal' | 'super' | 'hidden' | 'base'; id: number; cover: number; hold: number; reveal: number } | null>(null);
+	let swapId = 0;
+	async function swapWorld(to: string) {
+		const next = to as SceneTier;
+		if (next === sceneTier) return;
+		if (reducedMotion || !started) {
+			sceneTier = next;
+			return;
+		}
+		const pace = Math.max(paceScale(), 0.5);
+		const s = { style: next || 'base', id: ++swapId, cover: 560 * pace, hold: 200 * pace, reveal: 720 * pace } as const;
+		swap = s;
+		sfx.play('split', 0, 0.7, 0.85);
+		await sleep(s.cover);
+		sceneTier = next;
+		await sleep(s.hold);
+		sfx.play('plop');
+		await sleep(s.reveal);
+		if (swap?.id === s.id) swap = null;
+	}
+	$effect(() => {
+		if (!busy && !swap) sceneTier = board.tier as SceneTier;
+	});
 	// The bonus cards (BonusCard): the bonus won or bought (its name, rule and spins; after the
 	// egg for a Mystery draw), and the bonus total when the spins end. Each waits for the player
 	// like other slots' congrats screens: it stays until a tap, Space or Enter, taken only once
 	// the card has built up. `card` outlives `cardOpen` so the card keeps its content while it
 	// fades out.
-	type Card = { kind: CardKind; count: number; pace: number; tier?: string; amount?: string };
+	type Card = { kind: CardKind; count: number; pace: number; tier?: string; amount?: string; total?: number };
 	let card = $state<Card | null>(null);
 	let cardOpen = $state(false);
 	let cardSkip: (() => void) | null = null;
@@ -113,14 +147,20 @@
 		portrait ? { w: 680, h: Math.max(940, (680 * vh) / vw) } : { w: 1200, h: 670 },
 	);
 	let fit = $derived(Math.min(vw / stage.w, vh / stage.h));
-	// The buy menu on a short landscape (phone on its side, popout) keeps a readable scale and
-	// fills the screen instead: its cards reflow into a scrolling grid (style.css .compact).
-	let buyCompact = $derived(!portrait && fit < 0.8);
-	let buyK = $derived(buyCompact ? (vh <= 340 ? 0.65 : 0.8) : fit);
-	let buyStage = $derived(buyCompact ? { w: vw / buyK, h: vh / buyK } : stage);
+	// The buy menu's scale (style.css .bonus-overlay, zoom: --k). Landscape fits the design's
+	// 1062px grid and its bet stepper (630 px tall in all) on screen, but never under 0.75 for
+	// legibility: a short screen (phone on its side, popout) scrolls the cards instead. Portrait
+	// is one 525px column across the screen, scrolling.
+	let buyK = $derived(
+		portrait
+			? Math.min(1.25, (vw - 32) / 525)
+			: Math.min((vw - 32) / 1062, Math.max((vh - 24) / 630, Math.min(0.75, (vw - 32) / 1062))),
+	);
 	// The portrait base game is Figma 11075:34378's 360×577 game area at 680 wide (×1.889 =
 	// 680×1090); taller phones add the spare height as --ex, which the CSS spreads between rows.
 	const PORTRAIT_H = 1090;
+	// Spare portrait height from which mama joins the portrait layout (see mamaUp).
+	const MAMA_UP_EX = 100;
 	// Phones on their side: Figma 11075:35080's 800×360 layout, board in the middle, logo/panels/
 	// log/balance on the left, the bet stepper, a vertical control bar and the win on the right.
 	// Wide screens only, Popout-S (400×225) included; the squarer Popout-L keeps the desktop bar.
@@ -135,17 +175,25 @@
 	let phoneLay = $derived.by(() => {
 		const W = Math.max(PHONE.w, (PHONE.h * vw) / vh);
 		const H = Math.max(PHONE.h, (PHONE.w * vh) / vw);
-		// The columns' own widths (18+137 left, 123+20 right) plus a 12px gap each side of the board.
+		// The columns' own widths (18+137 left; right, Figma 11413:8984, the Press Play square's
+		// left edge 148 from the screen's) plus a 12px gap each side of the board.
+		const RIGHT = 148;
 		let bs = (H - 8) / 352;
-		let c = Math.min(1, (W - 431 * bs - 24) / 298);
+		let c = Math.min(1, (W - 431 * bs - 24) / (155 + RIGHT));
 		if (c < 0.85) {
 			c = 0.85;
-			bs = (W - 24 - 298 * c) / 431;
+			bs = (W - 24 - (155 + RIGHT) * c) / 431;
 		}
 		const left = 155 * c;
-		const right = W - 143 * c;
+		const right = W - RIGHT * c;
 		const free = right - left - 431 * bs;
-		return { W, H, c, s: 0.657 * bs, x: left + free * 0.69, y: 6 + (H - 8 - 352 * bs) / 2 };
+		const x = left + free * 0.69;
+		// Mama's scale (style.css .phone .base-mama): 0.96 gives her the design's 110px body on the
+		// 360-high stage (11413:8984); she grows with a taller stage, as the board does, but never
+		// past the gap left of the board (her body ends 118.3u into her box; 3px clear of the rim,
+		// 8px from the screen's edge).
+		const mu = Math.min(0.96 * c * (H / PHONE.h), (x - 11 * c) / 118.3);
+		return { W, H, c, s: 0.657 * bs, x, y: 6 + (H - 8 - 352 * bs) / 2, mu };
 	});
 	let baseStage = $derived(
 		portrait
@@ -177,7 +225,8 @@
 		// Phones on their side (.short): tighter metric padding and stepper gaps give back ~10px.
 		short: { metric: 134, bet: 88, max: 24, face: "400 {}px 'Coiny'", track: 0 },
 		popout: { metric: 290, bet: 230, max: 40, face: "400 {}px 'Coiny'", track: 0 },
-		portrait: { metric: 130, bet: 105, max: 26.4, face: "400 {}px 'Coiny'", track: 0.8 },
+		// Figma 11413:7874: 85-unit columns, Coiny 18 (×1.889), the bet left of its chevrons.
+		portrait: { metric: 158, bet: 122, max: 34, face: "400 {}px 'Coiny'", track: 0.1 },
 		// Phone landscape: balance/win at 12px (under the design's 14, asked for), the bet at 14.
 		phone: { metric: 66, bet: 41, max: 12, betMax: 14, face: "500 {}px 'Poppins'", track: 0.42 },
 	};
@@ -214,9 +263,15 @@
 	let inBonus = $derived(!!board.tier);
 	// A tall phone's spare sky goes to a bigger logo in the base game (up to 1.6×). The bonus
 	// panels and spin log share its row, so there it keeps nearly its own size.
-	let logoScale = $derived(
-		!portrait ? 1 : inBonus ? 1.08 : Math.min(1.6, 1 + Math.max(0, baseStage.h - PORTRAIT_H) / 600),
-	);
+	// With mama under it (portrait .mama-up) its foot sits 133px over the board's rim, so it is
+	// capped to leave the studio badge 8px under the screen's top: foot − 122·ls − 62 ≥ 8,
+	// foot = 109 + 0.58·--ex (style.css .portrait.mama-up .base-logo).
+	let logoScale = $derived.by(() => {
+		if (!portrait) return 1;
+		const ex = baseStage.h - PORTRAIT_H;
+		const ls = inBonus ? 1.08 : Math.min(1.6, 1 + Math.max(0, ex) / 600);
+		return ex >= MAMA_UP_EX ? Math.min(ls, (39 + 0.58 * ex) / 122) : ls;
+	});
 	$effect(() => {
 		const on = inBonus;
 		untrack(() => {
@@ -230,11 +285,53 @@
 			}
 		});
 	});
-	// The menu's Sound (effects) and Music (bed and win music) toggles; lib/sound.ts.
+	// The menu's Sound (effects) and Music (bed and win music): a mute toggle and a volume
+	// slider each; lib/sound.ts. The levels are remembered in this browser (if it lets us).
+	const VOLUME_KEY = 'blob-split.volume';
+	const savedVolume = (() => {
+		try {
+			const v = JSON.parse(localStorage.getItem(VOLUME_KEY) ?? 'null');
+			const ok = (n: unknown) => typeof n === 'number' && n >= 0 && n <= 1;
+			return v && ok(v.sound) && ok(v.music) ? (v as { sound: number; music: number }) : null;
+		} catch {
+			return null;
+		}
+	})();
 	let sound = $state(true);
 	let music = $state(true);
-	$effect(() => sfx.setSfx(sound));
-	$effect(() => sfx.setMusic(music));
+	let soundLevel = $state(savedVolume?.sound ?? 1);
+	let musicLevel = $state(savedVolume?.music ?? 0.8);
+	$effect(() => sfx.setSfx(sound && soundLevel > 0, soundLevel));
+	$effect(() => sfx.setMusic(music && musicLevel > 0, musicLevel));
+	$effect(() => {
+		const v = JSON.stringify({ sound: soundLevel, music: musicLevel });
+		try {
+			localStorage.setItem(VOLUME_KEY, v);
+		} catch {
+			// Storage blocked (private window, previews): the levels just aren't remembered.
+		}
+	});
+	// Dragging a muted slider up unmutes it; the toggle on a slider at 0 brings it back to half.
+	function slide(which: 'sound' | 'music', v: number) {
+		if (which === 'sound') {
+			soundLevel = v;
+			if (v > 0) sound = true;
+		} else {
+			musicLevel = v;
+			if (v > 0) music = true;
+		}
+	}
+	function toggleVolume(which: 'sound' | 'music') {
+		if (which === 'sound') {
+			if (!sound || soundLevel === 0) {
+				sound = true;
+				if (soundLevel === 0) soundLevel = 0.5;
+			} else sound = false;
+		} else if (!music || musicLevel === 0) {
+			music = true;
+			if (musicLevel === 0) musicLevel = 0.5;
+		} else music = false;
+	}
 	// A plop as a dialog (buy, info, autoplay, replay…) or the menu panel pops open.
 	// The plop stands in for the click of the button that opened it.
 	let lastClick: { stop: () => void; at: number } | null = null;
@@ -250,7 +347,9 @@
 		if (menuOpen) plop();
 	});
 	// Base music in the base game, bonus music from the bonus start until its total is seen.
-	$effect(() => sfx.setBed(started ? (board.tier ? 'bonus' : 'base') : null));
+	// Each bonus world has its own music; it changes with the world (the swap's cover), not the
+	// moment the round's tier does.
+	$effect(() => sfx.setBed(started ? sceneTier || 'base' : null));
 	// Figma 11174:7179: the menu button turns into a teal close and pops a Sound / Music / Info
 	// panel above it. It is a popover, not a modal, so sound can be toggled mid-round.
 	let menuOpen = $state(false);
@@ -303,15 +402,17 @@
 	const AUTO_STEPS = [10, 25, 50, 75, 100, 250, 500, 1000];
 	const stepAuto = (d: number) =>
 		(autoChoice = AUTO_STEPS[Math.max(0, Math.min(AUTO_STEPS.length - 1, AUTO_STEPS.indexOf(autoChoice) + d))]);
-	const BUYS: Mode[] = ['feature', 'normal', 'super', 'mystery'];
-	// Figma 9164:11722's five-blob cluster on the Feature card (34.76px blobs).
-	const FEATURE_BLOBS = [
-		[0, 0],
-		[0, 33.85],
-		[24.62, 17.12],
-		[49.24, 0.39],
-		[49.24, 34.24],
-	];
+	// Buy menu cards (Figma 11402:9764): the two switches, then the three bonus buys; `hero` is the
+	// card's standing art in public/buy (build-buy-cards.py).
+	const SWITCHES = [
+		{ key: 'extra', mode: 'extra_chance', title: 'EXTRA', copy: 'EXTRA CARD', hero: 'boat' },
+		{ key: 'feature', mode: 'feature', title: 'FEATURE', copy: 'FEATURE CARD', hero: 'volcano' },
+	] as const;
+	const BONUS_BUYS = [
+		{ mode: 'normal', hero: 'house' },
+		{ mode: 'super', hero: 'tree' },
+		{ mode: 'mystery', hero: 'candy-house' },
+	] as const;
 	// Every popup lands like a blob: squashed wide, then jiggles to rest; it leaves by
 	// shrinking up and away.
 	function pop(_node: Element, { duration = 520 } = {}) {
@@ -364,15 +465,12 @@
 	const MOTION = {
 		unitMs: 163,
 		minMs: 150,
-		spinRowStaggerMs: 42,
+		spinRowStaggerMs: 14,
 		tumbleRowStaggerMs: 28,
 		reelDelayMs: 11,
-		spinReelDelayMs: 72,
+		spinReelDelayMs: 48,
 		jitterMs: 48,
 		impactMs: 425,
-		exitRowStaggerMs: 33,
-		exitReelDelayMs: 13,
-		exitJitterMs: 33,
 		removeMs: 525,
 		removeJitterMs: 69,
 		holdMs: 150,
@@ -382,15 +480,12 @@
 	const MOTION_FAST = {
 		unitMs: 69,
 		minMs: 63,
-		spinRowStaggerMs: 14,
+		spinRowStaggerMs: 6,
 		tumbleRowStaggerMs: 8,
 		reelDelayMs: 4,
 		spinReelDelayMs: 20,
 		jitterMs: 15,
 		impactMs: 138,
-		exitRowStaggerMs: 9,
-		exitReelDelayMs: 4,
-		exitJitterMs: 13,
 		removeMs: 225,
 		removeJitterMs: 25,
 		holdMs: 88,
@@ -446,6 +541,18 @@
 	const TEASE_MS = 950;
 	// The DOM board's tease column (style.css .tease-col): its seven chasing pads and bubbles.
 	const TEASE_ROWS = [0, 1, 2, 3, 4, 5, 6];
+	// The DOM pop splash's droplets: where each lands (px from the tile centre) and its size.
+	const SPLAT_DROPS = [
+		[-30, -6, 7],
+		[-22, -24, 5],
+		[-8, -32, 8],
+		[8, -30, 6],
+		[24, -20, 7],
+		[32, -2, 5],
+		[-16, 18, 5],
+		[18, 20, 6],
+		[0, -14, 4],
+	];
 	const TEASE_BUBBLES = [
 		{ x: 22, s: 9, t: 1500, d: 0, w: 8 },
 		{ x: 52, s: 12, t: 1830, d: 430, w: -10 },
@@ -491,8 +598,11 @@
 			}
 			at(t.to, () => mood.wonder === t.col && (mood = { ...mood, wonder: null }));
 		}
+		// Mama hoped through the tease: if the eggs stop short of a bonus, she's let down.
+		if (tease.length && eggCells(board.board).length < BONUS_EGGS) at(Math.max(...tease.map((t) => t.to)), () => mamaSulk++);
 	}
 	const TEASE_FROM = 2;
+	const BONUS_EGGS = 3;
 	const TEASE_TO = 5;
 	const EGG = 'BASKET';
 	const eggCells = (b: string[][]) => b.flatMap((c, col) => c.flatMap((s, row) => (s === EGG ? [`${col},${row}`] : [])));
@@ -513,19 +623,92 @@
 		relieved = true;
 		reliefTimer = setTimeout(() => (relieved = false), RELIEF_MS * (turbo ? 0.6 : 1) + 300);
 	}
+	// Mama blob (PixiMama, left of the board on desktop): hops on every spin (`mamaBeat`); on a
+	// split she frets (`mamaFear`) and sends one spirit (`spirits`, flown in stage px) to the middle
+	// one of the dividing tiles: one to each read as a swarm (user 2026-10-30: "only to 1 tile").
+	// The board waits SPIRIT_LEAD_MS while it flies, so it lands just before the split starts
+	// (user: "fly earlier, just before the split").
+	const SPIRIT_MS = 620;
+	const SPIRIT_LEAD_MS = 660;
+	type Spirit = { id: number; x0: number; y0: number; ax: number; ay: number; x1: number; y1: number; cx: number; cy: number; dur: number; delay: number; c: string };
+	let stageEl = $state<HTMLDivElement>();
+	let mamaBeat = $state(0);
+	let mamaRig = $state<PixiMama>();
+	// Bumped when a scatter tease ends short of a bonus: mama is let down (MamaView.sulk).
+	let mamaSulk = $state(0);
+	let mamaFear = $state(false);
+	let mamaPush = $state(0);
+	let mamaTarget = $state<{ x: number; y: number } | null>(null);
+	let spirits = $state<Spirit[]>([]);
+	let spiritId = 0;
+	// Phone landscape has her bottom left (Figma 11362:72003). Portrait (11318:43227) has her under the logo, peeking over the board's rim, but only
+	// on phones tall enough to lift the logo for her (MAMA_UP_EX px of spare height); squatter
+	// screens (tablets) keep the old stack without her.
+	let mamaUp = $derived(portrait && baseStage.h - PORTRAIT_H >= MAMA_UP_EX);
+	let mamaShown = $derived(!portrait || mamaUp);
+	// A base spin: she watches the reels. Not in a bonus, where a spin is always running: there
+	// it pinned her pupils into the corner for the whole round (user 2026-11-02: "she does
+	// something strange with her eyes at bonus mode"); she glances about as she dances instead.
+	let mamaGaze = $derived(mamaTarget ?? (busy && !inBonus ? { x: 0.96, y: -0.28 } : null));
+	async function mamaSends(changes: { reel: number; row: number }[]) {
+		const mama = stageEl?.querySelector('.base-mama')?.getBoundingClientRect();
+		const grid = stageEl?.querySelector('.board')?.getBoundingClientRect();
+		const stage = stageEl?.getBoundingClientRect();
+		if (!mamaShown || !changes.length || !mama?.width || !grid?.width || !stage) return;
+		// Screen px per board px (.board is 656 wide, its 6.442 rim then the grid's padding).
+		const k = grid.width / 656;
+		const rim = 6.442;
+		const pace = cascadePace();
+		const at = (r: DOMRect, fx: number, fy: number) => ({ x: (r.left + r.width * fx - stage.left) / baseFit, y: (r.top + r.height * fy - stage.top) / baseFit });
+		// From her mouth (user 2026-11-02: it "starts not from mama blob mouth but somewhere from
+		// body"), read off the rig as drawn, so it follows her hop and dance; the still art's mouth
+		// sits at 0.62, 0.56 of the box. The path leaves sideways toward the board (its first
+		// control point) before it arcs up, so the thread doesn't climb across her face.
+		const lip = mamaRig?.mouth();
+		const o = lip ? { x: (lip.x - stage.left) / baseFit, y: (lip.y - stage.top) / baseFit } : at(mama, 0.62, 0.56);
+		const dur = SPIRIT_MS * pace;
+		const fresh = [changes[changes.length >> 1]].map((c, i): Spirit => {
+			const t = {
+				x: (grid.left + (rim + PAD_L + c.reel * (CELL_W + GAP) + CELL_W / 2) * k - stage.left) / baseFit,
+				y: (grid.top + (rim + PAD_T + c.row * (CELL_H + GAP) + CELL_H / 2) * k - stage.top) / baseFit,
+			};
+			// A high arc: the control point lifted over the midpoint, more for the far tiles.
+			const lift = 60 + Math.hypot(t.x - o.x, t.y - o.y) * 0.25;
+			// In the colour of the blob being split (her own pink for anything untinted).
+			const tint = BLOB_TINT[board.board[c.reel]?.[c.row]] ?? '#ff5abe';
+			const out = Math.sign(t.x - o.x || 1) * 110;
+			// Portrait has her above the board (user 2026-11-02: there the arc rose over her head and
+			// the thread crossed her face): a tile below her mouth is reached by dropping out
+			// sideways and down, never up.
+			const below = t.y > o.y + 40;
+			const ay = below ? o.y + 26 : o.y - 12;
+			const cy = below ? o.y + (t.y - o.y) * 0.35 : Math.min(o.y, t.y) - lift;
+			return { id: ++spiritId, x0: o.x, y0: o.y, ax: o.x + out, ay, x1: t.x, y1: t.y, cx: o.x + (t.x - o.x) * 0.7, cy, dur, delay: i * 40 * pace, c: tint };
+		});
+		const first = fresh[0];
+		const d = Math.hypot(first.x1 - first.x0, first.y1 - first.y0) || 1;
+		mamaTarget = { x: (first.x1 - first.x0) / d, y: (first.y1 - first.y0) / d };
+		mamaFear = true;
+		mamaPush++;
+		spirits = [...spirits, ...fresh];
+		const ids = new Set(fresh.map((f) => f.id));
+		setTimeout(() => (spirits = spirits.filter((f) => !ids.has(f.id))), dur + fresh.at(-1)!.delay + 700);
+		await sleep(SPIRIT_LEAD_MS * pace);
+	}
+	if (import.meta.env?.DEV) (globalThis as { __mamaSends?: typeof mamaSends }).__mamaSends = mamaSends;
 	let moving = $state(false);
 	let popping = $state<Record<string, number>>({});
 	// Each winning cluster's share of the award, popped up at the cluster's centre (cells as
 	// fractions of the grid) with a burst of confetti; cleared when the board tumbles. `s` sizes
 	// the pill by its share of the biggest cluster's award, so a late bonus board's crowd of
 	// small pills doesn't drown the one that matters.
-	type ClusterPop = { id: number; x: number; y: number; amount: string; s: number };
+	type ClusterPop = { id: number; x: number; y: number; amount: string; s: number; symbol: string };
 	let clusterPops = $state<ClusterPop[]>([]);
 	let popId = 0;
 	const SPARKS = Array.from({ length: 16 }, (_, i) => {
 		const a = (i / 16) * Math.PI * 2 + (i % 2) * 0.2;
 		const d = 58 + (i % 3) * 22;
-		return { dx: Math.cos(a) * d, dy: Math.sin(a) * d, c: ['#c9a8ff', '#fa52e5', '#ffffff'][i % 3], s: 8 + (i % 3) * 3 };
+		return { dx: Math.cos(a) * d, dy: Math.sin(a) * d, tone: i % 3, s: 8 + (i % 3) * 3 };
 	});
 	// The current spin's clusters for the spin log (SpinLog.svelte), newest first; each free
 	// spin starts it again.
@@ -542,7 +725,7 @@
 			// Split the paid award by each cluster's raw share, so the pops add up to the win.
 			const award = ((w.rawAward ?? 0) * event.paidAward) / raw;
 			const s = wins.length > 1 ? 0.74 + 0.26 * Math.sqrt((w.rawAward ?? 0) / top) : 1;
-			return { id: ++popId, x: (cx + 0.5) / 7, y: (cy + 0.5) / 7, amount: win(winMoney(roundBet, award)), s };
+			return { id: ++popId, x: (cx + 0.5) / 7, y: (cy + 0.5) / 7, amount: win(winMoney(roundBet, award)), s, symbol: w.symbol };
 		});
 		// The blobs the cluster paid on (fruitUnits, the paytable's "blob units"): counted as it
 		// connects, before this win's split adds more.
@@ -670,7 +853,6 @@
 		lit: [...board.highlight],
 		wave,
 		ghost,
-		awaiting: awaitingReveal,
 		scared,
 		nervous,
 		relieved,
@@ -682,12 +864,7 @@
 		pops: clusterPops,
 		hatched,
 		mood,
-		sweat: relieved ? sweatCells(board) : [],
 	});
-	// The few single blobs that break a sweat as they sigh (same cells in both board modes).
-	const sweats = (col: number, row: number, units: number) => units === 1 && (col * 5 + row * 3) % 4 === 0;
-	const sweatCells = (b: typeof board) =>
-		b.board.flatMap((c, col) => c.flatMap((_, row) => (sweats(col, row, unitsOf(b, col, row)) ? [`${col},${row}`] : [])));
 	const QUICK_WIN_X = 5;
 	const BIG_WIN_X = 20;
 	const PLAQUE_LAND_MS = 650;
@@ -748,8 +925,9 @@
 		plaqueOn = false;
 		chainDrop();
 	}
-	// Continuous play (autoplay, a held Space, or Space pressed on the win): the board drops as
-	// the win leaves instead of after the round settles, and spin() takes this drop over.
+	if (import.meta.env?.DEV) (globalThis as { __smallWin?: typeof presentSmallWin }).__smallWin = presentSmallWin;
+	// Continuous play (autoplay, a held Space, or Space pressed on the win): the next spin skips
+	// the fright and drops the board as soon as its round is in.
 	let spaceHeld = false;
 	let nextAsked = false;
 	let predrop: Promise<void> | null = null;
@@ -760,8 +938,9 @@
 		if (balance < bet * MODES[auto ? autoMode : spinMode]) return;
 		clearTimeout(reliefTimer);
 		relieved = false;
-		const end = startExit();
-		predrop = new Promise((done) => setTimeout(done, end * 0.35));
+		// No fright: the next spin drops this board as soon as its round is in.
+		holdExit();
+		predrop = Promise.resolve();
 	}
 	// Big wins (20x and up) get the full-screen slime win screen; the tier climbs with the
 	// multiplier (thresholds are ours, the design has none), MAX only at the 20000x cap.
@@ -824,6 +1003,12 @@
 		bigWin = null;
 		stopMusic();
 	}
+	if (import.meta.env?.DEV) (globalThis as { __bigWin?: typeof presentBigWin }).__bigWin = presentBigWin;
+	if (import.meta.env?.DEV)
+		(globalThis as { __mystery?: (tier: string) => void }).__mystery = (tier) => {
+			mystery = { tier, pace: 1 };
+			setTimeout(() => (mystery = null), MYSTERY_MS);
+		};
 	// The plaque leaves like a jelly sitting down: squashed onto its base as it fades.
 	function plaqueOut(_node: Element, { speed = 1 } = {}) {
 		return {
@@ -842,7 +1027,10 @@
 		s,
 	}));
 	// Coiny at the design's 90.87px fits "$2.12"; longer amounts shrink to stay in the well.
-	const plaqueFont = (label: string) => (90.87 * Math.min(1, 5.5 / label.length)).toFixed(1);
+	// The small-win amount, in the jelly digits (user, 2026-10-27): digit height and the widest it
+	// may run across the plaque's purple, in plaque px.
+	const PLAQUE_DIGIT_H = 84;
+	const PLAQUE_TEXT_W = 300;
 	let motionId = 0;
 	let movingTimer: ReturnType<typeof setTimeout> | undefined;
 	// The board clips falling blobs only while something is in the air, so win glows aren't cut.
@@ -851,47 +1039,32 @@
 		clearTimeout(movingTimer);
 		movingTimer = setTimeout(() => (moving = false), ms);
 	}
-	// Fright, then the drop: resolves when the reveal may start (20% into the exit; at 35% the
-	// board sat nearly empty a second into the spin).
-	const REVEAL_AT = 0.2;
+	// The spin is a column drop, like a reel: each column of the old board and the new one stacked
+	// right on top of it fall together, N rows under one gravity, so the board is never empty. The
+	// new blobs trail by `spinRowStaggerMs` a row from the bottom up (the column lands in a quick
+	// ripple, and only ever opens gaps). The press only frightens the blobs: the old board is
+	// copied here and drops with the reveal (spinWave).
+	let exitFrom: Ghost[] | null = null;
+	function holdExit() {
+		exitFrom = board.board.flatMap((c, col) =>
+			c.map((symbol, row) => ({ col, row, symbol, units: cellUnits(col, row), rows: N, delay: 0, dur: 0 })),
+		);
+		awaitingReveal = true;
+	}
 	async function dropBoard() {
 		clearTimeout(reliefTimer);
 		relieved = false;
 		scared = true;
-		if (reducedMotion) {
-			startExit();
-			return;
-		}
-		await waveSleep(motion().scareMs);
-		await waveSleep(startExit() * REVEAL_AT);
+		holdExit();
+		if (!reducedMotion) await waveSleep(motion().scareMs);
 	}
-	// Trap door: copy the board into a ghost layer that free-falls out of the bottom (bottom
-	// row first, columns left to right); the live board stays hidden until the reveal.
-	function startExit() {
-		const m = motion();
-		const cells: Ghost[] = [];
-		let end = 0;
-		for (let col = 0; col < N; col++)
-			for (let row = 0; row < N; row++) {
-				const rows = N - row + 1;
-				const delay = (N - 1 - row) * m.exitRowStaggerMs + col * m.exitReelDelayMs + Math.random() * m.exitJitterMs;
-				const dur = fallMs(m, rows);
-				end = Math.max(end, delay + dur);
-				cells.push({ col, row, symbol: board.board[col][row], units: cellUnits(col, row), rows, delay, dur });
-			}
-		const id = ++motionId;
-		ghost = { id, cells };
-		awaitingReveal = true;
-		holdMoving(end + 120);
-		setTimeout(() => ghost?.id === id && (ghost = null), end + 120);
-		return end;
-	}
-	// Reveal: every blob starts the same 8 rows up, so constant gravity lands them in a sweep.
-	// Teased columns (see TEASE_MS) wait for the column before them to land, plus the hold.
+	// Reveal. Teased columns (see TEASE_MS) wait for the column before them to land, plus the hold;
+	// their old blobs leave on time, so the glowing column spins empty.
 	// `teaseTo`: the egg count past which nothing is teased (a bought bonus stops at its own).
 	function spinWave(teaseTo = TEASE_TO) {
 		const m = motion();
 		const hold = TEASE_MS * Math.max(paceScale(), 0.4);
+		const dur = fallMs(m, N);
 		let end = 0;
 		let shift = 0;
 		let eggs = 0;
@@ -902,10 +1075,9 @@
 			if (teased) shift += Math.max(0, landed + hold - (col * m.spinReelDelayMs + shift));
 			let colEnd = 0;
 			const out = Array.from({ length: N }, (_, row) => {
-				const delay = (N - 1 - row) * m.spinRowStaggerMs + col * m.spinReelDelayMs + Math.random() * m.jitterMs + shift;
-				const dur = fallMs(m, N + 1);
+				const delay = col * m.spinReelDelayMs + shift + (N - 1 - row) * m.spinRowStaggerMs + Math.random() * m.jitterMs * 0.25;
 				colEnd = Math.max(colEnd, delay + dur);
-				return { rows: N + 1, delay, dur };
+				return { rows: N, delay, dur };
 			});
 			if (teased) tease.push({ col, from: landed, to: colEnd });
 			// The column thuds as its bottom blob lands; each egg clinks as it lands.
@@ -920,7 +1092,15 @@
 			return out;
 		});
 		hatched = [];
-		wave = { id: ++motionId, drops, impact: m.impactMs, tease };
+		const id = ++motionId;
+		if (exitFrom) {
+			const cells = exitFrom.map((g) => ({ ...g, delay: g.col * m.spinReelDelayMs, dur }));
+			const out = Math.max(...cells.map((g) => g.delay + g.dur)) + 120;
+			ghost = { id, cells };
+			setTimeout(() => ghost?.id === id && (ghost = null), out);
+			exitFrom = null;
+		}
+		wave = { id, drops, impact: m.impactMs, tease };
 		scheduleMoods(tease, drops);
 		awaitingReveal = false;
 		scared = false;
@@ -1036,6 +1216,16 @@
 	});
 	// Round panels pop in with a jelly overshoot and shrink away.
 	const PANEL_IN = { start: 0.6, duration: 450, easing: backOut };
+	// The free-spin count rolls like a counter: the old number slides up and out squashed, the
+	// new one springs up from below with a jelly overshoot (both stacked in .fs-roll).
+	function roll(_node: Element, { up }: { up: boolean }) {
+		return {
+			duration: reducedMotion ? 0 : up ? 520 : 300,
+			easing: up ? backOut : cubicIn,
+			css: (t: number, u: number) =>
+				`transform:translateY(${(up ? u : -u) * 85}%) scale(${1 - 0.25 * u},${1 - 0.45 * u});opacity:${Math.min(1, t * 1.6)}`,
+		};
+	}
 	const PANEL_OUT = { start: 0.85, duration: 220, easing: cubicIn };
 	let locked = $derived(busy || !!pending || !ready || !!error || !!notice || q.replay || autoCount > 0);
 	let status = $derived(
@@ -1213,7 +1403,10 @@
 				if (disposed) return;
 				spinBase = board.total;
 				// Each free spin starts like a base spin does.
-				if (board.tier) sfx.play('spin');
+				if (board.tier) {
+					sfx.play('spin');
+					mamaBeat++;
+				}
 				board = applyEvent(board, event);
 				clusterPops = [];
 				spinLog = [];
@@ -1239,6 +1432,10 @@
 				if (t) await waveSleep(t);
 				continue;
 			}
+			if (event.type === 'bladeUpdate') {
+				await mamaSends(event.changes ?? []);
+				if (disposed) return;
+			}
 			board = applyEvent(board, event);
 			if (event.type === 'scatterTrigger') {
 				await cheerEggs();
@@ -1251,6 +1448,8 @@
 				nervous = true;
 				await waitSplit(DIVIDE_MS * cascadePace());
 				nervous = false;
+				mamaFear = false;
+				mamaTarget = null;
 				if (disposed) return;
 				relief();
 				continue;
@@ -1285,7 +1484,10 @@
 			}
 			if (event.type === 'bonusStart') {
 				autoCount = 0;
-				// Every bonus, won or bought, opens on the "you won" card: its name, rule and spins.
+				// Every bonus, won or bought, moves into its world, then opens on the "you won"
+				// card: its name, rule and spins.
+				await swapWorld(board.tier);
+				if (disposed) return;
 				await presentCard({ kind: 'mystery', count: event.freeSpins ?? 10, tier: board.tier });
 				if (disposed) return;
 				continue;
@@ -1297,10 +1499,12 @@
 			// The bonus ends on its congrats card with the total alone (no win screen before it),
 			// which stays until the player presses to continue.
 			if (event.type === 'finalWin' && board.tier) {
-				await presentCard({ kind: 'end', count: 0, amount: win(winMoney(roundBet, board.total)) });
+				await presentCard({ kind: 'end', count: 0, amount: win(winMoney(roundBet, board.total)), total: winMoney(roundBet, board.total), tier: board.tier });
 				if (disposed) return;
 				// Back to the base world once the player has seen the total (the win stays up).
 				board = { ...board, tier: '' };
+				await swapWorld('');
+				if (disposed) return;
 				continue;
 			}
 			// Wins under 5 bets show on the WIN meter only, no plaque (user request 2026-10-20).
@@ -1330,6 +1534,24 @@
 		pending = null;
 		settling = false;
 	}
+	// A press throws a little jelly off the spin disc, in the logo's splash colours (user,
+	// 2026-10-30: "some spills like from the logo but not too much"): [angle° (0 = right, −90 =
+	// up), distance px past the rim, size px, colour]. Keyed on the count, so each spin restarts it.
+	const SPIN_DROPS: [number, number, number, string][] = [
+		[-148, 26, 17, '#f958b0'],
+		[-116, 36, 12, '#fcb51d'],
+		[-90, 30, 18, '#32d4fc'],
+		[-62, 36, 11, '#f958b0'],
+		[-32, 26, 15, '#fcb51d'],
+	];
+	// Jelly lobes that bulge out of the rim where the drops leave it, like the logo's splashes:
+	// [angle°, size px, colour].
+	const SPIN_LOBES: [number, number, string][] = [
+		[-140, 22, '#f958b0'],
+		[-88, 26, '#32d4fc'],
+		[-36, 20, '#fcb51d'],
+	];
+	let spinSplat = $state(0);
 	async function spin(mode: Mode = spinMode, fromAuto = false) {
 		if (
 			busy ||
@@ -1350,14 +1572,16 @@
 		}
 		busy = true;
 		sfx.play('spin');
+		mamaBeat++;
+		spinSplat++;
 		activeMode = mode;
 		// The last round's win goes on the press: kept, it would read at the new bet meanwhile.
 		board = { ...board, total: 0 };
 		roundBet = bet;
 		const time = Date.now();
 		try {
-			// The old board starts falling on the press (or already did, chainDrop); the reveal
-			// waits for REVEAL_AT of the exit.
+			// The blobs take fright on the press (unless chainDrop already held this board); the
+			// board drops with the reveal.
 			const exit = predrop ?? dropBoard();
 			predrop = null;
 			let data;
@@ -1405,6 +1629,7 @@
 		// stopped): bring it back.
 		if (predrop && !busy) {
 			predrop = null;
+			exitFrom = null;
 			awaitingReveal = false;
 		}
 	}
@@ -1451,16 +1676,18 @@
 	function closeModal() {
 		modal = '';
 	}
-	// Splash → base game: the camera pushes gently toward the splash's floating island while
-	// the splash dissolves, and the base world, already full-screen behind it, settles from a
-	// slight zoom-in on the same curve (a deep zoom blew the soft island art up into a blur, and
-	// growing the world from a small box showed its edges). The HUD fades in and the board
-	// drops in early, landing as the world settles.
-	// The splash cards fade first; the logo flies (with a little hop) onto the base-game logo
-	// meanwhile and lands with a squash. Instant with reduced motion.
-	const FLY_MS = 1500;
-	const FLY_ZOOM = 1.6; // how far the splash pushes toward the island
-	const FLY_FROM = 1.18; // the base world's starting zoom
+	// Splash → base game: candy hyperspeed (lib/candyWarp; user 2026-10-30, "funnel or going to
+	// superspeed with ship but in candy shop"). The camera accelerates into the splash's floating
+	// island inside a funnel of sprinkles stretching into streaks; at the peak a pink-white flash
+	// swaps the scenes, and the base world settles from a slight zoom as the streaks brake back
+	// into sprinkles. Mama lands whole under the flash (no ball entrance: "mama to be shown
+	// fully"); the HUD fades up and the board drops in after it. The logo flies (with a little hop)
+	// over the warp onto the base-game logo and lands with a squash. Instant with reduced motion.
+	const FLY_MS = 1900;
+	const WARP_PEAK = 0.42; // the flash, as a fraction of FLY_MS
+	const FLY_ZOOM = 2.4; // how far the splash rushes toward the island
+	const FLY_FROM = 1.18; // the base world's starting zoom (deeper blew the soft art into a blur)
+	let mamaIn = $state(false);
 	let entering = false;
 	async function enterGame() {
 		if (started || entering) return;
@@ -1500,41 +1727,50 @@
 		const r = island.getBoundingClientRect();
 		const ox = Math.min(Math.max(r.left + r.width / 2, innerWidth * 0.1), innerWidth * 0.9);
 		const oy = Math.min(Math.max(r.top + r.height / 2, innerHeight * 0.1), innerHeight * 0.9);
-		const zoom = { duration: FLY_MS, easing: 'cubic-bezier(0.55, 0, 0.3, 1)' };
+		const P = WARP_PEAK;
+		void candyWarp(ox, oy, FLY_MS, P);
+		setTimeout(() => (mamaIn = true), FLY_MS * P);
 		splash.querySelector('.splash-fit')?.animate([{ opacity: 1 }, { opacity: 0 }], {
 			duration: 350,
 			easing: 'ease-in',
 			fill: 'forwards',
 		});
+		// Accelerating into the island until the flash, gone under it. Scaled about the island's
+		// point only: also centring it slid the splash off the screen's edge, a seam over the
+		// base world behind.
 		splash.style.transformOrigin = `${ox}px ${oy}px`;
-		const cx = innerWidth / 2 - ox,
-			cy = innerHeight / 2 - oy;
-		splash.animate([{ transform: 'none' }, { transform: `translate(${cx}px, ${cy}px) scale(${FLY_ZOOM})` }], {
-			...zoom,
-			fill: 'forwards',
-		});
-		// The crossfade runs on plain time, not the zoom's curve: the splash dissolves over the
-		// base world between 10% and 55% of the flight.
 		splash.animate(
-			[{ opacity: 1 }, { opacity: 1, offset: 0.1, easing: 'ease-in-out' }, { opacity: 0, offset: 0.55 }, { opacity: 0 }],
+			[
+				{ transform: 'none', opacity: 1, easing: 'cubic-bezier(0.5, 0, 0.9, 0.6)' },
+				{ transform: `scale(${FLY_ZOOM})`, opacity: 1, offset: P * 0.8 },
+				{ transform: `scale(${FLY_ZOOM * 1.15})`, opacity: 0, offset: P },
+				{ transform: `scale(${FLY_ZOOM * 1.15})`, opacity: 0 },
+			],
 			{ duration: FLY_MS, fill: 'forwards' },
 		);
 		// The world is 20% bigger than the screen on every side, so zooming it from slightly
-		// in, about the island's point, never shows an edge.
+		// in, about the island's point, never shows an edge. It holds until the flash, then brakes.
 		const [backdrop, stageEl] = world;
 		if (backdrop) {
 			const box = backdrop.getBoundingClientRect();
 			backdrop.style.transformOrigin = `${ox - box.left}px ${oy - box.top}px`;
 			backdrop
-				.animate([{ transform: `scale(${FLY_FROM})` }, { transform: 'none' }], zoom)
+				.animate(
+					[
+						{ transform: `scale(${FLY_FROM})` },
+						{ transform: `scale(${FLY_FROM})`, offset: P, easing: 'cubic-bezier(0.15, 0.6, 0.3, 1)' },
+						{ transform: 'none' },
+					],
+					FLY_MS,
+				)
 				.finished.then(() => (backdrop.style.transformOrigin = ''));
 		}
-		// The HUD and panels fade up into place rather than scaling with the world.
+		// The HUD and panels fade up into place after the flash rather than scaling with the world.
 		stageEl?.animate(
 			[
 				{ opacity: 0, translate: '0 18px' },
-				{ opacity: 0, translate: '0 18px', offset: 0.2, easing: 'ease-out' },
-				{ opacity: 1, translate: '0 0', offset: 0.6 },
+				{ opacity: 0, translate: '0 18px', offset: P, easing: 'ease-out' },
+				{ opacity: 1, translate: '0 0', offset: P + 0.3 },
 				{ opacity: 1, translate: '0 0' },
 			],
 			{ duration: FLY_MS },
@@ -1549,11 +1785,11 @@
 			el?.animate(
 				[
 					{ translate: '0 -1400px' },
-					{ translate: '0 -1400px', offset: 0.14, easing: 'cubic-bezier(0.55, 0, 0.9, 0.55)' },
-					{ translate: '0 0', offset: 0.55, easing: 'ease-out' },
-					{ translate: '0 -22px', offset: 0.7, easing: 'ease-in' },
-					{ translate: '0 0', offset: 0.84, easing: 'ease-out' },
-					{ translate: '0 -4px', offset: 0.93 },
+					{ translate: '0 -1400px', offset: P, easing: 'cubic-bezier(0.55, 0, 0.9, 0.55)' },
+					{ translate: '0 0', offset: 0.68, easing: 'ease-out' },
+					{ translate: '0 -22px', offset: 0.78, easing: 'ease-in' },
+					{ translate: '0 0', offset: 0.88, easing: 'ease-out' },
+					{ translate: '0 -4px', offset: 0.95 },
 					{ translate: '0 0' },
 				],
 				FLY_MS + 200,
@@ -1668,6 +1904,13 @@
 			void spin();
 		}
 	}
+	// The bonus bar's skip button: what a fresh Space press does mid-spin.
+	function skipPress() {
+		const skip = winSkip ?? bigWinSkip;
+		if (!busy || jurisdiction.disabledSlamstop) return;
+		if (skip) skip();
+		else if (!mystery) slamStop();
+	}
 	function cycleSpeed() {
 		turboHeld = null;
 		if (superTurbo || (turbo && jurisdiction.disabledSuperTurbo)) turbo = superTurbo = false;
@@ -1744,22 +1987,24 @@
 />
 <svelte:head><title>Blob Split · Split Party v1</title></svelte:head>
 {#if pixiScene}
-	<PixiScene tier={(board.tier || null) as 'normal' | 'super' | 'hidden' | null} onfail={() => (pixiScene = false)} />
+	<PixiScene tier={sceneTier || null} onfail={() => (pixiScene = false)} />
 {:else}
 <BaseScene />
 <!-- Each bonus tier has its own backdrop, faded in over the base scene for the round. -->
-{#if board.tier === 'normal'}
+{#if sceneTier === 'normal'}
 	<div class="bonus-world" aria-hidden="true" transition:fade={{ duration: 700 }}><BonusNormal /></div>
-{:else if board.tier === 'super'}
+{:else if sceneTier === 'super'}
 	<div class="bonus-world" aria-hidden="true" transition:fade={{ duration: 700 }}><BonusSuper /></div>
-{:else if board.tier === 'hidden'}
-	<div class="bonus-world" aria-hidden="true" transition:fade={{ duration: 700 }}><BonusSuper night /></div>
+{:else if sceneTier === 'hidden'}
+	<div class="bonus-world" aria-hidden="true" transition:fade={{ duration: 700 }}><BonusHidden /></div>
 {/if}
 {/if}
 <main
 	class:playing={busy}
 	class:bonus-round={!!board.tier}
+	class:normal-round={!!board.tier && sceneTier === 'normal'}
 	class:portrait
+	class:mama-up={mamaUp}
 	class:popout={!portrait && !phone && vh <= 340}
 	class:phone
 	class:short={shortLand}
@@ -1772,7 +2017,8 @@
 >
 	<div
 		class="base-stage"
-		style={`width:${baseStage.w}px;height:${baseStage.h}px;--ex:${baseStage.h - (portrait ? PORTRAIT_H : phone ? PHONE.h : 670)}px;${phone ? `--W:${phoneLay.W}px;--H:${phoneLay.H}px;--c:${phoneLay.c};--pb-s:${phoneLay.s};--pb-x:${phoneLay.x}px;--pb-y:${phoneLay.y}px;` : ''}--k:${baseFit};--ls:${logoScale.toFixed(3)};transform:translate(-50%,-50%) scale(${baseFit})`}
+		bind:this={stageEl}
+		style={`width:${baseStage.w}px;height:${baseStage.h}px;--ex:${baseStage.h - (portrait ? PORTRAIT_H : phone ? PHONE.h : 670)}px;${phone ? `--W:${phoneLay.W}px;--H:${phoneLay.H}px;--c:${phoneLay.c};--pb-s:${phoneLay.s};--pb-x:${phoneLay.x}px;--pb-y:${phoneLay.y}px;--mu:${phoneLay.mu.toFixed(3)};` : ''}--k:${baseFit};--ls:${logoScale.toFixed(3)};transform:translate(-50%,-50%) scale(${baseFit})`}
 	>
 		<div class="base-logo">{#if pixiScene}<PixiLogo {gaze} cheer={logoCheer} beat={logoBeat} />{:else}<Logo
 				uid="base-logo"
@@ -1780,6 +2026,9 @@
 				cheer={logoCheer}
 				beat={logoBeat}
 			/>{/if}</div>
+		<div class="base-mama" class:shown={started || mamaIn} aria-hidden="true">
+			<PixiMama bind:this={mamaRig} pixi={pixiScene} beat={mamaBeat} sulk={mamaSulk} fear={mamaFear} push={mamaPush} win={logoCheer} party={inBonus} edge={mood.wonder !== null} shown={started || mamaIn} gaze={mamaGaze} />
+		</div>
 		<div class="studio-badge" aria-hidden="true">
 			<img class="studio-mark" src="./splash/studio-mark.svg" alt="" /><img
 				class="studio-word"
@@ -1806,16 +2055,22 @@
 		<aside class="round-detail">
 			{#if board.tier}
 				<div class="round-panel rp-free" in:scale={PANEL_IN} out:scale={PANEL_OUT}>
-					<span class="round-label">{tr('FREE SPINS')}</span>
-					<!-- Keyed: each new value is a fresh element, so it plays the pop-in. -->
-					<!-- Coiny draws "/" as a backslash, so the separator is set in Poppins. -->
-					{#key board.freeSpin}<strong>{board.freeSpin}<span class="of">/</span>10</strong>{/key}
+					<span class="round-label"><JellyText text={tr('FREE SPINS')} /></span>
+					<!-- Only the count rolls (keyed, see roll()); "/10" stays put. Coiny draws "/" as a
+						backslash, so the separator is set in Poppins. -->
+					<strong
+						><span class="fs-roll"
+							>{#key board.freeSpin}<span class="fs-n" in:roll={{ up: true }} out:roll={{ up: false }}
+									><JellyText text={String(board.freeSpin)} look="blue" /></span
+								>{/key}</span
+						><span class="of"><JellyText text="/" look="blue" /></span><JellyText text="10" look="blue" /></strong
+					>
 				</div>
 			{/if}
 			{#if board.tier}
 				<div class="round-panel rp-total" in:scale={PANEL_IN} out:scale={PANEL_OUT}>
-					<span class="round-label">{tr('TOTAL WIN')}</span>
-					{#key roundWin}<strong>{win(roundWin)}</strong>{/key}
+					<span class="round-label"><JellyText text={tr('TOTAL WIN')} /></span>
+					{#key roundWin}<strong><JellyText text={win(roundWin)} look="blue" /></strong>{/key}
 				</div>
 			{/if}
 		</aside>
@@ -1848,7 +2103,6 @@
 			<div
 				class="grid"
 				class:pixi={pixiBoard}
-				class:awaiting={awaitingReveal}
 				class:scared
 				class:nervous
 				class:relieved
@@ -1893,24 +2147,15 @@
 									<Blob {symbol} {units} uid={`b-${col}-${row}`} />
 								</div>
 							{/key}
+							<!-- The pop's jelly splash (BoardView's splats.ts), kept inside the tile here. -->
+							{#if pop !== undefined}<span
+									class="splat"
+									style={`--c:${BLOB_TINT[symbol] ?? '#f782fe'};--at:${(pop + 0.32 * cascadeMotion().removeMs).toFixed(0)}ms`}
+									>{#each SPLAT_DROPS as d, i (i)}<i style={`--x:${d[0]}px;--y:${d[1]}px;--s:${d[2]}px`}></i>{/each}</span
+								>{/if}
 							<!-- The ground cracks between the new blobs as they divide; keyed on units so
 							     every split tears it open again. -->
 							{#if units > 1}{#key units}<Crack {units} seed={col * 7 + row + 1} />{/key}{/if}
-							{#if relieved && sweats(col, row, units)}
-								<!-- A clear bead of sweat: see-through body, light rim, one glint; the blob shows through. -->
-								<svg class="phew-drop" viewBox="0 0 20 28" aria-hidden="true">
-									<path
-										d="M10 1.5C10 1.5 2.5 12 2.5 18.5a7.5 7.5 0 0 0 15 0C17.5 12 10 1.5 10 1.5Z"
-										fill="#dff6ff"
-										fill-opacity=".45"
-										stroke="#fff"
-										stroke-opacity=".85"
-										stroke-width="1.1"
-									/>
-									<path d="M15.6 19.5a5.8 5.8 0 0 1-4.6 5.4" fill="none" stroke="#3d8fd0" stroke-opacity=".45" stroke-width="1.6" stroke-linecap="round" />
-									<ellipse cx="7" cy="16.5" rx="1.5" ry="3.2" fill="#fff" fill-opacity=".95" transform="rotate(20 7 16.5)" />
-								</svg>
-							{/if}
 							{/if}
 						</div>
 					{/each}{/each}
@@ -1933,10 +2178,15 @@
 			{/if}
 			<EggHatch cells={hatched} pace={hatchPace} />
 			{#each pixiBoard ? [] : clusterPops as p (p.id)}
-				<div class="cluster-pop" aria-hidden="true" style={`left:${(p.x * 100).toFixed(2)}%;top:${(p.y * 100).toFixed(2)}%`}>
+				{@const c = BLOB_TINT[p.symbol] ?? '#9a78f2'}
+				<div
+					class="cluster-pop"
+					aria-hidden="true"
+					style={`left:${(p.x * 100).toFixed(2)}%;top:${(p.y * 100).toFixed(2)}%;--c:${c};--c-hi:${shade(c, 0.42)};--c-lo:${shade(c, -0.28)};--c-ink:${shade(c, -0.62)}`}
+				>
 					{#each SPARKS as k}<span
 							class="spark"
-							style={`--dx:${k.dx.toFixed(1)}px;--dy:${k.dy.toFixed(1)}px;width:${k.s}px;height:${k.s}px;background:${k.c}`}
+							style={`--dx:${k.dx.toFixed(1)}px;--dy:${k.dy.toFixed(1)}px;width:${k.s}px;height:${k.s}px;background:${k.tone === 0 ? c : k.tone === 1 ? shade(c, 0.45) : '#fff'}`}
 						></span>{/each}
 					<strong style={`font-size:${(22 * p.s).toFixed(1)}px`}>{p.amount}</strong>
 				</div>
@@ -1946,6 +2196,24 @@
 		<!-- The board's jelly rim and top gloss: a layer of its own over the board, so the clip the
 		     board takes while blobs fall (.board.moving) doesn't cut the rim off. -->
 		<div class="board-deco" aria-hidden="true"></div>
+		<!-- Mama's spirits: a glowing little ghost of her flies to each splitting tile on an arc,
+		     a comet of fading copies behind it, drawing the design's faint white thread (Figma
+		     11324:47841) from her to the tile, and bursts into a ring as the tile divides. -->
+		<div class="spirits" aria-hidden="true">
+			{#each spirits as f (f.id)}
+				{@const path = `path('M ${f.x0.toFixed(1)} ${f.y0.toFixed(1)} C ${f.ax.toFixed(1)} ${f.ay.toFixed(1)} ${f.cx.toFixed(1)} ${f.cy.toFixed(1)} ${f.x1.toFixed(1)} ${f.y1.toFixed(1)}')`}
+				<svg class="spirit-beam" viewBox="0 0 1200 670" style={`--dur:${f.dur.toFixed(0)}ms;--delay:${f.delay.toFixed(0)}ms;--c:${f.c}`}
+					><path d={`M ${f.x0.toFixed(1)} ${f.y0.toFixed(1)} C ${f.ax.toFixed(1)} ${f.ay.toFixed(1)} ${f.cx.toFixed(1)} ${f.cy.toFixed(1)} ${f.x1.toFixed(1)} ${f.y1.toFixed(1)}`} pathLength="1" /></svg
+				>
+				{#each [5, 4, 3, 2, 1, 0] as k}<span
+						class="spirit"
+						class:tail={k > 0}
+						style={`offset-path:${path};--dur:${f.dur.toFixed(0)}ms;--delay:${(f.delay + k * 38).toFixed(0)}ms;--k:${k};--c:${f.c}`}
+					></span>{/each}
+				<span class="spirit-pop" style={`left:${f.x1.toFixed(1)}px;top:${f.y1.toFixed(1)}px;--delay:${(f.delay + f.dur - 60).toFixed(0)}ms;--c:${f.c}`}
+				></span>
+			{/each}
+		</div>
 		{#if plaqueOn}
 			<div
 				class="win-plaque"
@@ -1962,9 +2230,13 @@
 						<img src="./win/small-win-plaque.webp" alt="" width="405" height="304" />
 						<span class="plaque-shine"><span></span></span>
 						<!-- Sized for the final amount, so the count-up doesn't shrink as it grows. -->
-						<strong
-							class:counted={smallWin.counted}
-							style={`font-size:${plaqueFont(win(smallWin.final))}px`}>{winCount(smallWin.shown, smallWin.final)}</strong
+						<strong class:counted={smallWin.counted}
+							><JellyNumber
+								text={winCount(smallWin.shown, smallWin.final)}
+								fit={win(smallWin.final)}
+								height={PLAQUE_DIGIT_H}
+								maxWidth={PLAQUE_TEXT_W}
+							/></strong
 						>
 					</div>
 				</div>
@@ -1975,24 +2247,35 @@
 			<div class="hud-bar"></div>
 			{#if menuOpen}
 				<div class="menu-panel" id="game-menu" in:pop out:popOut>
-					<button class="menu-row" aria-pressed={sound} onclick={() => (sound = !sound)}
-						><span class="hud-icon"
-							>{#if sound}<img class="menu-sound" src="./menu/sound.svg" alt="" />{:else}<img
-									class="menu-sound-off"
-									src="./menu/sound-off.webp"
-									alt=""
-								/>{/if}</span
-						>{tr('SOUND')}</button
-					>
-					<button class="menu-row" aria-pressed={music} onclick={() => (music = !music)}
-						><span class="hud-icon"
-							>{#if music}<img src="./menu/music.svg" alt="" />{:else}<img
-									class="menu-music-off"
-									src="./menu/music-off.webp"
-									alt=""
-								/>{/if}</span
-						>{tr('MUSIC')}</button
-					>
+					{#each [{ key: 'sound', label: tr('SOUND'), on: sound && soundLevel > 0, level: soundLevel }, { key: 'music', label: tr('MUSIC'), on: music && musicLevel > 0, level: musicLevel }] as row (row.key)}
+						{@const which = row.key as 'sound' | 'music'}
+						<div class="menu-row menu-volume" class:muted={!row.on}>
+							<button class="hud-icon" aria-label={row.label} aria-pressed={row.on} onclick={() => toggleVolume(which)}
+								>{#if which === 'sound'}{#if row.on}<img class="menu-sound" src="./menu/sound.svg" alt="" />{:else}<img
+											class="menu-sound-off"
+											src="./menu/sound-off.webp"
+											alt=""
+										/>{/if}{:else if row.on}<img src="./menu/music.svg" alt="" />{:else}<img
+										class="menu-music-off"
+										src="./menu/music-off.webp"
+										alt=""
+									/>{/if}</button
+							>
+							<label class="menu-volume-body">
+								<span>{row.label}</span>
+								<input
+									type="range"
+									min="0"
+									max="100"
+									step="1"
+									value={Math.round((row.on ? row.level : 0) * 100)}
+									style:--fill="{(row.on ? row.level : 0) * 100}%"
+									aria-valuetext="{Math.round((row.on ? row.level : 0) * 100)}%"
+									oninput={(e) => slide(which, +e.currentTarget.value / 100)}
+								/>
+							</label>
+						</div>
+					{/each}
 					<button
 						class="menu-row"
 						onclick={() => {
@@ -2011,18 +2294,22 @@
 				aria-controls="game-menu"
 				onclick={() => (menuOpen = !menuOpen)}
 				>{#if menuOpen}<img class="menu-close" src="./menu/close.svg" alt="" />{:else}<img
-						src="./base/menu.svg"
+						class="menu-bars"
+						src="./base/bar/menu.svg"
 						alt=""
 					/>{/if}</button
 			>
 			<button
 				class="bonus-button"
 				class:extra-on={!!toggled}
+				class:in-bonus={inBonus}
+				data-tier={board.tier || null}
+				aria-label={bonusLabel}
 				bind:this={bonusBtn}
 				bind:clientWidth={bonusW}
 				disabled={locked || jurisdiction.disabledBuyFeature}
 				onclick={() => (toggled ? (toggled = null) : openModal('bonus'))}
-				><img class="bonus-mark" src="./base/bonus-mark.svg" alt="" /><span
+				><img class="bonus-mark" src="./base/bar/bonus-mark.svg" alt="" /><span
 					style={bonusFit.k < 1
 						? `font-size:${bonusFit.k.toFixed(3)}em;letter-spacing:${(bonusFit.track * bonusFit.k).toFixed(2)}px`
 						: ''}>{bonusLabel}</span
@@ -2036,6 +2323,11 @@
 					>
 				</div>
 				<span class="hud-divider"></span>
+				<!-- Desktop bonus bar (Figma 11402:11045): BET sits between BALANCE and WIN while the
+					stepper is away. -->
+				{#if inBonus}<div class="metric bonus-bet">
+						<span class="metric-label">{tr('BET')}</span><strong style={hudFont(money(roundBet), 'metric')}>{money(roundBet)}</strong>
+					</div>{/if}
 				<div class="metric">
 					<span class="metric-label">{tr('WIN')}</span>{#key winRolls}<strong
 							class:win-roll={winRolls > 0}
@@ -2045,7 +2337,6 @@
 			</div>
 			<span class="hud-divider bet-divider"></span>
 			<div class="bet-controls" class:coinless={betCoinless}>
-				<img class="bet-coins" src="./base/coins-white.svg" alt="" />
 				<div class="metric">
 					<!-- What a regular spin costs: its mode's price while Extra Feature or Feature Spin is on. -->
 					<span class="metric-label bet-label">{tr('BET')}</span><strong
@@ -2057,12 +2348,12 @@
 					class="hud-icon"
 					aria-label={tr('INFO CTRL MINUS')}
 					onclick={() => changeBet(-1)}
-					disabled={locked || bet === bets[0]}><img class="minus" src="./base/minus.svg" alt="" /></button
+					disabled={locked || bet === bets[0]}><img class="minus" src="./base/bar/arrow.svg" alt="" /></button
 				><button
 					class="hud-icon"
 					aria-label={tr('INFO CTRL PLUS')}
 					onclick={() => changeBet(1)}
-					disabled={locked || bet === bets.at(-1)}><img class="plus" src="./base/plus.svg" alt="" /></button
+					disabled={locked || bet === bets.at(-1)}><img class="plus" src="./base/bar/arrow.svg" alt="" /></button
 				>
 			</div>
 			<button
@@ -2072,10 +2363,39 @@
 				onclick={() => (q.replay ? playReplay() : spin())}
 				><img
 					class="spin-arrow"
-					src="./base/spin-arrow.svg"
+					src="./base/bar/spin.svg"
 					alt=""
-				/></button
+				/>{#key spinSplat}{#if spinSplat}<span class="spin-splat" aria-hidden="true"
+							>{#each SPIN_LOBES as l, i (i)}<b style={`--a:${l[0]}deg;--s:${l[1]}px;--c:${l[2]}`}></b>{/each}{#each SPIN_DROPS as d, i (i)}<i
+									style={`--a:${d[0]}deg;--d:${d[1]}px;--s:${d[2]}px;--c:${d[3]};--at:${30 + i * 22}ms`}
+								></i>{/each}</span
+						>{/if}{/key}</button
 			>
+			<!-- Desktop bonus bar (Figma 11402:11045): the round's TOTAL WIN and FREE SPINS tiles take
+				the stepper and spin disc's place, and a skip button the auto button's (Space's skip:
+				a win screen, else a slam stop). Other layouts keep .round-detail. -->
+			{#if inBonus}
+				<div class="bar-round" in:scale={PANEL_IN} out:scale={PANEL_OUT}>
+					<div class="bar-total">
+						<span>{tr('TOTAL WIN')}</span>{#key roundWin}<strong>{win(roundWin)}</strong>{/key}
+					</div>
+					<div class="bar-free">
+						<span>{tr('FREE SPINS')}</span><strong
+							><span class="fs-roll"
+								>{#key board.freeSpin}<span class="fs-n" in:roll={{ up: true }} out:roll={{ up: false }}
+										>{board.freeSpin}</span
+									>{/key}</span
+							><span class="of">/</span>10</strong
+						>
+					</div>
+				</div>
+				<button
+					class="hud-icon skip-button"
+					aria-label={tr('STOP')}
+					disabled={!busy || !!jurisdiction.disabledSlamstop}
+					onclick={skipPress}><img src="./base/bar/skip.svg" alt="" /></button
+				>
+			{/if}
 			<!-- One button cycles the speed: normal (Figma 4148:16896), turbo (2503:7489), super turbo
 			     (4148:16893), skipping super turbo where the jurisdiction disables it. -->
 			<button
@@ -2084,9 +2404,11 @@
 				aria-pressed={turbo || superTurbo}
 				disabled={!!jurisdiction.disabledTurbo}
 				onclick={cycleSpeed}
-				>{#if superTurbo}<img class="speed-icon" src="./base/speed-super.webp" alt="" />{:else if turbo}<span class="turbo-icon"
-						><img src="./base/speed-turbo.webp" alt="" /></span
-					>{:else}<img class="speed-icon" src="./base/speed-normal.webp" alt="" />{/if}</button
+				><img class="speed-icon" src="./base/bar/turbo.svg" alt="" />{#if superTurbo}<img
+						class="speed-icon speed-second"
+						src="./base/bar/turbo.svg"
+						alt=""
+					/>{/if}</button
 			>
 			<button
 				class="hud-icon auto-button"
@@ -2094,7 +2416,7 @@
 				aria-label={autoCount ? tr('STOP') : tr('AUTOPLAY')}
 				disabled={q.replay || !!jurisdiction.disabledAutoplay || (!autoCount && locked)}
 				onclick={() => (autoCount ? (autoCount = 0) : openModal('auto'))}
-				>{#if autoCount}<span class="auto-stop">■</span>{:else}<img src="./base/auto.svg" alt="" />{/if}<small
+				>{#if autoCount}<span class="auto-stop">■</span>{:else}<img src="./base/bar/auto.svg" alt="" />{/if}<small
 					>{autoCount || tr('AUTO')}</small
 				></button
 			>
@@ -2115,15 +2437,21 @@
 			count={card.count}
 			sub={tr('FREE SPINS')}
 			amount={card.amount}
+			total={card.total}
+			format={(v) => winCount(v, card?.total ?? v)}
 			bonus={card.tier ? tr(card.tier.toUpperCase()) : ''}
 			desc={card.tier ? tr(`MYSTERY ${card.tier.toUpperCase()} TEXT`) : ''}
 			blobs={START_BLOBS[card.tier ?? ''] ?? 1}
 			symbol={TIER_BLOB[card.tier ?? ''] ?? 'GRAPES'}
+			tier={card.tier ?? ''}
 			pace={card.pace}
 			prompt={tr('PRESS ANYWHERE TO CONTINUE')}
 			onskip={() => cardSkip?.()}
 		/>
 	</div>
+{/if}
+{#if swap}
+	{#key swap.id}<BonusSwap style={swap.style} cover={swap.cover} hold={swap.hold} reveal={swap.reveal} />{/key}
 {/if}
 {#if mystery}
 	<MysteryEgg tier={mystery.tier} pace={mystery.pace} />
@@ -2196,111 +2524,109 @@
 	</div>
 {/if}
 {#if modal === 'bonus'}
-	<!-- Figma 9164:11722 at the base game's stage size, 3 + 2 cards. Extra Chance has no bet mode
-	     in the math yet, so it shows locked with no price; the four real modes keep their prices. -->
+	<!-- Figma 11402:9764: two wide switch cards (Extra Feature, Feature Spin) over the three bonus
+	     buys, each card a window onto its world (public/buy, build-buy-cards.py) with its hero art,
+	     chips, two lines of copy, price and button; the bet stepper under them. Landscape lays
+	     the design's 1062px grid out at --k (zoom), portrait one 525px column that scrolls. -->
 	<div
 		class="overlay bonus-overlay"
+		class:portrait
+		class:scrolls={!portrait && (vh - 24) / 630 < buyK - 0.001}
 		role="dialog"
 		aria-modal="true"
 		aria-labelledby="modal-title"
 		dir={lang === 'ar' && !social ? 'rtl' : 'ltr'}
+		style={`--k:${buyK}`}
 		transition:fade={{ duration: 200 }}
 	>
-		<div
-			class="bonus-stage"
-			class:portrait
-			class:compact={buyCompact}
-			style={`width:${buyStage.w}px;height:${buyStage.h}px;--k:${buyK};transform:translate(-50%,-50%) scale(${buyK})`}
-		>
-			<h2 class="bonus-title" id="modal-title">{tr('BUY BONUS')}</h2>
-			<div class="buy-cards" use:edgeFade>
-				<!-- Not a buy: a switch for every following regular spin, priced per spin. -->
-				<article class="buy-card" class:on={toggled === 'extra_chance'} style="--i:0">
-					<h3>{tr('EXTRA')}</h3>
-					<p>{tr('EXTRA DESC')}</p>
-					<div class="buy-art extra"><Blob symbol="STRAWBERRY" uid="buy-extra" /></div>
-					<b class="buy-price">{money(bet * MODES.extra_chance)}</b>
-					<button
-						class="buy-button activate"
-						class:on={toggled === 'extra_chance'}
-						aria-pressed={toggled === 'extra_chance'}
-						disabled={autoCount > 0}
-						onclick={() => toggleMode('extra_chance')}
-						>{tr(toggled === 'extra_chance' ? 'DEACTIVATE' : 'ACTIVATE')}</button
-					>
-				</article>
-				{#each BUYS as mode, j}{@const i = j + 1}
-					<article class="buy-card" class:on={toggled === mode} style={`--i:${i}`}>
-						<h3>{tr(mode.toUpperCase())}</h3>
-						{#if mode === 'mystery'}{@const d = oddsCopy(tr('MYSTERY DESC'))}
-							<p class="mystery-desc">
-								{d.lead}{#each d.odds as o}<span class="odds"
-										>{#if o.pct}<b>{o.pct}</b>{/if}<span><strong>{o.name}</strong>{#if o.what}&nbsp;– {o.what}{/if}</span></span
-									>{/each}{#if d.foot}<span class="foot">{d.foot}</span>{/if}
-							</p>
-						{:else}
-							<p>{tr(`${mode.toUpperCase()} DESC`)}</p>
-						{/if}
-						<div class={`buy-art ${mode}`}>
-							{#if mode === 'feature'}
-								{#each FEATURE_BLOBS as [x, y], j}<span class="feature-blob" style={`left:${x}px;top:${y}px`}
-										><Blob symbol="STRAWBERRY" uid={`buy-feature-${j}`} /></span
-									>{/each}
-							{:else if mode === 'mystery'}
-								<img class="mystery-ball" src="./ui/mystery.webp" alt="" />
+		<h2 class="sr-only" id="modal-title">{tr('BUY BONUS')}</h2>
+		{#snippet blobs(n: number)}{#each { length: n } as _, b (b)}<img
+					class="chip-blob"
+					style={`--b:${b}`}
+					src="./buy/v3/chip-blob.webp"
+					alt=""
+				/>{/each}{/snippet}
+		{#snippet split(from: number)}<li class="chip dark">{@render blobs(1)}<b>{from}→6</b></li>{/snippet}
+		<div class="bm-scroll" use:edgeFade>
+			<div class="bm-cards">
+				{#each SWITCHES as s, i (s.mode)}
+					{@const on = toggled === s.mode}
+					<article class={`bm-card wide ${s.key}`} class:on style={`--i:${i}`}>
+						<img class="bm-hero" src={`./buy/v3/${s.hero}.webp`} alt="" />
+						<ul class="bm-chips" aria-hidden="true">
+							{#if s.key === 'extra'}
+								<li class="chip dark"><b>2×</b><img class="chip-egg" src="./buy/v3/chip-egg.webp" alt="" /></li>
 							{:else}
-								<span class="tier-badge">{mode === 'normal' ? 3 : 4}x</span><img
-									class="buy-egg"
-									src="./splash/egg.webp"
-									alt=""
-								/>
+								<li class="chip dark"><b class="pink">1</b><img class="chip-spin" src="./base/bar/refresh.svg" alt="" /></li>
+								{@render split(1)}
 							{/if}
+						</ul>
+						<div class="bm-text">
+							<h3>{tr(s.title)}</h3>
+							<p>{tr(s.copy)}</p>
 						</div>
-						<b class="buy-price">{money(bet * MODES[mode])}</b>
-						{#if mode === 'feature'}
-							<!-- A switch like Extra Feature's: the price shows on the HUD bet while it is on. -->
+						<div class="bm-well">
+							<b class="bm-price">{money(bet * MODES[s.mode])}</b>
+							<!-- A switch for every following spin (its price shows on the HUD bet while on). -->
 							<button
-								class="buy-button activate"
-								class:on={toggled === 'feature'}
-								aria-pressed={toggled === 'feature'}
+								class="bm-button activate"
+								class:on
+								aria-pressed={on}
 								disabled={autoCount > 0}
-								onclick={() => toggleMode('feature')}
-								>{tr(toggled === 'feature' ? 'DEACTIVATE' : 'ACTIVATE')}</button
+								onclick={() => toggleMode(s.mode)}>{tr(on ? 'DEACTIVATE' : 'ACTIVATE')}</button
 							>
-						{:else}
-							<button
-								class="buy-button"
-								disabled={balance < bet * MODES[mode]}
-								onclick={() => {
-									chosen = mode;
-									modal = 'confirm';
-								}}>{tr('BUY')}</button
-							>
-						{/if}
+						</div>
+					</article>
+				{/each}
+				{#each BONUS_BUYS as b, i (b.mode)}
+					<article class={`bm-card tall ${b.mode}`} style={`--i:${i + 2}`}>
+						<img class="bm-hero" src={`./buy/v3/${b.hero}.webp`} alt="" />
+						<div class="bm-shade"></div>
+						<ul class="bm-chips" aria-hidden="true">
+							<li class="chip light">10 {tr('FREE SPINS')}</li>
+							{#if b.mode === 'mystery'}
+								<!-- The three bonuses' odds, each with its starting blobs (1, 2, 3). -->
+								<li class="chip-break"></li>
+								{#each oddsCopy(tr('MYSTERY DESC')).odds.slice(0, 3) as o, n (n)}
+									<li class="chip dark">{@render blobs(n + 1)}<b>{o.pct.replace(/\s/g, '')}</b></li>
+								{/each}
+							{:else}
+								{@render split(b.mode === 'super' ? 2 : 1)}
+							{/if}
+						</ul>
+						<h3>{tr(b.mode.toUpperCase())}</h3>
+						<p>{tr(`${b.mode.toUpperCase()} CARD`)}</p>
+						<p class="sr-only">{tr(`${b.mode.toUpperCase()} DESC`)}</p>
+						<b class="bm-price">{money(bet * MODES[b.mode])}</b>
+						<button
+							class="bm-button buy"
+							disabled={balance < bet * MODES[b.mode]}
+							onclick={() => {
+								chosen = b.mode;
+								modal = 'confirm';
+							}}>{tr('BUY')}</button
+						>
 					</article>
 				{/each}
 			</div>
-			<div class="bonus-bet">
-				<button
-					class="hud-icon"
-					aria-label={tr('INFO CTRL MINUS')}
-					onclick={() => changeBet(-1)}
-					disabled={bet === bets[0]}><img class="minus" src="./base/minus.svg" alt="" /></button
-				>
-				<div class="metric">
-					<span class="metric-label">{tr('BET')}</span><strong>{money(bet)}</strong>
-				</div>
-				<button
-					class="hud-icon"
-					aria-label={tr('INFO CTRL PLUS')}
-					onclick={() => changeBet(1)}
-					disabled={bet === bets.at(-1)}><img class="plus" src="./base/plus.svg" alt="" /></button
-				>
+		</div>
+		<div class="bm-bet">
+			<button class="bm-step" aria-label={tr('INFO CTRL MINUS')} onclick={() => changeBet(-1)} disabled={bet === bets[0]}
+				><img class="down" src="./base/bar/arrow.svg" alt="" /></button
+			>
+			<div class="bm-bet-value">
+				<span>{tr('BET')}</span><strong>{money(bet)}</strong>
 			</div>
-			<button class="screen-close" aria-label={tr('INFO CTRL CLOSE')} onclick={closeModal}
-				><img src="./ui/close.svg" alt="" /></button
+			<button
+				class="bm-step"
+				aria-label={tr('INFO CTRL PLUS')}
+				onclick={() => changeBet(1)}
+				disabled={bet === bets.at(-1)}><img src="./base/bar/arrow.svg" alt="" /></button
 			>
 		</div>
+		<button class="bm-close" aria-label={tr('INFO CTRL CLOSE')} onclick={closeModal}
+			><img src="./ui/close.svg" alt="" /></button
+		>
 	</div>
 {:else if modal === 'info'}
 	<div
@@ -2328,17 +2654,27 @@
 		{#key modal}
 			<section
 				class={`dialog ${modal}`}
+				data-mode={modal === 'confirm' ? chosen : null}
 				in:pop
 				out:popOut
 			>
 				{#if modal === 'confirm'}
-					<!-- Figma 9185:17341 -->
+					<!-- A small copy of the bonus card it confirms (the buy menu's art, colour and pills;
+					     user, 2026-10-30), over Figma 9185:17341's copy and buttons. -->
+					{@const buy = BONUS_BUYS.find((b) => b.mode === chosen)}
+					{#if buy}
+						<div class={`cf-art ${buy.mode}`} aria-hidden="true">
+							<img class="bm-hero" src={`./buy/v3/${buy.hero}.webp`} alt="" />
+							<div class="bm-shade"></div>
+						</div>
+					{/if}
 					<h2 id="modal-title">{tr('CONFIRM')} {tr(chosen.toUpperCase())}</h2>
 					<p class="confirm-line">
 						{tr('BUY FOR')
 							.replace('%name%', tr(chosen.toUpperCase()))
 							.replace('%price%', money(bet * MODES[chosen]))}
 					</p>
+					<b class="cf-price" aria-hidden="true">{money(bet * MODES[chosen])}</b>
 					<div class="dialog-actions">
 						<button class="secondary" onclick={() => (modal = 'bonus')}>{tr('CANCEL')}</button
 						><button class="primary" onclick={confirmBuy} disabled={balance < bet * MODES[chosen]}

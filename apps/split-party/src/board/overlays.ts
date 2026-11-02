@@ -1,11 +1,12 @@
 // The board's DOM overlays, drawn on the board canvas: each cluster's win pill with its
-// confetti (.cluster-pop), and the sweat drops of the relief sigh (.phew-drop). Same sizes, colours and keyframes as the CSS.
+// confetti (.cluster-pop). Same sizes, colours and keyframes as the CSS.
 import { Container, Graphics, Sprite, Texture, TilingSprite } from 'pixi.js';
-import { bezier, keyframes, progress, EASE_IN_OUT, LINEAR, type Frame } from './anim';
-import { BORDER, CELL_W, CELL_H, GRID_H, GRID_W, GRID_X, GRID_Y, cellX, cellY } from './geometry';
+import { bezier, keyframes, type Frame } from './anim';
+import { CELL_W, CELL_H, GRID_H, GRID_W, GRID_X, GRID_Y, cellX, cellY } from './geometry';
 import { DISPOSE } from './pixiApp';
+import { BLOB_TINT, shade } from '../lib/premium';
 
-export type ClusterPop = { id: number; x: number; y: number; amount: string; s?: number };
+export type ClusterPop = { id: number; x: number; y: number; amount: string; s?: number; symbol?: string };
 
 const TEX_RES = 3;
 function canvasTexture(w: number, h: number, draw: (ctx: CanvasRenderingContext2D) => void) {
@@ -43,95 +44,79 @@ const SPARK_A: Frame<{ v: number }>[] = [
 	[0.65, { v: 1 }],
 	[1, { v: 0 }],
 ];
-// App's SPARKS: 16 confetti dots thrown out round the cluster's centre.
+// App's SPARKS: 16 confetti dots thrown out round the cluster's centre, in the winning blob's
+// colour, a lighter tint of it and white.
 const SPARKS = Array.from({ length: 16 }, (_, i) => {
 	const a = (i / 16) * Math.PI * 2 + (i % 2) * 0.2;
 	const d = 58 + (i % 3) * 22;
-	return { dx: Math.cos(a) * d, dy: Math.sin(a) * d, c: ['#c9a8ff', '#fa52e5', '#ffffff'][i % 3], s: 8 + (i % 3) * 3 };
+	return { dx: Math.cos(a) * d, dy: Math.sin(a) * d, tone: i % 3, s: 8 + (i % 3) * 3 };
 });
-function pillTexture(label: string) {
+export const sparkColor = (c: string, tone: number) => (tone === 0 ? c : tone === 1 ? shade(c, 0.45) : '#ffffff');
+const DRIP = 9;
+// The win amount on a drop of the winning blob's jelly: its colour lit from the top, a dark
+// rim of it, a gloss streak, and a drip hanging off the underside (the blobs' own material,
+// where the old pill was the UI's purple).
+function pillTexture(label: string, color: string) {
 	const w = measure(PILL_FONT, label) + PILL_PAD;
 	const m = PILL_MARGIN;
-	const tex = canvasTexture(w + 2 * m, PILL_H + 2 * m, (ctx) => {
+	const h = PILL_H;
+	const r = h / 2;
+	const ink = shade(color, -0.62);
+	const tex = canvasTexture(w + 2 * m, h + DRIP + 2 * m, (ctx) => {
 		ctx.translate(m, m);
-		ctx.beginPath();
-		ctx.roundRect(0, 0, w, PILL_H, 14);
-		// The game's purple (lit pad #6a4cc0) as a jelly pill, lavender rim; 0 4px 14px #2a165999.
+		const body = () => {
+			ctx.beginPath();
+			ctx.roundRect(0, 0, w, h, r);
+			// The drip: a bead hanging from a third of the way along the underside.
+			const dx = w * 0.68;
+			ctx.moveTo(dx - 7, h - 1);
+			ctx.bezierCurveTo(dx - 4, h + 2, dx - 4.5, h + DRIP - 4, dx, h + DRIP);
+			ctx.bezierCurveTo(dx + 4.5, h + DRIP - 4, dx + 4, h + 2, dx + 7, h - 1);
+		};
 		// Canvas shadows are in device pixels.
 		ctx.save();
-		ctx.shadowColor = 'rgba(42,22,89,.6)';
-		ctx.shadowBlur = 14 * TEX_RES;
+		ctx.shadowColor = 'rgba(10,6,30,.55)';
+		ctx.shadowBlur = 12 * TEX_RES;
 		ctx.shadowOffsetY = 4 * TEX_RES;
-		const g = ctx.createLinearGradient(0, 0, 0, PILL_H);
-		g.addColorStop(0, '#9a78f2');
-		g.addColorStop(1, '#5b3cb0');
+		body();
+		ctx.fillStyle = ink;
+		ctx.fill();
+		ctx.restore();
+		ctx.save();
+		ctx.translate(2, 2);
+		ctx.scale((w - 4) / w, (h - 4) / h);
+		body();
+		const g = ctx.createLinearGradient(0, 0, 0, h + DRIP);
+		g.addColorStop(0, shade(color, 0.42));
+		g.addColorStop(0.45, color);
+		g.addColorStop(1, shade(color, -0.28));
 		ctx.fillStyle = g;
 		ctx.fill();
 		ctx.restore();
+		// Gloss: a soft streak along the top, a dot at the left end.
 		ctx.beginPath();
-		ctx.roundRect(1, 1, w - 2, PILL_H - 2, 13);
-		ctx.lineWidth = 2;
-		ctx.strokeStyle = '#d9c8ff';
-		ctx.stroke();
+		ctx.roundRect(r * 0.7, 3.5, w - r * 1.6, h * 0.24, h * 0.12);
+		ctx.fillStyle = 'rgba(255,255,255,.42)';
+		ctx.fill();
+		ctx.beginPath();
+		ctx.arc(r * 0.55, h * 0.3, 2.2, 0, Math.PI * 2);
+		ctx.fillStyle = 'rgba(255,255,255,.7)';
+		ctx.fill();
 		ctx.font = PILL_FONT;
 		ctx.textAlign = 'center';
 		ctx.textBaseline = 'middle';
-		// text-shadow 0 2px 0 #3b2380
-		ctx.fillStyle = '#3b2380';
-		ctx.fillText(label, w / 2, 2 + (22 * 1.3) / 2 + 2);
+		const ty = 2 + (22 * 1.3) / 2;
+		ctx.lineJoin = 'round';
+		ctx.lineWidth = 5;
+		ctx.strokeStyle = ink;
+		ctx.strokeText(label, w / 2, ty + 1.5);
+		ctx.fillStyle = ink;
+		ctx.fillText(label, w / 2, ty + 2.5);
 		ctx.fillStyle = '#fff';
-		ctx.fillText(label, w / 2, 2 + (22 * 1.3) / 2);
+		ctx.fillText(label, w / 2, ty);
 	});
 	return { tex, w };
 }
-
-// ---- Sweat drop -------------------------------------------------------------------------------
-
-// The clear bead (App's phew-drop svg, viewBox 20×28 drawn at 8×11).
-function sweatDrop() {
-	const root = new Container();
-	const art = new Container();
-	art.scale.set(8 / 20, 11 / 28);
-	const body = (g: Graphics) =>
-		g
-			.moveTo(10, 1.5)
-			.bezierCurveTo(10, 1.5, 2.5, 12, 2.5, 18.5)
-			.arc(10, 18.5, 7.5, Math.PI, 0, true)
-			.bezierCurveTo(17.5, 12, 10, 1.5, 10, 1.5)
-			.closePath();
-	// drop-shadow(0.5px 1px 0.6px #2a1a5a40), as a soft offset copy.
-	const shadow = body(new Graphics()).fill({ color: '#2a1a5a', alpha: 0.25 });
-	shadow.position.set(0.5 / 0.4, 1 / 0.393);
-	const bead = body(new Graphics())
-		.fill({ color: '#dff6ff', alpha: 0.45 })
-		.stroke({ width: 1.1, color: '#fff', alpha: 0.85 });
-	const rim = new Graphics()
-		.moveTo(15.6, 19.5)
-		.quadraticCurveTo(15.3, 23.9, 11, 24.9)
-		.stroke({ width: 1.6, color: '#3d8fd0', alpha: 0.45, cap: 'round' });
-	const glint = new Graphics().ellipse(0, 0, 1.5, 3.2).fill({ color: '#fff', alpha: 0.95 });
-	glint.position.set(7, 16.5);
-	glint.rotation = (20 * Math.PI) / 180;
-	art.addChild(shadow, bead, rim, glint);
-	// transform-origin 50% 80% of the 8×11 box.
-	art.position.set(-4, -8.8);
-	root.addChild(art);
-	return root;
-}
-const C_DROP_RUN = bezier(0.5, 0, 0.9, 0.6);
-const PHEW_T: Frame<{ tx: number; ty: number; r: number; sx: number; sy: number }>[] = [
-	[0, { tx: 0, ty: 0, r: 14, sx: 0.3, sy: 0.25 }, LINEAR],
-	[0.3, { tx: 0, ty: 0, r: 14, sx: 0.9, sy: 0.8 }, EASE_IN_OUT],
-	[0.5, { tx: 0, ty: 0, r: 14, sx: 1, sy: 1 }, C_DROP_RUN],
-	[0.85, { tx: 2.5, ty: 13, r: 8, sx: 0.86, sy: 1.18 }, LINEAR],
-	[1, { tx: 3.5, ty: 20, r: 6, sx: 0.7, sy: 1.22 }],
-];
-const PHEW_A: Frame<{ v: number }>[] = [
-	[0, { v: 0 }],
-	[0.08, { v: 1 }],
-	[0.85, { v: 1 }],
-	[1, { v: 0 }],
-];
 
 // ---- Scatter tease ---------------------------------------------------------------------------
 
@@ -245,13 +230,10 @@ function teaseBubble() {
 // ---- Layer ------------------------------------------------------------------------------------
 
 type Pop = { root: Container; pill: Sprite; sparks: Graphics[]; start: number; k: number };
-type Sweat = { root: Container; x: number; y: number };
 
 export class Overlays {
-	sweat = new Container();
 	pops = new Container();
 	private popViews = new Map<number, Pop>();
-	private sweatViews = new Map<string, Sweat>();
 	tease = new Container();
 	private teaseTex: Texture[] = [];
 	private teaseView: {
@@ -296,14 +278,7 @@ export class Overlays {
 		const t = this.teasing;
 		return !!t && t.spans.some((s) => now >= t.start + s.from && now < t.start + s.to);
 	}
-	private relief = { start: 0, ms: 1250 };
-
-	update(
-		now: number,
-		pops: ClusterPop[],
-		sweat: string[],
-		reliefMs: number,
-	) {
+	update(now: number, pops: ClusterPop[]) {
 		// Cluster pops live until App clears them.
 		const ids = new Set(pops.map((p) => p.id));
 		for (const [id, v] of this.popViews)
@@ -316,38 +291,20 @@ export class Overlays {
 			if (this.popViews.has(p.id)) continue;
 			const root = new Container();
 			root.position.set(GRID_X + p.x * GRID_W, GRID_Y + p.y * GRID_H);
+			const color = BLOB_TINT[p.symbol ?? ''] ?? '#9a78f2';
 			const sparks = SPARKS.map((k) => {
-				const g = new Graphics().circle(0, 0, k.s / 2).fill(k.c);
+				const g = new Graphics().circle(0, 0, k.s / 2).fill(sparkColor(color, k.tone));
 				root.addChild(g);
 				return g;
 			});
-			const t = pillTexture(p.amount);
+			const t = pillTexture(p.amount, color);
 			const pill = new Sprite(t.tex);
 			pill.scale.set(1 / TEX_RES);
-			pill.anchor.set(0.5);
+			// Centred on the pill, not on the pill plus its drip.
+			pill.anchor.set(0.5, (PILL_MARGIN + PILL_H / 2) / (PILL_H + DRIP + 2 * PILL_MARGIN));
 			root.addChild(pill);
 			this.pops.addChild(root);
 			this.popViews.set(p.id, { root, pill, sparks, start: now, k: p.s ?? 1 });
-		}
-		// Sweat beads during the relief sigh.
-		if (sweat.length && !this.sweatViews.size) this.relief = { start: now, ms: reliefMs };
-		const sw = new Set(sweat);
-		for (const [k, v] of this.sweatViews)
-			if (!sw.has(k)) {
-				v.root.destroy(DISPOSE);
-				this.sweatViews.delete(k);
-			}
-		for (const k of sw) {
-			if (this.sweatViews.has(k)) continue;
-			const [col, row] = k.split(',').map(Number);
-			const root = sweatDrop();
-			// left 62%, top 24% of the pad's padding box; origin 50% 80% of the 8×11 bead.
-			const px = cellX(col) + BORDER + 0.62 * (CELL_W - 2 * BORDER) + 4;
-			const py = cellY(row) + BORDER + 0.24 * (CELL_H - 2 * BORDER) + 8.8;
-			root.position.set(px, py);
-			root.alpha = 0;
-			this.sweat.addChild(root);
-			this.sweatViews.set(k, { root, x: px, y: py });
 		}
 	}
 
@@ -429,18 +386,6 @@ export class Overlays {
 				g.scale.set(1 - 0.6 * e);
 				g.alpha = reduced ? 0 : alpha;
 			});
-		}
-		for (const v of this.sweatViews.values()) {
-			const p = reduced ? -1 : progress(now, this.relief.start, this.relief.ms * 0.3, this.relief.ms);
-			if (p < 0) {
-				v.root.alpha = 0;
-				continue;
-			}
-			const t = keyframes(PHEW_T, p, LINEAR);
-			v.root.position.set(v.x + t.tx, v.y + t.ty);
-			v.root.rotation = (t.r * Math.PI) / 180;
-			v.root.scale.set(t.sx, t.sy);
-			v.root.alpha = keyframes(PHEW_A, p, LINEAR).v;
 		}
 	}
 

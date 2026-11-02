@@ -1,4 +1,4 @@
-"""Measure the eyes painted into each symbol (public/symbols/*.webp) -> src/lib/eyes.json.
+"""Measure the eyes painted into each symbol (public/symbols/v3/*.webp) -> src/lib/eyes.json.
 
 Blob.svelte redraws the eyes live on top of the art: each eye is clipped to the convex hull
 of its white, filled with the sampled white, and gets a pupil (sampled colour/size) that
@@ -18,7 +18,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-SYMBOLS = ROOT / 'public' / 'symbols' / 'hd'
+SYMBOLS = ROOT / 'public' / 'symbols' / 'v3'
 OUT = ROOT / 'src' / 'lib' / 'eyes.json'
 
 
@@ -91,6 +91,8 @@ def measure(path, band=(0.25, 0.72), min_y=0.45, min_area=0.004, grow_pupil=Fals
         inside = np.asarray(hm) > 0
         dark = inside & (lum < 90)
         dys, dxs = np.nonzero(dark)
+        if not len(dxs):  # no pupil: a white glint, not an eye
+            continue
         if grow_pupil:
             # Dark pixels within reach of the measured pupil, not the letter outline.
             pr0 = (dxs.max() - dxs.min() + 1) / 2
@@ -131,7 +133,12 @@ def main():
         if eyes:
             data[path.stem] = eyes
         print(path.stem, len(eyes), [(e['px'], e['py'], e['pr'], e['lid']) for e in eyes])
-    logo = measure(ROOT / 'public' / 'splash' / 'logo.webp', band=(0.2, 0.6), min_y=0.2, min_area=0.0015, grow_pupil=True)
+    src = ROOT / 'public' / 'splash' / 'logo.webp'
+    if src.exists():
+        logo = measure(src, band=(0.2, 0.6), min_y=0.2, min_area=0.0015, grow_pupil=True)
+    else:
+        # The logo is layered now (build-logo-layers.py); keep its last measured eyes.
+        logo = json.loads(OUT.read_text())['LOGO']
     data['LOGO'] = logo
     print('LOGO', len(logo), [(e['px'], e['py'], e['pr'], e['lid'], e['white']) for e in logo])
     OUT.write_text(json.dumps(data, indent='\t') + '\n')

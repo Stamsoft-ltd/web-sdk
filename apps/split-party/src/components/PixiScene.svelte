@@ -43,10 +43,11 @@
 			view = null;
 		};
 	});
+	// App switches the world under a cover (BonusSwap), so the switch itself is instant.
 	$effect(() => {
 		const t = tier;
 		try {
-			view?.setTier(t);
+			view?.setTier(t, true);
 		} catch (e) {
 			fail(e);
 		}

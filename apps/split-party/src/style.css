@@ -159,6 +159,15 @@ main {
 	height: 122px;
 	transform-origin: 50% 100%;
 }
+/* Splash → base candy warp (lib/candyWarp): over the splash (20), under the flying logo. */
+.candy-warp {
+	position: fixed;
+	inset: 0;
+	width: 100vw;
+	height: 100vh;
+	z-index: 25;
+	pointer-events: none;
+}
 /* Splash → base logo flight (App enterGame). */
 .logo-fly {
 	position: fixed;
@@ -382,9 +391,6 @@ main {
 		opacity: 0.35;
 	}
 }
-.grid.awaiting .sym {
-	visibility: hidden;
-}
 .ghost-grid {
 	position: absolute;
 	inset: 0;
@@ -481,7 +487,7 @@ main {
 	}
 }
 /* Relief once the ride is over (App.svelte `relieved`, after a spin's blobs land): a deep
-   breath in, then a slumping sigh out with eyes shut, brows let down and a sweat drop on a few.
+   breath in, then a slumping sigh out with eyes shut, brows let down.
    Lit winners keep their bounce. The inline blink/face delays are negative phases, so the
    relief delay is forced over them. */
 .grid.relieved .cell:not(.lit) .sym > .blob-art {
@@ -559,48 +565,6 @@ main {
 		transform: scale(1.18, 0.78);
 	}
 }
-/* Sweat bead on the blob's right temple: wells up round out of the skin while the blob sighs,
-   then gravity takes it and it runs down the cheek, thinning as it goes. Starts 30% into
-   the relief. */
-.phew-drop {
-	position: absolute;
-	z-index: 2;
-	left: 62%;
-	top: 24%;
-	width: 8px;
-	height: 11px;
-	overflow: visible;
-	pointer-events: none;
-	filter: drop-shadow(0.5px 1px 0.6px #2a1a5a40);
-	transform-origin: 50% 80%;
-	opacity: 0;
-	animation: phew-drop var(--relief-ms) linear calc(var(--relief-ms) * 0.3) both;
-}
-@keyframes phew-drop {
-	0% {
-		opacity: 0;
-		transform: rotate(14deg) scale(0.3, 0.25);
-	}
-	8% {
-		opacity: 1;
-	}
-	30% {
-		transform: rotate(14deg) scale(0.9, 0.8);
-		animation-timing-function: ease-in-out;
-	}
-	50% {
-		transform: rotate(14deg) scale(1);
-		animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6);
-	}
-	85% {
-		opacity: 1;
-		transform: translate(2.5px, 13px) rotate(8deg) scale(0.86, 1.18);
-	}
-	100% {
-		opacity: 0;
-		transform: translate(3.5px, 20px) rotate(6deg) scale(0.7, 1.22);
-	}
-}
 @keyframes trapdoor-exit {
 	from {
 		transform: none;
@@ -642,9 +606,17 @@ main {
 		transform: none;
 		opacity: 1;
 	}
-	32% {
-		transform: scale(1.24);
+	26% {
+		transform: scale(1.24) rotate(-4deg);
 		opacity: 1;
+	}
+	32% {
+		transform: scale(1.32);
+		opacity: 1;
+	}
+	50% {
+		transform: scale(0.35) rotate(12deg);
+		opacity: 0;
 	}
 	100% {
 		transform: scale(0) rotate(12deg);
@@ -751,7 +723,8 @@ main {
    Coiny label over a teal value. */
 .round-detail {
 	left: 40px;
-	top: 176px;
+	/* Lifted from the design's 176 so the pair clears Mama-2's buns (.base-mama, art top ~338). */
+	top: 128px;
 	width: 202px;
 	display: grid;
 	gap: 12px;
@@ -789,6 +762,27 @@ main {
 	line-height: 1.15;
 	letter-spacing: 0.96px;
 	color: #2bc4b4;
+}
+/* The free-spin count's roll (App's roll()): old and new number share one cell, fading out at
+   its top and bottom edges like a counter's window; the new one flashes white as it lands. */
+.fs-roll {
+	display: inline-grid;
+	justify-items: end;
+	vertical-align: bottom;
+	-webkit-mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent);
+	mask-image: linear-gradient(transparent, #000 14%, #000 86%, transparent);
+	padding: 0.25em 0;
+	margin: -0.25em 0;
+}
+.fs-n {
+	grid-area: 1 / 1;
+	animation: fs-n-flash 0.7s ease-out both;
+}
+/* JellyText fills its own letters, so the flash is a brightness pop, not a colour. */
+@keyframes fs-n-flash {
+	from {
+		filter: brightness(1.7) drop-shadow(0 0 8px #45d2ff);
+	}
 }
 /* A new value springs up from below with a jelly overshoot. */
 @keyframes value-pop {
@@ -881,10 +875,11 @@ main {
 	left: 26px;
 	/* 12px clear of the HUD bar (top 588) it opens from, rather than resting on its edge. */
 	top: 362px;
-	width: 186px;
+	/* Wide enough for the Sound and Music volume sliders. */
+	width: 226px;
 	height: 214px;
 	box-sizing: border-box;
-	/* The 143px rows centred: their rules stop 18.5px short of the rim on both sides. */
+	/* The rows centred: their rules stop 21px short of the rim on both sides. */
 	padding: 0;
 	display: flex;
 	flex-direction: column;
@@ -898,7 +893,7 @@ main {
 	display: flex;
 	align-items: center;
 	gap: 18px;
-	width: 143px;
+	width: 184px;
 	padding: 0;
 	border: 0;
 	background: none;
@@ -938,6 +933,72 @@ main {
 .menu-row .menu-music-off {
 	width: 19.7px;
 	height: 19.7px;
+}
+/* Sound and Music: the icon is the mute toggle, the label sits over a volume slider. */
+.menu-volume {
+	cursor: default;
+}
+.menu-volume .hud-icon {
+	cursor: pointer;
+}
+.menu-volume-body {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	cursor: pointer;
+}
+.menu-volume input {
+	--fill: 100%;
+	width: 100%;
+	height: 18px;
+	margin: 0;
+	background: none;
+	appearance: none;
+	-webkit-appearance: none;
+	cursor: pointer;
+	touch-action: none;
+}
+.menu-volume input::-webkit-slider-runnable-track {
+	height: 6px;
+	border-radius: 3px;
+	background: linear-gradient(90deg, var(--bar-pink, #fb89b9) var(--fill), rgb(255 255 255 / 0.2) var(--fill));
+}
+.menu-volume input::-moz-range-track {
+	height: 6px;
+	border-radius: 3px;
+	background: linear-gradient(90deg, var(--bar-pink, #fb89b9) var(--fill), rgb(255 255 255 / 0.2) var(--fill));
+}
+.menu-volume input::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	width: 18px;
+	height: 18px;
+	margin-top: -6px;
+	border: 2px solid #000;
+	border-radius: 50%;
+	background: #fff;
+	box-shadow: 0 2px 4px rgb(0 0 0 / 0.35);
+	transition: scale 0.12s;
+}
+.menu-volume input::-moz-range-thumb {
+	width: 14px;
+	height: 14px;
+	border: 2px solid #000;
+	border-radius: 50%;
+	background: #fff;
+	box-shadow: 0 2px 4px rgb(0 0 0 / 0.35);
+}
+.menu-volume input:active::-webkit-slider-thumb {
+	scale: 1.15;
+}
+.menu-volume input:focus-visible {
+	outline: 2px solid #fff;
+	outline-offset: 2px;
+	border-radius: 9px;
+}
+.menu-volume.muted .menu-volume-body span {
+	opacity: 0.55;
 }
 .bonus-button {
 	left: 109px;
@@ -1090,24 +1151,6 @@ main {
 	left: 1043px;
 	top: 605px;
 }
-.turbo-icon {
-	position: relative;
-	width: 20px;
-	height: 28px;
-	overflow: hidden;
-}
-.turbo-icon img {
-	position: absolute;
-	left: -46.67%;
-	top: -19.05%;
-	width: 193.33%;
-	height: 138.1%;
-}
-/* Normal and super turbo: the 29px bolt art fills its box (Figma 4148:16901 / 4148:16899). */
-.speed-icon {
-	width: 29px;
-	height: 29px;
-}
 .auto-button {
 	left: 1103px;
 	top: 605px;
@@ -1155,6 +1198,21 @@ main {
 	scale: 1.62;
 	transition: top 0.6s ease;
 }
+/* With mama under it (.mama-up) the logo's foot rides with the board instead, 133px over its
+   rim, so "SPLIT" just clears her tuft as in 11318:43227 (App caps --ls to keep the badge on
+   screen). */
+/* With Mama shown, the board (and what rides on it) sits 30px lower while she, the logo and the
+   badge stay put, so her feet stand on its rim instead of behind it (user 2026-11-02: "move the board a bit down to
+   show mama blob fully"); .mama-up leaves the room under the board for it. */
+main.portrait.mama-up {
+	--mdrop: 30px;
+}
+.portrait.mama-up .base-logo {
+	top: calc(109px - 122px + var(--ex) * 0.58);
+}
+.portrait.mama-up .studio-badge {
+	top: calc(109px + var(--ex) * 0.58 - 122px * var(--ls, 1) - 62px);
+}
 /* Session readout (jurisdiction displaySessionTimer / displayNetPosition): the connection pill's
    style, at its spot or just under it. Stacked on two lines, so it stays narrow enough for the
    gap beside the board on a landscape phone and beside the logo in portrait. */
@@ -1190,7 +1248,7 @@ main {
 	translate: -50% 0;
 	flex-direction: row;
 	gap: 0.8em;
-	top: calc(214px + var(--ex) * 0.58);
+	top: calc(214px + var(--ex) * 0.58 + var(--mdrop, 0px));
 }
 .portrait .connection {
 	/* Top centre, clear of the logo stack (and of the spin log and bonus panels either side). */
@@ -1203,7 +1261,7 @@ main {
 	/* Side to side as in Figma 11318:43227 (x 3–357 of 360): the jelly rim, 8.5px round the
 	   656px board, spans 5.7–674.3 of 680, so 673 wide ×0.9936 with the board at 14.1. */
 	left: 14.1px;
-	top: calc(242px + var(--ex) * 0.58);
+	top: calc(242px + var(--ex) * 0.58 + var(--mdrop, 0px));
 	transform-origin: 0 0;
 	scale: 0.9936;
 }
@@ -1632,178 +1690,7 @@ main {
 	padding: 0;
 	backdrop-filter: blur(2px);
 }
-.bonus-stage {
-	position: absolute;
-	left: 50%;
-	top: 50%;
-	transform-origin: 50% 50%;
-}
-.bonus-stage .screen-close {
-	position: absolute;
-	top: 16px;
-	right: 27px;
-}
-.bonus-title {
-	position: absolute;
-	text-transform: uppercase;
-	left: 0;
-	right: 0;
-	top: 24px;
-	text-align: center;
-	font: 400 32px 'Coiny', sans-serif;
-	letter-spacing: 0.96px;
-	margin: 0;
-	animation: title-drop 0.6s cubic-bezier(0.3, 1.5, 0.5, 1) both;
-}
-.buy-cards {
-	position: absolute;
-	left: 50%;
-	top: 74px;
-	transform: translateX(-50%);
-	display: grid;
-	/* 3 + 2 like the design (1048 wide, 345px cards): six tracks, each card spans two and the
-	   second row starts one track in. */
-	grid-template-columns: repeat(6, minmax(0, 1fr));
-	gap: 6px;
-	width: 1048px;
-}
-.buy-card {
-	grid-column: span 2;
-}
-.buy-card:nth-child(4) {
-	grid-column: 2 / span 2;
-}
-.portrait .buy-cards {
-	top: calc(90px + var(--ex, 0px) * 0.2);
-	grid-template-columns: repeat(2, 334px);
-	width: auto;
-}
-.portrait .buy-card {
-	grid-column: auto;
-}
-.portrait .buy-card:nth-child(5) {
-	grid-column: 1 / span 2;
-	justify-self: center;
-	width: 334px;
-	box-sizing: border-box;
-}
-.buy-card {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 4px;
-	padding: 12px 16px;
-	border-radius: 8px;
-	background: #4b3981;
-	font-family: 'Poppins', sans-serif;
-	font-weight: 400;
-	text-align: center;
-	animation: card-in 0.62s cubic-bezier(0.3, 1.45, 0.5, 1) calc(0.08s + var(--i) * 0.07s) both;
-}
-.buy-card h3 {
-	font: 400 16.45px 'Coiny', sans-serif;
-	letter-spacing: 0.49px;
-	margin: 0;
-}
-.buy-card p {
-	font-size: 11px;
-	white-space: pre-line;
-	letter-spacing: 0.33px;
-	line-height: 1.5;
-	min-height: 33px;
-	margin: 0 0 6px;
-}
-.buy-art {
-	position: relative;
-	height: 68px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-.buy-art.feature {
-	width: 84px;
-}
-.feature-blob {
-	position: absolute;
-	width: 34.76px;
-	height: 34.76px;
-	animation: blob-hop 2.4s ease-in-out calc(var(--i, 0) * 0.1s) infinite;
-}
-.feature-blob:nth-child(2) {
-	animation-delay: -0.5s;
-}
-.feature-blob:nth-child(3) {
-	animation-delay: -1s;
-}
-.feature-blob:nth-child(4) {
-	animation-delay: -1.5s;
-}
-.feature-blob:nth-child(5) {
-	animation-delay: -2s;
-}
-.tier-badge {
-	align-self: center;
-	margin: 23px -1px 0 0;
-	padding: 2px 4.5px;
-	border: 0.75px solid #522ea1;
-	border-radius: 6.7px;
-	background: #9ff816;
-	color: #502da0;
-	font: 400 10.45px 'Coiny', sans-serif;
-	letter-spacing: 0.31px;
-	z-index: 1;
-}
-.buy-egg {
-	width: 63px;
-	height: 68px;
-	object-fit: contain;
-	animation: egg-breathe 3.2s ease-in-out infinite;
-	transform-origin: 50% 90%;
-}
-.mystery-ball {
-	width: 76px;
-	height: 68px;
-	object-fit: contain;
-	animation: ball-float 3s ease-in-out infinite;
-}
-.buy-price {
-	font: 400 18px/1.15 'Coiny', sans-serif;
-	letter-spacing: 0.6px;
-}
-.buy-button {
-	width: 300px;
-	max-width: 100%;
-	height: 50px;
-	border: 0.914px solid #47468a;
-	border-radius: 12px;
-	background: #8284d6;
-	color: #fff;
-	font: 400 11.69px 'Coiny', sans-serif;
-	letter-spacing: 1.28px;
-	text-transform: uppercase;
-	transition: transform 0.12s, filter 0.12s;
-}
-.buy-button:not(:disabled):hover {
-	filter: brightness(1.12);
-}
-.buy-button:not(:disabled):active {
-	transform: scale(0.96, 0.9);
-}
-.buy-button:disabled {
-	opacity: 0.45;
-}
 /* Extra Chance: the design's outlined ACTIVATE button, locked until the math has a mode. */
-.buy-button.activate {
-	background: #4b3981;
-	border-color: #a88eff;
-}
-.buy-button.activate.on {
-	background: #2bc4b4;
-	border-color: #9bf715;
-}
-.buy-card.on {
-	box-shadow: inset 0 0 0 2px #9bf715;
-}
 /* Extra feature on: the BONUS button wears a lime ring and the HUD bet reads the doubled cost. */
 .bonus-button.extra-on {
 	box-shadow:
@@ -1813,146 +1700,12 @@ main {
 .bet-controls strong.extra {
 	color: #9bf715;
 }
-.buy-art.extra {
-	width: 68px;
-}
 /* Landscape: the full bonus copy (Mystery's odds run to six lines) would push the second row
    under the BET bar, so the art sits beside the price and button instead of above them. The
    1fr row keeps price and button on one baseline across a row of cards. */
-.bonus-stage:not(.portrait) .buy-card {
-	display: grid;
-	/* minmax(0, …) so the 300px button and the copy can't widen the card past its track. */
-	grid-template-columns: auto minmax(0, 1fr);
-	grid-template-rows: auto auto 1fr auto auto;
-	column-gap: 18px;
-	row-gap: 4px;
-	justify-items: center;
-}
-.bonus-stage:not(.portrait) .buy-card :is(h3, p) {
-	grid-column: 1 / -1;
-	min-width: 0;
-}
-.bonus-stage:not(.portrait) .buy-art {
-	grid-column: 1;
-	grid-row: 4 / span 2;
-	align-self: center;
-}
-.bonus-stage:not(.portrait) .buy-price {
-	grid-column: 2;
-	grid-row: 4;
-}
-.bonus-stage:not(.portrait) .buy-button {
-	grid-column: 2;
-	grid-row: 5;
-	width: 100%;
-}
-.bonus-bet {
-	position: absolute;
-	left: 50%;
-	top: calc(100% - 88px);
-	transform: translateX(-50%);
-	display: flex;
-	align-items: center;
-	gap: 26px;
-	padding: 6px 12px;
-	border: 2px solid #3a3981;
-	border-radius: 12px;
-	background: #3a3981;
-	animation: bar-rise 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) 0.3s both;
-}
-.bonus-bet .metric {
-	align-items: center;
-	text-align: center;
-	min-width: 94px;
-}
-.bonus-bet .metric-label {
-	color: #fff;
-}
-.bonus-bet .hud-icon {
-	width: 48.7px;
-	height: 48.7px;
-	background: #3a3981;
-}
 /* Portrait and short landscapes (App's buyCompact): the cards scroll between the title and the
    bet bar, one column in portrait / as many as fit on their side, art beside price + button,
    with copy sized to read at the small stage scale (~10px on screen). */
-:is(.bonus-stage.portrait, .bonus-stage.compact) .buy-cards {
-	top: 70px;
-	bottom: 100px;
-	width: calc(100% - 32px);
-	overflow: hidden auto;
-	overscroll-behavior: contain;
-	align-content: start;
-	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-	gap: 8px;
-}
-:is(.bonus-stage.portrait, .bonus-stage.compact) .buy-cards.more-below {
-	mask-image: linear-gradient(#000 calc(100% - 36px), transparent);
-}
-:is(.bonus-stage.portrait, .bonus-stage.compact) .buy-cards.more-above {
-	mask-image: linear-gradient(transparent, #000 36px);
-}
-:is(.bonus-stage.portrait, .bonus-stage.compact) .buy-cards.more-above.more-below {
-	mask-image: linear-gradient(transparent, #000 36px, #000 calc(100% - 36px), transparent);
-}
-.bonus-stage.portrait .buy-cards {
-	top: calc(90px + var(--ex, 0px) * 0.2);
-	grid-template-columns: 1fr;
-	gap: 12px;
-}
-:is(.bonus-stage.portrait, .bonus-stage.compact) .buy-card {
-	grid-column: auto;
-	width: auto;
-	justify-self: stretch;
-	display: grid;
-	grid-template-columns: auto minmax(0, 1fr);
-	grid-template-rows: auto auto auto auto;
-	column-gap: 18px;
-	row-gap: 4px;
-	justify-items: center;
-}
-:is(.bonus-stage.portrait, .bonus-stage.compact) .buy-card :is(h3, p) {
-	grid-column: 1 / -1;
-	min-width: 0;
-}
-:is(.bonus-stage.portrait, .bonus-stage.compact) .buy-art {
-	grid-column: 1;
-	grid-row: 3 / span 2;
-	align-self: center;
-}
-:is(.bonus-stage.portrait, .bonus-stage.compact) .buy-price {
-	grid-column: 2;
-	grid-row: 3;
-}
-:is(.bonus-stage.portrait, .bonus-stage.compact) .buy-button {
-	grid-column: 2;
-	grid-row: 4;
-	width: 100%;
-}
-.bonus-stage.compact .buy-card p {
-	font-size: 12.5px;
-}
-.bonus-stage.portrait .buy-card {
-	padding: 18px 24px;
-}
-.bonus-stage.portrait .buy-card h3 {
-	font-size: 26px;
-}
-.bonus-stage.portrait .buy-card p {
-	font-size: 19px;
-	min-height: 0;
-}
-.bonus-stage.portrait .buy-price {
-	font-size: 28px;
-}
-.bonus-stage.portrait .buy-button {
-	height: 64px;
-	font-size: 18px;
-}
-.bonus-stage.portrait .buy-art {
-	scale: 1.3;
-	margin: 0 14px;
-}
 @keyframes title-drop {
 	from {
 		opacity: 0;
@@ -2053,15 +1806,19 @@ main {
 	top: 0;
 	translate: -50% -50%;
 	padding: 2px 12px 0;
-	border-radius: 14px;
-	/* The game's purple (lit pad #6a4cc0) as a jelly pill with a lavender rim. */
-	background: linear-gradient(#9a78f2, #5b3cb0);
+	border-radius: 999px;
+	/* A drop of the winning blob's jelly (overlays.ts pillTexture): lit top, dark rim of it. */
+	background:
+		linear-gradient(rgb(255 255 255 / 0.42), rgb(255 255 255 / 0.42)) 50% 3.5px / calc(100% - 26px) 24% no-repeat,
+		linear-gradient(var(--c-hi), var(--c) 45%, var(--c-lo));
 	box-shadow:
-		inset 0 0 0 2px #d9c8ff,
-		0 4px 14px #2a165999;
+		inset 0 0 0 2px var(--c-ink),
+		0 4px 12px rgb(10 6 30 / 0.55);
 	font: 400 22px/1.3 'Coiny', sans-serif;
 	color: #fff;
-	text-shadow: 0 2px 0 #3b2380;
+	text-shadow:
+		0 2.5px 0 var(--c-ink),
+		0 0 3px var(--c-ink);
 	white-space: nowrap;
 	animation: cluster-amount 1.5s cubic-bezier(0.3, 1.5, 0.5, 1) both;
 }
@@ -2263,7 +2020,7 @@ body * {
 .portrait .win-plaque {
 	/* Same spot on the board as before: 170px (×1.0366) below its top. */
 	left: 137.5px;
-	top: calc(418px + var(--ex) * 0.58);
+	top: calc(418px + var(--ex) * 0.58 + var(--mdrop, 0px));
 }
 /* Drops in from above, splats wide onto its base, then wobbles out the squash. */
 .plaque-land,
@@ -2281,7 +2038,7 @@ body * {
 .plaque-body {
 	animation: plaque-breathe 1.4s ease-in-out calc(650ms * var(--spd)) infinite;
 }
-.win-plaque img {
+.plaque-body > img {
 	position: absolute;
 	inset: 0;
 	width: 100%;
@@ -2407,7 +2164,7 @@ body * {
 /* Depth: the purple surfaces get a lit top edge, a darker rim below and a soft drop shadow,
    so the board, HUD and cards read as raised jelly slabs instead of flat fills. Gradients and
    shadows only (no filters), on elements that don't animate per frame. */
-:is(.round-panel, .menu-panel, .buy-card) {
+:is(.round-panel, .menu-panel) {
 	background-image: linear-gradient(#ffffff24, #ffffff00 48%, #1a083a2e);
 	box-shadow:
 		inset 0 2px 0 #ffffff33,
@@ -2427,16 +2184,19 @@ body * {
 		inset 0 3px 10px #0007,
 		0 22px 40px #12063a99;
 }
+/* The pad material (the Pixi board's padMaterial): deeper to the foot, a faint gloss high on
+   the left, bounce light along the foot and the rim's shadow falling in from the top. */
 .cell:not(.lit) {
-	background-image: linear-gradient(#ffffff1f, #ffffff00 40%, #00000033);
+	background-image:
+		radial-gradient(50% 30% at 30% 6%, #ffffff1c, #fff0),
+		linear-gradient(#b9a2ff00 82%, #b9a2ff1a),
+		linear-gradient(#ffffff24, #ffffff00 42%, #0a002e47);
 }
 .cell:not(.lit, .scatter) {
 	box-shadow:
+		inset 0 2px 5px #0b032ab3,
 		inset 0 1.5px 0 #ffffff2e,
 		inset 0 -2px 0 #00000030;
-}
-.buy-card {
-	border: 2px solid #6d55c8;
 }
 .dialog {
 	background-image: linear-gradient(#ffffff1c, #ffffff00 30%);
@@ -2558,7 +2318,7 @@ body * {
 }
 
 /* Pixi board (components/PixiBoard.svelte): the canvas under the grid draws the pads, cracks,
-   blobs and the win veil, so the DOM cells only lay out the chips and sweat drops over it. */
+   blobs and the win veil, so the DOM cells only lay out the chips over it. */
 .grid.pixi > .cell {
 	overflow: visible;
 	background: none !important;
@@ -2680,7 +2440,7 @@ body * {
 		transform: scale(1.18, 1.12);
 	}
 	100% {
-		color: #fff;
+		color: var(--win-to, #fff);
 		transform: none;
 	}
 }
@@ -2935,27 +2695,8 @@ body * {
 .short .metric-label {
 	font-size: max(18px, calc(9.5px / var(--k, 1)));
 }
-.tier-badge {
-	font-size: max(10.45px, calc(9.5px / var(--k, 1)));
-}
 /* Buy menu: 12px body on the full-size desktop stage, ~9.5px on screen once it shrinks. */
-.buy-card p {
-	font-size: max(12px, calc(9.5px / var(--k, 1)));
-}
-.bonus-stage.compact .buy-card p {
-	font-size: max(12.5px, calc(9.5px / var(--k, 1)));
-}
-.bonus-stage.portrait .buy-card p {
-	font-size: max(19px, calc(9.5px / var(--k, 1)));
-}
 /* The pill buttons carry their label at the BONUS button's size (12px read as a caption). */
-.buy-button {
-	font-size: max(17px, calc(9.5px / var(--k, 1)));
-	letter-spacing: 1.4px;
-}
-.bonus-stage.portrait .buy-button {
-	font-size: max(22px, calc(9.5px / var(--k, 1)));
-}
 /* Autoplay in the info pages' frame: the purple panel with its #522fa2 rim, the title in the
    display face, and the settings in dark #2f1b6c cards with a #7f7fd6 line (GameInfo .card). */
 .dialog.auto {
@@ -3328,7 +3069,7 @@ main:not(.portrait) .base-stage {
 }
 .phone .menu-panel {
 	/* Opens left of the bar, its top on the bar's. */
-	left: calc(var(--W) - 84.5px * var(--c) - 186px);
+	left: calc(var(--W) - 84.5px * var(--c) - 226px);
 	top: calc(var(--H) - 325px * var(--c));
 	transform-origin: 100% 0;
 	scale: calc(0.75 * var(--c));
@@ -3385,11 +3126,25 @@ main:not(.portrait) .base-stage {
 	border: 2.5px solid #2a1a72;
 	border-radius: 19.2px;
 	padding: 10.4px;
+	/* Jelly: the gloss streak and glints on top, a few bubbles set in the gel (each a lighter
+	   disc with a pin of light), the sides lit then rolling off, the foot in shade. */
 	background:
 		radial-gradient(42% 5px at 50% 4.5px, #ffffffc0, #fff0),
 		radial-gradient(circle 2.6px at 24px 6px, #fff 70%, #fff0),
 		radial-gradient(circle 1.6px at 33px 4.5px, #fff 70%, #fff0),
 		radial-gradient(circle 2px at calc(100% - 28px) 6px, #ffffffb0 70%, #fff0),
+		radial-gradient(circle 0.9px at 4.6px 37.6%, #fff 80%, #fff0),
+		radial-gradient(circle 2.6px at 5.5px 38%, #c9b6ff99 75%, #fff0),
+		radial-gradient(circle 0.7px at 4.8px 39.6%, #fff 80%, #fff0),
+		radial-gradient(circle 1.8px at 5.4px 40%, #c9b6ff80 75%, #fff0),
+		radial-gradient(circle 0.9px at calc(100% - 6.4px) 63.6%, #fff 80%, #fff0),
+		radial-gradient(circle 2.8px at calc(100% - 5.5px) 64%, #c9b6ff99 75%, #fff0),
+		radial-gradient(circle 0.8px at 70.2% calc(100% - 6.4px), #fff 80%, #fff0),
+		radial-gradient(circle 2.3px at 70.4% calc(100% - 5.4px), #c9b6ff80 75%, #fff0),
+		radial-gradient(circle 0.8px at 18.2% calc(100% - 6.2px), #fff 80%, #fff0),
+		radial-gradient(circle 2px at 18.4% calc(100% - 5.3px), #c9b6ff70 75%, #fff0),
+		linear-gradient(90deg, #ffffff26, #fff0 1.6%, #fff0 98.4%, #0000001f),
+		linear-gradient(#fff0 92%, #1d0b5a66) padding-box,
 		linear-gradient(#b9a2ff, #8a6cf2 3%, #6b4de0 50%, #5b3dc9) padding-box;
 	-webkit-mask:
 		linear-gradient(#000 0 0) content-box,
@@ -3410,7 +3165,7 @@ main:not(.portrait) .base-stage {
    soft lighter lobes in two corners. Shared by the buy cards, the bonus round panels and the
    menu (the spin log and Game Info carry the same values in their own components). Classes
    doubled: the older depth rule's :is() carries `.portrait .bet-controls`' two-class weight. */
-:is(.buy-card.buy-card, .round-panel.round-panel, .menu-panel.menu-panel) {
+:is(.round-panel.round-panel, .menu-panel.menu-panel) {
 	border: 3px solid transparent;
 	border-radius: 16px;
 	background:
@@ -3433,17 +3188,13 @@ main:not(.portrait) .base-stage {
 		inset 0 0 0 1.5px #241063;
 }
 /* Display titles in the logo's manner: a warm fill inside a dark outline, with a drop under it. */
-:is(.bonus-title, .buy-card h3, .round-label) {
+:is(.round-label) {
 	text-shadow:
 		0 2px 0 #1b0f55,
 		0 -1px 0 #1b0f55,
 		1.5px 0 0 #1b0f55,
 		-1.5px 0 0 #1b0f55,
 		0 4px 8px #0008;
-}
-.bonus-title {
-	color: #ffe14d;
-	font-size: 38px;
 }
 .round-label {
 	color: #ffe14d;
@@ -3455,86 +3206,9 @@ main:not(.portrait) .base-stage {
 		0 0 14px #2bc4b466;
 }
 /* Each card's title takes its own colour, as on the splash cards. */
-.buy-card h3 {
-	font-size: 19px;
-	color: #ff9ad9;
-}
-.buy-card:has(.buy-art.feature) h3 {
-	color: #b8ff4d;
-}
-.buy-card:has(.buy-art.normal) h3 {
-	color: #5ff0df;
-}
-.buy-card:has(.buy-art.super) h3 {
-	color: #ffb84d;
-}
-.buy-card:has(.buy-art.mystery) h3 {
-	color: #ffe14d;
-}
-.buy-card p {
-	color: #e4dcff;
-}
-.buy-card {
-	isolation: isolate;
-}
-.buy-card.on {
-	box-shadow:
-		0 0 0 2.5px #241063,
-		0 0 0 5px #9bf715,
-		0 0 22px #9bf71588,
-		inset 0 0 0 1.5px #241063;
-}
-.buy-price {
-	color: #fff;
-	text-shadow:
-		0 2px 0 #1b0f55,
-		0 3px 6px #0007;
-}
 /* The art stands on a soft lavender glow, a little bigger than before. */
-.buy-art::before {
-	content: '';
-	position: absolute;
-	inset: -14px -18px;
-	z-index: -1;
-	border-radius: 50%;
-	background: radial-gradient(closest-side, #a98bff59, #a98bff1f 60%, #a98bff00);
-}
-.bonus-stage:not(.portrait, .compact) .buy-art {
-	scale: 1.16;
-	margin: 0 8px;
-}
 /* One button, the HUD's BONUS button (.bonus-button): a flat pill, white display caps, no
    rim or shadow. BUY in its teal, ACTIVATE in lavender, and lime while that mode is on. */
-.buy-button,
-.buy-button.activate {
-	padding-top: 3px;
-	border: 0;
-	border-radius: 999px;
-	background: #2bc4b4;
-	box-shadow: none;
-	color: #fff;
-	text-shadow: none;
-}
-.buy-button.activate {
-	background: #8a68f5;
-}
-.buy-button.activate.on {
-	background: #9bf715;
-	color: #2a1a72;
-}
-.buy-button:not(:disabled):active {
-	transform: scale(0.96, 0.92);
-}
-.bonus-bet {
-	border: 3px solid transparent;
-	border-radius: 16px;
-	background:
-		linear-gradient(#30218c, #21146a) padding-box,
-		linear-gradient(#c4adff, #8a68f5 30%, #5a3bd2) border-box;
-	box-shadow:
-		0 0 0 2.5px #241063,
-		0 10px 24px #12063a80;
-}
 /* The dialogs (confirm, autoplay) wear the same rim round a lighter purple body, so their dark
    setting cards still stand out against it. */
 :is(.dialog, .dialog.auto) {
@@ -3610,4 +3284,2172 @@ main:not(.portrait) .base-stage {
 	width: calc(63px * var(--c));
 	padding: 3px 3px;
 	letter-spacing: 0.1px;
+}
+
+/* ---- Glass pass (2026-10-27) ----------------------------------------------------------------
+   The chrome follows the HUD bar (Figma 11317:40778): neutral dark see-through glass, a hairline
+   white rim, white labels, and no coloured buttons. Colour stays in the game art and the card
+   titles; a control only takes its card's accent (--accent) on hover. Replaces the purple framed
+   panels and the teal/lavender pills above. No backdrop-filter: the board animates behind these
+   and a live blur re-renders every frame (Safari). Classes tripled to outrank the older layers. */
+:root {
+	--glass: rgb(9 7 22 / 0.66);
+	--glass-deep: rgb(9 7 22 / 0.8);
+	--glass-rim: rgb(255 255 255 / 0.16);
+	--glass-lip: rgb(255 255 255 / 0.12);
+	--glass-sheen: linear-gradient(rgb(255 255 255 / 0.07), rgb(255 255 255 / 0) 42%);
+	--glass-btn: rgb(255 255 255 / 0.08);
+	--glass-btn-rim: rgb(255 255 255 / 0.42);
+	--glass-ink: #0b0816;
+}
+:is(.round-panel.round-panel.round-panel, .menu-panel.menu-panel.menu-panel),
+.portrait .round-panel.round-panel.round-panel {
+	border: 1px solid var(--glass-rim);
+	background: var(--glass-sheen), var(--glass);
+	box-shadow:
+		inset 0 1px 0 var(--glass-lip),
+		0 12px 30px rgb(0 0 0 / 0.35);
+}
+.portrait .round-panel.round-panel.round-panel {
+	box-shadow: inset 0 1px 0 var(--glass-lip);
+}
+/* Display titles keep their colours; the outline goes neutral with the glass. */
+:is(.round-label, .dialog h2) {
+	text-shadow:
+		0 2px 0 var(--glass-ink),
+		0 -1px 0 var(--glass-ink),
+		1.5px 0 0 var(--glass-ink),
+		-1.5px 0 0 var(--glass-ink),
+		0 4px 8px #0008;
+}
+/* Pills: the HUD's BONUS button — glass with a white hairline, white caps. */
+:is(.primary.primary, .dialog .start-auto.start-auto, .secondary.secondary) {
+	border: 1.5px solid var(--glass-btn-rim);
+	background: var(--glass-btn);
+	color: #fff;
+	box-shadow: inset 0 1px 0 var(--glass-lip);
+	transition: background-color 0.15s, border-color 0.15s, transform 0.12s;
+}
+@media (hover: hover) {
+	:is(.primary.primary, .dialog .start-auto.start-auto, .secondary.secondary):not(:disabled):hover {
+		filter: none;
+		background: color-mix(in srgb, var(--accent, #ffffff) 24%, transparent);
+		border-color: color-mix(in srgb, var(--accent, #ffffff) 80%, white);
+	}
+}
+/* The main action reads a step brighter than the way back. */
+:is(.primary.primary, .dialog .start-auto.start-auto) {
+	background: rgb(255 255 255 / 0.16);
+	border-color: rgb(255 255 255 / 0.6);
+}
+.secondary.secondary {
+	border-color: rgb(255 255 255 / 0.28);
+}
+.mystery-desc .odds b {
+	background: rgb(0 0 0 / 0.35);
+	box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.25);
+}
+.mystery-desc .foot {
+	color: #b5b2c4;
+}
+/* Close, and the open menu button: dark glass discs with a white mark (were indigo and teal). */
+.screen-close,
+.menu-button.open {
+	border: 1px solid rgb(255 255 255 / 0.3);
+	background: rgb(0 0 0 / 0.45);
+}
+@media (hover: hover) {
+	:is(.screen-close, .menu-button.open):hover {
+		background: rgb(255 255 255 / 0.14);
+	}
+}
+.menu-row + .menu-row {
+	border-top-color: rgb(255 255 255 / 0.18);
+}
+.menu-row .hud-icon {
+	border-color: rgb(255 255 255 / 0.3);
+}
+@media (hover: hover) {
+	.menu-row:not(:disabled):hover {
+		color: #e4dcff;
+	}
+}
+:is(.dialog.dialog.dialog, .dialog.auto.auto.auto) {
+	border: 1px solid var(--glass-rim);
+	background: var(--glass-sheen), rgb(12 10 28 / 0.9);
+	box-shadow:
+		inset 0 1px 0 var(--glass-lip),
+		0 24px 80px rgb(0 0 0 / 0.55);
+}
+.dialog.auto :is(.toggles, .spins-title, .spins-stepper) {
+	border-color: rgb(255 255 255 / 0.14);
+	background: rgb(255 255 255 / 0.05);
+}
+.dialog.auto .toggle-row + .toggle-row {
+	border-top-color: rgb(255 255 255 / 0.12);
+}
+/* Spin disc (Figma 11318:41884 is black 40%): the disc sits in a hole cut through the bar, so
+   its 40% landed straight on the scenery and read lighter than the −/+ and turbo buttons, which
+   stack their 40% on the strip's 37% (user: "not by design"). 62% is that stack's darkness, so
+   the disc matches its neighbours and stays one tone across the bar's edge. */
+.spin-button.spin-button {
+	background: rgb(0 0 0 / 0.62);
+}
+
+/* Mama-2 (Figma 11386:76456, 265×278 at 9,282 in Base game 11395:4052), left of the board;
+   PixiMama.svelte. 12% under the design's size (user, 2026-10-30: she crowded the board):
+   MamaView fits her 223×252 art at 0.80 in the 233×245 box, her art 179×202, centred where
+   the design centres her (x 141.4) with her feet on its 540 (MamaView keeps a 6-unit pad under
+   them). She sits under the bonus round panels (they end at y 326). Portrait and phone
+   landscape placements follow below. */
+.base-mama {
+	left: 24.8px;
+	top: 300.2px;
+	width: 233.2px;
+	height: 244.6px;
+	pointer-events: none;
+}
+.portrait:not(.mama-up) .base-mama,
+.portrait:not(.mama-up) .spirits {
+	display: none;
+}
+/* Phone landscape (Figma 11362:72003, Mama-2 at 104,240 122×128, measured on the rotated frame):
+   bottom left, in front of the spin log's right end, her side tucked 9.8px behind the board's
+   rim and her feet under BALANCE. MamaView fits her art at 0.415 in 124×127, a body 95px wide
+   as designed (122 × 0.783), its right edge 109.7px into the box; the box's foot is 1.4px
+   under the screen's (body foot at 358.9). The board here is wider than the design's, so she is
+   placed from its rim (--pb-x) and sized by --mu (App phoneLay); main.phone .base-mama below overrides this. */
+.phone .base-mama {
+	--u: var(--mu, var(--c));
+	left: calc(var(--pb-x) - 99.9px * var(--u));
+	/* In front of the BALANCE pill, as designed (user, 2026-10-29): the HUD comes later in the
+	   stage, so without the z-index it painted over her body. She takes no pointer events. Our
+	   board is wider than the design's, so the gap beside it can't take her beside the amount
+	   the way the design's wide panel does: she stands 29px up instead, her feet over the pill's
+	   top edge and clear of its text (H − 27). */
+	top: calc(var(--H) - 29px * var(--c) - 125.6px * var(--u));
+	width: calc(124px * var(--u));
+	height: calc(127px * var(--u));
+	z-index: 1;
+}
+/* Under her: the stage is its own stacking context (transformed), so this stays over the scene. */
+.phone .spin-log {
+	z-index: -1;
+}
+/* Portrait (Figma 11318:43227, Mama-2 at 141,162 80×84 of the 360 frame): centred under the
+   logo, her feet behind the board, which hides the bottom 17% of her body (12 of 71 design px).
+   MamaView fits her art at 0.52 in a 155×170 box, a body 120px wide: the design's 62.7 × 1.889
+   = 118. The box's foot is 26.5px under the board's top (242 + 0.58 --ex). App sets
+   .mama-up only with 100px+ of spare height, room for the logo to rise over her. */
+.portrait.mama-up .base-mama {
+	left: 262.5px;
+	top: calc(98.5px + var(--ex) * 0.58);
+	width: 155px;
+	height: 170px;
+}
+/* Her spirits (App mamaSends): a glowing ghost of her on an arc to each splitting tile, four
+   fading copies behind it, a ring where it lands. */
+.spirits {
+	inset: 0;
+	pointer-events: none;
+}
+.spirit {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 40px;
+	height: 36px;
+	offset-anchor: 50% 50%;
+	offset-rotate: 0deg;
+	border-radius: 50% 50% 46% 46% / 60% 60% 40% 40%;
+	/* --c: the splitting blob's colour (App's BLOB_TINT), her pink by default. */
+	--c: #ff5abe;
+	background: radial-gradient(
+		circle at 42% 32%,
+		#fff 0 16%,
+		color-mix(in srgb, var(--c), white 78%) 30%,
+		color-mix(in srgb, var(--c), white 35%) 58%,
+		color-mix(in srgb, var(--c) 85%, transparent) 78%,
+		color-mix(in srgb, var(--c) 0%, transparent) 100%
+	);
+	box-shadow:
+		0 0 12px 4px rgb(255 255 255 / 0.85),
+		0 0 26px 10px color-mix(in srgb, color-mix(in srgb, var(--c), white 25%) 70%, transparent),
+		0 0 48px 18px color-mix(in srgb, var(--c) 35%, transparent);
+	--o: 1;
+	animation: spirit-fly var(--dur) cubic-bezier(0.42, 0, 0.36, 1) var(--delay) both;
+}
+.spirit::before,
+.spirit::after {
+	content: '';
+	position: absolute;
+	top: 40%;
+	width: 4.5px;
+	height: 6.5px;
+	border-radius: 50%;
+	background: color-mix(in srgb, var(--c), black 55%);
+}
+.spirit::before {
+	left: 32%;
+}
+.spirit::after {
+	left: 57%;
+}
+.spirit.tail {
+	width: calc(36px - var(--k) * 5px);
+	height: calc(32px - var(--k) * 4.5px);
+	--o: calc(0.8 - var(--k) * 0.13);
+	box-shadow: 0 0 16px 6px color-mix(in srgb, color-mix(in srgb, var(--c), white 30%) 55%, transparent);
+}
+/* The thread she spins to the tile: draws on behind the spirit, then fades. */
+.spirit-beam {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 1200px;
+	height: 670px;
+	overflow: visible;
+	pointer-events: none;
+}
+.spirit-beam path {
+	fill: none;
+	stroke: #fff;
+	stroke-width: 3.5;
+	stroke-linecap: round;
+	stroke-dasharray: 1;
+	filter: drop-shadow(0 0 4px color-mix(in srgb, var(--c, #ff5abe), white 35%));
+	animation: spirit-beam calc(var(--dur) + 450ms) cubic-bezier(0.42, 0, 0.36, 1) var(--delay) both;
+}
+@keyframes spirit-beam {
+	0% {
+		stroke-dashoffset: 1;
+		opacity: 0.55;
+	}
+	63% {
+		stroke-dashoffset: 0;
+		opacity: 0.45;
+	}
+	100% {
+		stroke-dashoffset: 0;
+		opacity: 0;
+	}
+}
+.spirit.tail::before,
+.spirit.tail::after {
+	content: none;
+}
+@keyframes spirit-fly {
+	0% {
+		offset-distance: 0%;
+		opacity: 0;
+		transform: scale(0.3);
+	}
+	12% {
+		opacity: var(--o);
+		transform: scale(1.15, 0.9);
+	}
+	50% {
+		transform: scale(0.92, 1.12);
+	}
+	88% {
+		opacity: var(--o);
+		transform: scale(1.05);
+	}
+	100% {
+		offset-distance: 100%;
+		opacity: 0;
+		transform: scale(0.5);
+	}
+}
+.spirit-pop {
+	position: absolute;
+	width: 90px;
+	height: 90px;
+	margin: -45px 0 0 -45px;
+	border-radius: 50%;
+	border: 3px solid color-mix(in srgb, var(--c, #ff5abe), white 88%);
+	box-shadow:
+		0 0 18px color-mix(in srgb, var(--c, #ff5abe), white 35%),
+		inset 0 0 18px color-mix(in srgb, var(--c, #ff5abe), white 60%);
+	opacity: 0;
+	animation: spirit-pop 520ms ease-out var(--delay) both;
+}
+@keyframes spirit-pop {
+	0% {
+		opacity: 0;
+		transform: scale(0.15);
+	}
+	15% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+		transform: scale(1.3);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.spirit.tail {
+		display: none;
+	}
+}
+
+/* ---- Buy cards as world windows (2026-10-29) ------------------------------------------------
+   User: "the cards look too standard: more individuality, themed illustrations, less text".
+   Each card opens with a window onto its mode's world (App's BUY_SCENE layers) with the mode's
+   art standing in it, a JellyText title in the card's accent overlapping the window's foot,
+   a row of number chips in place of the paragraph (kept as .sr-only), then price + button on
+   one line. Same layout in every stage (landscape, compact, portrait), only sized up in
+   portrait. Selectors carry four classes to outrank the landscape/portrait grid layers above. */
+/* A lit top edge and a dark foot under the title, over the painting and under the art. */
+/* The mode's art stands on the window's floor, its ground shadow under it. */
+/* The title sits on the window's foot like a sticker. */
+/* Mystery's odds: one pill, a segment per bonus in its colour. */
+
+/* Portrait AUTO (user 2026-10-29: "the auto text is too big"): the button is drawn ×1.338, which
+   the label's 7.5px on-screen floor did not count, so it showed at ~10px and crowded the icon. */
+.portrait .auto-button small {
+	font-size: max(5px, calc(7.5px / 1.338 / var(--k, 1)));
+}
+
+/* The pop's jelly splash on the DOM board (BoardView splats.ts): a flash ring and droplets in the
+   blob's colour, starting at the pop's peak (--at). */
+.splat {
+	position: absolute;
+	left: 50%;
+	top: 55%;
+	width: 0;
+	height: 0;
+	z-index: 3;
+	pointer-events: none;
+}
+.splat::before {
+	content: '';
+	position: absolute;
+	left: -40px;
+	top: -32px;
+	width: 80px;
+	height: 64px;
+	border-radius: 50%;
+	background: radial-gradient(closest-side, transparent 55%, color-mix(in srgb, var(--c) 70%, #fff) 72%, transparent 100%);
+	opacity: 0;
+	animation: splat-ring 380ms cubic-bezier(0.2, 0.7, 0.4, 1) var(--at) both;
+}
+.splat i {
+	position: absolute;
+	left: calc(var(--s) / -2);
+	top: calc(var(--s) / -2);
+	width: var(--s);
+	height: var(--s);
+	border-radius: 50%;
+	background: radial-gradient(circle at 35% 30%, #fff 0 18%, var(--c) 30% 85%, color-mix(in srgb, var(--c) 70%, #000) 100%);
+	opacity: 0;
+	animation: splat-drop 620ms cubic-bezier(0.2, 0.6, 0.5, 1) var(--at) both;
+}
+@keyframes splat-ring {
+	from {
+		transform: scale(0.35);
+		opacity: 0.85;
+	}
+	to {
+		transform: scale(1.1);
+		opacity: 0;
+	}
+}
+@keyframes splat-drop {
+	0% {
+		transform: none;
+		opacity: 1;
+	}
+	55% {
+		transform: translate(var(--x), var(--y)) scale(1);
+		opacity: 1;
+	}
+	100% {
+		transform: translate(calc(var(--x) * 1.25), calc(var(--y) + 26px)) scale(0.2);
+		opacity: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.splat {
+		display: none;
+	}
+}
+
+/* Mama's contact shadow on the meadow (desktop): without it she floated over the grass. It fades
+   in as she lands (the warp's flash, App enterGame). */
+main:not(.portrait, .phone, .popout) .base-mama {
+	isolation: isolate;
+}
+main:not(.portrait, .phone, .popout) .base-mama::before {
+	content: '';
+	position: absolute;
+	z-index: -1;
+	left: 12%;
+	right: 10%;
+	bottom: -3%;
+	height: 10%;
+	border-radius: 50%;
+	background: radial-gradient(closest-side, rgb(26 3 104 / 0.42), rgb(26 3 104 / 0.18) 60%, rgb(26 3 104 / 0));
+	opacity: 0;
+	transition: opacity 900ms ease 300ms;
+}
+main:not(.portrait, .phone, .popout) .base-mama.shown::before {
+	opacity: 1;
+}
+
+/* ---- Press Play bar (Figma 11395:4052, 2026-10-30) ---------------------------------------------
+   Review: "poor bet UI bar". The design's bar: a floating black 47% panel (247, 570, 817×83)
+   between a pink Press Play square (the bonus buy) and a white spin disc, white round buttons with
+   black rims and black glyphs, pink labels over Coiny amounts, the bet stepped by two chevrons.
+   Desktop takes the design's placements; the other layouts keep theirs and wear the same look. */
+.hud {
+	--bar-pink: #fb89b9;
+}
+.hud .metric-label {
+	color: var(--bar-pink);
+}
+.hud .metric strong.extra {
+	color: #9bf715;
+}
+.hud > .hud-icon,
+.hud .bet-controls > .hud-icon {
+	background: #fff;
+	border: 2.75px solid #000;
+	box-shadow: none;
+	color: #000;
+	transition:
+		scale 0.12s,
+		background-color 0.15s;
+}
+.hud > .hud-icon img,
+.hud .bet-controls > .hud-icon img {
+	filter: brightness(0);
+}
+.hud > .hud-icon:not(:disabled):hover,
+.hud .bet-controls > .hud-icon:not(:disabled):hover {
+	background: #ffe3ef;
+}
+.hud > .hud-icon:not(:disabled):active,
+.hud .bet-controls > .hud-icon:not(:disabled):active {
+	scale: 0.93;
+}
+.hud > .hud-icon:disabled,
+.hud .bet-controls > .hud-icon:disabled {
+	opacity: 0.5;
+}
+.hud .menu-button.open,
+.hud .hud-icon.active,
+.hud .turbo-button[aria-pressed='true'] {
+	background: var(--bar-pink);
+	border-color: #000;
+}
+.hud .menu-button.open img {
+	filter: none;
+}
+.hud .auto-button small,
+.hud .auto-stop {
+	color: #000;
+}
+/* Turbo is one bolt; super turbo a second one behind it, so the three speeds read apart. */
+.hud .speed-icon {
+	width: 14.37px;
+	height: 25.08px;
+}
+.hud .speed-icon.speed-second {
+	position: absolute;
+	translate: 5px -2px;
+	opacity: 0.45;
+	z-index: -1;
+}
+.hud .turbo-button {
+	isolation: isolate;
+}
+.hud .bet-controls .minus {
+	rotate: 180deg;
+}
+.hud .bet-controls :is(.minus, .plus) {
+	width: 22px;
+	height: 12.3px;
+}
+.hud .spin-button {
+	box-sizing: border-box;
+	background: #fff;
+	border: 4px solid #000;
+	box-shadow: none;
+	transition: scale 0.12s;
+}
+.hud .spin-button:not(:disabled):hover {
+	background: #ffe3ef;
+}
+.hud .spin-button:not(:disabled):active {
+	scale: 0.96;
+}
+.hud .spin-button:disabled img {
+	opacity: 0.35;
+}
+.hud .spin-arrow {
+	left: 5px;
+	top: 7px;
+	width: 93.87px;
+	height: 89px;
+}
+/* BONUS: the pink of the square, black type and rim. */
+.hud .bonus-button {
+	border: 2.75px solid #000;
+	background: var(--bar-pink);
+	color: #000;
+	box-shadow: none;
+	transition: scale 0.12s;
+}
+.hud .bonus-button:not(:disabled):active {
+	scale: 0.95;
+}
+.hud .bonus-button:disabled {
+	opacity: 0.55;
+}
+.hud .bonus-button.extra-on {
+	box-shadow:
+		0 0 0 4px #9bf715,
+		0 0 16px #9bf71599;
+}
+.hud .bonus-button .bonus-mark {
+	width: 10.44px;
+	height: 13.1px;
+}
+.hud .hud-divider {
+	opacity: 0.18;
+}
+
+/* Desktop and short landscape: the design's placements, in stage px. */
+main:not(.portrait, .phone, .popout) .hud-bar {
+	left: 247px;
+	right: auto;
+	top: 570px;
+	bottom: auto;
+	width: 817px;
+	height: 83px;
+	background: rgb(0 0 0 / 0.47);
+	border-radius: 10px;
+	-webkit-mask-image: none;
+	mask-image: none;
+}
+/* Group 241: the 102×101 pink square, a 3px black rim 4px inside its edge, the Press Play mark
+   tilted in it (67×84 at 21.76, 3). The word is kept for screen readers; switched to Extra
+   Feature it shows as a tag along the foot, for the press that turns it off. */
+main:not(.portrait, .phone, .popout) .bonus-button {
+	left: 136px;
+	top: 560px;
+	width: 102px;
+	height: 101px;
+	padding: 0;
+	border: 0;
+	border-radius: 9px;
+	outline: 3px solid #000;
+	outline-offset: -7px;
+	display: block;
+}
+main:not(.portrait, .phone, .popout) .bonus-button .bonus-mark {
+	position: absolute;
+	left: 21.76px;
+	top: 3px;
+	width: 67px;
+	height: 84px;
+	margin: 0;
+	transition: rotate 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+main:not(.portrait, .phone, .popout) .bonus-button:not(:disabled):hover .bonus-mark {
+	rotate: -6deg;
+}
+main:not(.portrait, .phone, .popout) .bonus-button > span {
+	position: absolute;
+	left: 50%;
+	bottom: -12px;
+	translate: -50% 0;
+	padding: 3px 8px 1px;
+	border-radius: 8px;
+	background: #000;
+	color: #9bf715;
+	font-size: 11px;
+	line-height: 14px;
+	letter-spacing: 0.6px;
+	white-space: nowrap;
+}
+main:not(.portrait, .phone, .popout) .bonus-button:not(.extra-on) > span {
+	clip-path: inset(50%);
+	opacity: 0;
+}
+main:not(.portrait, .phone, .popout) .menu-button,
+main:not(.portrait, .phone, .popout) .menu-button.open {
+	left: 265.67px;
+	top: 592px;
+	width: 46.67px;
+	height: 40px;
+	border: 0;
+	border-radius: 6px;
+	background: none;
+}
+main:not(.portrait, .phone, .popout) .menu-button img.menu-bars {
+	width: 46.67px;
+	height: 40px;
+	filter: none;
+}
+main:not(.portrait, .phone, .popout) .menu-button:not(:disabled):hover {
+	background: none;
+	scale: 1.06;
+}
+main:not(.portrait, .phone, .popout) .menu-button .menu-close {
+	width: 30px;
+	height: 30px;
+	filter: brightness(0) invert(1);
+}
+main:not(.portrait, .phone, .popout) .menu-panel {
+	left: 247px;
+	top: 344px;
+	transform-origin: 10% 100%;
+}
+/* BALANCE (334, 587, its 6.67px padding) and WIN (489, 585), no rules between. */
+main:not(.portrait, .phone, .popout) .hud-metrics {
+	left: 334px;
+	top: 586px;
+	width: 400px;
+	height: 49px;
+	justify-content: flex-start;
+}
+main:not(.portrait, .phone, .popout) .hud-metrics .hud-divider,
+main:not(.portrait, .phone, .popout) .bet-divider,
+main:not(.portrait, .phone, .popout) .bet-coins {
+	display: none;
+}
+main:not(.portrait, .phone, .popout) .hud-metrics .metric:first-child {
+	width: 155px;
+	box-sizing: border-box;
+}
+main:not(.portrait, .phone, .popout) .hud-metrics .metric:last-child {
+	padding: 0;
+}
+/* BET (742, 586, 65 wide; label centred over it) and the chevrons, up (826, 583) and down
+   (826, 619), 34×19. The amount grows leftward from the design's right edge (807). */
+main:not(.portrait, .phone, .popout) .bet-controls {
+	left: 600px;
+	top: 583px;
+	width: 260px;
+	height: 55px;
+	display: block;
+}
+main:not(.portrait, .phone, .popout) .bet-controls .metric {
+	position: absolute;
+	right: 53px;
+	top: 3px;
+	align-items: center;
+	padding: 0;
+	margin: 0;
+}
+main:not(.portrait, .phone, .popout) .bet-controls .hud-icon {
+	position: absolute;
+	left: 226px;
+	width: 34px;
+	height: 19px;
+	margin: 0;
+	border: 0;
+	border-radius: 4px;
+	background: none;
+}
+main:not(.portrait, .phone, .popout) .bet-controls .hud-icon:first-of-type {
+	top: 36px;
+}
+main:not(.portrait, .phone, .popout) .bet-controls .hud-icon:last-of-type {
+	top: 0;
+}
+main:not(.portrait, .phone, .popout) .bet-controls .hud-icon img {
+	width: 34px;
+	height: 19px;
+	filter: none;
+}
+main:not(.portrait, .phone, .popout) .bet-controls .hud-icon:not(:disabled):hover {
+	background: none;
+	scale: 1.12;
+}
+main:not(.portrait, .phone, .popout) .bet-controls .hud-icon:disabled {
+	opacity: 0.3;
+}
+main:not(.portrait, .phone, .popout) .spin-button {
+	left: 879px;
+	top: 552px;
+}
+/* Group 240 / the bolt: 44px white buttons at (1002, 564) and (1003, 613). */
+main:not(.portrait, .phone, .popout) :is(.auto-button, .turbo-button) {
+	width: 44px;
+	height: 44px;
+}
+main:not(.portrait, .phone, .popout) .auto-button {
+	left: 1002px;
+	top: 564px;
+}
+main:not(.portrait, .phone, .popout) .turbo-button {
+	left: 1003px;
+	top: 613px;
+}
+main:not(.portrait, .phone, .popout) .auto-button img {
+	display: block;
+	width: 27.51px;
+	height: 26.42px;
+}
+/* The design's auto button is the glyph alone; running, it shows the spins left. */
+main:not(.portrait, .phone, .popout) .auto-button:not(.active) small {
+	display: none;
+}
+main:not(.portrait, .phone, .popout) .auto-button.active small {
+	font: 400 15px/1 'Coiny', sans-serif;
+	letter-spacing: 0;
+}
+main:not(.portrait, .phone, .popout) .auto-button.active .auto-stop {
+	display: none;
+}
+/* Desktop bonus bar (Figma 11402:11045, user 2026-11-02: FREE SPINS / TOTAL WIN "should be
+   moved to bottom bar"). The bar widens over the pink square's place (136, 570, 928×83); menu,
+   BALANCE, BET, WIN run left from 157; the round's TOTAL WIN (193×58) and FREE SPINS (193×37)
+   tiles stack at 794, 560 where the stepper and disc were; skip and bolt at (1001, 563), (1002, 612).
+   Other layouts keep .round-detail. */
+.bar-round,
+.skip-button,
+.bonus-bet {
+	display: none;
+}
+main.bonus-round:not(.portrait, .phone, .popout) .round-detail,
+main.bonus-round:not(.portrait, .phone, .popout) :is(.bonus-button, .bet-controls, .spin-button, .auto-button) {
+	display: none;
+}
+main.bonus-round:not(.portrait, .phone, .popout) .hud-bar {
+	left: 136px;
+	width: 928px;
+}
+main.bonus-round:not(.portrait, .phone, .popout) .menu-button {
+	left: 157px;
+}
+main.bonus-round:not(.portrait, .phone, .popout) .menu-panel {
+	left: 136px;
+}
+main.bonus-round:not(.portrait, .phone, .popout) .hud-metrics {
+	left: 222px;
+	top: 587px;
+	width: 560px;
+	gap: 26px;
+}
+main.bonus-round:not(.portrait, .phone, .popout) .hud-metrics .metric:first-child {
+	width: auto;
+}
+main.bonus-round:not(.portrait, .phone, .popout) .hud-metrics .metric:last-child {
+	padding: 0;
+}
+main.bonus-round:not(.portrait, .phone, .popout) .bonus-bet {
+	display: flex;
+	padding: 0;
+}
+/* In the bonus the WIN pair swaps colours: white label, pink amount. */
+main.bonus-round:not(.portrait, .phone, .popout) .hud-metrics .metric:last-child .metric-label {
+	color: #fff;
+}
+main.bonus-round:not(.portrait, .phone, .popout) .hud-metrics .metric:last-child strong {
+	--win-to: var(--bar-pink);
+	color: var(--bar-pink);
+}
+main.bonus-round:not(.portrait, .phone, .popout) .bar-round {
+	left: 794px;
+	top: 560px;
+	width: 193px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	pointer-events: none;
+	transform-origin: 50% 100%;
+}
+.bar-round > div {
+	box-sizing: border-box;
+	background: #fff;
+	border: 2.5px solid #3c3c3c;
+	border-radius: 8px;
+	color: #3c3c3c;
+	font-family: 'Coiny', sans-serif;
+	font-weight: 400;
+	text-transform: uppercase;
+	white-space: nowrap;
+	overflow: hidden;
+}
+.bar-total {
+	height: 58px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	line-height: 24px;
+}
+.bar-total span {
+	color: var(--bar-pink);
+	font-size: 20px;
+}
+.bar-total strong,
+.bar-free strong {
+	font-weight: 400;
+	font-size: 24px;
+	animation: value-pop 0.45s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+.bar-free {
+	height: 37px;
+	display: grid;
+	grid-template-columns: 118px 1fr;
+	align-items: center;
+}
+.bar-free > span {
+	height: 100%;
+	display: flex;
+	align-items: center;
+	padding-left: 8px;
+	border-right: 3px solid #3c3c3c;
+	font-size: 16px;
+}
+.bar-free strong {
+	text-align: center;
+	line-height: 32px;
+}
+/* Coiny draws "/" as a backslash. */
+.bar-free .of {
+	margin: 0 0.04em;
+	font-family: 'Poppins', sans-serif;
+	font-weight: 700;
+	font-size: 0.8em;
+}
+main.bonus-round:not(.portrait, .phone, .popout) .skip-button {
+	display: flex;
+	left: 1001px;
+	top: 563px;
+	width: 44px;
+	height: 44px;
+	border-width: 2.5px;
+	border-color: #3c3c3c;
+}
+.hud .skip-button img {
+	width: 32px;
+	height: 32px;
+	filter: none;
+}
+main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
+	left: 1002px;
+	top: 612px;
+}
+
+/* The old steppers' minus was a 1.5px bar: the chevrons keep their own shape there too. */
+.phone .hud .bet-controls .hud-icon img:is(.minus, .plus) {
+	width: 13px;
+	height: 7.3px;
+}
+.popout .hud .bet-controls .hud-icon img:is(.minus, .plus) {
+	width: 30px;
+	height: 16.8px;
+}
+
+/* The spin press's jelly (App SPIN_DROPS): glossy drops in the logo's splash colours squeeze out
+   of the disc's rim, fly a short way, then sag and shrink away. Small and quick: a touch of the
+   logo's splat on every spin, not a burst. Transform and opacity only. */
+.spin-splat {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 0;
+	height: 0;
+	pointer-events: none;
+}
+.spin-splat :is(i, b) {
+	position: absolute;
+	left: calc(var(--s) / -2);
+	top: calc(var(--s) / -2);
+	width: var(--s);
+	height: var(--s);
+	border-radius: 50%;
+	background: radial-gradient(circle at 34% 30%, #fff 0 16%, transparent 30%), var(--c);
+	box-shadow: inset 0 -1.5px 0 rgb(0 0 0 / 0.18);
+	opacity: 0;
+	animation: spin-splat 640ms cubic-bezier(0.2, 0.7, 0.4, 1) var(--at) both;
+}
+/* The lobes: squeezed out of the rim, wobble, then sucked back in (the logo's drop-splat). */
+.spin-splat b {
+	border-radius: 50% 50% 46% 46%;
+	animation: spin-lobe 520ms cubic-bezier(0.3, 0.7, 0.4, 1) both;
+}
+@keyframes spin-lobe {
+	0% {
+		opacity: 1;
+		transform: rotate(var(--a)) translateX(48px) scale(0.2, 0.4);
+	}
+	25% {
+		opacity: 1;
+		transform: rotate(var(--a)) translateX(54px) scale(1.25, 0.95);
+	}
+	45% {
+		opacity: 1;
+		transform: rotate(var(--a)) translateX(52px) scale(0.9, 1.08);
+	}
+	75% {
+		opacity: 1;
+		transform: rotate(var(--a)) translateX(50px) scale(0.8, 0.85);
+	}
+	100% {
+		opacity: 0;
+		transform: rotate(var(--a)) translateX(46px) scale(0.2, 0.3);
+	}
+}
+/* Rotated to its angle, it travels along x, turned back upright, then sags (y) under gravity. The
+   rim is about the disc's radius. Every frame lists the same functions, so each one tweens on its
+   own (no matrix interpolation). */
+@keyframes spin-splat {
+	0% {
+		opacity: 1;
+		transform: rotate(var(--a)) translateX(46px) rotate(calc(var(--a) * -1)) translateY(0) scale(0.3, 0.6);
+	}
+	30% {
+		opacity: 1;
+		transform: rotate(var(--a)) translateX(calc(46px + var(--d) * 0.85)) rotate(calc(var(--a) * -1)) translateY(0)
+			scale(1.12, 0.88);
+	}
+	55% {
+		opacity: 1;
+		transform: rotate(var(--a)) translateX(calc(46px + var(--d))) rotate(calc(var(--a) * -1)) translateY(6px)
+			scale(0.92, 1.1);
+	}
+	100% {
+		opacity: 0;
+		transform: rotate(var(--a)) translateX(calc(46px + var(--d) * 1.05)) rotate(calc(var(--a) * -1)) translateY(26px)
+			scale(0.35);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.spin-splat {
+		display: none;
+	}
+}
+
+/* In a bonus (user, 2026-10-30: the pink square sat there washed out, a dead button): still not
+   pressable, but alive, in its world's colours (normal meadow pink, super sunset gold, hidden
+   neon violet) with a gloss sweeping across it, a soft pulse of glow and the mark bobbing. */
+.hud .bonus-button.in-bonus {
+	--glow: #ff7ac3;
+	background: linear-gradient(160deg, #ffb3d8, #f958b0);
+	animation: bonus-live-glow 1.8s ease-in-out infinite;
+}
+.hud .bonus-button.in-bonus:disabled {
+	opacity: 1;
+}
+.hud .bonus-button.in-bonus[data-tier='super'] {
+	--glow: #ffb43a;
+	background: linear-gradient(160deg, #ffe46b, #ff8a3d);
+}
+.hud .bonus-button.in-bonus[data-tier='hidden'] {
+	--glow: #32d4fc;
+	background: linear-gradient(160deg, #c9a2ff, #6a3ce0);
+}
+.hud .bonus-button.in-bonus::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	pointer-events: none;
+	background: linear-gradient(105deg, transparent 38%, rgb(255 255 255 / 0.6) 50%, transparent 62%) no-repeat;
+	background-size: 260% 100%;
+	animation: bonus-live-gloss 2.6s ease-in-out infinite;
+}
+.hud .bonus-button.in-bonus .bonus-mark {
+	animation: bonus-live-mark 1.8s ease-in-out infinite;
+}
+@keyframes bonus-live-glow {
+	0%,
+	100% {
+		box-shadow: 0 0 6px 0 var(--glow);
+	}
+	50% {
+		box-shadow: 0 0 18px 4px var(--glow);
+	}
+}
+@keyframes bonus-live-gloss {
+	0% {
+		background-position: 130% 0;
+	}
+	55%,
+	100% {
+		background-position: -30% 0;
+	}
+}
+@keyframes bonus-live-mark {
+	0%,
+	100% {
+		transform: translateY(0) rotate(0deg);
+	}
+	30% {
+		transform: translateY(-3px) rotate(-6deg);
+	}
+	60% {
+		transform: translateY(1px) rotate(3deg);
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.hud .bonus-button.in-bonus,
+	.hud .bonus-button.in-bonus::after,
+	.hud .bonus-button.in-bonus .bonus-mark {
+		animation: none;
+	}
+}
+
+/* ---- Buy menu (Figma 11402:9764, 2026-10-30) -------------------------------------------------
+   Two wide switch cards over three bonus cards, each a window onto its world (public/buy, baked by
+   build-buy-cards.py) with its hero standing in it; the bet stepper under them, the close square
+   top right. Built at the design's px and zoomed by --k (App buyK): landscape is the design's
+   1062px grid (6 columns: wide cards span 3, tall ones 2), portrait one 525px column. Whatever
+   doesn't fit scrolls (edgeFade masks the cut edge). */
+.overlay.bonus-overlay {
+	display: block;
+	padding: 0;
+	background: rgb(13 6 40 / 0.5);
+	backdrop-filter: blur(3px);
+}
+.bm-scroll {
+	position: absolute;
+	inset: 0 0 calc(81px * var(--k)) 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 8px 16px calc(22px * var(--k));
+	scrollbar-width: none;
+}
+.bm-scroll::-webkit-scrollbar {
+	display: none;
+}
+.bonus-overlay.portrait .bm-scroll {
+	padding-top: calc(80px * var(--k));
+}
+/* A short landscape scrolls: the cards start under the close square, not behind it. */
+.bonus-overlay.scrolls .bm-scroll {
+	padding-top: calc(72px * var(--k));
+}
+.bm-scroll.more-below {
+	-webkit-mask-image: linear-gradient(#000 calc(100% - 40px), transparent);
+	mask-image: linear-gradient(#000 calc(100% - 40px), transparent);
+}
+.bm-scroll.more-above {
+	-webkit-mask-image: linear-gradient(transparent, #000 40px);
+	mask-image: linear-gradient(transparent, #000 40px);
+}
+.bm-scroll.more-above.more-below {
+	-webkit-mask-image: linear-gradient(transparent, #000 40px, #000 calc(100% - 40px), transparent);
+	mask-image: linear-gradient(transparent, #000 40px, #000 calc(100% - 40px), transparent);
+}
+/* Landscape: the grid sits on the stepper (margin-top auto), as the design has it, and scrolls from
+   its top once it outgrows the screen. */
+.bm-cards {
+	zoom: var(--k);
+	margin-top: auto;
+	display: grid;
+	grid-template-columns: repeat(6, 167px);
+	gap: 12px;
+	flex: none;
+}
+.bonus-overlay.portrait .bm-cards {
+	margin-top: 0;
+	grid-template-columns: 525px;
+}
+.bm-card {
+	position: relative;
+	box-sizing: border-box;
+	overflow: hidden;
+	border: 1px solid #eaeaea;
+	border-radius: 13px;
+	color: #fff;
+	text-align: center;
+	background-origin: border-box;
+	background-repeat: no-repeat;
+	box-shadow: 0 10px 28px rgb(10 6 40 / 0.35);
+	transition: box-shadow 0.2s;
+	animation: bm-card-in 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) calc(var(--i) * 60ms) both;
+}
+.bm-card.wide {
+	grid-column: span 3;
+	height: 166px;
+	background-image: url('/buy/v3/extra.webp');
+	background-size: 525px 166px;
+	background-position: left top;
+}
+.bm-card.wide.feature {
+	background-image: url('/buy/v3/feature.webp');
+}
+.bm-card.tall {
+	grid-column: span 2;
+	height: 326px;
+	border-color: #e0c8ff;
+	background-image: url('/buy/v3/normal.webp');
+	background-size: 525px 326px;
+	background-position: center top;
+}
+.bonus-overlay.portrait .bm-card {
+	grid-column: 1;
+}
+.bm-card.tall.normal {
+	border-color: #eadef1;
+}
+.bm-card.tall.super {
+	background-image: url('/buy/v3/super.webp');
+}
+.bm-card.tall.mystery {
+	background-image: url('/buy/v3/mystery.webp');
+}
+/* Switched on: a lime ring (the BONUS button's Extra Feature colour). */
+.bm-card.on {
+	box-shadow:
+		0 0 0 3px #9bf715,
+		0 0 22px #9bf71599;
+}
+@keyframes bm-card-in {
+	from {
+		opacity: 0;
+		transform: translateY(18px) scale(0.94);
+	}
+}
+
+/* Heroes: the card's standing art, under its text, alive with a slow idle of its own. */
+.bm-hero {
+	position: absolute;
+	pointer-events: none;
+}
+.extra .bm-hero {
+	left: 34px;
+	top: 57px;
+	width: 55px;
+	height: 47px;
+	transform-origin: 50% 90%;
+	animation: bm-rock 3.2s ease-in-out infinite;
+}
+.feature .bm-hero {
+	left: -8px;
+	top: -14px;
+	width: 169px;
+	height: 169px;
+}
+/* The bonus heroes keep their design offset from the card's right edge, so the portrait column's
+   wider card still has them at its right. */
+.normal .bm-hero {
+	right: -26px;
+	top: 1px;
+	width: 148px;
+	height: 152px;
+	transform-origin: 50% 100%;
+	animation: bm-breathe 3.6s ease-in-out infinite;
+}
+.super .bm-hero {
+	right: -157px;
+	top: -49px;
+	width: 285px;
+	height: 312px;
+	transform-origin: 30% 100%;
+	animation: bm-sway 4.4s ease-in-out infinite;
+}
+.mystery .bm-hero {
+	right: -121px;
+	top: -5px;
+	width: 222px;
+	height: 192px;
+	animation: bm-bob 3s ease-in-out infinite;
+}
+@keyframes bm-rock {
+	50% {
+		transform: translateY(-2px) rotate(4deg);
+	}
+}
+@keyframes bm-breathe {
+	50% {
+		transform: scale(1.02, 0.98);
+	}
+}
+@keyframes bm-sway {
+	50% {
+		transform: rotate(-1.6deg);
+	}
+}
+@keyframes bm-bob {
+	50% {
+		transform: translateY(-4px);
+	}
+}
+/* The bonus cards' foot: clear to 30%, the deep indigo from 71% (Rectangle 511). */
+.bm-shade {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(rgb(10 6 15 / 0) 30.45%, #3a3981 71.17%);
+	pointer-events: none;
+}
+
+/* Chips: Component 32-36. Light = the spins count, dark = a number with its blob or icon. */
+.bm-chips {
+	position: absolute;
+	left: 11px;
+	top: 11px;
+	right: 11px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 5px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.tall .bm-chips {
+	left: 13px;
+	top: 20px;
+}
+.chip-break {
+	flex-basis: 100%;
+}
+.chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	height: 28px;
+	box-sizing: border-box;
+	padding: 0 7px 0 2px;
+	border-radius: 8px;
+	font: 400 12px/17px 'Coiny', sans-serif;
+	letter-spacing: 1.19px;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+.chip b {
+	font-weight: 400;
+}
+.chip.light {
+	padding: 0 8px;
+	background: #ead2ff;
+	color: #4b3981;
+}
+.chip.dark {
+	background: #4b3981;
+	color: #fff;
+}
+.chip.dark > b:first-child {
+	padding-left: 5px;
+}
+.chip .pink {
+	color: #fc7ebb;
+}
+/* The blob icon (18px), stacked 12px apart for two and three. */
+.chip-blob {
+	width: 18px;
+	height: 18px;
+	flex: none;
+}
+.chip-blob + .chip-blob {
+	margin-left: -9px;
+}
+.chip-egg {
+	width: 16px;
+	height: 16px;
+}
+.chip-spin {
+	width: 17px;
+	height: 16px;
+}
+
+/* Copy: Coiny titles, Poppins lines. Wide cards keep theirs in a column on the right. */
+.bm-card h3 {
+	margin: 0;
+	font: 400 20px/1.2 'Coiny', sans-serif;
+	letter-spacing: 0.6px;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+.bm-card p {
+	margin: 0;
+	font-family: 'Poppins', sans-serif;
+	font-size: max(12px, calc(9px / var(--k, 1)));
+	line-height: 1.4;
+	letter-spacing: 0.36px;
+}
+.bm-text {
+	position: absolute;
+	left: 266px;
+	width: 232px;
+	top: 22px;
+}
+.bm-text p {
+	margin-top: 5px;
+	color: #d7f0ff;
+	font-weight: 700;
+	font-size: max(11px, calc(9px / var(--k, 1)));
+	letter-spacing: 0.33px;
+}
+.tall h3 {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 146px;
+}
+.tall p:not(.sr-only) {
+	position: absolute;
+	left: 24px;
+	right: 24px;
+	top: 174px;
+	color: #fff3e8;
+}
+/* The wide cards' well: a dark pill with the price, the white ACTIVATE pill in its right side. */
+.bm-well {
+	position: absolute;
+	left: 24px;
+	right: 24px;
+	top: 108px;
+	height: 44px;
+	border-radius: 63px;
+	background: rgb(0 0 0 / 0.2);
+}
+.bm-well .bm-price {
+	position: absolute;
+	left: 0;
+	width: 204px;
+	top: 0;
+	font: 700 30px/44px 'Poppins', sans-serif;
+}
+.tall .bm-price {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 219px;
+	font: 400 30px/1.2 'Coiny', sans-serif;
+	letter-spacing: 0.9px;
+}
+.bm-button {
+	height: 44px;
+	padding: 0 16px;
+	border: 0;
+	border-radius: 63px;
+	color: #fff;
+	font: 400 16px/18px 'Coiny', sans-serif;
+	font-size: max(16px, calc(11px / var(--k, 1)));
+	letter-spacing: 1.28px;
+	text-transform: uppercase;
+	cursor: pointer;
+	box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.12);
+	transition:
+		transform 0.15s cubic-bezier(0.3, 1.6, 0.5, 1),
+		filter 0.15s;
+}
+.bm-button:not(:disabled):hover {
+	filter: brightness(1.06);
+	transform: scale(1.03);
+}
+.bm-button:not(:disabled):active {
+	transform: scale(0.97);
+}
+.bm-button:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+.bm-button.activate {
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 269px;
+	background: #fff;
+	color: #42b4fc;
+}
+.bm-button.activate.on {
+	background: #fb89b9;
+	color: #fff;
+}
+.bm-button.buy {
+	position: absolute;
+	left: 24px;
+	right: 24px;
+	top: 268px;
+	background: #fb89b9;
+}
+.super .bm-button.buy {
+	background: #fbb016;
+}
+.mystery .bm-button.buy {
+	background: #30d0fa;
+}
+
+/* Bet stepper (Frame 427321638): 228×64, black 60% with a hairline white rim; Inter labels. */
+.bm-bet {
+	position: absolute;
+	left: 50%;
+	/* zoom scales its own offsets as well: 17px lands at the design's 17 × --k. */
+	bottom: 17px;
+	zoom: var(--k);
+	translate: -50% 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 24px;
+	width: 228px;
+	height: 64px;
+	box-sizing: border-box;
+	border: 0.5px solid rgb(255 255 255 / 0.94);
+	border-radius: 11px;
+	background: rgb(0 0 0 / 0.6);
+	color: rgb(255 255 255 / 0.94);
+}
+.bm-step {
+	display: grid;
+	place-items: center;
+	width: 34px;
+	height: 44px;
+	padding: 0;
+	border: 0;
+	background: none;
+	cursor: pointer;
+}
+.bm-step img {
+	width: 34px;
+	height: 19px;
+	opacity: 0.94;
+	transition: transform 0.15s;
+}
+.bm-step img.down {
+	rotate: 180deg;
+}
+.bm-step:not(:disabled):active img {
+	transform: scale(0.85);
+}
+.bm-step:disabled {
+	opacity: 0.3;
+	cursor: default;
+}
+.bm-bet-value {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 4px;
+	min-width: 66px;
+	font-family: 'Inter', sans-serif;
+	font-weight: 700;
+}
+.bm-bet-value span {
+	color: #fb89b9;
+	font-size: 10px;
+	line-height: 15px;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+}
+.bm-bet-value strong {
+	font-size: 24px;
+	line-height: 32px;
+	letter-spacing: -0.02px;
+	white-space: nowrap;
+}
+/* Close (Frame 427321637): a 48px black 60% square, the + glyph turned to an ×. */
+.bm-close {
+	position: absolute;
+	top: 29px;
+	right: 34px;
+	zoom: var(--k);
+	display: grid;
+	place-items: center;
+	width: 48px;
+	height: 48px;
+	padding: 0;
+	border: 0.5px solid #fff;
+	border-radius: 11px;
+	background: rgb(0 0 0 / 0.6);
+	cursor: pointer;
+}
+.bm-close img {
+	width: 18.48px;
+	height: 18.48px;
+	rotate: 46.11deg;
+	transition: rotate 0.25s;
+}
+.bm-close:hover img {
+	rotate: 136deg;
+}
+@media (prefers-reduced-motion: reduce) {
+	.bm-card,
+	.bm-hero {
+		animation: none;
+	}
+}
+
+/* The menu popover is frosted (user, 2026-10-30: "lets add some more frost"): a real backdrop blur
+   and a milkier tint. The other glass panels stay unblurred (see the glass pass); this one is small
+   and only open briefly. Classes ×4 to outrank the glass pass. */
+.menu-panel.menu-panel.menu-panel.menu-panel {
+	border-color: rgb(255 255 255 / 0.28);
+	background:
+		linear-gradient(rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.04) 55%),
+		rgb(40 30 80 / 0.42);
+	-webkit-backdrop-filter: blur(14px) saturate(1.4);
+	backdrop-filter: blur(14px) saturate(1.4);
+	box-shadow:
+		inset 0 1px 0 rgb(255 255 255 / 0.3),
+		0 12px 30px rgb(0 0 0 / 0.35);
+}
+/* The menu's round buttons wear the Press Play bar's look: white, black rim, black glyph. */
+.menu-panel .menu-row .hud-icon {
+	background: #fff;
+	border: 2.75px solid #000;
+}
+.menu-panel .menu-row .hud-icon img {
+	filter: brightness(0);
+}
+@media (hover: hover) {
+	.menu-panel .menu-row:not(:disabled):hover .hud-icon,
+	.menu-panel .menu-row .hud-icon:hover {
+		background: #ffe3ef;
+	}
+}
+
+/* ---- Buy confirm (2026-10-30) ------------------------------------------------------------------
+   A small copy of the bonus card being bought: its art and hero over the card's indigo foot, the
+   title in Coiny, the price large, a white CANCEL pill and a CONFIRM pill in the card's BUY colour.
+   Classes ×4 to outrank the glass pass's dialog. */
+.dialog.confirm.confirm.confirm.confirm {
+	--accent: #fb89b9;
+	width: min(400px, calc(100% - 16px));
+	padding: 0 26px 26px;
+	overflow: hidden;
+	border: 1px solid #eadef1;
+	border-radius: 16px;
+	background: #3a3981;
+	box-shadow: 0 24px 70px rgb(10 6 40 / 0.6);
+}
+.dialog.confirm.confirm.confirm.confirm[data-mode='super'] {
+	--accent: #fbb016;
+}
+.dialog.confirm.confirm.confirm.confirm[data-mode='mystery'] {
+	--accent: #30d0fa;
+}
+.cf-art {
+	position: relative;
+	height: 150px;
+	margin: 0 -26px 4px;
+	overflow: hidden;
+	/* The baked art is 525 wide with the 346px card in its middle: scaled so the card spans the
+	   400px dialog (outside it the art isn't drawn, a bare strip). */
+	background: url('/buy/v3/normal.webp') center top / 607px 377px no-repeat;
+}
+.cf-art.super {
+	background-image: url('/buy/v3/super.webp');
+}
+.cf-art.mystery {
+	background-image: url('/buy/v3/mystery.webp');
+}
+/* The card's foot gradient, ending in the dialog's indigo so the art runs into it. */
+.cf-art .bm-shade {
+	background: linear-gradient(rgb(58 57 129 / 0) 45%, #3a3981 100%);
+}
+.dialog.confirm.confirm.confirm.confirm h2 {
+	margin: -18px 0 6px;
+	position: relative;
+	color: #fff;
+	font-size: 26px;
+	text-shadow: 0 2px 0 rgb(20 10 60 / 0.45);
+}
+.dialog.confirm.confirm.confirm.confirm .confirm-line {
+	margin: 0;
+	color: #fff3e8;
+	font-size: 13px;
+	letter-spacing: 0.3px;
+	text-transform: none;
+	opacity: 0.85;
+}
+.cf-price {
+	display: block;
+	margin: 6px 0 18px;
+	font: 400 36px/1.2 'Coiny', sans-serif;
+	letter-spacing: 1px;
+}
+.dialog.confirm.confirm.confirm.confirm :is(.primary, .secondary) {
+	height: 46px;
+	border: 0;
+	border-radius: 63px;
+	font: 400 16px/18px 'Coiny', sans-serif;
+	letter-spacing: 1.28px;
+	box-shadow: inset 0 -3px 0 rgb(0 0 0 / 0.12);
+}
+.dialog.confirm.confirm.confirm.confirm .secondary {
+	background: #fff;
+	color: #3a3981;
+}
+.dialog.confirm.confirm.confirm.confirm .primary {
+	background: var(--accent);
+	color: #fff;
+}
+
+/* ---- Portrait bar (Figma 11413:7874 base, 11413:8602 bonus; 2026-11-02) ------------------------
+   The 360-wide design at ×1.889, its game area under the 93px Stake chrome: stage y = (y − 93) ×
+   1.889, everything riding down by 0.82 of the spare height (--ex) as before. A dark fade
+   (Rectangle 338, 358×153 at 1, 517) to the screen's foot; on it the black 47% bar (17, 531,
+   258×50) with the menu glyph, the bolt, the white spin disc rising out of it (78 at 131, 521) and
+   auto; the pink Press Play square (62 at 282, 526) right of it. Under them BALANCE, the bet in a
+   black 47% box (127×56 at 117, 604) with its chevrons, and WIN. In a bonus the bar shortens
+   (168 wide) to menu, bolt and skip, the TOTAL WIN / FREE SPINS rows (161×52 at 190, 530) take
+   the disc's place, the square goes and the bet box loses its chevrons. */
+main.portrait .hud-bar {
+	left: -600px;
+	right: -600px;
+	top: calc(801px + var(--ex) * 0.82);
+	height: calc(289px + var(--ex) * 0.18 + 600px);
+	border-radius: 0;
+	/* to-top: black 57% from 6.7% of the design's 153 up to clear at 130%; past the row it stays. */
+	background: linear-gradient(to top, rgb(0 0 0 / 0.57) calc(100% - 289px + 19.4px), rgb(0 0 0 / 0.13) calc(100% - 289px + 289px * 0.3), rgb(0 0 0 / 0) 100%);
+	-webkit-backdrop-filter: blur(6.6px);
+	backdrop-filter: blur(6.6px);
+	-webkit-mask-image: none;
+	mask-image: none;
+}
+main.portrait .hud-bar::before {
+	content: '';
+	position: absolute;
+	left: calc(600px + 32.1px);
+	top: 26.4px;
+	width: 487.4px;
+	height: 94.5px;
+	border-radius: 11.4px;
+	background: rgb(0 0 0 / 0.47);
+}
+main.portrait.bonus-round .hud-bar::before {
+	width: 317.4px;
+}
+main.portrait :is(.menu-button, .turbo-button, .auto-button, .skip-button) {
+	scale: none;
+	top: calc(842.5px + var(--ex) * 0.82);
+	width: 68px;
+	height: 68px;
+}
+main.portrait .hud :is(.turbo-button, .auto-button, .skip-button) {
+	border-width: 4.25px;
+}
+main.portrait .menu-button,
+main.portrait .menu-button.open {
+	left: 62.3px;
+	top: calc(850px + var(--ex) * 0.82);
+	width: 60.4px;
+	height: 51.8px;
+	border: 0;
+	border-radius: 8px;
+	background: none;
+}
+main.portrait .menu-button img.menu-bars {
+	width: 60.4px;
+	height: 51.8px;
+	filter: none;
+}
+main.portrait .menu-button .menu-close {
+	width: 40px;
+	height: 40px;
+	filter: brightness(0) invert(1);
+}
+main.portrait .menu-panel {
+	left: 32.1px;
+	top: calc(827.4px - 214px - 12px + var(--ex) * 0.82);
+}
+main.portrait .turbo-button {
+	left: 151.1px;
+}
+main.portrait .hud .speed-icon {
+	width: 22.2px;
+	height: 38.8px;
+}
+main.portrait .auto-button {
+	left: 423.1px;
+}
+main.portrait .auto-button img {
+	display: block;
+	width: 42.5px;
+	height: 40.8px;
+}
+main.portrait .auto-button:not(.active) small {
+	display: none;
+}
+main.portrait .auto-button.active small {
+	font: 400 22px/1 'Coiny', sans-serif;
+	letter-spacing: 0;
+}
+main.portrait .auto-button.active .auto-stop {
+	display: none;
+}
+main.portrait .spin-button {
+	left: 247.5px;
+	top: calc(808.5px + var(--ex) * 0.82);
+	width: 147.3px;
+	height: 147.3px;
+	scale: none;
+	background: #fff;
+	border-width: 4.7px;
+}
+main.portrait .spin-arrow {
+	left: 7.1px;
+	top: 9.8px;
+	width: 123.5px;
+	height: 117.1px;
+}
+/* Group 241: 62×61.4, a 1.8px black rim 2.2px inside, the mark at the desktop square's spots. */
+main.portrait .bonus-button {
+	left: 532.7px;
+	top: calc(818px + var(--ex) * 0.82);
+	width: 117.1px;
+	height: 116px;
+	padding: 0;
+	border: 0;
+	border-radius: 10.3px;
+	outline: 3.45px solid #000;
+	outline-offset: -7.6px;
+	display: block;
+}
+main.portrait .bonus-button .bonus-mark {
+	display: block;
+	position: absolute;
+	left: 21.3%;
+	top: 2.97%;
+	width: 65.7%;
+	height: 83.2%;
+	margin: 0;
+}
+main.portrait .bonus-button > span {
+	position: absolute;
+	left: 50%;
+	bottom: -14px;
+	translate: -50% 0;
+	padding: 3px 10px 1px;
+	border-radius: 9px;
+	background: #000;
+	color: #9bf715;
+	font-size: 15px;
+	line-height: 19px;
+	letter-spacing: 0.6px;
+	white-space: nowrap;
+}
+main.portrait .bonus-button:not(.extra-on) > span {
+	clip-path: inset(50%);
+	opacity: 0;
+}
+/* BALANCE (16, 612.7) and WIN (260): 85-unit columns, Inter 10 pink over Coiny 18. */
+main.portrait .hud-metrics {
+	left: 30.2px;
+	top: calc(981.7px + var(--ex) * 0.82);
+	width: 621.5px;
+	height: 72.8px;
+	justify-content: space-between;
+}
+main.portrait .hud-metrics .metric {
+	width: 160.6px;
+	height: auto;
+	padding: 0;
+	gap: 2.9px;
+	justify-content: flex-start;
+}
+main.portrait .hud-metrics .metric-label,
+main.portrait .bet-controls .metric-label {
+	display: block;
+	font: 700 18.9px/21.8px 'Inter', sans-serif;
+	letter-spacing: 2.9px;
+	color: var(--bar-pink);
+}
+main.portrait .bet-controls .metric-label {
+	font-family: 'Chakra Petch', 'Inter', sans-serif;
+	letter-spacing: 3.8px;
+	line-height: 28.3px;
+}
+main.portrait .hud-metrics .metric strong {
+	font: 400 34px/46.6px 'Coiny', sans-serif;
+	letter-spacing: 0.1px;
+}
+/* The bet box: the bet (49 wide at 133, 608) centred over its label, the chevrons at (200, 613 /
+   638.5), 24×13.4. */
+main.portrait .bet-controls {
+	left: 221px;
+	top: calc(965.1px + var(--ex) * 0.82);
+	width: 239.9px;
+	height: 105.8px;
+	padding: 0;
+	border-radius: 10.9px;
+	background: rgb(0 0 0 / 0.47);
+	display: block;
+}
+main.portrait .bet-controls::before,
+main.portrait .bet-controls::after {
+	display: none;
+}
+main.portrait .bet-controls .metric {
+	position: absolute;
+	left: 30.2px;
+	top: 9.4px;
+	width: 125px;
+	align-items: center;
+	gap: 0;
+	padding: 0;
+}
+main.portrait .bet-controls .metric strong {
+	font: 400 34px/60.4px 'Coiny', sans-serif;
+	letter-spacing: 0;
+}
+main.portrait .bet-controls .hud-icon {
+	position: absolute;
+	left: 156.8px;
+	width: 45.3px;
+	height: 25.3px;
+	margin: 0;
+	border: 0;
+	border-radius: 4px;
+	background: none;
+}
+main.portrait .bet-controls .hud-icon:first-of-type {
+	top: 64.6px;
+}
+main.portrait .bet-controls .hud-icon:last-of-type {
+	top: 16.4px;
+}
+main.portrait .bet-controls .hud-icon img {
+	width: 45.3px;
+	height: 25.3px;
+	filter: none;
+}
+main.portrait .bet-controls .hud-icon:disabled {
+	opacity: 0.3;
+}
+/* In a bonus: no disc, auto or square; the bet sits alone, centred in its box (140 of 117..244). */
+main.portrait.bonus-round :is(.spin-button, .auto-button, .bonus-button, .round-detail),
+main.portrait.bonus-round .bet-controls .hud-icon {
+	display: none;
+}
+main.portrait.bonus-round .bet-controls .metric {
+	left: 57.3px;
+}
+main.portrait .skip-button {
+	display: flex;
+	left: 251.2px;
+}
+main.portrait .hud .skip-button img {
+	width: 49.5px;
+	height: 49.5px;
+}
+/* Frame 427321642: two 161×24 white rows 4 apart, a 1.9px rule at 84, Coiny 12 (the count 15.3). */
+main.portrait .bar-round {
+	display: flex;
+	flex-direction: column;
+	gap: 7.6px;
+	left: 358.9px;
+	top: calc(825.5px + var(--ex) * 0.82);
+	width: 304.1px;
+	pointer-events: none;
+	transform-origin: 50% 50%;
+}
+main.portrait .bar-round > div {
+	display: grid;
+	grid-template-columns: 158.7px 1fr;
+	align-items: center;
+	height: 45.3px;
+	border-width: 3px;
+	border-radius: 9.6px;
+	font-size: 22.7px;
+	line-height: 1;
+}
+main.portrait .bar-round > div > span {
+	display: flex;
+	align-items: center;
+	height: 100%;
+	padding: 0 0 0 9px;
+	border-right: 3.6px solid #3c3c3c;
+	font-size: 22.7px;
+}
+main.portrait .bar-total > span {
+	color: var(--bar-pink);
+}
+main.portrait .bar-round strong {
+	font-size: 22.7px;
+	text-align: center;
+	line-height: 1;
+}
+main.portrait .bar-free strong {
+	font-size: 28.9px;
+}
+
+/* ---- Phone landscape bar (Figma 11413:8984, 800×360; 2026-11-02) -------------------------------
+   Measured on its render (the frame is drawn rotated). The right side: a 50×238 black 47% bar at
+   (736, 58) with the menu glyph, the bolt, the white spin disc (78, centre 758, 198) and auto;
+   beside it the bet column (48×124 at 659, 103: chevrons and the bet) and the pink Press Play
+   square (62 at 652, 235). BALANCE / WIN: black 50% pills, pink Poppins labels. The left
+   column's FREE SPINS / TOTAL WIN: black 40% glass with a 0.5px white rim. Same anchoring as
+   above: right parts from W, foot parts from H, sizes × --c. */
+main.phone .hud-bar {
+	left: calc(var(--W) - 64px * var(--c));
+	top: calc(var(--H) - 302px * var(--c));
+	width: calc(50px * var(--c));
+	height: calc(238px * var(--c));
+	border-radius: calc(6px * var(--c));
+	background: rgb(0 0 0 / 0.47);
+	-webkit-mask-image: none;
+	mask-image: none;
+}
+main.phone :is(.menu-button, .turbo-button, .auto-button, .spin-button, .bonus-button) {
+	transform-origin: 0 0;
+	scale: var(--c);
+}
+main.phone .menu-button,
+main.phone .menu-button.open {
+	left: calc(var(--W) - 56px * var(--c));
+	top: calc(var(--H) - 290px * var(--c));
+	width: 32px;
+	height: 27.4px;
+	border: 0;
+	border-radius: 4px;
+	background: none;
+}
+main.phone .menu-button img.menu-bars {
+	width: 32px;
+	height: 27.4px;
+	filter: none;
+}
+main.phone .menu-button .menu-close {
+	width: 22px;
+	height: 22px;
+	filter: brightness(0) invert(1);
+}
+main.phone .menu-panel {
+	left: calc(var(--W) - 70px * var(--c) - 226px);
+	top: calc(var(--H) - 302px * var(--c));
+}
+main.phone :is(.turbo-button, .auto-button) {
+	left: calc(var(--W) - 58px * var(--c));
+	width: 36px;
+	height: 36px;
+	border-width: 2.25px;
+}
+main.phone .turbo-button {
+	top: calc(var(--H) - 250px * var(--c));
+}
+main.phone .hud .speed-icon {
+	width: 11.8px;
+	height: 20.5px;
+}
+main.phone .auto-button {
+	top: calc(var(--H) - 111px * var(--c));
+}
+main.phone .auto-button img {
+	display: block;
+	width: 22.5px;
+	height: 21.6px;
+}
+main.phone .auto-button:not(.active) small {
+	display: none;
+}
+main.phone .auto-button.active small {
+	font: 400 12px/1 'Coiny', sans-serif;
+	letter-spacing: 0;
+}
+main.phone .auto-button.active .auto-stop {
+	display: none;
+}
+main.phone .spin-button {
+	left: calc(var(--W) - 81px * var(--c));
+	top: calc(var(--H) - 201px * var(--c));
+	width: 78px;
+	height: 78px;
+	background: #fff;
+	border-width: 2.8px;
+}
+main.phone .spin-arrow {
+	left: 3.2px;
+	top: 4.4px;
+	width: 65.4px;
+	height: 62px;
+}
+main.phone .bonus-button {
+	left: calc(var(--W) - 148px * var(--c));
+	top: calc(var(--H) - 125px * var(--c));
+	width: 62px;
+	height: 61.4px;
+	padding: 0;
+	border: 0;
+	border-radius: 5.5px;
+	outline: 1.8px solid #000;
+	outline-offset: -4px;
+	display: block;
+}
+main.phone .bonus-button .bonus-mark {
+	display: block;
+	position: absolute;
+	left: 21.3%;
+	top: 2.97%;
+	width: 65.7%;
+	height: 83.2%;
+	margin: 0;
+}
+main.phone .bonus-button > span {
+	position: absolute;
+	left: 50%;
+	bottom: -8px;
+	translate: -50% 0;
+	padding: 2px 6px 1px;
+	border-radius: 6px;
+	background: #000;
+	color: #9bf715;
+	font-size: 8px;
+	line-height: 10px;
+	letter-spacing: 0.4px;
+	white-space: nowrap;
+}
+main.phone .bonus-button:not(.extra-on) > span {
+	clip-path: inset(50%);
+	opacity: 0;
+}
+/* The bet column: plus (its chevron at 114), the bet (166), minus (201). */
+main.phone .bet-controls {
+	left: calc(var(--W) - 141px * var(--c));
+	top: calc(var(--H) - 257px * var(--c));
+	width: 48px;
+	height: 124px;
+	padding: 6px 0;
+	border-radius: 5.8px;
+	background: rgb(0 0 0 / 0.47);
+}
+main.phone .hud .bet-controls > .hud-icon {
+	width: 36px;
+	height: 26px;
+	border: 0;
+	border-radius: 4px;
+	background: none;
+}
+main.phone .hud .bet-controls .hud-icon img:is(.minus, .plus) {
+	width: 24px;
+	height: 13.4px;
+	filter: none;
+}
+main.phone .hud .bet-controls .hud-icon:disabled {
+	opacity: 0.3;
+}
+main.phone .bet-controls .metric strong {
+	font: 400 14px/16.5px 'Coiny', sans-serif;
+	color: #fff;
+}
+main.phone .hud-metrics .metric {
+	background: rgb(0 0 0 / 0.5);
+}
+main.phone .hud-metrics .metric-label {
+	color: var(--bar-pink);
+}
+main.phone .round-panel.round-panel.round-panel {
+	background: rgb(0 0 0 / 0.4);
+	border: 0.5px solid rgb(255 255 255 / 0.7);
+	-webkit-backdrop-filter: blur(8px);
+	backdrop-filter: blur(8px);
+}
+/* Mama stands on the ground at the bottom left beside the board, by BALANCE (Figma 11413:11980;
+   up in the panels' slot she read as floating "in the air"). The left column has no panels any
+   more: the spin log sits under the logo (84) and stops at 200, clear of her head. */
+/* As 11413:8984 draws her: a 110-wide body just clear of the board's rim, standing ON the
+   BALANCE pill (its top at H - 35.5c) and in front of the spin log's foot. Measured in the rig,
+   the body (arms included) spans 3.3u..118.3u of the 124u box and its full height, foot 1.4u
+   above the box's bottom. --mu (App's phoneLay) is 0.96 on the design's stage, grows with a
+   taller one and is capped by the gap left of the board. */
+main.phone .base-mama {
+	--u: var(--mu);
+	left: max(0px, calc(var(--pb-x) - 3px * var(--c) - 118.3px * var(--u)));
+	top: calc(var(--H) - 34.5px * var(--c) + 1.4px * var(--u) - 127px * var(--u));
+	width: calc(124px * var(--u));
+	height: calc(127px * var(--u));
+	z-index: 1;
+}
+main.phone .spin-log {
+	--log-h: min(195px, calc((var(--H) - 42px * var(--c) - 84px * var(--c)) / (0.595 * var(--c))));
+	top: calc(84px * var(--c));
+}
+/* Bonus (Figma 11413:11980): the bar shortens to menu, bolt and skip (734, 54, 50×152); under it
+   the round's TOTAL WIN tile (124×38 at 662, 215) and FREE SPINS row (124×25, 257); then BET and
+   WIN as matching pills (292, 324). No disc, auto, square or left-column panels. */
+main.phone.bonus-round :is(.round-detail, .spin-button, .auto-button, .bonus-button),
+main.phone.bonus-round .bet-controls .hud-icon {
+	display: none;
+}
+main.phone.bonus-round .hud-bar {
+	left: calc(var(--W) - 66px * var(--c));
+	top: calc(var(--H) - 306px * var(--c));
+	height: calc(152px * var(--c));
+}
+main.phone.bonus-round .menu-button {
+	left: calc(var(--W) - 57px * var(--c));
+	top: calc(var(--H) - 295.7px * var(--c));
+}
+main.phone.bonus-round .turbo-button {
+	left: calc(var(--W) - 59px * var(--c));
+	top: calc(var(--H) - 256px * var(--c));
+}
+main.phone .skip-button {
+	display: flex;
+	left: calc(var(--W) - 59px * var(--c));
+	top: calc(var(--H) - 208px * var(--c));
+	width: 36px;
+	height: 36px;
+	border-width: 2.25px;
+	transform-origin: 0 0;
+	scale: var(--c);
+}
+main.phone .hud .skip-button img {
+	width: 26px;
+	height: 26px;
+}
+main.phone .bar-round {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	left: calc(var(--W) - 138px * var(--c));
+	top: calc(var(--H) - 145px * var(--c));
+	width: 124px;
+	transform-origin: 0 0;
+	scale: var(--c);
+	pointer-events: none;
+}
+main.phone .bar-round > div {
+	border-width: 1.6px;
+	border-radius: 5px;
+}
+main.phone .bar-total {
+	height: 38px;
+	line-height: 15px;
+}
+main.phone .bar-total span {
+	font-size: 12.5px;
+}
+main.phone .bar-round strong {
+	font-size: 15px;
+	line-height: 17px;
+}
+main.phone .bar-free {
+	height: 25px;
+	grid-template-columns: 76px 1fr;
+}
+main.phone .bar-free > span {
+	padding-left: 6px;
+	border-right-width: 1.9px;
+	font-size: 10px;
+}
+/* BET as a pill like WIN's: pink label left, the bet right. */
+main.phone.bonus-round .bet-controls {
+	left: calc(var(--W) - 138px * var(--c));
+	top: calc(var(--H) - 68px * var(--c));
+	width: 124px;
+	height: 28px;
+	padding: 0 8px;
+	border-radius: 8px;
+	background: rgb(0 0 0 / 0.5);
+}
+main.phone.bonus-round .bet-controls .metric {
+	width: 100%;
+	flex-direction: row;
+	align-items: center;
+	justify-content: space-between;
+}
+main.phone.bonus-round .bet-controls .bet-label {
+	display: block;
+	font: 500 max(10px, calc(6px / var(--k, 1) / var(--c)))/1 'Poppins', sans-serif;
+	letter-spacing: 0.3px;
+	color: var(--bar-pink);
+}
+main.phone.bonus-round .bet-controls .metric strong {
+	font: 500 12px/1 'Poppins', sans-serif;
+	letter-spacing: 0.42px;
 }

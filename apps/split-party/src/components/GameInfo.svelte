@@ -138,8 +138,8 @@
 				in:fly={{ x: 60 * dir, duration: 320, easing: cubicOut }}
 			>
 				{#if page === 0}
-					<img class="peeker teal" src="./info/hd/peeker-teal.webp" alt="" />
-					<img class="peeker pink" src="./info/hd/peeker-pink.webp" alt="" />
+					<img class="peeker teal" src="./info/hd/peeker-teal2.webp" alt="" />
+					<img class="peeker pink" src="./info/hd/peeker-pink2.webp" alt="" />
 					<img class="info-logo" src="./info/hd/logo.webp" alt="Blob Split" />
 					<h2 id="modal-title">{tr('INFO OVERVIEW')}</h2>
 					<div class="lead">
@@ -309,17 +309,15 @@
 						{#each GUIDE as g, i}
 							<li style={`--i:${i}`}>
 								<span class={`guide-icon gi-${g.icon}`} aria-hidden="true">
-									{#if g.icon === 'spin'}<img src="./info/spin.svg" alt="" />
-									{:else if g.icon === 'auto'}<img src="./base/auto.svg" alt="" /><small>{tr('AUTO')}</small>
-									{:else if g.icon === 'turbo'}{#each ['normal', 'turbo', 'super'] as speed}<img src={`./base/speed-${speed}.webp`} alt="" />{/each}
-									{:else if g.icon === 'plus' || g.icon === 'minus' || g.icon === 'menu'}<img
-											src={`./base/${g.icon}.svg`}
-											alt=""
-										/>
+									{#if g.icon === 'spin'}<img src="./base/bar/spin.svg" alt="" />
+									{:else if g.icon === 'auto'}<img src="./base/bar/auto.svg" alt="" />
+									{:else if g.icon === 'turbo'}<img src="./base/bar/turbo.svg" alt="" />
+									{:else if g.icon === 'plus' || g.icon === 'minus'}<img src="./base/bar/arrow.svg" alt="" />
+									{:else if g.icon === 'menu'}<img src="./base/bar/menu.svg" alt="" />
 									{:else if g.icon === 'sound'}<img src="./info/sound.svg" alt="" />
 									{:else if g.icon === 'music'}<img src="./menu/music.svg" alt="" />
 									{:else if g.icon === 'info'}<img src="./menu/info.svg" alt="" />
-									{:else if g.icon === 'bonus'}<span class="bonus-pill">{tr('BONUS')}</span>
+									{:else if g.icon === 'bonus'}<span class="bonus-pill"><img src="./base/bar/bonus-mark.svg" alt="" /></span>
 									{:else if g.icon === 'close'}<img src="./ui/close.svg" alt="" />
 									{:else}<img src="./info/arrow.svg" alt="" />{/if}
 								</span>
@@ -357,7 +355,7 @@
 		left: 1118px;
 		top: 29px;
 		right: auto;
-		border-color: #a5a7ee;
+		border-color: rgb(255 255 255 / 0.3);
 	}
 	.info-panel {
 		position: absolute;
@@ -367,22 +365,17 @@
 		height: 552px;
 		box-sizing: border-box;
 		overflow: hidden;
-		/* The framed panel (style.css "Framed panels"): bevel rim, dark outline, purple body. */
-		border: 4px solid transparent;
+		/* The glass panel (style.css "Glass pass"), as deep as the dialogs. */
+		border: 1px solid var(--glass-rim);
 		border-radius: 18px;
-		background:
-			radial-gradient(180px 130px at 0 0, #ffffff14, #fff0 70%) padding-box,
-			radial-gradient(180px 130px at 100% 100%, #ffffff0d, #fff0 70%) padding-box,
-			linear-gradient(#54409a, #3f2d7d) padding-box,
-			linear-gradient(#c4adff, #8a68f5 30%, #5a3bd2) border-box;
+		background: var(--glass-sheen), rgb(12 10 28 / 0.9);
 		color: #fff;
 		font-family: 'Poppins', sans-serif;
 		font-weight: 400;
 		text-align: center;
 		box-shadow:
-			0 0 0 3px #241063,
-			inset 0 0 0 2px #241063,
-			0 24px 80px rgb(10 6 40 / 0.6);
+			inset 0 1px 0 var(--glass-lip),
+			0 24px 80px rgb(0 0 0 / 0.55);
 		animation: panel-in 0.52s cubic-bezier(0.3, 1.45, 0.5, 1) both;
 	}
 	@keyframes panel-in {
@@ -410,10 +403,10 @@
 		text-transform: uppercase;
 		color: #ffe14d;
 		text-shadow:
-			0 2px 0 #1b0f55,
-			0 -1px 0 #1b0f55,
-			1.5px 0 0 #1b0f55,
-			-1.5px 0 0 #1b0f55,
+			0 2px 0 var(--glass-ink),
+			0 -1px 0 var(--glass-ink),
+			1.5px 0 0 var(--glass-ink),
+			-1.5px 0 0 var(--glass-ink),
 			0 4px 8px #0008;
 	}
 	h3 {
@@ -431,15 +424,10 @@
 	}
 	.card {
 		box-sizing: border-box;
-		border: 2px solid #7f62e6;
+		border: 1px solid rgb(255 255 255 / 0.14);
 		border-radius: 14px;
-		background:
-			radial-gradient(80px 60px at 0 0, #ffffff12, #fff0 70%),
-			linear-gradient(#33207a, #26165e);
-		box-shadow:
-			0 0 0 1.5px #241063,
-			inset 0 1.5px 0 #ffffff1f,
-			0 6px 14px #12063a59;
+		background: rgb(255 255 255 / 0.05);
+		box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08);
 		animation: card-in 0.62s cubic-bezier(0.3, 1.45, 0.5, 1) calc(0.08s + var(--i, 0) * 0.07s) both;
 	}
 	.card p {
@@ -464,12 +452,13 @@
 		width: 48px;
 		height: 48px;
 		padding: 0;
-		border: 1px solid #a5a7ee;
+		border: 1px solid rgb(255 255 255 / 0.3);
 		border-radius: 9999px;
-		background: #3a3981;
-		transition: transform 0.15s;
+		background: rgb(255 255 255 / 0.08);
+		transition: transform 0.15s, background-color 0.15s;
 	}
 	.round:hover {
+		background: rgb(255 255 255 / 0.18);
 		transform: scale(1.08);
 	}
 	.round:active {
@@ -561,9 +550,9 @@
 		min-width: 150px;
 		box-sizing: border-box;
 		padding: 7px 20px;
-		border: 1px solid #7f7fd6;
+		border: 1px solid rgb(255 255 255 / 0.16);
 		border-radius: 8px;
-		background: #2f1b6c;
+		background: rgb(0 0 0 / 0.3);
 		font: 400 16px 'Coiny', sans-serif;
 		text-align: center;
 	}
@@ -619,18 +608,16 @@
 		height: 29px;
 		padding: 0;
 		border-radius: 8px;
-		background: linear-gradient(#8058c8, #6a45b3);
-		box-shadow:
-			inset 0 1px 0 #ffffff33,
-			inset 0 -1.5px 0 #2a1a7255;
+		background: rgb(255 255 255 / 0.1);
+		box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.12);
 		font-weight: 400;
 		white-space: nowrap;
 	}
 	.pad.head {
-		border: 1px solid #7f62e6;
-		background: #2a1a72;
+		border: 1px solid rgb(255 255 255 / 0.16);
+		background: rgb(0 0 0 / 0.3);
 		box-shadow: none;
-		color: #c9b8ff;
+		color: #c8c6d4;
 		font-size: 12px;
 	}
 	/* The three top payers' rows in gold: the table reads from its most valuable blob down. */
@@ -695,7 +682,7 @@
 		justify-content: space-between;
 		padding: 3px 14px;
 		border-radius: 7px;
-		background: #462690;
+		background: rgb(255 255 255 / 0.08);
 	}
 	.basket-pays b {
 		color: #fff;
@@ -805,7 +792,7 @@
 		gap: 3px;
 		padding: 4px;
 		border-radius: 8px;
-		background: #202149;
+		background: rgb(0 0 0 / 0.3);
 	}
 	.demo-pad {
 		display: block;
@@ -814,12 +801,12 @@
 		padding: 2px 5px;
 		border: 1.5px solid transparent;
 		border-radius: 5px;
-		background: #3a3981;
+		background: rgb(255 255 255 / 0.1);
 		opacity: 0.45;
 	}
 	.demo-pad.hit {
 		border-color: #b9f45f;
-		background: #4f4aa8;
+		background: rgb(255 255 255 / 0.2);
 		opacity: 1;
 	}
 	.demo-sum {
@@ -989,50 +976,40 @@
 		width: 48px;
 		height: 48px;
 		box-sizing: border-box;
-		border: 1px solid #a5a7ee;
+		border: 1px solid rgb(255 255 255 / 0.3);
 		border-radius: 9999px;
-		background: #3a3981;
+		background: rgb(0 0 0 / 0.4);
+	}
+	/* The bar's own buttons as they look on it (Figma 11395:4052): white, black rim and glyph. */
+	.guide-icon:is(.gi-spin, .gi-auto, .gi-turbo, .gi-plus, .gi-minus, .gi-menu) {
+		border: 2.5px solid #000;
+		background: #fff;
 	}
 	.guide-icon.gi-spin {
-		border: 0;
-		background: none;
+		border-width: 3px;
 	}
 	.guide-icon.gi-spin img {
-		width: 48px;
-	}
-	.guide-icon.gi-auto {
-		gap: 2px;
+		width: 36px;
+		height: 34px;
 	}
 	.guide-icon.gi-auto img {
-		width: 11.23px;
-		height: 10.5px;
+		width: 27.5px;
+		height: 26.4px;
 	}
-	.guide-icon small {
-		font: 700 10px/12px 'Inter', sans-serif;
-		letter-spacing: -0.2px;
+	.guide-icon:is(.gi-menu, .gi-plus, .gi-minus) img {
+		width: 20px;
+		height: 17px;
+		filter: brightness(0);
 	}
-	.guide-icon.gi-menu img {
-		width: 17.5px;
-		height: 15px;
-	}
-	.guide-icon.gi-plus img {
-		width: 13.85px;
-		height: 13.85px;
+	.guide-icon:is(.gi-plus, .gi-minus) img {
+		height: 11.2px;
 	}
 	.guide-icon.gi-minus img {
-		width: 13.85px;
-		height: 2.13px;
-	}
-	/* The speed button's three states, side by side in a pill. */
-	.guide-icon.gi-turbo {
-		display: flex;
-		gap: 2px;
-		width: auto;
-		padding: 0 8px;
+		rotate: 180deg;
 	}
 	.guide-icon.gi-turbo img {
-		width: 22px;
-		height: 22px;
+		width: 14.4px;
+		height: 25px;
 	}
 	.guide-icon.gi-music img {
 		width: 22px;
@@ -1064,14 +1041,21 @@
 		border: 0;
 		background: none;
 	}
+	/* The HUD's Press Play square: pink, a black rim inside its edge, the tilted mark. */
 	.bonus-pill {
-		padding: 13px 18px;
-		border-radius: 24px;
-		background: #2bc4b4;
-		font: 400 15px/20px 'Coiny', sans-serif;
-		/* As on the HUD's own button. */
-		letter-spacing: 1px;
-		text-transform: uppercase;
+		display: grid;
+		place-items: center;
+		width: 48px;
+		height: 48px;
+		border-radius: 6px;
+		background: #fb89b9;
+		outline: 2px solid #000;
+		outline-offset: -4px;
+	}
+	.bonus-pill img {
+		width: 31px;
+		height: 39px;
+		translate: 1.5px -2px;
 	}
 
 	/* Portrait: Figma 11096:43029's 360×800 phone frames in the design's units. The game area
@@ -1105,13 +1089,6 @@
 	.tight .page-count {
 		font-size: 13px;
 	}
-	.tight .guide-icon.gi-auto img {
-		display: none;
-	}
-	.tight .guide-icon small {
-		font-size: 12px;
-		letter-spacing: -0.4px;
-	}
 	.info-stage.compact .screen-close {
 		top: 4px;
 	}
@@ -1131,7 +1108,7 @@
 		z-index: 1;
 		margin: 0 -8px;
 		padding: 9px 0;
-		background: #4b3981;
+		background: rgb(14 12 30 / 0.97);
 		font: 400 24px/26px 'Coiny', sans-serif;
 		letter-spacing: 0.72px;
 	}
@@ -1145,7 +1122,7 @@
 		color: #f7f1ff;
 	}
 	.portrait .card {
-		border-color: #888ae2;
+		border-color: rgb(255 255 255 / 0.3);
 	}
 	.portrait .card p {
 		font: 400 12px/normal 'Nunito', sans-serif;
@@ -1201,7 +1178,7 @@
 		padding: 0 10px;
 		border: 0;
 		border-radius: 7px;
-		background: #7f7fd6;
+		background: rgb(255 255 255 / 0.14);
 		font: 400 15px 'Coiny', sans-serif;
 		color: #fff;
 	}
@@ -1233,12 +1210,12 @@
 	.pay-list thead th {
 		height: 29px;
 		padding: 0 2px;
-		background: #7f7fd6;
+		background: rgb(255 255 255 / 0.14);
 		font: 400 12px 'Coiny', sans-serif;
 		white-space: nowrap;
 	}
 	.pay-list thead th + th {
-		border-left: 1px solid #4b3981;
+		border-left: 1px solid rgb(12 10 28);
 	}
 	.pay-list thead th:first-child {
 		border-top-left-radius: 4px;
@@ -1346,11 +1323,11 @@
 		min-height: 0;
 		gap: 4px;
 		padding: 12px 8px;
-		background: #270544;
+		background: rgb(255 255 255 / 0.05);
 	}
 	.portrait .buys .card.spin-mode {
 		gap: 7px;
-		background: #2f1b6c;
+		background: rgb(255 255 255 / 0.08);
 	}
 	.portrait .buys .card + .card:not(.spin-mode) {
 		margin-top: 4px;
@@ -1376,11 +1353,11 @@
 		margin: 2px 0 0;
 		padding: 10px;
 		border-radius: 7px;
-		background: #341451;
+		background: rgb(0 0 0 / 0.3);
 		font: 400 12px/17px 'Coiny', sans-serif;
 	}
 	.portrait .buys .spin-mode .value {
-		background: rgb(136 138 226 / 0.9);
+		background: rgb(255 255 255 / 0.14);
 	}
 
 	/* 6 · General info: icon + title on one line, copy under it. */
@@ -1400,7 +1377,7 @@
 		height: auto;
 		padding: 12px;
 		border-width: 1px;
-		border-color: #7f7fd6;
+		border-color: rgb(255 255 255 / 0.16);
 		border-radius: 12px;
 	}
 	.portrait .general h3 {
@@ -1441,9 +1418,9 @@
 		box-sizing: border-box;
 		min-height: 65px;
 		padding: 12px;
-		border: 1px solid #7f7fd6;
+		border: 1px solid rgb(255 255 255 / 0.14);
 		border-radius: 7px;
-		background: #2f1b6c;
+		background: rgb(255 255 255 / 0.05);
 		text-align: left;
 	}
 	.portrait .guide-icon {
@@ -1458,9 +1435,12 @@
 		width: auto;
 	}
 	.portrait .bonus-pill {
-		padding: 8px 10px;
-		font-size: 12px;
-		line-height: 16px;
+		width: 39px;
+		height: 39px;
+	}
+	.portrait .bonus-pill img {
+		width: 25px;
+		height: 31.5px;
 	}
 	.portrait .guide b {
 		align-self: end;

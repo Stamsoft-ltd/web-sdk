@@ -104,17 +104,13 @@
 		width: 228.66px;
 		height: var(--log-h, 266.5px);
 		padding: 8px 9.2px;
-		/* The framed panel (style.css "Framed panels"): bevel rim, dark outline, indigo well. */
-		border: 3px solid transparent;
+		/* The glass panel (style.css "Glass pass"). */
+		border: 1px solid var(--glass-rim);
 		border-radius: 16px;
-		background:
-			linear-gradient(#251870, #1a0f52) padding-box,
-			linear-gradient(#c4adff, #8a68f5 30%, #5a3bd2) border-box;
+		background: var(--glass-sheen), var(--glass-deep);
 		box-shadow:
-			0 0 0 2.5px #241063,
-			inset 0 0 0 1.5px #241063,
-			inset 0 4px 10px #0006,
-			0 10px 24px #12063a80;
+			inset 0 1px 0 var(--glass-lip),
+			0 12px 30px rgb(0 0 0 / 0.35);
 	}
 	.spin-log-rows {
 		height: 100%;
@@ -149,17 +145,15 @@
 		align-items: center;
 		gap: 6.806px;
 		padding: 0 8px 0 3.5px;
-		/* A jelly slab: lit lip, shaded foot. */
-		background: linear-gradient(#8f78dc, #7259c4 55%, #6148b0);
-		border: 2px solid #2a1a72;
+		/* A lighter pane of the same glass, bright enough to read under a win screen's dim. */
+		background: linear-gradient(rgb(255 255 255 / 0.24), rgb(255 255 255 / 0.14));
+		border: 1px solid rgb(255 255 255 / 0.34);
 		border-radius: 10px;
-		box-shadow:
-			inset 0 1.5px 0 #ffffff40,
-			inset 0 -2px 0 #2a1a7255;
+		box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25);
 	}
 	.spin-log-row.vacant {
-		background: #ffffff0a;
-		border: 2px dashed #ffffff1f;
+		background: rgb(255 255 255 / 0.05);
+		border: 1.5px dashed rgb(255 255 255 / 0.22);
 		box-shadow: none;
 	}
 	.spin-log-box {
@@ -170,14 +164,15 @@
 		padding: 0 3px;
 		display: grid;
 		place-items: center;
-		background: #2a1a72;
-		border: 1px solid rgba(255, 255, 255, 0.25);
+		background: rgb(255 255 255 / 0.22);
+		border: 1px solid rgba(255, 255, 255, 0.5);
 		border-radius: 8px;
 		/* Figma 11259:3652 (Coiny 8.2px in the 114-wide phone log) at this log's ×2. */
 		font: 400 16.4px/1 'Coiny', sans-serif;
 		letter-spacing: 0.72px;
 		color: #fff;
 		text-transform: uppercase;
+		text-shadow: 0 1.5px 0 var(--glass-ink), 0 0 4px rgb(0 0 0 / 0.5);
 	}
 	.spin-log-blob {
 		flex: 0 0 var(--row-img, 33px);
@@ -192,7 +187,7 @@
 		font: 400 18px/1 'Coiny', sans-serif;
 		letter-spacing: 1.88px;
 		color: #fee302;
-		text-shadow: 0 1.5px 0 #2a1a72;
+		text-shadow: 0 1.5px 0 var(--glass-ink), 0 0 4px rgb(0 0 0 / 0.5);
 		white-space: nowrap;
 	}
 </style>

@@ -7,11 +7,13 @@ art-src/win/*.png  the Figma image fills, untouched
   jelly.png         the big pink jelly bubbles behind the plaque (Glossy Pink Jelly Bubble 6/7)
   plaque.png        the old slime plaque with its balloons baked in (no longer built)
   bubble.png        the purple bubble (11008:29321 and its copies; BonusCard's flyers)
-  drip-4.png        the long slime drip (the right drip, rotated, and the amount box's corner drip)
-  drip-5.png        the short slime splat (the left drip)
-  title-<tier>.png  the tier word; win-<tier>.png the WIN word
+  drip-4.png        the long slime drip (removed from the screens 2026-10-27, not built)
+  drip-5.png        the short slime splat (removed 2026-10-27, not built)
+  title2-<tier>.png the tier word; win2-<tier>.png the WIN word: the 2026-10-27 glossy lettering
+                    (Figma 11324:47859..47882, the nodes' raw image fills); the old title-/win-
+                    masters are kept in art-src/win/old/
   sym-*.png         the happy blobs peeking out
-  2x/<name>.png     Real-ESRGAN 2x of plate, cloud, jelly, title-mythic (upscale-art.py), used
+  2x/<name>.png     Real-ESRGAN 2x of plate, cloud, jelly (upscale-art.py), used
                     in place of the master when present
   -> public/win/hd/*.webp, same canvases (only scaled), so the design's crop percentages hold.
     (hd/: new folder rather than new contents, browsers keep the old art under the old names)
@@ -28,8 +30,8 @@ OUT = ROOT / 'public' / 'win' / 'hd'
 # Max width per file: its largest design width x 3.2 (stage scale 1.6 at 1920x1080, DPR 2);
 # the plate (max 1159 -> 3709) is capped by its 2x master. The old plaque is replaced by
 # plate + cloud.
-WIDTH = {'plate': 3548, 'cloud': 2284, 'jelly': 1500, 'title-mythic': 1820, 'bubble': 700, 'drip-4': 700, 'drip-5': 700}
-SKIP = {'plaque'}
+WIDTH = {'plate': 3548, 'cloud': 2284, 'jelly': 1500, 'bubble': 700}
+SKIP = {'plaque', 'drip-4', 'drip-5'}
 OUT.mkdir(parents=True, exist_ok=True)
 for src in sorted(SRC.glob('*.png')):
     name = src.stem

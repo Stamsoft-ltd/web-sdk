@@ -21,10 +21,11 @@ art-src/<dir>/<name>.png|webp -> art-src/<dir>/2x/<name>.png (3x for the logo, s
 build-win-screens.py / build-free-spins.py / build-logo-layers.py / build-base-scene.py prefer the 2x file when it exists.
 Needs realesrgan-ncnn-vulkan (github.com/xinntao/Real-ESRGAN releases, v0.2.5.0) with its
 models/ beside it, at ~/tools/realesrgan or $REALESRGAN.
-    python3 apps/split-party/scripts/upscale-art.py
+    python3 apps/split-party/scripts/upscale-art.py [folder/name ...]
 """
 
 import os
+import sys
 import subprocess
 import tempfile
 from pathlib import Path
@@ -34,8 +35,21 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 TOOL = Path(os.environ.get('REALESRGAN', Path.home() / 'tools' / 'realesrgan'))
-ART = {'base': ['hills'], 'win': ['plate', 'cloud', 'jelly', 'title-mythic'], 'freespins': ['badge', 'cloud'], 'splash': ['logo']}
-SCALE = {'splash/logo': 3}
+ART = {
+    'base': ['hills', 'far-hills'],
+    'win': ['plate', 'cloud', 'jelly', 'title-mythic'],
+    'freespins': ['badge', 'cloud'],
+    'splash': ['logo', 'sky'],
+    # 2026-11-02 quality pass: with the scenes' baked blur down to 0.3 design px the backdrops
+    # are no longer blurred past what a 2x master adds (they were shown at ~0.5-0.7 of their
+    # retina need); build-bonus-scene.py / build-splash-sky.py / build-base-scene.py prefer these.
+    'bonus/hidden': ['cavern', 'mound-b'],
+    'bonus-super': ['dunes'],
+    'bonus/normal-v2': ['hills', 'dunes'],
+    # The buy cards at 3x (build-buy-cards.py): the dunes are drawn 1045 / 1133 design px wide.
+    'buy': ['dunes-normal', 'dunes-super'],
+}
+SCALE = {'splash/logo': 3, 'buy/dunes-super': 4}
 
 
 def mean_fix(master: Image.Image, up: Image.Image) -> Image.Image:
@@ -51,8 +65,11 @@ def mean_fix(master: Image.Image, up: Image.Image) -> Image.Image:
 
 for folder, names in ART.items():
     out = ROOT / 'art-src' / folder / '2x'
-    out.mkdir(exist_ok=True)
+    out.mkdir(parents=True, exist_ok=True)
     for name in names:
+        # Optional filter: folder/name arguments redo only those.
+        if sys.argv[1:] and f'{folder}/{name}' not in sys.argv[1:]:
+            continue
         src = next(p for p in (ROOT / 'art-src' / folder).glob(f'{name}.*') if p.suffix in ('.png', '.webp'))
         master = Image.open(src).convert('RGBA')
         x = SCALE.get(f'{folder}/{name}', 2)

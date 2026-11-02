@@ -6,7 +6,7 @@ is unchanged and eyes.json / gear.json (in units) still fit. 224px was under the
 pixels on a retina desktop (a 75px cell at 1.6x stage scale x DPR 2 = 240px, more mid-hop).
 
 art-src/symbols/<S>.png  (gitignored; Figma raw fills, 1254x1254)
-  -> public/symbols/hd/<S>.webp   448x448
+  -> public/symbols/v3/<S>.webp   448x448 (v3: the 2026-10-29 body shapes, build-body-shapes.py; new folder so caches miss)
 Then build-scatter-egg.py (BASKET) and build-face-layers.py (the face cut) read hd/.
 New folder rather than new contents: browsers keep the old art under the old names.
     python3 apps/split-party/scripts/build-symbols.py
@@ -18,7 +18,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'art-src' / 'symbols'
-OUT = ROOT / 'public' / 'symbols' / 'hd'
+OUT = ROOT / 'public' / 'symbols' / 'v3'
 SIZE = 448
 
 OUT.mkdir(parents=True, exist_ok=True)
