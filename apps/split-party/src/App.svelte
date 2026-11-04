@@ -5,20 +5,20 @@
 	import Blob from './components/Blob.svelte';
 	import Crack from './components/Crack.svelte';
 	import EggHatch from './components/EggHatch.svelte';
-	import JellyNumber from './components/JellyNumber.svelte';
-	import { SURPRISE_MS } from './board/anim';
+	import { SHORT_IMPACT_MS, SURPRISE_MS } from './board/anim';
 	import PixiBoard from './components/PixiBoard.svelte';
 	import PixiScene from './components/PixiScene.svelte';
 	import BonusSwap from './components/BonusSwap.svelte';
 	import PixiLogo from './components/PixiLogo.svelte';
 	import PixiMama from './components/PixiMama.svelte';
+	import { SHOW_MAMA } from './lib/features';
 	import { candyWarp } from './lib/candyWarp';
 	import BaseScene from './components/BaseScene.svelte';
 	import BonusNormal from './components/BonusNormal.svelte';
 	import BonusSuper from './components/BonusSuper.svelte';
 	import JellyText from './components/JellyText.svelte';
 	import BonusHidden from './components/BonusHidden.svelte';
-	import MysteryEgg, { BURST_MS, KNOCKS_MS, MYSTERY_MS, START_BLOBS } from './components/MysteryEgg.svelte';
+	import MysteryEgg, { BURST_MS, HATCH_GAP_MS, HATCH_MS, HEARTS_MS, KNOCKS_MS, MYSTERY_MS, START_BLOBS } from './components/MysteryEgg.svelte';
 	import BonusCard, { CARD_BUILD_MS, type CardKind } from './components/BonusCard.svelte';
 	import WinScreen, { type WinTier } from './components/WinScreen.svelte';
 	import SpinLog, { type SpinLogRow } from './components/SpinLog.svelte';
@@ -260,7 +260,10 @@
 	// aside as the round starts (board.tier) and handed back once it is over. The player may
 	// speed the round back up; that choice then outlives the round (a speed change drops the hold).
 	let turboHeld: { turbo: boolean; superTurbo: boolean } | null = null;
-	let inBonus = $derived(!!board.tier);
+	// The HUD's bonus look follows the world on screen (sceneTier), which swapWorld changes under
+	// BonusSwap's cover: keyed off board.tier, the round panels, bonus BET and skip button came
+	// and went in plain view before the wipe (2026-11-04 review).
+	let inBonus = $derived(!!sceneTier);
 	// A tall phone's spare sky goes to a bigger logo in the base game (up to 1.6×). The bonus
 	// panels and spin log share its row, so there it keeps nearly its own size.
 	// With mama under it (portrait .mama-up) its foot sits 133px over the board's rim, so it is
@@ -273,7 +276,7 @@
 		return ex >= MAMA_UP_EX ? Math.min(ls, (39 + 0.58 * ex) / 122) : ls;
 	});
 	$effect(() => {
-		const on = inBonus;
+		const on = !!board.tier;
 		untrack(() => {
 			if (on && !turboHeld) {
 				turboHeld = { turbo, superTurbo };
@@ -349,7 +352,8 @@
 	// Base music in the base game, bonus music from the bonus start until its total is seen.
 	// Each bonus world has its own music; it changes with the world (the swap's cover), not the
 	// moment the round's tier does.
-	$effect(() => sfx.setBed(started ? sceneTier || 'base' : null));
+	// The mystery egg's reveal plays its own eerie bed (the bonus music slowed and muffled).
+	$effect(() => sfx.setBed(started ? (mystery ? 'mystery' : sceneTier || 'base') : null));
 	// Figma 11174:7179: the menu button turns into a teal close and pops a Sound / Music / Info
 	// panel above it. It is a popover, not a modal, so sound can be toggled mid-round.
 	let menuOpen = $state(false);
@@ -415,9 +419,11 @@
 	] as const;
 	// Every popup lands like a blob: squashed wide, then jiggles to rest; it leaves by
 	// shrinking up and away.
+	// Svelte runs these through element.animate(), which the reduced-motion CSS doesn't stop:
+	// each one checks reducedMotion itself.
 	function pop(_node: Element, { duration = 520 } = {}) {
 		return {
-			duration,
+			duration: reducedMotion ? 0 : duration,
 			css: (t: number) => {
 				const e = elasticOut(t);
 				return `opacity:${Math.min(1, t * 3)};transform:translateY(${(1 - t) * 24}px) scale(${1 + (1 - e) * 0.28}, ${1 - (1 - e) * 0.42})`;
@@ -426,9 +432,18 @@
 	}
 	function popOut(_node: Element, { duration = 180 } = {}) {
 		return {
-			duration,
+			duration: reducedMotion ? 0 : duration,
 			easing: cubicIn,
 			css: (t: number) => `opacity:${t};transform:translateY(${(1 - t) * -14}px) scale(${0.9 + t * 0.1}, ${0.86 + t * 0.14})`,
+		};
+	}
+	// A HUD icon swapping for another (menu bars / close, auto / stop, the second turbo chevron)
+	// turns and grows in rather than cutting over.
+	function iconIn(_node: Element, { turn = 0 } = {}) {
+		return {
+			duration: reducedMotion ? 0 : 180,
+			easing: backOut,
+			css: (t: number, u: number) => `opacity:${Math.min(1, t * 2)};transform:rotate(${-turn * u}deg) scale(${0.6 + 0.4 * t})`,
 		};
 	}
 	let jurisdiction = $state<Record<string, any>>({});
@@ -470,10 +485,10 @@
 		reelDelayMs: 11,
 		spinReelDelayMs: 48,
 		jitterMs: 48,
-		impactMs: 425,
+		// The landing bounce (BoardView IMPACT): squash, a hop, a smaller landing, a little hop.
+		impactMs: 620,
 		removeMs: 525,
 		removeJitterMs: 69,
-		holdMs: 150,
 		// Not from Veggie: the roller-coaster fright the blobs pull before the board drops.
 		scareMs: 240,
 	};
@@ -485,10 +500,9 @@
 		reelDelayMs: 4,
 		spinReelDelayMs: 20,
 		jitterMs: 15,
-		impactMs: 138,
+		impactMs: 190,
 		removeMs: 225,
 		removeJitterMs: 25,
-		holdMs: 88,
 		scareMs: 150,
 	};
 	const N = 7;
@@ -515,10 +529,11 @@
 			tumbleRowStaggerMs: m.tumbleRowStaggerMs * k,
 			reelDelayMs: m.reelDelayMs * k,
 			jitterMs: m.jitterMs * k,
-			impactMs: m.impactMs * k,
+			// The landing bounce keeps a floor: at the chain's 0.35 it was 66ms in turbo, under a
+			// frame per beat, and read as a jitter (BoardView picks a short squash below 350ms).
+			impactMs: Math.max(m.impactMs * k, Math.min(m.impactMs, 300)),
 			removeMs: m.removeMs * k,
 			removeJitterMs: m.removeJitterMs * k,
-			holdMs: m.holdMs * k,
 		};
 	}
 	// Live: under reduced motion the boards land at once, so nothing may wait on falls or teases.
@@ -542,16 +557,14 @@
 	// The DOM board's tease column (style.css .tease-col): its seven chasing pads and bubbles.
 	const TEASE_ROWS = [0, 1, 2, 3, 4, 5, 6];
 	// The DOM pop splash's droplets: where each lands (px from the tile centre) and its size.
+	// [x, y, size] px. A few small ones near the tile, as splats.ts (2026-11-02).
 	const SPLAT_DROPS = [
-		[-30, -6, 7],
-		[-22, -24, 5],
-		[-8, -32, 8],
-		[8, -30, 6],
-		[24, -20, 7],
-		[32, -2, 5],
-		[-16, 18, 5],
-		[18, 20, 6],
-		[0, -14, 4],
+		[-26, -14, 7],
+		[-12, -30, 6],
+		[8, -32, 7],
+		[24, -18, 6],
+		[-18, 14, 5],
+		[20, 12, 6],
 	];
 	const TEASE_BUBBLES = [
 		{ x: 22, s: 9, t: 1500, d: 0, w: 8 },
@@ -628,8 +641,9 @@
 	// one of the dividing tiles: one to each read as a swarm (user 2026-10-30: "only to 1 tile").
 	// The board waits SPIRIT_LEAD_MS while it flies, so it lands just before the split starts
 	// (user: "fly earlier, just before the split").
-	const SPIRIT_MS = 620;
-	const SPIRIT_LEAD_MS = 660;
+	// Quicker since 2026-11-02 (the win beat sat near-still ~2.3s before anything split).
+	const SPIRIT_MS = 460;
+	const SPIRIT_LEAD_MS = 480;
 	type Spirit = { id: number; x0: number; y0: number; ax: number; ay: number; x1: number; y1: number; cx: number; cy: number; dur: number; delay: number; c: string };
 	let stageEl = $state<HTMLDivElement>();
 	let mamaBeat = $state(0);
@@ -644,8 +658,8 @@
 	// Phone landscape has her bottom left (Figma 11362:72003). Portrait (11318:43227) has her under the logo, peeking over the board's rim, but only
 	// on phones tall enough to lift the logo for her (MAMA_UP_EX px of spare height); squatter
 	// screens (tablets) keep the old stack without her.
-	let mamaUp = $derived(portrait && baseStage.h - PORTRAIT_H >= MAMA_UP_EX);
-	let mamaShown = $derived(!portrait || mamaUp);
+	let mamaUp = $derived(SHOW_MAMA && portrait && baseStage.h - PORTRAIT_H >= MAMA_UP_EX);
+	let mamaShown = $derived(SHOW_MAMA && (!portrait || mamaUp));
 	// A base spin: she watches the reels. Not in a bonus, where a spin is always running: there
 	// it pinned her pupils into the corner for the whole round (user 2026-11-02: "she does
 	// something strange with her eyes at bonus mode"); she glances about as she dances instead.
@@ -667,7 +681,12 @@
 		const lip = mamaRig?.mouth();
 		const o = lip ? { x: (lip.x - stage.left) / baseFit, y: (lip.y - stage.top) / baseFit } : at(mama, 0.62, 0.56);
 		const dur = SPIRIT_MS * pace;
-		const fresh = [changes[changes.length >> 1]].map((c, i): Spirit => {
+		// One spirit per winning cluster (user 2026-11-02), to the middle of that cluster's split
+		// tiles; any split outside the last win's clusters gets one of its own.
+		const groups = clusterCells.map((cells) => changes.filter((c) => cells.has(`${c.reel},${c.row}`))).filter((g) => g.length);
+		const rest = changes.filter((c) => !clusterCells.some((cells) => cells.has(`${c.reel},${c.row}`)));
+		if (rest.length) groups.push(rest);
+		const fresh = groups.map((g) => g[g.length >> 1]).map((c, i): Spirit => {
 			const t = {
 				x: (grid.left + (rim + PAD_L + c.reel * (CELL_W + GAP) + CELL_W / 2) * k - stage.left) / baseFit,
 				y: (grid.top + (rim + PAD_T + c.row * (CELL_H + GAP) + CELL_H / 2) * k - stage.top) / baseFit,
@@ -683,7 +702,7 @@
 			const below = t.y > o.y + 40;
 			const ay = below ? o.y + 26 : o.y - 12;
 			const cy = below ? o.y + (t.y - o.y) * 0.35 : Math.min(o.y, t.y) - lift;
-			return { id: ++spiritId, x0: o.x, y0: o.y, ax: o.x + out, ay, x1: t.x, y1: t.y, cx: o.x + (t.x - o.x) * 0.7, cy, dur, delay: i * 40 * pace, c: tint };
+			return { id: ++spiritId, x0: o.x, y0: o.y, ax: o.x + out, ay, x1: t.x, y1: t.y, cx: o.x + (t.x - o.x) * 0.7, cy, dur, delay: i * Math.min(90, 270 / groups.length) * pace, c: tint };
 		});
 		const first = fresh[0];
 		const d = Math.hypot(first.x1 - first.x0, first.y1 - first.y0) || 1;
@@ -693,7 +712,8 @@
 		spirits = [...spirits, ...fresh];
 		const ids = new Set(fresh.map((f) => f.id));
 		setTimeout(() => (spirits = spirits.filter((f) => !ids.has(f.id))), dur + fresh.at(-1)!.delay + 700);
-		await sleep(SPIRIT_LEAD_MS * pace);
+		// Until the last one lands (the stagger is capped at 270ms, however many clusters won).
+		await sleep(SPIRIT_LEAD_MS * pace + fresh.at(-1)!.delay);
 	}
 	if (import.meta.env?.DEV) (globalThis as { __mamaSends?: typeof mamaSends }).__mamaSends = mamaSends;
 	let moving = $state(false);
@@ -704,6 +724,8 @@
 	// small pills doesn't drown the one that matters.
 	type ClusterPop = { id: number; x: number; y: number; amount: string; s: number; symbol: string };
 	let clusterPops = $state<ClusterPop[]>([]);
+	// The last win's clusters as "reel,row" sets (mamaSends sends a spirit to each).
+	let clusterCells: Set<string>[] = [];
 	let popId = 0;
 	const SPARKS = Array.from({ length: 16 }, (_, i) => {
 		const a = (i / 16) * Math.PI * 2 + (i % 2) * 0.2;
@@ -716,6 +738,7 @@
 	function popClusters(event: any) {
 		logoBeat++;
 		const wins: any[] = event.wins ?? [];
+		clusterCells = wins.map((w) => new Set<string>((w.positions ?? []).map((p: any) => `${p.reel},${p.row}`)));
 		const raw = wins.reduce((t, w) => t + (w.rawAward ?? 0), 0) || 1;
 		const top = Math.max(...wins.map((w) => w.rawAward ?? 0)) || 1;
 		clusterPops = wins.map((w) => {
@@ -787,7 +810,9 @@
 	// 4–5). 20x and up is a big win (presentBigWin, WinScreen.svelte). The splat-in (style.css
 	// .win-plaque) runs PLAQUE_LAND_MS before the hold or count-up starts.
 	// A split plays as cell division (Blob.svelte); the board waits for the whole beat.
-	const DIVIDE_MS = 1400;
+	// 950 since 2026-11-02 (was 1400): a two-cascade small win took 9s+, the split's hold the
+	// longest still stretch of it.
+	const DIVIDE_MS = 950;
 	// Space / a tap during a split lands it at once (`rush` tells the Pixi board; the DOM board's
 	// division animations are finished in place).
 	let rush = $state(0);
@@ -820,7 +845,16 @@
 			const h = setTimeout(() => ((waveCut = null), done()), ms);
 			waveCut = () => (clearTimeout(h), (waveCut = null), done());
 		});
-	const FALL_ANIMS = /^(trapdoor-exit|gravity-fall|land-impact|blob-pop|tease-.*)$/;
+	const FALL_ANIMS = /^(trapdoor-exit|gravity-fall|land-impact(-short)?|blob-pop|tease-.*)$/;
+	// A slam stop lands every blob still falling with the short squash (BoardView's rush does the
+	// same), rather than teleporting it to rest.
+	const SLAM_LAND: Keyframe[] = [
+		{ transform: 'scale(0.92, 1.12)', easing: 'cubic-bezier(0, 0, 0.58, 1)' },
+		{ transform: 'scale(1.2, 0.82)', offset: 0.3, easing: 'cubic-bezier(0, 0, 0.58, 1)' },
+		{ transform: 'scale(0.97, 1.04)', offset: 0.65, easing: 'cubic-bezier(0, 0, 0.58, 1)' },
+		{ transform: 'none' },
+	];
+	const SLAM_LAND_MS = 180;
 	function slamStop() {
 		if (splitSkip) return splitSkip();
 		if (!waveCut) return;
@@ -831,11 +865,17 @@
 		wave = { ...wave, tease: [] };
 		moodTimers.forEach(clearTimeout);
 		mood = { wonder: null, surprise: 0 };
+		const landing = new Set<Element>();
 		for (const a of document.getAnimations())
 			if (a instanceof CSSAnimation && FALL_ANIMS.test(a.animationName))
 				try {
-					a.finish();
+					const el = (a.effect as KeyframeEffect | null)?.target;
+					// Still in the air or mid-bounce: it lands now, with the short squash.
+					if (el && /^(gravity-fall|land-impact)/.test(a.animationName) && a.playState !== 'finished') landing.add(el);
+					if (a.animationName.startsWith('land-impact')) a.cancel();
+					else a.finish();
 				} catch {}
+		if (!reducedMotion) for (const el of landing) el.animate(SLAM_LAND, { duration: SLAM_LAND_MS });
 		waveCut();
 	}
 	// The board's blobs, pads and cracks render in Pixi (components/PixiBoard.svelte); `?board=dom`
@@ -868,6 +908,7 @@
 	const QUICK_WIN_X = 5;
 	const BIG_WIN_X = 20;
 	const PLAQUE_LAND_MS = 650;
+	const PLAQUE_AMOUNT_MS = 720;
 	const QUICK_WIN_HOLD_MS = 900;
 	const COUNT_UP_HOLD_MS = 650;
 	const COUNT_UP_LADDER = [
@@ -899,6 +940,10 @@
 		const countMs = multiplier < QUICK_WIN_X ? 0 : COUNT_UP_LADDER.find(([x]) => multiplier < x)![1];
 		smallWin = { shown: countMs ? 0 : amount, final: amount, counted: false, speed };
 		plaqueOn = true;
+		// The amount's own landing (style.css plaque-amount: 240ms delay + 480ms) ends here; the
+		// counted bump waits for it, or a tap mid-landing swapped one animation for the other
+		// and the number jumped (2026-11-04 review).
+		const amountLanded = performance.now() + PLAQUE_AMOUNT_MS * speed;
 		sfx.play('winSmall');
 		let skipped = await skippable(PLAQUE_LAND_MS * speed);
 		if (countMs) {
@@ -917,7 +962,11 @@
 					};
 					requestAnimationFrame(step);
 				});
-			Object.assign(smallWin, { shown: amount, counted: true });
+			smallWin.shown = amount;
+			const wait = amountLanded - performance.now();
+			if (wait > 0) await sleep(wait);
+			if (disposed) return;
+			smallWin.counted = true;
 			sfx.play('thud');
 		}
 		if (!skipped) await skippable((countMs ? COUNT_UP_HOLD_MS : QUICK_WIN_HOLD_MS) * speed);
@@ -943,21 +992,26 @@
 		predrop = Promise.resolve();
 	}
 	// Big wins (20x and up) get the full-screen slime win screen; the tier climbs with the
-	// multiplier (thresholds are ours, the design has none), MAX only at the 20000x cap.
-	const BIG_WIN_TIERS: [x: number, tier: WinTier, countMs: number][] = [
-		[50, 'sweet', 3000],
-		[100, 'wild', 3500],
-		[250, 'epic', 4000],
-		[500, 'mythic', 4500],
-		[20000, 'legendary', 5000],
-		[Infinity, 'max', 5500],
+	// multiplier (thresholds are ours, the design has none), MAX only at the 20000x cap. The
+	// screen opens on SWEET and steps up live as the count passes each tier's threshold.
+	const BIG_WIN_TIERS: [x: number, tier: WinTier][] = [
+		[50, 'sweet'],
+		[100, 'wild'],
+		[250, 'epic'],
+		[500, 'mythic'],
+		[20000, 'legendary'],
+		[Infinity, 'max'],
 	];
+	// The count: one segment per tier passed (it eases into each threshold, so the step-up
+	// lands on a slowing number), then the last tier's run to the amount.
+	const BIG_WIN_STEP_MS = 1100;
+	const BIG_WIN_LAST_MS = 2400;
 	const BIG_WIN_LAND_MS = 1300;
 	const FREE_SPIN_WIN_PACE = 0.6;
 	// The counted amount stays up this long before the screen closes (a tap still closes it).
 	const BIG_WIN_HOLD_MS = 4500;
 	// `id`: each win screen is a fresh WinScreen ({#key}); two back to back would otherwise reuse
-	// one instance, and it lays out its tier once (a WILD title over the SWEET plaque).
+	// one instance, and play the second's opening as a step-up.
 	let bigWin = $state<{ id: number; tier: WinTier; shown: number; final: number; speed: number } | null>(null);
 	let bigWinId = 0;
 	let bigWinSkip: (() => void) | null = null;
@@ -965,11 +1019,28 @@
 	// moving); the screen's entrance plays at full length either way.
 	async function presentBigWin(amount: number, multiplier: number, pace = 1) {
 		const speed = superTurbo ? 0.4 : turbo ? 0.5 : 1;
-		const [, tier, countMs] = BIG_WIN_TIERS.find(([x]) => multiplier < x)!;
-		bigWin = { id: ++bigWinId, tier, shown: 0, final: amount, speed };
-		// The two lowest tiers get the small-to-medium win music, the rest the big win music;
-		// it fades out with the screen.
-		const stopMusic = sfx.sting(tier === 'sweet' || tier === 'wild' ? 'win' : 'bigWin');
+		const last = BIG_WIN_TIERS.findIndex(([x]) => multiplier < x);
+		const tier = BIG_WIN_TIERS[last][1];
+		// Segment ends as amounts: each threshold passed, then the amount itself.
+		const ends = [...BIG_WIN_TIERS.slice(0, last).map(([x]) => (amount * x) / multiplier), amount];
+		const segMs = ends.map((_, i) => (i < last ? BIG_WIN_STEP_MS : BIG_WIN_LAST_MS) * speed * pace);
+		const countMs = segMs.reduce((a, b) => a + b, 0);
+		let level = 0;
+		bigWin = { id: ++bigWinId, tier: BIG_WIN_TIERS[0][1], shown: 0, final: amount, speed };
+		// SWEET and WILD play the small-to-medium win music; reaching EPIC swaps in the big win
+		// music. It fades out with the screen.
+		let stopMusic = sfx.sting('win');
+		const stepUp = (to: number) => {
+			if (!bigWin || to <= level) return;
+			if (level < 2 && to >= 2) {
+				stopMusic();
+				stopMusic = sfx.sting('bigWin');
+			}
+			level = to;
+			bigWin.tier = BIG_WIN_TIERS[to][1];
+			sfx.play('thud', 0, 1.1, 1 + 0.08 * to);
+			sfx.play('plop', 60, 0.9, 1 + 0.06 * to);
+		};
 		// A tap skips the count-up, and once counted, closes the screen.
 		let skipped = false;
 		const wait = (ms: number) =>
@@ -981,19 +1052,30 @@
 		if (!skipped) {
 			const start = performance.now();
 			const tick = ticker();
+			// Its own flag: a tap resets `skipped` before the next frame would see it.
+			let counting = true;
 			await new Promise<void>((done) => {
 				bigWinSkip = () => ((skipped = true), done());
 				const step = (now: number) => {
-					const t = Math.min(1, (now - start) / (countMs * speed * pace));
-					if (disposed || skipped || !bigWin) return done();
-					bigWin.shown = amount * (1 - (1 - t) ** 3);
+					if (disposed || !counting || !bigWin) return done();
+					let e = now - start;
+					let i = 0;
+					while (i < last && e >= segMs[i]) e -= segMs[i++];
+					const p = Math.min(1, e / segMs[i]);
+					const from = i ? ends[i - 1] : 0;
+					bigWin.shown = from + (ends[i] - from) * (1 - (1 - p) ** (i < last ? 2 : 3));
+					stepUp(i);
+					const t = Math.min(1, (now - start) / countMs);
 					tick(t);
 					if (t < 1) requestAnimationFrame(step);
 					else done();
 				};
 				requestAnimationFrame(step);
 			});
+			counting = false;
 		}
+		// A tap skips the count straight to the amount, and its tier.
+		stepUp(last);
 		if (bigWin) bigWin.shown = amount;
 		sfx.play('thud', 0, tier === 'max' ? 1.4 : 1);
 		if (tier === 'max') sfx.play('crack', 120, 1.2, 0.8);
@@ -1004,6 +1086,7 @@
 		stopMusic();
 	}
 	if (import.meta.env?.DEV) (globalThis as { __bigWin?: typeof presentBigWin }).__bigWin = presentBigWin;
+	if (import.meta.env?.DEV) (globalThis as { __card?: typeof presentCard }).__card = presentCard;
 	if (import.meta.env?.DEV)
 		(globalThis as { __mystery?: (tier: string) => void }).__mystery = (tier) => {
 			mystery = { tier, pace: 1 };
@@ -1012,7 +1095,7 @@
 	// The plaque leaves like a jelly sitting down: squashed onto its base as it fades.
 	function plaqueOut(_node: Element, { speed = 1 } = {}) {
 		return {
-			duration: 220 * speed,
+			duration: reducedMotion ? 0 : 220 * speed,
 			easing: cubicIn,
 			css: (t: number) => `opacity:${Math.min(1, t * 2)};transform:scale(${0.7 + 0.3 * t + (1 - t) * 0.25}, ${0.35 + 0.65 * t})`,
 		};
@@ -1026,11 +1109,9 @@
 		dy: (Math.sin((a * Math.PI) / 180) * r * 0.75).toFixed(0),
 		s,
 	}));
-	// Coiny at the design's 90.87px fits "$2.12"; longer amounts shrink to stay in the well.
-	// The small-win amount, in the jelly digits (user, 2026-10-27): digit height and the widest it
-	// may run across the plaque's purple, in plaque px.
-	const PLAQUE_DIGIT_H = 84;
-	const PLAQUE_TEXT_W = 300;
+	// The small win, Figma 11174:8160 (2026-11-03): Coiny at the design's 90.87px fits "$2.12";
+	// longer amounts shrink to stay inside the pink jelly (~360 of its 476px).
+	const plaqueFont = (text: string) => `font-size:${Math.min(90.87, 360 / (text.length * 0.6)).toFixed(1)}px`;
 	let motionId = 0;
 	let movingTimer: ReturnType<typeof setTimeout> | undefined;
 	// The board clips falling blobs only while something is in the air, so win glows aren't cut.
@@ -1215,7 +1296,7 @@
 		return () => clearTimeout(t);
 	});
 	// Round panels pop in with a jelly overshoot and shrink away.
-	const PANEL_IN = { start: 0.6, duration: 450, easing: backOut };
+	const PANEL_IN = $derived(reducedMotion ? { duration: 0 } : { start: 0.6, duration: 450, easing: backOut });
 	// The free-spin count rolls like a counter: the old number slides up and out squashed, the
 	// new one springs up from below with a jelly overshoot (both stacked in .fs-roll).
 	function roll(_node: Element, { up }: { up: boolean }) {
@@ -1226,7 +1307,7 @@
 				`transform:translateY(${(up ? u : -u) * 85}%) scale(${1 - 0.25 * u},${1 - 0.45 * u});opacity:${Math.min(1, t * 1.6)}`,
 		};
 	}
-	const PANEL_OUT = { start: 0.85, duration: 220, easing: cubicIn };
+	const PANEL_OUT = $derived(reducedMotion ? { duration: 0 } : { start: 0.85, duration: 220, easing: cubicIn });
 	let locked = $derived(busy || !!pending || !ready || !!error || !!notice || q.replay || autoCount > 0);
 	let status = $derived(
 		board.tier
@@ -1385,7 +1466,29 @@
 		if (disposed) return;
 		await cheerEggs();
 	}
+	// Skip bonus (user 2026-11-04): the bonus bar's skip button asks first; the dialog holds the
+	// bonus between steps (the one playing finishes), and SKIP applies the rest of its events to
+	// the board at once, so the end card opens on the last free spin's board and the total.
+	let skipAsk = $state(false);
+	let bonusSkip = $state(false);
+	let skipGate: Promise<void> | null = null;
+	let skipResume: (() => void) | null = null;
+	async function askSkipBonus() {
+		if (!busy || !board.tier || cardOpen || bonusSkip || skipAsk) return;
+		skipGate = new Promise((done) => (skipResume = done));
+		skipAsk = true;
+		await tick();
+		document.querySelector<HTMLElement>('.dialog.skip-bonus .primary')?.focus();
+	}
+	function answerSkip(skip: boolean) {
+		if (!skipAsk) return;
+		skipAsk = false;
+		bonusSkip = skip;
+		skipResume?.();
+		skipGate = skipResume = null;
+	}
 	async function playback(round: Round) {
+		bonusSkip = false;
 		// Keep the symbols on screen: they are what drops out when the first reveal lands.
 		board = { ...initialState(), board: board.board, blades: board.blades };
 		spinBase = 0;
@@ -1397,7 +1500,24 @@
 			if (disposed) return;
 		}
 		for (const event of round.state) {
+			if (skipGate) await skipGate;
 			if (disposed) return;
+			if (bonusSkip && board.tier) {
+				if (event.type !== 'finalWin') {
+					board = applyEvent(board, event);
+					continue;
+				}
+				// The skipped spins' leftovers (a win's glow, its pills, the spin log) go; the board
+				// stands as the last spin left it while the end card opens.
+				bonusSkip = false;
+				board = { ...board, highlight: [] };
+				clusterPops = [];
+				popping = {};
+				spinLog = [];
+				sfx.play('thud');
+				await waveSleep(400);
+				if (disposed) return;
+			}
 			if (event.type === 'reveal') {
 				if (!awaitingReveal) await dropBoard();
 				if (disposed) return;
@@ -1421,7 +1541,10 @@
 				if (removed.size) {
 					sfx.play('pop', 0, 1, chainPitch());
 					popping = Object.fromEntries([...removed].map((k) => [k, Math.random() * m.removeJitterMs]));
-					await waveSleep(m.removeMs + m.removeJitterMs + m.holdMs);
+					// The refill starts as the last pops burst (POP_BURST at 0.32 of removeMs, gone by
+					// 0.5) instead of after the whole pop and a hold: the popped tiles stood empty
+					// (bare purple with their scar) for most of a second.
+					await waveSleep(m.removeMs * 0.52 + m.removeJitterMs);
 					if (disposed) return;
 				}
 				board = applyEvent(board, event);
@@ -1477,6 +1600,13 @@
 				});
 				[3250, 3400, 3520, 3610].forEach((ms, i) => sfx.play('land', ms * pace, 0.4 + i * 0.1, 1.2 + i * 0.12, true));
 				sfx.play('crack', BURST_MS * pace - 80, 1.3);
+				// The sacs' two heartbeats, then a pop as each blob is born.
+				HEARTS_MS.forEach((ms) => sfx.play('heart', ms * pace, 1, 1, true));
+				for (let i = 0; i < (START_BLOBS[board.tier] ?? 1); i++) {
+					const at = (HATCH_MS + i * HATCH_GAP_MS) * pace;
+					sfx.play('pop', at, 1, 1.1 + i * 0.08, true);
+					sfx.play('plop', at + 60, 0.7, 1 + i * 0.06, true);
+				}
 				await sleep(MYSTERY_MS * pace);
 				mystery = null;
 				if (disposed) return;
@@ -1518,7 +1648,7 @@
 				continue;
 			}
 			const duration =
-				event.type === 'clusterWin' ? 390 : event.type === 'bonusStart' ? 900 : event.type === 'finalWin' ? 250 : 0;
+				event.type === 'clusterWin' ? 260 : event.type === 'bonusStart' ? 900 : event.type === 'finalWin' ? 250 : 0;
 			if (duration) await waveSleep(duration * (event.type === 'clusterWin' ? cascadePace() : paceScale()));
 		}
 	}
@@ -1849,6 +1979,7 @@
 			return;
 		}
 		if (event.key === 'Escape') {
+			answerSkip(false);
 			notice = '';
 			menuOpen = false;
 			closeModal();
@@ -1877,6 +2008,7 @@
 		if (
 			event.code === 'Space' &&
 			!modal &&
+			!skipAsk &&
 			!jurisdiction.disabledSpacebar &&
 			!(
 				event.target instanceof HTMLInputElement ||
@@ -1903,13 +2035,6 @@
 			}
 			void spin();
 		}
-	}
-	// The bonus bar's skip button: what a fresh Space press does mid-spin.
-	function skipPress() {
-		const skip = winSkip ?? bigWinSkip;
-		if (!busy || jurisdiction.disabledSlamstop) return;
-		if (skip) skip();
-		else if (!mystery) slamStop();
 	}
 	function cycleSpeed() {
 		turboHeld = null;
@@ -2026,9 +2151,9 @@
 				cheer={logoCheer}
 				beat={logoBeat}
 			/>{/if}</div>
-		<div class="base-mama" class:shown={started || mamaIn} aria-hidden="true">
+		{#if SHOW_MAMA}<div class="base-mama" class:shown={started || mamaIn} aria-hidden="true">
 			<PixiMama bind:this={mamaRig} pixi={pixiScene} beat={mamaBeat} sulk={mamaSulk} fear={mamaFear} push={mamaPush} win={logoCheer} party={inBonus} edge={mood.wonder !== null} shown={started || mamaIn} gaze={mamaGaze} />
-		</div>
+		</div>{/if}
 		<div class="studio-badge" aria-hidden="true">
 			<img class="studio-mark" src="./splash/studio-mark.svg" alt="" /><img
 				class="studio-word"
@@ -2141,7 +2266,7 @@
 									class:falling={falls}
 									class:popping={pop !== undefined}
 									style={falls
-										? `--fall-offset:${-105 * drop.rows}%;--fall-duration:${drop.dur.toFixed(0)}ms;--fall-delay:${drop.delay.toFixed(0)}ms;--impact-duration:${wave.impact}ms;--impact-delay:${(drop.delay + drop.dur).toFixed(0)}ms;--remove-duration:${cascadeMotion().removeMs}ms;--harvest-delay:${(pop ?? 0).toFixed(0)}ms`
+										? `--fall-offset:${-105 * drop.rows}%;--fall-duration:${drop.dur.toFixed(0)}ms;--fall-delay:${drop.delay.toFixed(0)}ms;--impact-duration:${wave.impact}ms;--impact-name:${wave.impact < SHORT_IMPACT_MS ? 'land-impact-short' : 'land-impact'};--impact-delay:${(drop.delay + drop.dur).toFixed(0)}ms;--remove-duration:${cascadeMotion().removeMs}ms;--harvest-delay:${(pop ?? 0).toFixed(0)}ms`
 										: `--remove-duration:${cascadeMotion().removeMs}ms;--harvest-delay:${(pop ?? 0).toFixed(0)}ms`}
 								>
 									<Blob {symbol} {units} uid={`b-${col}-${row}`} />
@@ -2182,6 +2307,7 @@
 				<div
 					class="cluster-pop"
 					aria-hidden="true"
+					out:fade={{ duration: reducedMotion ? 0 : 160 }}
 					style={`left:${(p.x * 100).toFixed(2)}%;top:${(p.y * 100).toFixed(2)}%;--c:${c};--c-hi:${shade(c, 0.42)};--c-lo:${shade(c, -0.28)};--c-ink:${shade(c, -0.62)}`}
 				>
 					{#each SPARKS as k}<span
@@ -2215,6 +2341,8 @@
 			{/each}
 		</div>
 		{#if plaqueOn}
+			<!-- The design's 50% black over the whole game while the small win shows. -->
+			<div class="plaque-dim" aria-hidden="true" transition:fade={{ duration: 200 }}></div>
 			<div
 				class="win-plaque"
 				aria-hidden="true"
@@ -2227,16 +2355,11 @@
 					></span>{/each}
 				<div class="plaque-land">
 					<div class="plaque-body">
-						<img src="./win/small-win-plaque.webp" alt="" width="405" height="304" />
+						<img src="./win/pink-blob.webp" alt="" width="476" height="238" />
 						<span class="plaque-shine"><span></span></span>
 						<!-- Sized for the final amount, so the count-up doesn't shrink as it grows. -->
-						<strong class:counted={smallWin.counted}
-							><JellyNumber
-								text={winCount(smallWin.shown, smallWin.final)}
-								fit={win(smallWin.final)}
-								height={PLAQUE_DIGIT_H}
-								maxWidth={PLAQUE_TEXT_W}
-							/></strong
+						<strong class:counted={smallWin.counted} style={plaqueFont(win(smallWin.final))}
+							>{winCount(smallWin.shown, smallWin.final)}</strong
 						>
 					</div>
 				</div>
@@ -2293,10 +2416,11 @@
 				aria-expanded={menuOpen}
 				aria-controls="game-menu"
 				onclick={() => (menuOpen = !menuOpen)}
-				>{#if menuOpen}<img class="menu-close" src="./menu/close.svg" alt="" />{:else}<img
+				>{#if menuOpen}<img class="menu-close" src="./menu/close.svg" alt="" in:iconIn={{ turn: 90 }} />{:else}<img
 						class="menu-bars"
 						src="./base/bar/menu.svg"
 						alt=""
+						in:iconIn
 					/>{/if}</button
 			>
 			<button
@@ -2372,8 +2496,7 @@
 						>{/if}{/key}</button
 			>
 			<!-- Desktop bonus bar (Figma 11402:11045): the round's TOTAL WIN and FREE SPINS tiles take
-				the stepper and spin disc's place, and a skip button the auto button's (Space's skip:
-				a win screen, else a slam stop). Other layouts keep .round-detail. -->
+				the stepper and spin disc's place, and a skip-bonus button the auto button's. Other layouts keep .round-detail. -->
 			{#if inBonus}
 				<div class="bar-round" in:scale={PANEL_IN} out:scale={PANEL_OUT}>
 					<div class="bar-total">
@@ -2389,11 +2512,12 @@
 						>
 					</div>
 				</div>
+				<!-- Skips the rest of the bonus, after asking (askSkipBonus). -->
 				<button
 					class="hud-icon skip-button"
-					aria-label={tr('STOP')}
-					disabled={!busy || !!jurisdiction.disabledSlamstop}
-					onclick={skipPress}><img src="./base/bar/skip.svg" alt="" /></button
+					aria-label={tr('SKIP BONUS')}
+					disabled={!busy || !board.tier || cardOpen || bonusSkip || !!jurisdiction.disabledSlamstop}
+					onclick={askSkipBonus}><img src="./base/bar/skip.svg" alt="" /></button
 				>
 			{/if}
 			<!-- One button cycles the speed: normal (Figma 4148:16896), turbo (2503:7489), super turbo
@@ -2408,6 +2532,7 @@
 						class="speed-icon speed-second"
 						src="./base/bar/turbo.svg"
 						alt=""
+						in:iconIn
 					/>{/if}</button
 			>
 			<button
@@ -2416,7 +2541,7 @@
 				aria-label={autoCount ? tr('STOP') : tr('AUTOPLAY')}
 				disabled={q.replay || !!jurisdiction.disabledAutoplay || (!autoCount && locked)}
 				onclick={() => (autoCount ? (autoCount = 0) : openModal('auto'))}
-				>{#if autoCount}<span class="auto-stop">■</span>{:else}<img src="./base/bar/auto.svg" alt="" />{/if}<small
+				>{#if autoCount}<span class="auto-stop" in:iconIn>■</span>{:else}<img src="./base/bar/auto.svg" alt="" in:iconIn={{ turn: -90 }} />{/if}<small
 					>{autoCount || tr('AUTO')}</small
 				></button
 			>
@@ -2481,6 +2606,18 @@
 				onclick={() => (pending ? resume() : boot())}
 				disabled={busy}>{pending ? tr('RETRY RESUME') : tr('RELOAD')}</button
 			>
+		</section>
+	</div>
+{/if}
+{#if skipAsk}
+	<div class="overlay" role="presentation" transition:fade={{ duration: 180 }} onclick={(e) => e.target === e.currentTarget && answerSkip(false)}>
+		<section class="dialog skip-bonus" role="alertdialog" aria-modal="true" aria-labelledby="skip-title" aria-describedby="skip-text" in:pop out:popOut>
+			<h2 id="skip-title">{tr('SKIP BONUS TITLE')}</h2>
+			<p id="skip-text">{tr('SKIP BONUS TEXT')}</p>
+			<div class="dialog-actions">
+				<button class="secondary" onclick={() => answerSkip(false)}>{tr('CANCEL')}</button
+				><button class="primary" onclick={() => answerSkip(true)}>{tr('SKIP')}</button>
+			</div>
 		</section>
 	</div>
 {/if}

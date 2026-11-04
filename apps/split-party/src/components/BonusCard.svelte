@@ -1,21 +1,21 @@
 <script lang="ts" module>
 	/** When the build-up has landed (the prize is up), at pace 1; the card then waits for a press. */
 	export const CARD_BUILD_MS = 2150;
-	export type CardKind = 'intro' | 'mystery' | 'end';
+	export type CardKind = 'mystery' | 'end';
 </script>
 
 <script lang="ts">
-	// The bonus cards, all on the 1200×670 stage: the neon badge zooms in, the glossy cloud
-	// plaque drops onto it from the top, CONGRATULATIONS and YOU WON drop in after it and the
-	// prize rises from the bottom. The design's bubbles bob in place, more fly out from behind
-	// the cloud, and blobs peek out from behind the badge and the cloud, curious.
-	//   intro    free spins awarded (Normal/Super), Figma 11233:12259
-	//   mystery  the Mystery draw's result, Figma 11020:33134 (group 11233:12278): the bonus
-	//            and its spins in two boxes, a medallion on top with the tiles' starting blobs
-	//   end      the bonus total once the free spins finish, Figma 11233:12287
+	// The bonus cards, on the 1200×670 stage:
+	//   mystery  the bonus won or bought, Figma 11433:30053: the glossy pink jelly banner drops
+	//            in, CONGRATULATIONS / YOU WON on it, the bonus's name and rule in a pink box and
+	//            its spins beside it; the medallion rises behind it with the tiles' starting
+	//            blobs ("Nx" and a tile split that far). Its balloons let go and float away.
+	//            (The two blobs that peeked out from behind it were removed, user 2026-11-04.)
+	//   end      the bonus total once the free spins finish, Figma 11428:18495 (user 2026-11-03:
+	//            "make final congrats simpler"): a laughing blob, the title and the total in a
+	//            pink box, nothing else.
 	import { onMount } from 'svelte';
 	import Blob from './Blob.svelte';
-	import JellyText from './JellyText.svelte';
 	let {
 		kind,
 		title,
@@ -37,7 +37,7 @@
 		kind: CardKind;
 		title: string;
 		won: string;
-		/** Free spins awarded (intro, mystery; the end card shows none). */
+		/** Free spins awarded (mystery; the end card shows none). */
 		count?: number;
 		/** "Free spins". */
 		sub: string;
@@ -47,12 +47,12 @@
 		 * them `amount` shows as is. */
 		total?: number;
 		format?: (v: number) => string;
-		/** mystery: the drawn bonus's name and rule line, and its starting blobs per tile. */
+		/** mystery: the bonus's name and rule line, and its starting blobs per tile. */
 		bonus?: string;
 		desc?: string;
 		blobs?: number;
 		symbol?: string;
-		/** mystery: the bonus tier ('normal' | 'super' | 'hidden'): its palette and backdrop. */
+		/** The bonus tier ('normal' | 'super' | 'hidden'): the mystery card's palette and backdrop. */
 		tier?: string;
 		pace?: number;
 		/** A line at the bottom once the card has built up ("Press to continue"). */
@@ -64,198 +64,104 @@
 	let vh = $state(670);
 	// Landscape shows the stage at 80%, so the game stays visible round the card; the small
 	// popout (vh ≤ 340) shows it whole, or its copy drops under 9px. A tall screen fits the
-	// badge's opaque width (its neon ends: 90.2% of its box) to 96% of the width instead, so
-	// the card fills the width without running off the sides.
+	// card's own width (the banner and its balloons; the end card's title) to 96% of the width.
 	const CARD_SCALE = 0.8;
-	const BADGE_OPAQUE = 0.902;
+	const SPAN = { mystery: 1080, end: 620 };
 	let fit = $derived(
 		vw < vh
-			? Math.min((0.96 * vw) / (LAYOUTS[kind].badge[2] * BADGE_OPAQUE), vh / 670)
+			? Math.min((0.96 * vw) / SPAN[kind], vh / 670)
 			: Math.min(vw / 1200, vh / 670) * (vh <= 340 ? 1 : CARD_SCALE),
 	);
-	// The smallest copy (the Mystery rule line, the medal's pill, the labels) never goes under
-	// this on screen: its design size, in stage px, at this fit.
+	// The smallest copy (the rule line, the medal's pill) never goes under this on screen: its
+	// design size, in stage px, at this fit.
 	let minText = $derived(9.5 / fit);
-	// The prompt sits just under the badge (its opaque bottom is 86.25% down its box), sized
+	// The prompt sits just under the card (the banner's opaque foot, the total's box), sized
 	// with the card, at most ~70% of the width, and on screen whatever the card's height.
+	const BOTTOM = { mystery: 573, end: 468 };
 	let promptSize = $derived(Math.max(9.5, Math.min(34 * fit, 0.033 * vw, 32)));
-	let promptTop = $derived(
-		Math.min(
-			vh - promptSize * 1.9 - 6,
-			vh / 2 + (LAYOUTS[kind].badge[1] + LAYOUTS[kind].badge[3] * 0.8625 - 335) * fit + 4 + 8 * fit,
-		),
-	);
+	let promptTop = $derived(Math.min(vh - promptSize * 1.9 - 6, vh / 2 + (BOTTOM[kind] - 335) * fit + 12));
 
-	// The design's boxes [left, top, width, height] on the stage. Each badge box is its frame
-	// with the image overflowing it 13.14% upward, so the image box is used here.
-	type Layout = { badge: number[]; cloud: number[]; bubbles: [string, number[], boolean][] };
-	const PINK = './freespins/hd/pink-bubble.webp';
-	const PURPLE = './win/hd/bubble.webp';
-	// [src, box, front]: front ones sit over the badge, the rest behind it.
-	const LAYOUTS: Record<CardKind, Layout> = {
-		intro: {
-			badge: [-6.5, 60, 1214, 607],
-			cloud: [142, 122.67, 921.79, 461.24],
-			bubbles: [
-				[PINK, [710.68, 3.94, 394.86, 394.86], false],
-				[PINK, [160.48, 3.94, 394.86, 394.86], false],
-				[PURPLE, [268.6, 123.02, 165.61, 138.24], false],
-				[PURPLE, [160.48, 155.18, 165.61, 138.24], false],
-				[PURPLE, [924.19, 210.61, 143.71, 119.76], true],
-			],
-		},
-		mystery: {
-			badge: [-65, 32.18, 1324, 662],
-			cloud: [96.95, 100.49, 1005.32, 503.03],
-			bubbles: [
-				[PINK, [717.16, -9, 430.64, 430.64], false],
-				[PINK, [117.11, -9, 430.64, 430.64], false],
-				[PURPLE, [235.03, 120.86, 180.61, 150.76], false],
-				[PURPLE, [117.11, 155.94, 180.61, 150.76], false],
-				[PURPLE, [950.02, 216.4, 156.73, 130.61], true],
-			],
-		},
-		end: {
-			badge: [-62, 35.18, 1324, 662],
-			cloud: [99.95, 103.49, 1005.32, 503.03],
-			bubbles: [
-				[PINK, [720.16, -26, 430.64, 430.64], false],
-				[PINK, [120.11, -26, 430.64, 430.64], false],
-				[PURPLE, [238.03, 103.86, 180.61, 150.76], false],
-				[PURPLE, [120.11, 138.94, 180.61, 150.76], false],
-				[PURPLE, [953.02, 199.4, 156.73, 130.61], true],
-			],
-		},
-	};
-	// The Mystery frame's loose bubbles over everything (11020:33216-33221).
-	const SKY_BUBBLES = [
-		[29, 54, 117, 98],
-		[1101, 37, 96, 80],
-		[955, 79, 73, 61],
-		[727, 56, 73, 61],
-		[161, 110, 73, 61],
-		[412, 14, 96, 80],
-	];
-	const L = $derived(LAYOUTS[kind]);
-	// When the card closes the bubbles fly off out past their own side and up, fading, on
-	// their own (the wrapper's fade alone left them hanging in place). Driven by left/top in a
-	// tick, so it adds to their running CSS animations instead of replacing them.
-	const vanish = (node: HTMLElement) => {
-		const [x, y] = [node.offsetLeft, node.offsetTop];
-		const side = x + node.offsetWidth / 2 < 600 ? -1 : 1;
-		return {
-			duration: 340,
-			tick: (t: number) => {
-				const u = (1 - t) * (1 - t);
-				node.style.left = `${x + side * 520 * u}px`;
-				node.style.top = `${y - 380 * u}px`;
-				node.style.opacity = String(Math.min(1, t * 1.6));
-			},
-		};
-	};
+	// Coiny lines that must hold their box in every language: the design's size, shrunk when the
+	// text is longer than the design's (its caps run ~0.77em a glyph, digits ~0.6em).
+	const fitFont = (text: string, size: number, width: number, em = 0.77) =>
+		`font-size:${Math.min(size, width / (Math.max(1, text.length) * em)).toFixed(1)}px`;
+
 	const px = ([l, t, w, h]: number[]) => `left:${l}px;top:${t}px;width:${w}px;height:${h}px`;
-	// Where a design bubble floats off to: out past its own side and up off the top of the
-	// SCREEN. The stage is centred, so on a tall or wide screen its edges are inside the
-	// screen's: the margin beyond them (in stage px) is added, or the bubbles stop in view.
-	const away = ([l, t, w, h]: number[], i: number) => {
-		const side = l + w / 2 < 600 ? -1 : 1;
-		const mx = Math.max(0, vw / 2 / fit - 600);
-		const my = Math.max(0, vh / 2 / fit - 335);
-		return `--ax:${(side * (140 + ((i * 53) % 120) + mx)).toFixed(0)}px;--ay:${(-(t + h + 120 + my)).toFixed(0)}px`;
-	};
-
-	// Everything below was placed on the intro's cloud (centre 603, 353); the bigger clouds
-	// scale it about their own centre.
-	const C0 = { x: 603, y: 353, w: 921.79 };
-	const fromIntro = (x: number, y: number) => {
-		const [l, t, w, h] = LAYOUTS[kind].cloud;
-		const k = w / C0.w;
-		return { x: l + w / 2 + (x - C0.x) * k, y: t + h * 0.502 + (y - C0.y) * k, k };
-	};
-
-	const rand = (a: number, b: number) => a + Math.random() * (b - a);
-	const pick = <T,>(xs: T[]) => xs[Math.floor(Math.random() * xs.length)];
-
-	// The design's bubbles start somewhere new every time the card shows: each takes a random
-	// side of the badge (mirrored about the stage centre), a random offset from its design spot
-	// and a slightly random size, then flies off from there. The Mystery card's loose sky
-	// bubbles scatter along the top, clear of the medallion (x 500-710).
-	const scatter = ([l, t, w, h]: number[]) => {
-		const k = rand(0.8, 1.12);
-		const cx = (Math.random() < 0.5 ? l + w / 2 : 1200 - (l + w / 2)) + rand(-0.25, 0.25) * w;
-		const cy = t + h / 2 + rand(-0.18, 0.12) * h;
-		return [cx - (w * k) / 2, cy - (h * k) / 2, w * k, h * k];
-	};
-	const skySpot = ([, , w, h]: number[]) => {
-		const k = rand(0.75, 1.2);
-		const x = Math.random() < 0.5 ? rand(10, 500 - w * k) : rand(710, 1190 - w * k);
-		return [x, rand(0, 150), w * k, h * k];
-	};
-	// On the intro its copy pokes out over the cloud's shoulders: bubbles land clear of it (the
-	// ball, not its canvas: the pink art's ball fills only 43% of it).
-	const COPY = [280, 245, 920, 460];
-	const onCopy = (src: string, [l, t, w, h]: number[]) => {
-		const f = src === PINK ? 0.433 : 0.9;
-		const [cx, cy, rx, ry] = [l + w / 2, t + h / 2, (w * f) / 2, (h * f) / 2];
-		return kind === 'intro' && cx + rx > COPY[0] && cx - rx < COPY[2] && cy + ry > COPY[1] && cy - ry < COPY[3];
-	};
-	const place = (src: string, box: number[]) => {
-		let b = scatter(box);
-		for (let i = 0; i < 12 && onCopy(src, b); i++) b = scatter(box);
-		return [src, onCopy(src, b) ? box : b] as const;
-	};
-	const backs = LAYOUTS[kind].bubbles.filter((b) => !b[2]).map(([src, box]) => place(src, box));
-	const fronts = LAYOUTS[kind].bubbles.filter((b) => b[2]).map(([src, box]) => place(src, box));
-	const sky = SKY_BUBBLES.map(skySpot);
-
-	// Free bubbles: born just inside the cloud's rim, behind it, they float out away from its
-	// centre, wobbling, and pop, so they never cross the copy. The pink art's ball fills only
-	// 43% of its canvas, so it is drawn larger for the same ball.
-	type Flyer = { id: number; pink: boolean; x: number; y: number; s: number; dx: number; dy: number; dur: number };
-	let flyers = $state<Flyer[]>([]);
-	let flyerId = 0;
-	function flyer(): Flyer {
-		let a = rand(0, Math.PI * 2);
-		// The intro's copy spans the cloud's middle: flyers there start at its ends or its foot.
-		while (kind === 'intro' && Math.abs(Math.cos(a)) < 0.82 && Math.sin(a) < 0.9) a = rand(0, Math.PI * 2);
-		const r = rand(220, 420);
-		const at = fromIntro(603 + Math.cos(a) * 380, 353 + Math.sin(a) * 120);
-		return {
-			id: flyerId++,
-			pink: Math.random() < 0.35,
-			x: at.x,
-			y: at.y,
-			s: rand(26, 78),
-			dx: Math.cos(a) * r,
-			dy: Math.sin(a) * r * 0.7 - rand(40, 140),
-			dur: rand(2400, 4200),
-		};
+	// The design's purple bubbles round the banner (11433:30289-30296) and its two jelly
+	// clovers on it (11433:30479/30480).
+	const BUBBLE = './win/hd/bubble.webp';
+	const BUBBLES = [
+		[36, 19, 50, 42],
+		[149, 41, 85, 71],
+		[24, 172, 50, 42],
+		[247, 157, 50, 42],
+		[804, 93, 50, 42],
+		[966, 73, 50, 42],
+		[1075, 26, 85, 71],
+		[1119, 176, 50, 42],
+	];
+	// The bubbles are party balloons (user 2026-11-04 "make the ballons ... more cool"): each
+	// wears a little blob face and trails a string from a knot, in the blobs' colours (the
+	// purple art hue-shifted; the big two stay the design's purple and pink).
+	const TINTS = [
+		'hue-rotate(55deg) saturate(1.1)',
+		'none',
+		'hue-rotate(-95deg) saturate(1.1)',
+		'hue-rotate(150deg) saturate(1.35) brightness(1.3)',
+		'hue-rotate(-40deg)',
+		'hue-rotate(-160deg) saturate(1.2) brightness(1.1)',
+		'hue-rotate(55deg) saturate(1.1)',
+		'hue-rotate(125deg) saturate(1.3) brightness(1.2)',
+	];
+	const CLOVERS = [
+		[217, 334.69, 73.3, 71.82, -8],
+		[684.85, 459.23, 67.02, 65.66, 14],
+	];
+	// Released balloons (user 2026-11-04 "make the ballons fly away", "they should start from
+	// start flying"): each floats up off the top from the moment it pops in (fs-pop's own delay),
+	// drifting aside; from then on it keeps rising up through the stage from under its foot.
+	// Scripted (element.animate on `translate`), so it sits over the CSS bob and keeps the sway.
+	function release(el: HTMLImageElement, i: number) {
+		if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+		const [, y, , h] = BUBBLES[i];
+		const up = y + h + 60;
+		const down = 670 - y + 40;
+		const dx = (i % 2 ? 1 : -1) * (30 + ((i * 37) % 50));
+		const away = el.animate([{ translate: '0 0' }, { translate: `${dx}px ${-up}px` }], {
+			duration: (2400 + i * 260) * pace,
+			delay: (250 + i * 90) * pace,
+			easing: 'cubic-bezier(0.3, 0.2, 0.7, 0.8)',
+			fill: 'forwards',
+		});
+		away.finished
+			.then(() => {
+				el.animate([{ translate: `${-dx * 0.5}px ${down}px` }, { translate: `${dx}px ${-up}px` }], {
+					duration: 7000 + i * 650,
+					iterations: Infinity,
+				});
+				away.cancel();
+			})
+			.catch(() => {});
 	}
 
-	// Peek spots (on the intro), the hidden blob's centre and the offset it peeks out by: from
-	// behind the badge at its two ends (sideways, leaning out to sneak a look), and from behind
-	// the cloud, in front of the badge: its outer shoulders (top edge y ~280 at x 250 and 950)
-	// and its centre bump (top edge y ~219 at x 600). The mystery card's medallion sits on that
-	// bump, so it skips that spot.
-	type Spot = { x: number; y: number; dx: number; dy: number; lean: number; front?: boolean };
-	const SPOTS: Spot[] = [
-		{ x: 110, y: 370, dx: -40, dy: -22, lean: -72 },
-		{ x: 1090, y: 370, dx: 40, dy: -22, lean: 72 },
-		{ x: 600, y: 282, dx: 0, dy: -90, lean: 0, front: true },
-		{ x: 252, y: 345, dx: -30, dy: -80, lean: -32, front: true },
-		{ x: 948, y: 335, dx: 30, dy: -80, lean: 32, front: true },
-	];
-	const PEEKERS = ['WATERMELON', 'CHERRIES', 'GRAPES', 'STRAWBERRY', 'BLUEBERRY', 'ORANGE', 'LEMON', 'KIWI'];
-	const PEEK_MS = 2800;
-	type Peek = Spot & { id: number; spot: number; symbol: string; flip: boolean; size: number };
-	let peeks = $state<Peek[]>([]);
-	let peekId = 0;
+	// When the card closes the balloons pop where they are, one after another (the wrapper's
+	// fade alone left them hanging in place). On `transform`, which nothing else animates on
+	// them, so it adds to the running rise and sway.
+	const popOut = (node: HTMLElement, i: number) => ({
+		delay: i * 28,
+		duration: 190,
+		tick: (t: number) => {
+			const u = 1 - t;
+			node.style.transform = `scale(${1 + 0.45 * u}, ${1 + 0.3 * u})`;
+			node.style.opacity = String(Math.min(1, t * 1.8));
+		},
+	});
 
 	// The medallion's tile starts as one blob and splits into the tier's starting blobs once
-	// the medal has landed: the card shows the bonus's rule happening, not just its number.
+	// the medal is up: the card shows the bonus's rule happening, not just its number.
 	const MEDAL_SPLIT_MS = 1500;
-	// end: the total counts up fast from when it starts rising (.total's delay), easing out, then
-	// pulses once and keeps breathing until the press.
+	// end: the total counts up fast from when its box rises, easing out, then pulses once and
+	// keeps breathing until the press.
 	const COUNT_AT_MS = 950;
 	const COUNT_MS = 750;
 	let shown = $state(0);
@@ -263,6 +169,7 @@
 	let totalText = $derived(format && total > 0 ? format(counted ? total : shown) : amount);
 	let medalUnits = $state(1);
 	// Super's rays and Hidden's night sky: seeded once per card.
+	const rand = (a: number, b: number) => a + Math.random() * (b - a);
 	const STARS = Array.from({ length: 18 }, () => ({
 		x: rand(40, 1160),
 		y: rand(10, 640),
@@ -282,7 +189,7 @@
 			const t = setTimeout(() => (timers.delete(t), fn()), ms * pace);
 			timers.add(t);
 		};
-		if (blobs > 1) later(MEDAL_SPLIT_MS, () => (medalUnits = blobs));
+		if (kind === 'mystery' && blobs > 1) later(MEDAL_SPLIT_MS, () => (medalUnits = blobs));
 		let raf = 0;
 		if (kind === 'end')
 			later(COUNT_AT_MS, () => {
@@ -294,40 +201,6 @@
 					else counted = true;
 				});
 			});
-		const fly = () => {
-			if (flyers.length < 22) {
-				const f = flyer();
-				flyers = [...flyers, f];
-				later(f.dur + 100, () => (flyers = flyers.filter((o) => o.id !== f.id)));
-			}
-			later(rand(160, 380), fly);
-		};
-		later(500, fly);
-		// A tall screen skips the badge's two ends: those blobs would peek off the screen's sides.
-		const spots = SPOTS.map((_, i) => i).filter((i) => (kind !== 'mystery' || i !== 2) && (vw >= vh || i > 1));
-		const peek = () => {
-			const busy = new Set(peeks.map((p) => p.spot));
-			const free = spots.filter((i) => !busy.has(i));
-			if (free.length) {
-				const spot = pick(free);
-				const s = SPOTS[spot];
-				const at = fromIntro(s.x, s.y);
-				const p = {
-					...s,
-					x: at.x,
-					y: at.y,
-					size: 110 * at.k,
-					id: peekId++,
-					spot,
-					symbol: pick(PEEKERS),
-					flip: Math.random() < 0.5,
-				};
-				peeks = [...peeks, p];
-				later(PEEK_MS + 80, () => (peeks = peeks.filter((o) => o.id !== p.id)));
-			}
-			later(rand(450, 1100), peek);
-		};
-		later(1400, peek);
 		return () => {
 			timers.forEach(clearTimeout);
 			cancelAnimationFrame(raf);
@@ -337,91 +210,81 @@
 
 <svelte:window bind:innerWidth={vw} bind:innerHeight={vh} />
 
-{#snippet peeker(p: Peek)}
-	<div
-		class="peeker"
-		style={`left:${p.x}px;top:${p.y}px;--dx:${p.dx}px;--dy:${p.dy}px;--lean:${p.lean}deg;--flip:${p.flip ? -1 : 1};--size:${p.size}px`}
-	>
-		<div class="peek-body">
-			<div class="peek-flip"><Blob symbol={p.symbol} uid={`card-peek-${p.id}`} /></div>
-		</div>
-	</div>
-{/snippet}
-
 <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
 <div class={`bonus-card ${kind} ${tier ? `t-${tier}` : ''}`} style={`--p:${pace};--min:${minText.toFixed(1)}px`} onclick={onskip}>
 	<div class="dim"></div>
 	<div class="frame" style={`transform:translate(-50%,-50%) scale(${fit})`}>
-		{#if tier === 'super'}<div class="rays"></div>{/if}
-		{#if tier === 'hidden'}
-			{#each STARS as st}<i
-					class="star"
-					style={`left:${st.x.toFixed(0)}px;top:${st.y.toFixed(0)}px;--s:${st.s.toFixed(1)}px;--d:${st.d.toFixed(2)}s;--t:${st.t.toFixed(2)}s`}
-				></i>{/each}
-		{/if}
-		{#each backs as [src, box], i}
-			<img out:vanish|global class="still" {src} alt="" style={`${px(box)};--i:${i};${away(box, i)}`} />
-		{/each}
-		{#each peeks.filter((p) => !p.front) as p (p.id)}{@render peeker(p)}{/each}
-		<img class="badge" src="./freespins/hd/badge.webp" alt="" style={px(L.badge)} />
-		{#each fronts as [src, box]}
-			<img out:vanish|global class="still" {src} alt="" style={`${px(box)};--i:4;${away(box, 4)}`} />
-		{/each}
-		{#each peeks.filter((p) => p.front) as p (p.id)}{@render peeker(p)}{/each}
-		{#each flyers as f (f.id)}
-			<img
-				out:vanish|global
-				class="flyer"
-				src={f.pink ? PINK : PURPLE}
-				alt=""
-				style={`left:${f.x}px;top:${f.y}px;width:${(f.pink ? f.s / 0.433 : f.s).toFixed(0)}px;--dx:${f.dx.toFixed(0)}px;--dy:${f.dy.toFixed(0)}px;animation-duration:${(f.dur * pace).toFixed(0)}ms`}
-			/>
-		{/each}
-		<img class="cloud" src="./freespins/hd/cloud.webp" alt="" style={px(L.cloud)} />
-		{#if kind === 'intro'}
-			<div class="copy">
-				<strong class="title"><JellyText text={title} /></strong>
-				<span class="won">{won}</span>
-				<span class="spins"><b><JellyText text={String(count)} look="green" /></b>{sub}</span>
-			</div>
-		{:else if kind === 'mystery'}
-			<div class="copy big">
-				<strong class="title"><JellyText text={title} /></strong>
-				<span class="won">{won}</span>
-				<div class="boxes">
-					<div class="box bonus-box">
-						<b><JellyText text={bonus} look="teal" /></b>
-						<p>{desc}</p>
-					</div>
-					<div class="box spins-box"><b><JellyText text={String(count)} look="pink" /></b><span>{sub}</span></div>
+		{#if kind === 'mystery'}
+			{#if tier === 'super'}<div class="rays"></div>{/if}
+			{#if tier === 'hidden'}
+				{#each STARS as st}<i
+						class="star"
+						style={`left:${st.x.toFixed(0)}px;top:${st.y.toFixed(0)}px;--s:${st.s.toFixed(1)}px;--d:${st.d.toFixed(2)}s;--t:${st.t.toFixed(2)}s`}
+					></i>{/each}
+			{/if}
+			{#each BUBBLES as box, i}
+				<div use:release={i} out:popOut|global={i} class="balloon" style={`${px(box)};--i:${i};filter:${TINTS[i]}`}>
+					<svg class="string" viewBox="0 0 14 100" preserveAspectRatio="none" aria-hidden="true"
+						><path d="M7 0 C1 16 13 30 7 48 S1 80 7 100" /></svg
+					>
+					<span class="knot"></span>
+					<img src={BUBBLE} alt="" />
+					<!-- A blob's face, in the art's 700x580 box (the ball is centred at 350,295). -->
+					<svg class="face" viewBox="0 0 700 580" aria-hidden="true">
+						<ellipse class="cheek" cx="236" cy="352" rx="34" ry="19" />
+						<ellipse class="cheek" cx="464" cy="352" rx="34" ry="19" />
+						<g class="eyes">
+							<ellipse cx="292" cy="290" rx="24" ry="33" />
+							<ellipse cx="408" cy="290" rx="24" ry="33" />
+							<circle class="hi" cx="284" cy="278" r="9" />
+							<circle class="hi" cx="400" cy="278" r="9" />
+						</g>
+						<path class="smile" d="M310 352 Q350 392 390 352" />
+					</svg>
 				</div>
-			</div>
-			<!-- The medallion: the tiles' starting blobs as "Nx" beside a tile split that far. -->
+			{/each}
+			<!-- Behind the banner: the medallion rises out of its top. -->
 			<div class="medal">
-				<img src="./freespins/medal.svg" alt="" />
+				<img src="./freespins/medal-pink.svg" alt="" width="170.6" height="170.6" />
 				<span class="medal-pill">{blobs}x</span>
 				<span class="medal-blob"><Blob {symbol} units={medalUnits} uid="card-medal" /></span>
 			</div>
-		{:else}
-			<div class="copy big">
-				<strong class="title"><JellyText text={title} /></strong>
-				<span class="won">{won}</span>
-				<span class="total" class:counted><JellyText text={totalText} /></span>
+			<div class="banner"><img src="./win/pink-blob.webp" alt="" width="1021" height="510" /></div>
+			<div class="heading">
+				<strong style={fitFont(title, 48, 589)}>{title}</strong>
+				<span>{won}</span>
 			</div>
-		{/if}
-		{#if kind === 'mystery'}
-			{#each sky as box, i}
-				<img class="still sky" src={PURPLE} alt="" style={`${px(box)};--i:${i + 5};${away(box, i + 5)}`} />
+			<div class="bonus-box">
+				<b style={fitFont(bonus, 35.19, 399)}>{bonus}</b>
+				<p>{desc}</p>
+			</div>
+			<div class="spins">
+				<b style={fitFont(String(count), 150, 230, 0.62)}>{count}</b>
+				<span>{sub}</span>
+			</div>
+			{#each CLOVERS as [l, t, w, h, r], i}
+				<img class="clover" src="./freespins/clover.webp" alt="" style={`${px([l, t, w, h])};--r:${r}deg;--i:${i}`} />
 			{/each}
+		{:else}
+			<div class="mascot"><Blob symbol="GRAPES" uid="card-mascot" cheer /></div>
+			<div class="heading">
+				<strong style={fitFont(title, 48, 589)}>{title}</strong>
+				<span>{won}</span>
+			</div>
+			<div class="total-box">
+				<span class="total" class:counted style={fitFont(totalText, 63.52, 480, 0.6)}>{totalText}</span>
+			</div>
 		{/if}
 	</div>
 	{#if prompt}<p class="prompt" style={`top:${promptTop.toFixed(0)}px;font-size:${promptSize.toFixed(1)}px`}>{prompt}</p>{/if}
 </div>
 
 <style>
-	/* Timeline (ms at pace 1): dim 0-300, badge zooms 0-650, its bubbles pop 300-800, cloud
-	   drops 600-1250, CONGRATULATIONS 1150-1650, YOU WON 1300-1800, spins rise 1550-2150,
-	   peekers from 1400, flyers from 500; App holds it until a press and fades it out. */
+	/* Timeline (ms at pace 1). mystery: dim 0-300, bubbles pop 250-1000, banner drops 150-850,
+	   medal rises 650-1200 (its tile splits at 1500), balloons rise from their pop, heading
+	   800-1300, bonus box 1000-1550, spins 1250-1800, clovers 1300-1700. end: mascot drops
+	   150-800, heading 450-950, total box 700-1250, counting 950-1700. App holds the card until
+	   a press and fades it out. */
 	.bonus-card {
 		position: fixed;
 		inset: 0;
@@ -431,7 +294,7 @@
 	.dim {
 		position: absolute;
 		inset: 0;
-		background: #000b;
+		background: #000a;
 		animation: fs-fade calc(300ms * var(--p)) both;
 	}
 	@keyframes fs-fade {
@@ -478,11 +341,6 @@
 			transform: scale(0.96);
 		}
 	}
-	@media (prefers-reduced-motion: reduce) {
-		.prompt {
-			animation: none;
-		}
-	}
 	.frame {
 		position: absolute;
 		left: 50%;
@@ -493,38 +351,238 @@
 	.frame > * {
 		position: absolute;
 	}
-	.badge {
-		animation: fs-zoom calc(650ms * var(--p)) cubic-bezier(0.3, 1.4, 0.5, 1) both;
+	img {
+		display: block;
 	}
-	@keyframes fs-zoom {
+
+	/* The design's copy: white, with its soft 2.78px drop. */
+	.heading,
+	.bonus-box,
+	.spins,
+	.total-box {
+		font-family: 'Coiny', sans-serif;
+		text-align: center;
+		color: #fff;
+		text-shadow: 0 2.78px 2.78px rgb(0 0 0 / 0.25);
+		text-transform: uppercase;
+		pointer-events: none;
+	}
+	.bonus-box p {
+		text-transform: none;
+	}
+	/* 11433:30304 (mystery) / 11428:18717 (end): 589 wide; CONGRATULATIONS over YOU WON. */
+	.heading {
+		left: 325px;
+		top: 247px;
+		width: 589px;
+		display: grid;
+		justify-items: center;
+		white-space: nowrap;
+		animation: fs-pop-in calc(500ms * var(--p)) cubic-bezier(0.3, 1.5, 0.5, 1) calc(800ms * var(--p)) both;
+	}
+	.heading strong {
+		font-weight: 400;
+		line-height: 53px;
+		letter-spacing: 0.03em;
+	}
+	.heading span {
+		font: 700 max(24px, var(--min)) / 36px 'Poppins', sans-serif;
+		letter-spacing: 0.72px;
+	}
+	@keyframes fs-pop-in {
 		from {
 			opacity: 0;
-			transform: scale(0.15);
+			transform: scale(0.4);
+		}
+		40% {
+			opacity: 1;
+		}
+	}
+	@keyframes fs-rise {
+		from {
+			opacity: 0;
+			transform: translateY(70px) scale(0.85);
+		}
+		40% {
+			opacity: 1;
+		}
+	}
+
+	/* The banner (11433:30303, the small win's pink blob at 1021×510) drops in from above and
+	   lands with a jelly squash, then keeps a slow wobble. */
+	.banner {
+		left: 89px;
+		top: 102px;
+		width: 1021px;
+		height: 510px;
+		transform-origin: 50% 90%;
+		animation:
+			fs-drop calc(700ms * var(--p)) cubic-bezier(0.3, 1.3, 0.5, 1) calc(150ms * var(--p)) both,
+			fs-wobble 3.2s ease-in-out calc(900ms * var(--p)) infinite;
+	}
+	.banner img {
+		width: 100%;
+		height: 100%;
+	}
+	@keyframes fs-drop {
+		0% {
+			transform: translateY(-760px);
+		}
+		60% {
+			transform: translateY(14px) scale(1.05, 0.93);
+		}
+		80% {
+			transform: translateY(-4px) scale(0.98, 1.03);
+		}
+		100% {
+			transform: none;
+		}
+	}
+	@keyframes fs-wobble {
+		0%,
+		100% {
+			transform: none;
+		}
+		50% {
+			transform: scale(1.012, 0.988);
+		}
+	}
+
+	/* 11433:30308: the bonus's name and rule in a frosted pink box. */
+	.bonus-box {
+		box-sizing: border-box;
+		left: 238px;
+		top: 346px;
+		width: 484px;
+		min-height: 146px;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 7.72px;
+		padding: 15.45px 23.17px;
+		border: 1.93px solid #fa3a93;
+		border-radius: 23.17px;
+		background: rgb(255 168 207 / 0.6);
+		animation: fs-rise calc(550ms * var(--p)) cubic-bezier(0.3, 1.4, 0.5, 1) calc(1000ms * var(--p)) both;
+	}
+	.bonus-box b {
+		font-weight: 400;
+		line-height: normal;
+		letter-spacing: 0.03em;
+		white-space: nowrap;
+	}
+	.bonus-box p {
+		margin: 0;
+		font: 400 max(15.45px, var(--min)) / 1.3 'Poppins', sans-serif;
+		letter-spacing: 0.46px;
+	}
+	/* The spins: the design's "10" (11433:30312, 176×112 at 759,344) and "free spins" under it. */
+	.spins {
+		left: 732px;
+		top: 336px;
+		width: 230px;
+		display: grid;
+		justify-items: center;
+	}
+	.spins b {
+		font-weight: 400;
+		line-height: 128px;
+		animation:
+			fs-count-pop calc(600ms * var(--p)) cubic-bezier(0.3, 1.7, 0.5, 1) calc(1250ms * var(--p)) both,
+			fs-breathe 1.6s ease-in-out calc(1850ms * var(--p)) infinite alternate;
+	}
+	.spins span {
+		margin-top: -4px;
+		font: 700 max(24px, var(--min)) / 36px 'Poppins', sans-serif;
+		letter-spacing: 0.72px;
+		text-transform: lowercase;
+		white-space: nowrap;
+		animation: fs-rise calc(450ms * var(--p)) cubic-bezier(0.3, 1.4, 0.5, 1) calc(1450ms * var(--p)) both;
+	}
+	@keyframes fs-count-pop {
+		from {
+			opacity: 0;
+			transform: scale(0.2);
+		}
+		45% {
+			opacity: 1;
+			transform: scale(1.15, 0.9);
+		}
+		70% {
+			transform: scale(0.96, 1.05);
+		}
+	}
+	@keyframes fs-breathe {
+		to {
+			transform: scale(1.05);
+		}
+	}
+
+	/* 11433:30280: the 170.6 ring at (548, 66), the "Nx" pill at (567, 127) and the tile's blob
+	   box (609, 108) 92×80; it rises out from behind the banner's top. */
+	.medal {
+		left: 548px;
+		top: 66px;
+		width: 170.6px;
+		height: 170.6px;
+		animation: fs-medal calc(550ms * var(--p)) cubic-bezier(0.3, 1.6, 0.5, 1) calc(650ms * var(--p)) both;
+	}
+	.medal > img {
+		width: 100%;
+		height: 100%;
+	}
+	@keyframes fs-medal {
+		from {
+			opacity: 0;
+			transform: translateY(110px) scale(0.6);
 		}
 		30% {
 			opacity: 1;
 		}
 	}
-	/* The design's bubbles pop in on their spots, wobble a moment, then float up and away off
-	   the stage (out past their own side, --ax/--ay), swaying as they rise, and stay gone; the
-	   small flyers keep the air busy after them. */
-	.still {
+	.medal-pill {
+		position: absolute;
+		left: 19.26px;
+		top: 61.34px;
+		padding: 6px 8.5px 4px;
+		border: 1.42px solid #4b3981;
+		border-radius: 12.78px;
+		background: #23dcd6;
+		font: 400 max(19.88px, var(--min)) / normal 'Coiny', sans-serif;
+		letter-spacing: 0.6px;
+		color: #502da0;
+	}
+	.medal-blob {
+		position: absolute;
+		left: 66px;
+		top: 40px;
+		width: 90px;
+		height: 90px;
+		--divide-ms: calc(1100ms * var(--p));
+		animation: fs-bob 2.4s ease-in-out infinite;
+	}
+	@keyframes fs-bob {
+		50% {
+			translate: 0 -7px;
+		}
+	}
+
+	/* The design's bubbles, as balloons: they pop in on their spots and bob and sway (release()
+	   then floats them away), the string swinging under the knot and the face blinking. */
+	.balloon {
 		animation:
-			fs-pop calc(450ms * var(--p)) cubic-bezier(0.3, 1.6, 0.5, 1) calc((300ms + var(--i) * 90ms) * var(--p)) both,
-			fs-squish calc(2.1s + var(--i) * 0.3s) ease-in-out calc(var(--i) * -0.9s) infinite,
-			fs-sway calc(1.6s + var(--i) * 0.2s) ease-in-out calc(var(--i) * -0.7s) infinite,
-			fs-away calc(3.4s + var(--i) * 0.25s) cubic-bezier(0.5, 0, 0.75, 0.6) calc((1500ms + var(--i) * 220ms) * var(--p)) both;
+			fs-pop calc(450ms * var(--p)) cubic-bezier(0.3, 1.6, 0.5, 1) calc((250ms + var(--i) * 90ms) * var(--p)) both,
+			fs-float calc(2.4s + var(--i) * 0.27s) ease-in-out calc(var(--i) * -0.8s) infinite,
+			fs-sway calc(1.9s + var(--i) * 0.2s) ease-in-out calc(var(--i) * -0.7s) infinite;
 	}
 	@keyframes fs-pop {
 		from {
 			scale: 0;
 		}
 	}
-	/* One eased segment, so the rise never stalls between waypoints (each keyframe segment
-	   would ease on its own); the sway is a separate rotate loop. */
-	@keyframes fs-away {
-		to {
-			translate: var(--ax) var(--ay);
+	@keyframes fs-float {
+		50% {
+			translate: 0 -12px;
 		}
 	}
 	@keyframes fs-sway {
@@ -536,360 +594,160 @@
 			rotate: 6deg;
 		}
 	}
-	/* The medallion's blob bobs in place. */
-	@keyframes fs-bob {
-		50% {
-			translate: 0 -9px;
-		}
-	}
-	@keyframes fs-squish {
-		50% {
-			transform: scale(1.06, 0.94);
-		}
-	}
-	.cloud {
-		animation: fs-drop calc(650ms * var(--p)) cubic-bezier(0.3, 1.3, 0.5, 1) calc(450ms * var(--p)) both;
-	}
-	/* Falls in from above the screen, lands with a jelly squash. */
-	@keyframes fs-drop {
-		0% {
-			transform: translateY(-760px);
-		}
-		60% {
-			transform: translateY(14px) scale(1.04, 0.94);
-		}
-		80% {
-			transform: translateY(-4px) scale(0.98, 1.03);
-		}
-		100% {
-			transform: none;
-		}
-	}
-	/* The cloud's centre column is y 219-498; the copy sits in it. */
-	.copy {
-		left: 200px;
-		top: 256px;
-		width: 800px;
-		display: grid;
-		justify-items: center;
-		font-family: 'Coiny', sans-serif;
-		text-transform: uppercase;
-		white-space: nowrap;
-		color: #fff;
-		pointer-events: none;
-	}
-	.copy > * {
-		filter: drop-shadow(0 4px 0 #2a124f) drop-shadow(0 0 14px rgb(42 18 79 / 0.6));
-	}
-	/* The display lines (title, spins, bonus name, total) are JellyText, the win screens' jelly
-	   lettering (user 2026-10-29: "improve the lettering in the Bonus screens"), so the parents
-	   carry only size and motion. */
-	.title {
-		font-weight: 400;
-		font-size: 56px;
-		line-height: 1.1;
-		animation: fs-from-top calc(500ms * var(--p)) cubic-bezier(0.3, 1.4, 0.5, 1) calc(700ms * var(--p)) both;
-	}
-	.won {
-		margin-top: -2px;
-		font-size: 30px;
-		letter-spacing: 1px;
-		animation: fs-from-top calc(500ms * var(--p)) cubic-bezier(0.3, 1.4, 0.5, 1) calc(800ms * var(--p)) both;
-	}
-	.spins {
-		display: flex;
-		align-items: center;
-		gap: 14px;
-		margin-top: 2px;
-		font-size: 38px;
-		letter-spacing: 1px;
-		animation: fs-from-bottom calc(600ms * var(--p)) cubic-bezier(0.3, 1.4, 0.5, 1) calc(950ms * var(--p)) both;
-	}
-	.spins b {
-		font-weight: 400;
-		font-size: 92px;
-		line-height: 1;
-	}
-	@keyframes fs-from-top {
-		from {
-			opacity: 0;
-			transform: translateY(-260px);
-		}
-		40% {
-			opacity: 1;
-		}
-	}
-	@keyframes fs-from-bottom {
-		from {
-			opacity: 0;
-			transform: translateY(320px);
-		}
-		40% {
-			opacity: 1;
-		}
-	}
-	/* Zero-size anchor at the hidden centre; the body peeks out, tilts its head one way then
-	   the other like it is wondering what's going on, gives a little hop and ducks back. */
-	.peeker {
-		width: 0;
-		height: 0;
-	}
-	.peek-body {
+	.balloon > * {
 		position: absolute;
-		left: calc(var(--size) / -2);
-		top: calc(var(--size) / -2);
-		width: var(--size);
-		height: var(--size);
-		transform-origin: 50% 85%;
-		animation: fs-peek calc(2800ms * var(--p)) ease-in-out both;
 	}
-	/* Mirrored inside the lean, so a flipped blob still leans out, not back behind the badge. */
-	.peek-flip {
+	.balloon img {
+		inset: 0;
 		width: 100%;
 		height: 100%;
-		scale: var(--flip) 1;
 	}
-	@keyframes fs-peek {
+	.balloon .face {
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+	.face .eyes {
+		fill: #2a0b5c;
+		transform-box: fill-box;
+		transform-origin: center;
+		animation: fs-blink calc(3.2s + var(--i) * 0.45s) calc(var(--i) * -0.9s) infinite;
+	}
+	.face .hi {
+		fill: #fff;
+	}
+	.face .cheek {
+		fill: #ff86cf;
+		opacity: 0.55;
+	}
+	.face .smile {
+		fill: none;
+		stroke: #2a0b5c;
+		stroke-width: 15;
+		stroke-linecap: round;
+	}
+	@keyframes fs-blink {
+		0%,
+		93%,
+		100% {
+			scale: 1;
+		}
+		96.5% {
+			scale: 1 0.12;
+		}
+	}
+	/* The knot under the ball (it sits at 90% of the art's height) and the string from it. */
+	.knot {
+		left: calc(50% - 5px);
+		top: calc(89% - 2px);
+		width: 10px;
+		height: 8px;
+		background: #6a26d8;
+		clip-path: polygon(50% 0, 100% 100%, 0 100%);
+	}
+	.string {
+		left: calc(50% - 7px);
+		top: calc(89% + 5px);
+		width: 14px;
+		height: 160%;
+		overflow: visible;
+		transform-origin: 50% 0;
+		animation: fs-string calc(1.5s + var(--i) * 0.17s) ease-in-out calc(var(--i) * -0.6s) infinite alternate;
+	}
+	.string path {
+		fill: none;
+		stroke: #ffffffc0;
+		stroke-width: 1.6;
+		vector-effect: non-scaling-stroke;
+	}
+	@keyframes fs-string {
+		from {
+			rotate: -9deg;
+			scale: 1 1;
+		}
+		to {
+			rotate: 9deg;
+			scale: 1 0.96;
+		}
+	}
+	/* The jelly clovers stuck on the banner: pop on, then a slow jiggle. */
+	.clover {
+		rotate: var(--r);
+		animation:
+			fs-pop calc(400ms * var(--p)) cubic-bezier(0.3, 1.8, 0.5, 1) calc((1300ms + var(--i) * 180ms) * var(--p)) both,
+			fs-jiggle calc(2.2s + var(--i) * 0.5s) ease-in-out calc(1700ms * var(--p)) infinite;
+	}
+	@keyframes fs-jiggle {
 		0%,
 		100% {
 			transform: none;
 		}
-		16% {
-			transform: translate(calc(var(--dx) * 1.06), calc(var(--dy) * 1.06)) scale(0.95, 1.07) rotate(var(--lean));
-		}
-		24% {
-			transform: translate(var(--dx), var(--dy)) rotate(var(--lean));
-		}
-		36%,
-		44% {
-			transform: translate(var(--dx), var(--dy)) rotate(calc(var(--lean) - 14deg));
-		}
-		56%,
-		64% {
-			transform: translate(var(--dx), var(--dy)) rotate(calc(var(--lean) + 13deg));
-		}
-		72% {
-			transform: translate(var(--dx), calc(var(--dy) - 10px)) scale(1.04, 0.96) rotate(var(--lean));
-		}
-		80% {
-			transform: translate(var(--dx), var(--dy)) rotate(var(--lean));
-		}
-		92% {
-			transform: translate(calc(var(--dx) * 0.4), calc(var(--dy) * 0.4)) scale(1.03, 0.95);
-		}
-	}
-	/* Grows out of nothing, drifts off wobbling, and pops at the end. */
-	.flyer {
-		height: auto;
-		translate: -50% -50%;
-		animation-name: fs-fly;
-		animation-timing-function: linear;
-		animation-fill-mode: both;
-	}
-	@keyframes fs-fly {
-		0% {
-			opacity: 0;
-			transform: translate(0, 0) scale(0.2);
-		}
-		12% {
-			opacity: 1;
-			transform: translate(calc(var(--dx) * 0.1 + 10px), calc(var(--dy) * 0.1)) scale(1);
-		}
-		35% {
-			transform: translate(calc(var(--dx) * 0.35 - 12px), calc(var(--dy) * 0.35)) scale(1.04, 0.97);
+		30% {
+			transform: scale(1.08, 0.93) rotate(-6deg);
 		}
 		60% {
-			transform: translate(calc(var(--dx) * 0.6 + 12px), calc(var(--dy) * 0.6)) scale(0.97, 1.04);
-		}
-		88% {
-			opacity: 1;
-			transform: translate(calc(var(--dx) * 0.88 - 6px), calc(var(--dy) * 0.88)) scale(1);
-		}
-		100% {
-			opacity: 0;
-			transform: translate(var(--dx), var(--dy)) scale(1.5);
+			transform: scale(0.95, 1.06) rotate(5deg);
 		}
 	}
-	/* Mystery and end cards: Figma 11020:33167's copy, 683 wide, centred on x 605.5 from y 240. */
-	.copy.big {
-		left: 264px;
-		top: 240px;
-		width: 683px;
-		gap: 7px;
+
+	/* end (11428:18495): the laughing antennae blob (11428:18722, its body 103.8×101.6 at
+	   546.8, 120.4) over the heading at (306, 234) and the total's box (350, 346) 520×122. */
+	.mascot {
+		left: 533px;
+		top: 102px;
+		width: 132px;
+		height: 132px;
+		animation: fs-drop calc(650ms * var(--p)) cubic-bezier(0.3, 1.3, 0.5, 1) calc(150ms * var(--p)) both;
 	}
-	.copy.big > * {
-		filter: drop-shadow(0 2.78px 2.78px rgb(0 0 0 / 0.25));
+	.end .heading {
+		left: 306px;
+		top: 234px;
+		animation-delay: calc(450ms * var(--p));
 	}
-	.big .title {
-		font-size: 48px;
-		/* Coiny's own line box is ~1.6em; Figma's frame packs it tighter. */
-		line-height: 1.2;
-		letter-spacing: 1.44px;
-	}
-	.big .won {
-		margin: 0;
-		font: 700 max(24px, var(--min))/normal 'Poppins', sans-serif;
-		letter-spacing: 0.72px;
-	}
-	.boxes {
-		display: flex;
-		gap: 15px;
-		width: 100%;
-		text-transform: none;
-		white-space: normal;
-		animation: fs-from-bottom calc(600ms * var(--p)) cubic-bezier(0.3, 1.4, 0.5, 1) calc(950ms * var(--p)) both;
-	}
-	.box {
-		box-sizing: border-box;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		min-height: 151px;
-		padding: 14px 22px;
-		border: 2px solid #7e58d7;
+	.total-box {
+		left: 350px;
+		top: 346px;
+		width: 520px;
+		height: 122px;
+		display: grid;
+		place-items: center;
 		border-radius: 24px;
-		background: #492792;
-		text-align: center;
-	}
-	.bonus-box {
-		gap: 8px;
-		width: 461px;
-	}
-	.bonus-box b {
-		/* A size under the design's 36.45 (and the copy below), so long rule lines keep a margin. */
-		font: 400 31px/normal 'Coiny', sans-serif;
-		letter-spacing: 0.93px;
-		color: #17d9ce;
-	}
-	.bonus-box p {
-		margin: 0;
-		font: 400 max(14px, var(--min))/1.3 'Poppins', sans-serif;
-		letter-spacing: 0.42px;
-	}
-	.spins-box {
-		flex: 1;
-		border-color: #ac3fc1;
-		color: #fa52e5;
-	}
-	.spins-box b {
-		margin-bottom: -4px;
-		font: 400 84px/1 'Coiny', sans-serif;
-		letter-spacing: 2.5px;
-	}
-	.spins-box span {
-		font: 700 max(20px, var(--min))/normal 'Poppins', sans-serif;
-		letter-spacing: 0.6px;
-		text-transform: uppercase;
-	}
-	.end .copy.big {
-		top: 250px;
+		background: #fb73b1;
+		animation: fs-rise calc(550ms * var(--p)) cubic-bezier(0.3, 1.4, 0.5, 1) calc(700ms * var(--p)) both;
 	}
 	.total {
-		font-size: 84px;
-		line-height: 1.1;
-		animation: fs-from-bottom calc(600ms * var(--p)) cubic-bezier(0.3, 1.4, 0.5, 1) calc(950ms * var(--p)) both;
+		line-height: 1;
+		letter-spacing: 0.03em;
+		white-space: nowrap;
 	}
 	/* Counted: one pop as it lands, then a slow, slight breath while it waits for the press. */
 	.total.counted {
 		animation:
 			fs-total-pop 420ms cubic-bezier(0.3, 1.6, 0.5, 1) both,
-			fs-total-breathe 1.6s ease-in-out 420ms infinite alternate;
+			fs-breathe 1.6s ease-in-out 420ms infinite alternate;
 	}
 	@keyframes fs-total-pop {
 		40% {
 			transform: scale(1.12);
 		}
 	}
-	@keyframes fs-total-breathe {
-		to {
-			transform: scale(1.04);
-		}
-	}
-	/* Figma 11020:33179: the 170.6 ring centred on x 605.3 at y 29, the "Nx" pill at (539, 90)
-	   and the art box (597, 74) 73×79, here the tile split into the starting blobs. */
-	.medal {
-		left: 520px;
-		top: 29px;
-		width: 170.6px;
-		height: 170.6px;
-		animation: fs-medal calc(600ms * var(--p)) cubic-bezier(0.3, 1.6, 0.5, 1) calc(800ms * var(--p)) both;
-	}
-	.medal img {
-		display: block;
-		width: 100%;
-		height: 100%;
-	}
-	@keyframes fs-medal {
-		from {
-			opacity: 0;
-			transform: scale(0.2) rotate(-25deg);
-		}
-		40% {
-			opacity: 1;
-		}
-	}
-	.medal-pill {
-		position: absolute;
-		left: 19.3px;
-		top: 61.3px;
-		padding: 6px 8.5px 4px;
-		border: 1.42px solid #522ea1;
-		border-radius: 12.78px;
-		background: #17d9ce;
-		font: 400 max(19.88px, var(--min))/normal 'Coiny', sans-serif;
-		letter-spacing: 0.6px;
-		color: #502da0;
-	}
-	.medal-blob {
-		position: absolute;
-		left: 75px;
-		top: 45px;
-		width: 79px;
-		height: 79px;
-		animation: fs-bob 2.4s ease-in-out infinite;
-	}
-	.sky {
-		z-index: 1;
-	}
-	.medal-blob {
-		--divide-ms: calc(1100ms * var(--p));
-	}
 
-	/* Each bonus tier opens in its own colours: the card's neon and bubbles hue-turned from the
-	   art's magenta, its boxes and medal pill recoloured to match. Normal is lagoon blue, Super
-	   sunset gold under turning rays (sepia first: the art mixes magenta and violet, which a
-	   plain hue turn splits into two colours), Hidden stays magenta on a night sky with twinkling stars.
-	   hue-rotate is a colour matrix, so it composites with the art's own transform animations. */
-	.t-normal :is(.badge, .cloud, .still, .flyer) {
-		filter: hue-rotate(-70deg) saturate(1.1);
-	}
-	.t-super :is(.badge, .cloud, .still, .flyer) {
+	/* Each bonus tier opens in its own colours: Normal is the design's pink, Super sunset gold
+	   under turning rays (sepia first: a plain hue turn splits the pink's shading in two),
+	   Hidden violet on a night sky with twinkling stars. */
+	.t-super :is(.banner, .clover) {
 		filter: sepia(1) saturate(3.4) hue-rotate(8deg) brightness(1.04);
 	}
-	.t-hidden :is(.badge, .cloud, .still, .flyer) {
-		filter: saturate(1.15) brightness(0.92);
+	.t-hidden :is(.banner, .clover) {
+		filter: hue-rotate(-62deg) saturate(1.1);
 	}
-	.t-normal .box {
-		border-color: #6cc4ff;
-		background: #12447f;
+	.t-super .bonus-box {
+		border-color: #e08a12;
+		background: rgb(255 214 120 / 0.55);
 	}
-	.t-super .box {
-		border-color: #ffc062;
-		background: #8a4a12;
-	}
-	.t-hidden .box {
-		border-color: #c46bff;
-		background: #3b1470;
-	}
-	.t-normal .bonus-box b {
-		color: #eafffb;
-	}
-	.t-super .bonus-box b {
-		color: #ffe9a8;
-	}
-	.t-normal .medal-pill {
-		background: #5ff0df;
+	.t-hidden .bonus-box {
+		border-color: #8a3ff0;
+		background: rgb(196 160 255 / 0.55);
 	}
 	.t-super .medal-pill {
 		background: #ffc24d;
@@ -901,7 +759,7 @@
 		color: #3b1470;
 		border-color: #3b1470;
 	}
-	.t-hidden .dim {
+	.mystery.t-hidden .dim {
 		background: radial-gradient(120% 90% at 50% 45%, #1a0b3dcc, #05021aee);
 	}
 	.rays {
@@ -939,22 +797,25 @@
 		}
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.rays,
-		.star {
-			animation: fs-fade 300ms both;
+		.prompt,
+		.string,
+		.face .eyes {
+			animation: none;
 		}
-	}
-	@media (prefers-reduced-motion: reduce) {
+		.rays,
+		.star,
+		.heading,
+		.banner,
+		.bonus-box,
+		.spins b,
+		.spins span,
 		.medal,
-		.boxes,
-		.total,
-		.total.counted,
-		.badge,
-		.still,
-		.cloud,
-		.title,
-		.won,
-		.spins {
+		.medal-blob,
+		.balloon,
+		.clover,
+		.mascot,
+		.total-box,
+		.total.counted {
 			animation: fs-fade 300ms both;
 		}
 	}

@@ -169,7 +169,11 @@ export class WinFxView {
 	private drops: Drop[] = [];
 	private t0 = performance.now();
 	private last = 0;
-	private emitted = 0;
+	// Bubbles still owed to the current fountain, and the steady stream: when it is counted
+	// from (ms, -1 before the first fountain) and how many it has let out since.
+	private fountain = 0;
+	private streamFrom = -1;
+	private streamed = 0;
 	private reduced = false;
 	private unwatch: (() => void) | null = null;
 	private opts: WinFxOptions;
@@ -407,14 +411,21 @@ export class WinFxView {
 
 	private tickBubbles(t: number, dt: number) {
 		const { burst, rate, speed } = this.opts;
-		// A fountain as the plaque pops into place, then a steady stream.
+		// A fountain as the plaque pops into place, then a steady stream (levelUp adds more).
 		const fountainAt = 420 * speed;
-		if (t >= fountainAt) {
-			const want = burst + Math.max(0, (t - fountainAt - 500) / 1000) * rate;
-			const fountain = this.emitted < burst;
-			while (this.emitted < want && this.bubbles.length < MAX_BUBBLES) {
-				this.spawn(t, fountain);
-				this.emitted++;
+		if (this.streamFrom < 0 && t >= fountainAt) {
+			this.fountain += burst;
+			this.streamFrom = t + 500;
+		}
+		while (this.fountain > 0 && this.bubbles.length < MAX_BUBBLES) {
+			this.spawn(t, true);
+			this.fountain--;
+		}
+		if (this.streamFrom >= 0) {
+			const want = Math.max(0, (t - this.streamFrom) / 1000) * rate;
+			while (this.streamed < want && this.bubbles.length < MAX_BUBBLES) {
+				this.spawn(t, false);
+				this.streamed++;
 			}
 		}
 		const k = this.opts.plaque[2] / 600;
@@ -527,6 +538,17 @@ export class WinFxView {
 	}
 
 	/** Hands the shared app back: stopped, its stage empty and its canvas out of the page. */
+	/** The win screen stepped up a tier: a new fountain from its (bigger) plaque, and the
+	    tier's faster stream from now on. */
+	levelUp(burst: number, rate: number, plaque: WinFxOptions['plaque']) {
+		this.opts = { ...this.opts, burst, rate, plaque };
+		const t = performance.now() - this.t0;
+		if (this.streamFrom < 0) return;
+		this.fountain += burst;
+		this.streamFrom = t;
+		this.streamed = 0;
+	}
+
 	release() {
 		if (owner !== this || !this.app) return;
 		owner = null;

@@ -5,8 +5,11 @@ dropped the face entirely (BoardView `units <= 2`). At ~50 css px the painted ey
 pixels wide and the GPU minifies the 448 texture without mipmaps. The minis keep the same
 painted bodies but get chibi proportions and art cut for their size:
 
-- eyes 1.32x round their own centres (the live eyes draw them, so only eyes.json changes),
-  capped so the pair keeps a gap; brows 1.22x lifted with the eye tops; mouth 1.25x lowered;
+- eyes 1.22x round their own centres (the live eyes draw them, so only eyes.json changes),
+  capped so the pair keeps a gap; brows 1.22x lifted with the eye tops; mouth 1.15x, lowered
+  by as much as the eyes grow down and its own top grows up, so the gap the art draws between
+  them stays (the 2026-11-04 vectors tuck the mouth between the eyes: grown in place, KIWI's
+  teeth bit into its eyes on the splash). Kept inside the body (CHIN units above its foot);
 - a darker outline ring and a soft contact shadow baked into the base, so overlapping
   siblings separate;
 - every texture pre-downsampled with LANCZOS to MINI px. 448 since 2026-10-30: a division
@@ -15,7 +18,7 @@ painted bodies but get chibi proportions and art cut for their size:
   clean.
 
 reads  the bases + parts named in src/lib/face-layers.json, src/lib/eyes.json
-writes public/symbols/v3/mini/*   src/lib/mini-eyes.json  src/lib/mini-face.json
+writes public/symbols/v4/mini/*   src/lib/mini-eyes.json  src/lib/mini-face.json
     python3 apps/split-party/scripts/build-mini-blobs.py [--preview out.png]
 """
 
@@ -26,15 +29,16 @@ from pathlib import Path
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
-HD = ROOT / 'public' / 'symbols' / 'v3'
-OUT = ROOT / 'public' / 'symbols' / 'v3' / 'mini'
+HD = ROOT / 'art-src' / 'symbols-448'
+OUT = ROOT / 'public' / 'symbols' / 'v4' / 'mini'
 LIB = ROOT / 'src' / 'lib'
 MINI = 448
 PX = MINI / 100  # texture px per art unit
-EYE_K = 1.32
+EYE_K = 1.22
 EYE_GAP = 2.5  # min units between the two whites
 BROW_K = 1.22
-MOUTH_K = 1.25
+MOUTH_K = 1.15
+CHIN = 3.0  # units the mini mouth keeps above the body's lowest point
 OUTLINE = 1.6  # units
 SHADOW = 0.32
 
@@ -72,6 +76,16 @@ def mini_eyes(eyes: list[dict]) -> tuple[list[dict], float, float]:
 	return out, up, down
 
 
+def mouth_drop(sym: str, m: dict, down: float) -> float:
+	"""How far the grown mouth moves down: the eyes' growth below plus its own growth above,
+	so it doesn't close the gap to the eyes; less if that would push it off the chin."""
+	dy = down + (m['cy'] - m['y']) * (MOUTH_K - 1)
+	a = Image.open(HD / f'{sym}.webp').getchannel('A').point(lambda v: 255 if v > 128 else 0)
+	foot = a.getbbox()[3] * 100 / a.height
+	bottom = m['cy'] + (m['y'] + m['h'] - m['cy']) * MOUTH_K
+	return min(dy, max(0.0, foot - CHIN - bottom))
+
+
 def part_png(src: str) -> Image.Image:
 	return Image.open(ROOT / 'public' / src.removeprefix('./')).convert('RGBA')
 
@@ -79,7 +93,7 @@ def part_png(src: str) -> Image.Image:
 def save(im: Image.Image, name: str) -> str:
 	path = OUT / name
 	im.save(path, quality=92, alpha_quality=100, method=6)
-	return f'./symbols/v3/mini/{name}'
+	return f'./symbols/v4/mini/{name}'
 
 
 def mini_part(sym: str, kind: str, p: dict, k: float, dy: float) -> dict:
@@ -133,7 +147,7 @@ def main():
 		for j, b in enumerate(face['brows']):
 			f['brows'].append(mini_part(sym, f'brow-{j}', b, BROW_K, -up - 0.6))
 		if face.get('mouth'):
-			f['mouth'] = mini_part(sym, 'mouth', face['mouth'], MOUTH_K, down * 0.55)
+			f['mouth'] = mini_part(sym, 'mouth', face['mouth'], MOUTH_K, mouth_drop(sym, face['mouth'], down))
 		for j, c in enumerate(face.get('closed', [])):
 			f['closed'].append(mini_part(sym, f'closed-{j}', c, EYE_K, 0))
 		m_faces[sym] = f

@@ -1,4 +1,4 @@
-"""Measure the eyes painted into each symbol (public/symbols/v3/*.webp) -> src/lib/eyes.json.
+"""Measure the eyes painted into each symbol (art-src/symbols-448/*.webp) -> src/lib/eyes.json.
 
 Blob.svelte redraws the eyes live on top of the art: each eye is clipped to the convex hull
 of its white, filled with the sampled white, and gets a pupil (sampled colour/size) that
@@ -18,7 +18,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-SYMBOLS = ROOT / 'public' / 'symbols' / 'v3'
+SYMBOLS = ROOT / 'art-src' / 'symbols-448'
 OUT = ROOT / 'src' / 'lib' / 'eyes.json'
 
 

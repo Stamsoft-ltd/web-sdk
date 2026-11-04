@@ -70,5 +70,9 @@ export const progress = (now: number, start: number, delay: number, dur: number)
 	return dur > 0 ? Math.min(1, t / dur) : 1;
 };
 
+/** Landings shorter than this play the two-beat squash (BoardView IMPACT_SHORT, style.css
+ *  land-impact-short): the full bounce's beats would each last a frame or less. */
+export const SHORT_IMPACT_MS = 350;
+
 /** How long the tease's happy surprise plays (BoardView's blobs, App's `mood`, style.css). */
 export const SURPRISE_MS = 1000;

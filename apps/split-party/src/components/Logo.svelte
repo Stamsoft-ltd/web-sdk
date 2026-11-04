@@ -199,7 +199,7 @@
 	}
 	.cheer .jelly {
 		animation:
-			logo-bounce 0.9s ease-in-out both,
+			logo-bounce 0.9s ease-in-out backwards,
 			logo-hop 0.9s ease-in-out 0.9s infinite;
 	}
 	.cheer :global(.joy) {

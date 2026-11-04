@@ -19,6 +19,7 @@ import { keyframes, EASE_IN_OUT, type Frame } from '../board/anim';
 import { clipConvex, convex, flat, parsePts } from '../board/BoardView';
 import type { Pt } from '../board/crackGeom';
 import { PixiApp, watchReducedMotion } from '../board/pixiApp';
+import { canvasRes } from '../lib/canvasRes';
 
 type Part = { src: string; x: number; y: number; w: number; h: number };
 type EyeData = (typeof MAMA.eyes)[number];
@@ -340,7 +341,8 @@ export class MamaView {
 		const dpr = devicePixelRatio || 1;
 		if (!h?.offsetWidth) return this.res || dpr;
 		const scale = h.getBoundingClientRect().width / h.offsetWidth;
-		this.res = Math.min(3, Math.max(1, dpr * scale));
+		// Raised while pinch-zoomed, within a GPU budget (lib/canvasRes.ts).
+		this.res = canvasRes(dpr * scale, h.offsetWidth, h.offsetHeight);
 		return this.res;
 	}
 	private onResize = () => {

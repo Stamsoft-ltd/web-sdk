@@ -1,5 +1,5 @@
 <script lang="ts">
-	// Live text dressed like the win screens' glossy jelly lettering (win/hd/title2-*.webp, user
+	// Live text dressed like the win screens' glossy jelly lettering (win/v3/title-*.svg, user
 	// 2026-10-29: "FREE SPINS and TOTAL WIN ... similar to legendary or sweet or mythic win"):
 	// a candy gradient fill, a rim and a drop in the deep colour, and a white gloss over the top
 	// of the letters. Three stacked copies of the text: the rim behind (text-shadow ring), the

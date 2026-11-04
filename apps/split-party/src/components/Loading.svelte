@@ -34,7 +34,7 @@
 		z-index: 21;
 		display: grid;
 		place-items: center;
-		background: #5b4fd6 url('/splash/sky-bg.webp') center / cover no-repeat;
+		background: #5b4fd6 url('/splash/hd/sky-bg.webp') center / cover no-repeat;
 		user-select: none;
 	}
 	/* Shadow over the sky so the P and the wordmark read clearly. */

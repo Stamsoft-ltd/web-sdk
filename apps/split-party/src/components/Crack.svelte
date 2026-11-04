@@ -3,156 +3,46 @@
 </script>
 
 <script lang="ts">
-	// The ground splitting under a dividing blob, drawn live: tapered fissures (dark gap, a
-	// hot pink seam glowing inside it, a lit lip along one edge) tear outward from where the new
+	// The ground splitting under a dividing blob, drawn live: tapered fissures (a dark rim
+	// sinking into the gap, a hot pink seam glowing inside it, a lit lip along one edge and a
+	// shadowed one along the other) tear outward from where the new
 	// blobs meet, chips of the pad jump out as it breaks, and the seam keeps a slow glow after.
 	// The tear runs in step with Blob.svelte's division beat (--divide-ms). Coordinates are
 	// Blob.svelte's 0–100 blob space, so every crack runs between two of the layout's blobs;
 	// branches run past the cell, which clips them.
+	import { crackPlan, prefix, sliver, type Pt } from '../board/crackGeom';
+
 	let { units, seed = 1 }: { units: number; seed?: number } = $props();
 	const id = `crack-${nextId++}`;
 
-	type Pt = [number, number];
-	// [from, to, start, duration, base width]: start/duration are fractions of the beat.
-	type Branch = [Pt, Pt, number, number, number];
-	// The tear starts once the blob has swollen (30% of the beat) and runs while it pinches apart.
-	const out = (from: Pt, to: Pt, delay = 0, w = 4.8): Branch => [from, to, 0.3 + delay, 0.32, w];
-	// Junctions are where the blobs' territories meet (equidistant from their centres).
-	const RING: Pt = [50, 50];
-	const RING_R = 22;
-	const PLANS: Record<number, Branch[]> = {
-		2: [out([50, 50], [50, -8]), out([50, 50], [50, 108])],
-		// Top blob over a bottom pair: arms out under the top blob, stem down between the pair.
-		3: [out([50, 48], [50, 108]), out([50, 48], [-14, 48]), out([50, 48], [114, 48])],
-		4: [out([50, 49], [50, -8]), out([50, 49], [50, 108]), out([50, 49], [-14, 49]), out([50, 49], [114, 49])],
-		// Four corner blobs round a centre one: the ring opens round the centre first, then
-		// straight spokes tear off it between the corners (up, down, left, right).
-		5: ([[0, -1], [0, 1], [-1, 0], [1, 0]] as Pt[]).map(([sx, sy]) =>
-			out([RING[0] + sx * RING_R, RING[1] + sy * RING_R], [RING[0] + sx * 64, RING[1] + sy * 58], 0.08, 3.8),
-		),
-		6: [
-			out([29, 50], [71, 50], 0, 3.8),
-			out([29, 50], [-14, 50], 0, 3.8),
-			out([71, 50], [114, 50], 0, 3.8),
-			out([29, 50], [29, -8], 0, 3.8),
-			out([29, 50], [29, 108], 0, 3.8),
-			out([71, 50], [71, -8], 0, 3.8),
-			out([71, 50], [71, 108], 0, 3.8),
-		],
-	};
-
-	// mulberry32: the same cell always cracks the same way, neighbours differently.
-	function rng(s: number) {
-		return () => {
-			s = (s + 0x6d2b79f5) | 0;
-			let t = Math.imul(s ^ (s >>> 15), 1 | s);
-			t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-			return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-		};
-	}
+	// The geometry is the Pixi board's (board/crackGeom.ts), so both renderers crack a tile alike.
+	type Tear = { path: string; rim: string; gap: string; seam: string; lip: string; dark: string; s: number; t: number; w: number };
 	const f = (n: number) => n.toFixed(2);
-	// Zig-zag centreline: every ~6 units step sideways, mostly alternating sides.
-	function jag(a: Pt, b: Pt, rand: () => number, amp = 3): Pt[] {
-		const [dx, dy] = [b[0] - a[0], b[1] - a[1]];
-		const len = Math.hypot(dx, dy);
-		const [nx, ny] = [-dy / len, dx / len];
-		const n = Math.max(3, Math.round(len / 6));
-		const pts: Pt[] = [a];
-		let side = rand() < 0.5 ? -1 : 1;
-		for (let i = 1; i < n; i++) {
-			if (rand() < 0.75) side = -side;
-			const o = side * amp * (0.3 + rand() * 0.7);
-			const t = (i + (rand() - 0.5) * 0.5) / n;
-			pts.push([a[0] + dx * t + nx * o, a[1] + dy * t + ny * o]);
-		}
-		pts.push(b);
-		return pts;
-	}
-	// A crack is a sliver: full width where it starts, a hairline at the tip.
-	function sliver(pts: Pt[], w0: number, w1: number, shift = 0): string {
-		const left: Pt[] = [];
-		const right: Pt[] = [];
-		pts.forEach((p, i) => {
-			const a = pts[Math.max(0, i - 1)];
-			const b = pts[Math.min(pts.length - 1, i + 1)];
-			const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
-			const [nx, ny] = [-(b[1] - a[1]) / len, (b[0] - a[0]) / len];
-			const w = (w0 + (w1 - w0) * (i / (pts.length - 1))) / 2;
-			const c = [p[0] + nx * shift, p[1] + ny * shift];
-			left.push([c[0] + nx * w, c[1] + ny * w]);
-			right.push([c[0] - nx * w, c[1] - ny * w]);
-		});
-		return 'M' + [...left, ...right.reverse()].map(([x, y]) => `${f(x)} ${f(y)}`).join('L') + 'Z';
-	}
-	// Where the tear starts: energy gathers here first, then bursts as it breaks.
-	const JUNCTIONS: Record<number, Pt[]> = {
-		2: [[50, 50]],
-		3: [[50, 48]],
-		4: [[50, 49]],
-		5: [RING],
-		6: [
-			[29, 50],
-			[71, 50],
-		],
-	};
 	const line = (pts: Pt[]) => 'M' + pts.map(([x, y]) => `${f(x)} ${f(y)}`).join('L');
-
-	type Tear = { path: string; gap: string; seam: string; lip: string; s: number; t: number; w: number };
-	type Chip = { x: number; y: number; dx: number; dy: number; r: number; size: number; d: number; light: boolean };
+	const shape = (flat: number[]) => {
+		let d = '';
+		for (let i = 0; i < flat.length; i += 2) d += `${i ? 'L' : 'M'}${f(flat[i])} ${f(flat[i + 1])}`;
+		return d + 'Z';
+	};
 	let crack = $derived.by(() => {
-		const rand = rng(seed * 2654435761 + units);
-		const tears: Tear[] = [];
-		const chips: Chip[] = [];
-		const add = (pts: Pt[], s: number, t: number, w: number, closed = false) => {
+		const plan = crackPlan(units, seed);
+		const tears: Tear[] = plan.tears.map(({ pts, closed, s, t, w }) => {
+			const { at } = prefix(pts, 1);
 			const end = closed ? w : w * 0.12;
-			tears.push({
+			const taper = (a: number, b: number, shift = 0) => shape(sliver(pts, at, w * a, end * b, shift));
+			return {
 				path: line(pts) + (closed ? 'Z' : ''),
-				gap: sliver(pts, w, end),
-				seam: sliver(pts, w * 0.5, end * 0.45),
-				lip: sliver(pts, w * 0.16, end * 0.25, -w * 0.6),
+				rim: taper(1.7, 1.6),
+				gap: taper(1, 1),
+				seam: taper(0.5, 0.45),
+				lip: taper(0.16, 0.25, -w * 0.6),
+				dark: taper(0.16, 0.25, w * 0.6),
 				s,
 				t,
 				w,
-			});
-		};
-		if (units === 5) {
-			const pts: Pt[] = [];
-			for (let i = 0; i <= 18; i++) {
-				const a = (i / 18) * Math.PI * 2 - Math.PI / 2;
-				const r = i % 18 === 0 ? RING_R : RING_R + (rand() - 0.5) * 3.5;
-				pts.push([RING[0] + Math.cos(a) * r, RING[1] + Math.sin(a) * r]);
-			}
-			add(pts, 0.28, 0.2, 3.4, true);
-		}
-		for (const [a, b, s, t, w] of PLANS[Math.min(units, 6)] ?? []) {
-			const pts = jag(a, b, rand);
-			add(pts, s, t, w);
-			// A side twig off the branch, tearing as the main crack passes it.
-			const k = 1 + Math.floor(rand() * (pts.length - 2));
-			const [px, py] = pts[k];
-			const ang = Math.atan2(b[1] - a[1], b[0] - a[0]) + (rand() < 0.5 ? -1 : 1) * (0.5 + rand() * 0.45);
-			const len = 6 + rand() * 7;
-			const twig = jag([px, py], [px + Math.cos(ang) * len, py + Math.sin(ang) * len], rand, 1.3);
-			add(twig, s + (t * k) / (pts.length - 1), 0.1, w * 0.55);
-			// Chips break off near the junction and jump out sideways as the tear passes.
-			for (let c = 0; c < 2; c++) {
-				const i = 1 + Math.floor(rand() * Math.min(4, pts.length - 2));
-				const [x, y] = pts[i];
-				const dir = Math.atan2(b[1] - a[1], b[0] - a[0]) + (rand() < 0.5 ? -1 : 1) * Math.PI * (0.35 + rand() * 0.3);
-				const dist = 7 + rand() * 9;
-				chips.push({
-					x,
-					y,
-					dx: Math.cos(dir) * dist,
-					dy: Math.sin(dir) * dist,
-					r: (rand() - 0.5) * 540,
-					size: 1.2 + rand() * 1.6,
-					d: s + (t * i) / (pts.length - 1),
-					light: rand() < 0.5,
-				});
-			}
-		}
-		return { tears, chips, junctions: JUNCTIONS[Math.min(units, 6)] ?? [] };
+			};
+		});
+		return { tears, chips: plan.chips, junctions: plan.junctions };
 	});
 </script>
 
@@ -174,8 +64,10 @@
 		</defs>
 		<g class="tear" mask={`url(#${id}-tear)`}>
 			{#each crack.tears as c}<path class="halo" d={c.path} stroke-width={c.w * 2.4} />{/each}
+			{#each crack.tears as c}<path class="rim" d={c.rim} />{/each}
 			{#each crack.tears as c}<path class="gap" d={c.gap} />{/each}
 			{#each crack.tears as c}<path class="lip" d={c.lip} />{/each}
+			{#each crack.tears as c}<path class="dark-lip" d={c.dark} />{/each}
 			<g class="seam">
 				{#each crack.tears as c}<path d={c.seam} />{/each}
 			</g>
@@ -228,14 +120,15 @@
 	.crack.fx {
 		z-index: 2;
 	}
-	/* Once the blobs have parted the crack settles into a faint scar: a board full of split
-	   tiles would otherwise be 49 glowing tears around up to six blobs each. */
+	/* Once the blobs have parted the crack settles into a scar (BoardView's settle: 0.7 since
+	   2026-11-04, was 0.35): a board full of split tiles would otherwise be 49 glowing tears
+	   around up to six blobs each. */
 	.crack:not(.fx) {
 		animation: crack-settle 900ms ease-out calc(var(--divide-ms, 900ms) * 2) both;
 	}
 	@keyframes crack-settle {
 		to {
-			opacity: 0.35;
+			opacity: 0.7;
 		}
 	}
 	/* Laid over the cell exactly like the blob art (74.08px, centred), so the coordinates match. */
@@ -285,10 +178,19 @@
 	.gap {
 		fill: #12061f;
 	}
-	/* Light catching the broken edge on one side. */
+	/* The pad sinking into the gap. */
+	.rim {
+		fill: #0b0418;
+		opacity: 0.38;
+	}
+	/* Light catching the broken edge on one side, shadow on the other. */
 	.lip {
 		fill: #c3b0ff;
-		opacity: 0.55;
+		opacity: 0.7;
+	}
+	.dark-lip {
+		fill: #05020c;
+		opacity: 0.6;
 	}
 	/* Hot seam down the middle: white-hot as it tears, cooling to pink. The white copy (its glow
 	   a soft wide stroke) fades off the pink one: opacity only, where the seam used to animate

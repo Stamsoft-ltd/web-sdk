@@ -7,14 +7,18 @@ sounds for the 3 bonuses to be different and cool".
           with a sugar shimmer (the track an octave up, high-passed, mixed in low)
   hidden  the neon cavern: three semitones down, 6% slower, darker, warmer underneath, with a
           slow phaser and the cavern's echo off the walls
+  mystery the mystery egg's reveal (user 2026-11-04: "make the music on mystery screen to be
+          mystery"): four semitones down at 80% speed, muffled, a slow tremble, a long hall
+          echo, and a ghostly octave-up whisper of itself drifting over the top
 
 Each one loops: the track is rendered three times end to end and the middle pass kept, so its
 start carries the echo tail and the pitch-shifter's state from the end of the pass before it,
 the way it plays back to back (sound.ts's bedPass). Loudness is matched to the source's mean.
 
-    python3 apps/split-party/scripts/build-bonus-music.py
+    python3 apps/split-party/scripts/build-bonus-music.py [variant ...]   (default: all)
 """
 import re
+import sys
 import subprocess
 import tempfile
 from pathlib import Path
@@ -43,7 +47,19 @@ VARIANTS = {
             'aecho=0.85:0.75:260|540:0.3|0.18,extrastereo=m=1.35'
         ),
     },
+    'music-mystery': {
+        'tempo': 0.8,
+        'chain': (
+            '[0:a]rubberband=pitch=0.79370:tempo=0.8:pitchq=quality,asplit[a][b];'
+            '[b]rubberband=pitch=2:pitchq=quality,highpass=f=3200,'
+            'aecho=0.8:0.9:700|1300:0.45|0.3,volume=0.12[w];'
+            '[a]lowpass=f=1900,equalizer=f=90:t=q:w=1:g=3,tremolo=f=0.6:d=0.25[d];'
+            '[d][w]amix=inputs=2:normalize=0,'
+            'aecho=0.8:0.8:420|880:0.35|0.22,extrastereo=m=1.4'
+        ),
+    },
 }
+WANT = sys.argv[1:] or list(VARIANTS)
 
 
 def run(*args: str) -> str:
@@ -70,7 +86,7 @@ with tempfile.TemporaryDirectory() as tmp:
     three = tmp / 'three.wav'
     run('-stream_loop', '2', '-i', str(one), '-c:a', 'pcm_f32le', str(three))
     target = mean_db(SRC)
-    for name, v in VARIANTS.items():
+    for name, v in ((k, VARIANTS[k]) for k in WANT):
         wet = tmp / f'{name}-wet.wav'
         run('-i', str(three), '-filter_complex', v['chain'], '-ar', str(RATE), '-c:a', 'pcm_f32le', str(wet))
         # The middle pass, in the stretched timeline.

@@ -7,11 +7,12 @@
 	import LiveSea from './LiveSea.svelte';
 	import SkyClouds from './SkyClouds.svelte';
 	import DOMES from '../lib/splash-domes.json';
+	import { i18n } from '../lib/i18n';
 
 	// Splash, built from Figma 9078:18632 (1200×670 frame). Landscape keeps the frame's
 	// absolute layout scaled to fit; portrait stacks the logo over one card at a time.
-	// The logo drops in and shakes the screen; the four blobs hide behind their cards
-	// and creep out to sniff (their design pose is the fully peeked-out position).
+	// The logo drops in and shakes the screen. (The blobs that peeked out from behind the cards
+	// were removed on request, 2026-11-03.)
 	let {
 		ready,
 		busy,
@@ -56,6 +57,10 @@
 
 	// The max win counts up once its card has revealed (keep in step with --in on .card-2 + --at on .max-big).
 	const MAX_WIN = 20000;
+	// The card titles and the max win are the user's drawn lettering (splash/v2, 2026-11-04) in
+	// English; every other language keeps the live JellyText titles and the counting number.
+	// (tr reads the locale version, so this follows a language switch.)
+	let english = $derived((tr('SPLASH MAX TITLE'), i18n.locale === 'en'));
 	// Translated titles run longer than the design's ("Split for / bigger wins"): the font
 	// shrinks with the longest line past what the box holds at the design size.
 	const titleFit = (text: string, px: number, chars: number) =>
@@ -214,35 +219,36 @@
 			<div class="splash-logo"><Logo uid="splash-logo" /></div>
 
 			<div class="card card-1" class:active={slide === 0}>
-				<span class="peeker peek-teal" aria-hidden="true"
-					><span class="peek-face"><Blob symbol="KIWI" uid="peek-teal" /></span></span
-				>
-				<span class="peeker peek-yellow" aria-hidden="true"
-					><span class="peek-face"><Blob symbol="LEMON" uid="peek-yellow" /></span></span
-				>
-				<img class="card-frame" src="./splash/panel.webp" alt="" />
-				<h2 class="card-title green long" data-shine={tr('SPLASH SPLIT TITLE')} style={titleFit(tr('SPLASH SPLIT TITLE'), 23, 12)}><JellyText text={tr('SPLASH SPLIT TITLE')} look="green" /></h2>
+				<img class="card-frame" src="./splash/v2/panel.webp" alt="" />
+				{#if english}
+					<h2 class="card-title card-art art-split" aria-label={tr('SPLASH SPLIT TITLE')} style="--src:url(./splash/v2/title-split.webp)"><img src="./splash/v2/title-split.webp" alt="" /></h2>
+				{:else}
+					<h2 class="card-title green long" data-shine={tr('SPLASH SPLIT TITLE')} style={titleFit(tr('SPLASH SPLIT TITLE'), 23, 12)}><JellyText text={tr('SPLASH SPLIT TITLE')} look="green" /></h2>
+				{/if}
 				<!-- One blob dividing over and over, up to the tile's 6. -->
 				<span class="split-art" aria-hidden="true"><Blob symbol="KIWI" units={splitUnits} uid="splash-split" /></span>
 				<p class="card-copy">{tr('SPLASH SPLIT TEXT')}</p>
 			</div>
 
 			<div class="card card-2" class:active={slide === 1}>
-				<img class="card-frame" src="./splash/panel.webp" alt="" />
-				<h2 class="card-title yellow maxwin" data-shine={tr('SPLASH MAX TITLE')} style={titleFit(tr('SPLASH MAX TITLE'), 36, 8)}><JellyText text={tr('SPLASH MAX TITLE')} look="gold" /></h2>
-				<strong class="max-big" data-shine={maxWinText}>{maxWinText}</strong>
+				<img class="card-frame" src="./splash/v2/panel.webp" alt="" />
+				{#if english}
+					<h2 class="card-title card-art art-max" aria-label={tr('SPLASH MAX TITLE')} style="--src:url(./splash/v2/title-max.webp)"><img src="./splash/v2/title-max.webp" alt="" /></h2>
+					<strong class="max-big card-art art-num" aria-label="20,000×" style="--src:url(./splash/v2/max-20000.webp)"><img src="./splash/v2/max-20000.webp" alt="" /></strong>
+				{:else}
+					<h2 class="card-title yellow maxwin" data-shine={tr('SPLASH MAX TITLE')} style={titleFit(tr('SPLASH MAX TITLE'), 36, 8)}><JellyText text={tr('SPLASH MAX TITLE')} look="gold" /></h2>
+					<strong class="max-big" data-shine={maxWinText}>{maxWinText}</strong>
+				{/if}
 				<p class="card-copy max-copy">{tr('SPLASH MAX TEXT')}</p>
 			</div>
 
 			<div class="card card-3" class:active={slide === 2}>
-				<span class="peeker peek-pink" aria-hidden="true"
-					><span class="peek-face"><Blob symbol="STRAWBERRY" uid="peek-pink" /></span></span
-				>
-				<span class="peeker peek-purple" aria-hidden="true"
-					><span class="peek-face"><Blob symbol="GRAPES" uid="peek-purple" /></span></span
-				>
-				<img class="card-frame" src="./splash/panel.webp" alt="" />
-				<h2 class="card-title pink long" data-shine={tr('SPLASH BONUS TITLE')} style={titleFit(tr('SPLASH BONUS TITLE'), 23, 12)}><JellyText text={tr('SPLASH BONUS TITLE')} look="pink" /></h2>
+				<img class="card-frame" src="./splash/v2/panel.webp" alt="" />
+				{#if english}
+					<h2 class="card-title card-art art-bonus" aria-label={tr('SPLASH BONUS TITLE')} style="--src:url(./splash/v2/title-bonus.webp)"><img src="./splash/v2/title-bonus.webp" alt="" /></h2>
+				{:else}
+					<h2 class="card-title pink long" data-shine={tr('SPLASH BONUS TITLE')} style={titleFit(tr('SPLASH BONUS TITLE'), 23, 12)}><JellyText text={tr('SPLASH BONUS TITLE')} look="pink" /></h2>
+				{/if}
 				<div class="egg" aria-hidden="true"><div class="egg-body"><img src="./splash/egg.webp" alt="" /></div></div>
 				<p class="card-copy">{tr('SPLASH BONUS TEXT')}</p>
 			</div>
@@ -273,9 +279,10 @@
 		overflow: hidden;
 		background: #5b4fd6;
 		user-select: none;
-		/* Its own layer from the start, so the ×9 zoom into the island (App enterGame) scales
-		   that layer instead of re-painting the whole splash at up to 9× resolution. */
-		will-change: transform;
+		/* No will-change: Chrome keeps a will-change layer at the raster scale it was first
+		   drawn at, so pinch-zoomed splash copy (MAX WIN, 20,000×) stayed soft (2026-11-03).
+		   The zoom into the island (App enterGame) is a transform animation, which gets its
+		   own compositor layer while it runs. */
 	}
 	.splash.ready {
 		cursor: pointer;
@@ -405,7 +412,7 @@
 		width: 436px;
 		height: 218px;
 		transform-origin: 50% 100%;
-		animation: logo-drop 0.75s 0.05s both;
+		animation: logo-drop 0.75s 0.05s backwards;
 	}
 
 	/* Cards: 273×410 frames; every child is placed at its Figma offset from the card.
@@ -483,7 +490,7 @@
 		width: 100%;
 		height: 100%;
 	}
-	.card > :not(.card-frame, .peeker) {
+	.card > :not(.card-frame) {
 		position: absolute;
 		z-index: 2;
 		margin: 0;
@@ -526,6 +533,48 @@
 		font-size: 23px;
 		letter-spacing: 0.6px;
 		line-height: 1.08;
+	}
+	/* The drawn lettering (English): each box is the art's own aspect at its WIDTH in
+	   build-splash-cards.py. Its glint is a white copy masked by the art's alpha. */
+	.card-title.card-art {
+		left: 136.5px;
+		line-height: 0;
+	}
+	.card-art img {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+	/* Softer than the text glint: the white copy covers the dark outline too, and at the text's
+	   0.6 the drawn words read milky. */
+	.card-art::after {
+		content: '';
+		background: #fff;
+		-webkit-mask: var(--src) center / 100% 100% no-repeat;
+		mask: var(--src) center / 100% 100% no-repeat;
+		animation-name: art-shine;
+	}
+	.art-split {
+		top: 36px;
+		width: 214px;
+		height: 63.9px;
+	}
+	.art-bonus {
+		top: 34px;
+		width: 226px;
+		height: 69.7px;
+	}
+	.art-max {
+		top: 30px;
+		width: 132px;
+		height: 102.6px;
+	}
+	/* The 20'000X stamps down onto the card instead of counting up. */
+	.max-big.art-num {
+		top: 158px;
+		width: 206px;
+		height: 50.5px;
+		animation: num-stamp 0.6s calc(var(--in) + var(--at)) backwards;
 	}
 	.split-art {
 		left: 136.5px;
@@ -589,59 +638,6 @@
 		line-height: 1.1;
 		--c: #f782fe;
 		white-space: nowrap;
-	}
-
-	/* Hidden blobs. Each sits at its Figma pose (peeked out) and is pushed back behind
-	   the card by --hx/--hy; the loop brings it out, sniffs, and ducks away again. */
-	.peeker {
-		position: absolute;
-		z-index: 0;
-		display: grid;
-		place-items: center;
-		animation: blob-peek 5.6s ease-in-out infinite both;
-	}
-	/* The same art as the board symbols, so the peekers get the live faces too. */
-	.peek-face {
-		display: block;
-		width: var(--img, 100%);
-		height: var(--img, 100%);
-		transform: rotate(var(--tilt, 0deg));
-	}
-	.peek-teal {
-		--hy: 80px;
-		left: 74px;
-		top: -67px;
-		width: 125px;
-		height: 125px;
-		animation-delay: 1.5s;
-	}
-	.peek-yellow {
-		--hx: 85px;
-		--tilt: -88.85deg;
-		--img: 114.28px;
-		left: -70px;
-		top: 162px;
-		width: 116.56px;
-		height: 116.56px;
-		animation-delay: 2.9s;
-	}
-	.peek-pink {
-		--hy: 66px;
-		left: 80px;
-		top: -53px;
-		width: 106px;
-		height: 106px;
-		animation-delay: 4.3s;
-	}
-	.peek-purple {
-		--hx: -90px;
-		--tilt: 86.66deg;
-		--img: 118.72px;
-		left: 223px;
-		top: 155px;
-		width: 125.43px;
-		height: 125.43px;
-		animation-delay: 5.7s;
 	}
 
 	.dots {
@@ -754,6 +750,38 @@
 		}
 		50% {
 			translate: 0 -5px;
+		}
+	}
+	@keyframes art-shine {
+		0%,
+		30%,
+		60%,
+		100% {
+			opacity: 0;
+		}
+		42% {
+			opacity: 0.28;
+		}
+	}
+	@keyframes num-stamp {
+		0% {
+			opacity: 0;
+			scale: 1.7;
+			animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6);
+		}
+		40% {
+			opacity: 1;
+			scale: 0.88 0.92;
+			animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+		}
+		65% {
+			scale: 1.06 1.03;
+		}
+		85% {
+			scale: 0.99 1.01;
+		}
+		100% {
+			scale: 1;
 		}
 	}
 	@keyframes line-in {
@@ -926,49 +954,6 @@
 			transform: translate(1px, -1px);
 		}
 	}
-	/* One cycle: creep out, sniff-sniff-sniff, look around at the design pose, dart back. */
-	@keyframes blob-peek {
-		0%,
-		8% {
-			transform: translate(var(--hx, 0px), var(--hy, 0px));
-		}
-		16% {
-			transform: translate(calc(var(--hx, 0px) * 0.5), calc(var(--hy, 0px) * 0.5));
-		}
-		20% {
-			transform: translate(calc(var(--hx, 0px) * 0.55), calc(var(--hy, 0px) * 0.55));
-		}
-		24% {
-			transform: translate(calc(var(--hx, 0px) * 0.3), calc(var(--hy, 0px) * 0.3)) scale(1.04, 0.97);
-		}
-		26% {
-			transform: translate(calc(var(--hx, 0px) * 0.36), calc(var(--hy, 0px) * 0.36));
-		}
-		28% {
-			transform: translate(calc(var(--hx, 0px) * 0.22), calc(var(--hy, 0px) * 0.22)) scale(1.05, 0.96);
-		}
-		30% {
-			transform: translate(calc(var(--hx, 0px) * 0.3), calc(var(--hy, 0px) * 0.3));
-		}
-		32% {
-			transform: translate(calc(var(--hx, 0px) * 0.16), calc(var(--hy, 0px) * 0.16)) scale(1.05, 0.96);
-		}
-		38%,
-		46% {
-			transform: rotate(5deg);
-		}
-		50% {
-			transform: rotate(-5deg);
-		}
-		54% {
-			transform: translate(calc(var(--hx, 0px) * -0.06), calc(var(--hy, 0px) * -0.06));
-			animation-timing-function: cubic-bezier(0.6, 0, 1, 0.6);
-		}
-		60%,
-		100% {
-			transform: translate(var(--hx, 0px), var(--hy, 0px));
-		}
-	}
 	@keyframes sea-cap {
 		0% {
 			opacity: 0;
@@ -1028,9 +1013,6 @@
 		}
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.peeker {
-			transform: none;
-		}
 		.card,
 		.card *,
 		.portrait .card.active {

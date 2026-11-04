@@ -211,7 +211,8 @@ main {
 	color: #a5a7ee;
 }
 
-/* Board: #202149 well, 7×7 pads 88.04×70.86 at a 2.147 gap. */
+/* Board (Figma 11395:4052): #202149 well in a #3a3981 border, flat #4b3981 pads 88.04×70.86 at
+   a 2.147 gap. */
 .board,
 .board-deco {
 	left: 272px;
@@ -225,9 +226,9 @@ main {
 	background: #202149;
 	border: 6.442px solid #3a3981;
 	border-radius: 10.736px;
-	/* Its own layer from the start, so the fly-in's drop (App enterGame) moves it on the
-	   compositor instead of promoting and rasterizing it on the drop's first frame. */
-	will-change: transform;
+	/* No will-change: a will-change layer keeps the raster scale it was first drawn at, so a
+	   pinch-zoomed board stayed soft (2026-11-03). The drop's transform animation (App
+	   enterGame) gets a compositor layer of its own while it runs. */
 }
 /* While it drops the blobs' idle face anims pause, so it isn't repainting as it moves. */
 .board.dropping * {
@@ -412,8 +413,8 @@ main {
 }
 .sym.falling {
 	animation:
-		gravity-fall var(--fall-duration) var(--gravity-ease) var(--fall-delay) both,
-		land-impact var(--impact-duration) linear var(--impact-delay) forwards;
+		gravity-fall var(--fall-duration) var(--gravity-ease) var(--fall-delay) backwards,
+		var(--impact-name, land-impact) var(--impact-duration) linear var(--impact-delay);
 }
 .sym.popping {
 	animation: blob-pop var(--remove-duration) cubic-bezier(0.3, 0, 0.6, 1) var(--harvest-delay) forwards;
@@ -573,29 +574,63 @@ main {
 		transform: translateY(var(--exit-offset)) scale(0.96, 1.08);
 	}
 }
+/* Stretching as it picks up speed (BoardView FALL_SX/SY at touchdown). */
 @keyframes gravity-fall {
 	from {
-		transform: translateY(var(--fall-offset)) scale(0.97, 1.06);
+		transform: translateY(var(--fall-offset)) scale(1, 1);
 	}
 	to {
-		transform: translateY(0) scale(1, 1);
+		transform: translateY(0) scale(0.92, 1.12);
 	}
 }
+/* The bouncing jelly (BoardView IMPACT, same beats and per-segment easing): squash, a rebound hop
+   of a fifth of a cell, a smaller second landing, a little third hop, settle. */
 @keyframes land-impact {
 	0% {
+		transform: scale(0.92, 1.12);
+		animation-timing-function: cubic-bezier(0, 0, 0.58, 1);
+	}
+	10% {
+		transform: scale(1.28, 0.7);
+		animation-timing-function: cubic-bezier(0.33, 0.66, 0.66, 1);
+	}
+	30% {
+		transform: translateY(-20%) scale(0.92, 1.1);
+		animation-timing-function: cubic-bezier(0.33, 0, 0.66, 0.33);
+	}
+	46% {
+		transform: translateY(0) scale(1.14, 0.85);
+		animation-timing-function: cubic-bezier(0.33, 0.66, 0.66, 1);
+	}
+	60% {
+		transform: translateY(-6%) scale(0.97, 1.04);
+		animation-timing-function: cubic-bezier(0.33, 0, 0.66, 0.33);
+	}
+	72% {
+		transform: translateY(0) scale(1.05, 0.95);
+		animation-timing-function: cubic-bezier(0, 0, 0.58, 1);
+	}
+	86% {
+		transform: scale(0.99, 1.01);
+		animation-timing-function: cubic-bezier(0, 0, 0.58, 1);
+	}
+	100% {
 		transform: none;
 	}
-	16% {
-		transform: scale(1.22, 0.76);
+}
+/* Under SHORT_IMPACT_MS (turbo, late cascades, slam stop): one squash and a settle. */
+@keyframes land-impact-short {
+	0% {
+		transform: scale(0.92, 1.12);
+		animation-timing-function: cubic-bezier(0, 0, 0.58, 1);
 	}
-	38% {
-		transform: translateY(-7%) scale(0.9, 1.12);
+	30% {
+		transform: scale(1.2, 0.82);
+		animation-timing-function: cubic-bezier(0, 0, 0.58, 1);
 	}
-	58% {
-		transform: translateY(0) scale(1.08, 0.93);
-	}
-	76% {
-		transform: translateY(-1.5%) scale(0.98, 1.03);
+	65% {
+		transform: scale(0.97, 1.04);
+		animation-timing-function: cubic-bezier(0, 0, 0.58, 1);
 	}
 	100% {
 		transform: none;
@@ -606,8 +641,13 @@ main {
 		transform: none;
 		opacity: 1;
 	}
+	/* A dip first (anticipation; BoardView POP keeps the same beats). */
+	10% {
+		transform: scale(0.88) rotate(3deg);
+		opacity: 1;
+	}
 	26% {
-		transform: scale(1.24) rotate(-4deg);
+		transform: scale(1.26) rotate(-4deg);
 		opacity: 1;
 	}
 	32% {
@@ -650,7 +690,8 @@ main {
 	z-index: 1;
 }
 .grid.winning .cell:not(.lit)::after {
-	opacity: 0.32;
+	/* As BoardView's VEIL. */
+	opacity: 0.16;
 }
 .cell.lit .sym > .blob-art {
 	animation: bounce 0.48s ease-in-out infinite alternate;
@@ -690,11 +731,11 @@ main {
 .scatter {
 	box-shadow: inset 0 0 9px #fece06;
 }
-/* The premium blobs' cells (Figma 11300:28009, BoardView's PREMIUM): a rim in the blob's colour
-   and its inset glow, 20.55px at the design's 89.38px cell. */
+/* The premium blobs' cells (Figma 11395:4052 "SYmbols"): a rim in the blob's colour and an inset
+   glow of it at 70%, 20.86px at the design's 90.72px cell (BoardView's premiumTexture). */
 .cell.premium:not(.lit) {
 	border-color: var(--gem);
-	box-shadow: inset 0 0 20.2px color-mix(in srgb, var(--gem) 70%, transparent);
+	box-shadow: inset 0 0 20.25px color-mix(in srgb, var(--gem) 70%, transparent);
 }
 .egg-hide {
 	position: absolute;
@@ -756,7 +797,7 @@ main {
 	font-weight: 700;
 }
 .round-panel strong {
-	animation: value-pop 0.45s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+	animation: value-pop 0.45s cubic-bezier(0.3, 1.5, 0.5, 1) backwards;
 	font-weight: 400;
 	font-size: 32px;
 	line-height: 1.15;
@@ -776,7 +817,7 @@ main {
 }
 .fs-n {
 	grid-area: 1 / 1;
-	animation: fs-n-flash 0.7s ease-out both;
+	animation: fs-n-flash 0.7s ease-out backwards;
 }
 /* JellyText fills its own letters, so the flash is a brightness pop, not a colour. */
 @keyframes fs-n-flash {
@@ -1454,8 +1495,9 @@ main.portrait.mama-up {
 	display: grid;
 	place-items: center;
 	padding: 20px;
-	background: rgb(0 0 0 / 0.7);
-	backdrop-filter: blur(4px);
+	/* No backdrop-filter (2026-11-04): pinch-zoomed inside Stake's iframe it broke (stale blurred
+   patches, jagged rounded edges) and an iframe can't see the zoom to switch it off; denser tint instead. */
+	background: rgb(0 0 0 / 0.74);
 }
 .overlay > * {
 	grid-area: 1 / 1;
@@ -1494,7 +1536,7 @@ main.portrait.mama-up {
 	border: 1px solid #9578ce;
 	border-radius: 9999px;
 	background: #3a3981;
-	animation: close-in 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) 0.12s both;
+	animation: close-in 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) 0.12s backwards;
 }
 .screen-close img {
 	width: 18.48px;
@@ -1688,7 +1730,6 @@ main.portrait.mama-up {
 .bonus-overlay,
 .info-overlay {
 	padding: 0;
-	backdrop-filter: blur(2px);
 }
 /* Extra Chance: the design's outlined ACTIVATE button, locked until the math has a mode. */
 /* Extra feature on: the BONUS button wears a lime ring and the HUD bet reads the doubled cost. */
@@ -1831,10 +1872,15 @@ main.portrait.mama-up {
 		opacity: 1;
 		transform: translateY(-6px) scale(1.12);
 	}
-	36%,
+	36% {
+		opacity: 1;
+		transform: translateY(-10px) scale(1);
+	}
+	/* The exit eases in on its own (overlays.ts AMOUNT): under the spring it overshot. */
 	80% {
 		opacity: 1;
 		transform: translateY(-10px) scale(1);
+		animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6);
 	}
 	100% {
 		opacity: 0;
@@ -2005,22 +2051,32 @@ body * {
 	touch-action: manipulation;
 }
 
-/* Small-win plaque, Figma 11174:8407: centred at (600.5, 335) of the base frame; in portrait
-   it keeps the same offset from the board's centre. --spd scales every beat for turbo. The land
-   (650ms) must match PLAQUE_LAND_MS in App.svelte. */
+/* Small win, Figma 11174:8160 (2026-11-03): the pink jelly blob (476×238) centred on the base
+   frame over a 50% black dim, the amount in white Coiny. In portrait it keeps the same offset
+   from the board's centre. --spd scales every beat for turbo. The land (650ms) must match
+   PLAQUE_LAND_MS in App.svelte. */
+.plaque-dim {
+	left: -2000px;
+	top: -2000px;
+	width: 5200px;
+	height: 5200px;
+	background: rgb(0 0 0 / 0.5);
+	pointer-events: none;
+	z-index: 5;
+}
 .win-plaque {
-	left: 398px;
-	top: 183px;
-	width: 405px;
-	height: 304px;
+	left: 362px;
+	top: 216px;
+	width: 476px;
+	height: 238px;
 	pointer-events: none;
 	z-index: 5;
 	transform-origin: 50% 82%;
 }
 .portrait .win-plaque {
 	/* Same spot on the board as before: 170px (×1.0366) below its top. */
-	left: 137.5px;
-	top: calc(418px + var(--ex) * 0.58 + var(--mdrop, 0px));
+	left: 102px;
+	top: calc(451px + var(--ex) * 0.58 + var(--mdrop, 0px));
 }
 /* Drops in from above, splats wide onto its base, then wobbles out the squash. */
 .plaque-land,
@@ -2049,8 +2105,8 @@ body * {
 	position: absolute;
 	inset: 0;
 	overflow: hidden;
-	mask: url('/win/small-win-plaque.webp') center / 100% 100% no-repeat;
-	-webkit-mask: url('/win/small-win-plaque.webp') center / 100% 100% no-repeat;
+	mask: url('/win/pink-blob.webp') center / 100% 100% no-repeat;
+	-webkit-mask: url('/win/pink-blob.webp') center / 100% 100% no-repeat;
 }
 .plaque-shine span {
 	position: absolute;
@@ -2083,7 +2139,7 @@ body * {
 	left: 50%;
 	top: 52%;
 	border-radius: 50%;
-	background: radial-gradient(circle at 35% 30%, #fffc 0 18%, #a873ff 32%, #6a3fd6);
+	background: radial-gradient(circle at 35% 30%, #fffc 0 18%, #ff86c4 32%, #f0368f);
 	translate: -50% -50%;
 	opacity: 0;
 	animation: plaque-drop calc(800ms * var(--spd)) cubic-bezier(0.2, 0.6, 0.4, 1) calc(200ms * var(--spd)) both;
@@ -2175,28 +2231,6 @@ body * {
 	/* Flat, as designed: no lit edge or drop shadow. */
 	background-image: none;
 	box-shadow: none;
-}
-.board {
-	background-image: radial-gradient(120% 90% at 50% 0%, #2c2c63, #202149 60%, #17173a);
-	/* The rim itself is .board-deco's; this border shows as its dark inner line. */
-	border-color: #2a1a72;
-	box-shadow:
-		inset 0 3px 10px #0007,
-		0 22px 40px #12063a99;
-}
-/* The pad material (the Pixi board's padMaterial): deeper to the foot, a faint gloss high on
-   the left, bounce light along the foot and the rim's shadow falling in from the top. */
-.cell:not(.lit) {
-	background-image:
-		radial-gradient(50% 30% at 30% 6%, #ffffff1c, #fff0),
-		linear-gradient(#b9a2ff00 82%, #b9a2ff1a),
-		linear-gradient(#ffffff24, #ffffff00 42%, #0a002e47);
-}
-.cell:not(.lit, .scatter) {
-	box-shadow:
-		inset 0 2px 5px #0b032ab3,
-		inset 0 1.5px 0 #ffffff2e,
-		inset 0 -2px 0 #00000030;
 }
 .dialog {
 	background-image: linear-gradient(#ffffff1c, #ffffff00 30%);
@@ -3108,59 +3142,14 @@ main:not(.portrait) .base-stage {
 	font-size: max(8px, calc(5.5px / var(--k, 1) / 0.708 / var(--c)));
 }
 
-/* The board's jelly rim (.board-deco, same box as .board, over it). ::before is the rim: a ring
-   from 8.5px outside the board to 4.4px inside its border (the border's last 2px show as the
-   inner line), lit from above with a gloss streak and two glints. ::after hangs the portrait
-   drips off its foot; their tops overlap the ring's dark outline so they flow out of the rim. */
+/* .board-deco (same box as .board, over it) carried a jelly rim until 2026-11-03; the board is
+   the design's flat well now (Figma 11395:4052), and the empty layer only rides the drop-in. */
 .board-deco {
 	pointer-events: none;
 }
-.board-deco::before,
-.board-deco::after {
-	content: '';
-	position: absolute;
-}
-.board-deco::before {
-	inset: -8.5px;
-	box-sizing: border-box;
-	border: 2.5px solid #2a1a72;
-	border-radius: 19.2px;
-	padding: 10.4px;
-	/* Jelly: the gloss streak and glints on top, a few bubbles set in the gel (each a lighter
-	   disc with a pin of light), the sides lit then rolling off, the foot in shade. */
-	background:
-		radial-gradient(42% 5px at 50% 4.5px, #ffffffc0, #fff0),
-		radial-gradient(circle 2.6px at 24px 6px, #fff 70%, #fff0),
-		radial-gradient(circle 1.6px at 33px 4.5px, #fff 70%, #fff0),
-		radial-gradient(circle 2px at calc(100% - 28px) 6px, #ffffffb0 70%, #fff0),
-		radial-gradient(circle 0.9px at 4.6px 37.6%, #fff 80%, #fff0),
-		radial-gradient(circle 2.6px at 5.5px 38%, #c9b6ff99 75%, #fff0),
-		radial-gradient(circle 0.7px at 4.8px 39.6%, #fff 80%, #fff0),
-		radial-gradient(circle 1.8px at 5.4px 40%, #c9b6ff80 75%, #fff0),
-		radial-gradient(circle 0.9px at calc(100% - 6.4px) 63.6%, #fff 80%, #fff0),
-		radial-gradient(circle 2.8px at calc(100% - 5.5px) 64%, #c9b6ff99 75%, #fff0),
-		radial-gradient(circle 0.8px at 70.2% calc(100% - 6.4px), #fff 80%, #fff0),
-		radial-gradient(circle 2.3px at 70.4% calc(100% - 5.4px), #c9b6ff80 75%, #fff0),
-		radial-gradient(circle 0.8px at 18.2% calc(100% - 6.2px), #fff 80%, #fff0),
-		radial-gradient(circle 2px at 18.4% calc(100% - 5.3px), #c9b6ff70 75%, #fff0),
-		linear-gradient(90deg, #ffffff26, #fff0 1.6%, #fff0 98.4%, #0000001f),
-		linear-gradient(#fff0 92%, #1d0b5a66) padding-box,
-		linear-gradient(#b9a2ff, #8a6cf2 3%, #6b4de0 50%, #5b3dc9) padding-box;
-	-webkit-mask:
-		linear-gradient(#000 0 0) content-box,
-		linear-gradient(#000 0 0);
-	-webkit-mask-composite: xor;
-	mask:
-		linear-gradient(#000 0 0) content-box exclude,
-		linear-gradient(#000 0 0);
-	transition: filter 0.3s;
-}
-.board.celebrate + .board-deco::before {
-	filter: brightness(1.18) saturate(1.1);
-}
 
 /* ---- Framed panels (2026-10-23 quality pass) ------------------------------------------------
-   The splash cards' frame (splash/panel.webp) as CSS, for every panel the player reads: a
+   The splash cards' old frame (splash/panel.webp, retired 2026-11-04) as CSS, for every panel the player reads: a
    lavender bevel rim lit from above, a dark outline inside and out, and a deep indigo body with
    soft lighter lobes in two corners. Shared by the buy cards, the bonus round panels and the
    menu (the spin log and Game Info carry the same values in their own components). Classes
@@ -3643,7 +3632,7 @@ main:not(.portrait) .base-stage {
 	border-radius: 50%;
 	background: radial-gradient(circle at 35% 30%, #fff 0 18%, var(--c) 30% 85%, color-mix(in srgb, var(--c) 70%, #000) 100%);
 	opacity: 0;
-	animation: splat-drop 620ms cubic-bezier(0.2, 0.6, 0.5, 1) var(--at) both;
+	animation: splat-drop 480ms cubic-bezier(0.2, 0.6, 0.5, 1) var(--at) both;
 }
 @keyframes splat-ring {
 	from {
@@ -4091,7 +4080,7 @@ main.bonus-round:not(.portrait, .phone, .popout) .bar-round {
 .bar-free strong {
 	font-weight: 400;
 	font-size: 24px;
-	animation: value-pop 0.45s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+	animation: value-pop 0.45s cubic-bezier(0.3, 1.5, 0.5, 1) backwards;
 }
 .bar-free {
 	height: 37px;
@@ -4306,8 +4295,7 @@ main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
 .overlay.bonus-overlay {
 	display: block;
 	padding: 0;
-	background: rgb(13 6 40 / 0.5);
-	backdrop-filter: blur(3px);
+	background: rgb(13 6 40 / 0.62); /* no backdrop blur: see .overlay */
 }
 .bm-scroll {
 	position: absolute;
@@ -4368,7 +4356,7 @@ main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
 	background-repeat: no-repeat;
 	box-shadow: 0 10px 28px rgb(10 6 40 / 0.35);
 	transition: box-shadow 0.2s;
-	animation: bm-card-in 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) calc(var(--i) * 60ms) both;
+	animation: bm-card-in 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) calc(var(--i) * 60ms) backwards;
 }
 .bm-card.wide {
 	grid-column: span 3;
@@ -4690,7 +4678,8 @@ main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
 	box-sizing: border-box;
 	border: 0.5px solid rgb(255 255 255 / 0.94);
 	border-radius: 11px;
-	background: rgb(0 0 0 / 0.6);
+	/* Opaque: with no backdrop blur the HUD's WIN/BET figures read through any tint. */
+	background: rgb(12 14 14);
 	color: rgb(255 255 255 / 0.94);
 }
 .bm-step {
@@ -4780,9 +4769,7 @@ main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
 	border-color: rgb(255 255 255 / 0.28);
 	background:
 		linear-gradient(rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.04) 55%),
-		rgb(40 30 80 / 0.42);
-	-webkit-backdrop-filter: blur(14px) saturate(1.4);
-	backdrop-filter: blur(14px) saturate(1.4);
+		rgb(40 30 80 / 0.86); /* no backdrop blur: see .overlay */
 	box-shadow:
 		inset 0 1px 0 rgb(255 255 255 / 0.3),
 		0 12px 30px rgb(0 0 0 / 0.35);
@@ -4896,8 +4883,6 @@ main.portrait .hud-bar {
 	border-radius: 0;
 	/* to-top: black 57% from 6.7% of the design's 153 up to clear at 130%; past the row it stays. */
 	background: linear-gradient(to top, rgb(0 0 0 / 0.57) calc(100% - 289px + 19.4px), rgb(0 0 0 / 0.13) calc(100% - 289px + 289px * 0.3), rgb(0 0 0 / 0) 100%);
-	-webkit-backdrop-filter: blur(6.6px);
-	backdrop-filter: blur(6.6px);
 	-webkit-mask-image: none;
 	mask-image: none;
 }
@@ -5333,10 +5318,8 @@ main.phone .hud-metrics .metric-label {
 	color: var(--bar-pink);
 }
 main.phone .round-panel.round-panel.round-panel {
-	background: rgb(0 0 0 / 0.4);
+	background: rgb(0 0 0 / 0.5); /* no backdrop blur: see .overlay */
 	border: 0.5px solid rgb(255 255 255 / 0.7);
-	-webkit-backdrop-filter: blur(8px);
-	backdrop-filter: blur(8px);
 }
 /* Mama stands on the ground at the bottom left beside the board, by BALANCE (Figma 11413:11980;
    up in the panels' slot she read as floating "in the air"). The left column has no panels any
@@ -5453,3 +5436,157 @@ main.phone.bonus-round .bet-controls .metric strong {
 	font: 500 12px/1 'Poppins', sans-serif;
 	letter-spacing: 0.42px;
 }
+
+/* ---- Dialogs, Figma 11418:13642 (autoplay) and 11405:12396 (confirm), 2026-11-03 -------------
+   Flat #4b3981 panels, a white 70% hairline, white Coiny titles; the main action a pink #fb89b9
+   pill, the way back a #a88eff-outlined one, pink toggles, the stepper's navy discs. The
+   autoplay panel drops its dark setting cards and its title (the design has neither). Classes
+   ×5 to outrank the glass pass and the confirm card's ×4. */
+.dialog.dialog.dialog.dialog.dialog {
+	border: 1px solid rgb(255 255 255 / 0.7);
+	border-radius: 14px;
+	background: #4b3981;
+	box-shadow: 0 24px 80px rgb(10 6 40 / 0.55);
+}
+.dialog.dialog.dialog.dialog.dialog h2 {
+	color: #fff;
+	font: 400 32px/1.2 'Coiny', sans-serif;
+	letter-spacing: 0.96px;
+	text-shadow: none;
+}
+.dialog.dialog.dialog.dialog.dialog :is(p, .confirm-line) {
+	color: #fff;
+	font: 400 16px/1.4 'Poppins', sans-serif;
+	letter-spacing: 0.48px;
+	opacity: 1;
+}
+.dialog.dialog.dialog.dialog.dialog :is(.primary, .secondary) {
+	height: 50px;
+	padding: 0 22px;
+	border-radius: 52px;
+	color: #fff;
+	font: 400 16px/20px 'Coiny', sans-serif;
+	letter-spacing: 1.4px;
+	text-transform: uppercase;
+	box-shadow: none;
+	text-shadow: none;
+}
+.dialog.dialog.dialog.dialog.dialog .primary {
+	border: 1px solid #47468a;
+	background: #fb89b9;
+}
+.dialog.dialog.dialog.dialog.dialog .secondary {
+	border: 0.914px solid #a88eff;
+	background: #4b3981;
+}
+@media (hover: hover) {
+	.dialog.dialog.dialog.dialog.dialog .primary:not(:disabled):hover {
+		background: #fc9ec6;
+		border-color: #47468a;
+	}
+	.dialog.dialog.dialog.dialog.dialog .secondary:not(:disabled):hover {
+		background: #5a47a0;
+		border-color: #a88eff;
+	}
+}
+/* The confirm card's art fades into the new panel colour. */
+.dialog.dialog.dialog.dialog.dialog .cf-art .bm-shade {
+	background: linear-gradient(rgb(75 57 129 / 0) 45%, #4b3981 100%);
+}
+.dialog.auto.auto.auto.auto.auto {
+	padding: 32px 28px 25px;
+	border-color: transparent;
+	border-radius: 10px;
+}
+.dialog.auto.auto.auto.auto.auto h2.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+.dialog.auto.auto.auto.auto.auto :is(.toggles, .spins-title, .spins-stepper) {
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: none;
+}
+.dialog.auto.auto.auto.auto.auto .toggles {
+	gap: 16px;
+}
+.dialog.auto.auto.auto.auto.auto .toggle-row {
+	padding: 0;
+	border: 0;
+	font-size: 20px;
+}
+.dialog.auto.auto.auto.auto.auto .spins-title {
+	margin: 48px 0 17px;
+	font-size: 20px;
+}
+.dialog.auto.auto.auto.auto.auto .spins-stepper {
+	gap: 34px;
+}
+.dialog.auto.auto.auto.auto.auto .spins-stepper .hud-icon {
+	border: 1px solid #a5a7ee;
+	background: #3a3981;
+}
+.dialog.auto.auto.auto.auto.auto .start-auto {
+	width: 100%;
+	margin-top: 40px;
+	border: 0;
+	border-radius: 42px;
+	font-size: 14px;
+}
+.dialog.auto.auto.auto.auto.auto .toggle-row input:checked {
+	border-color: #fb89b9;
+	background: #fb89b9;
+}
+/* Short landscape screens: the same look, tighter (the design's 423px panel doesn't fit). */
+@media (max-height: 600px) and (orientation: landscape) {
+	.dialog.auto.auto.auto.auto.auto {
+		padding: 16px 22px 16px;
+	}
+	.dialog.auto.auto.auto.auto.auto .toggles {
+		gap: 8px;
+	}
+	.dialog.auto.auto.auto.auto.auto .toggle-row {
+		font-size: 15px;
+	}
+	.dialog.auto.auto.auto.auto.auto .spins-title {
+		margin: 14px 0 8px;
+		font-size: 15px;
+	}
+	.dialog.auto.auto.auto.auto.auto .start-auto {
+		height: 42px;
+		margin-top: 14px;
+	}
+}
+@media (max-height: 340px) and (orientation: landscape) {
+	.dialog.auto.auto.auto.auto.auto {
+		padding: 10px 14px;
+	}
+	.dialog.auto.auto.auto.auto.auto .toggle-row {
+		font-size: 12px;
+	}
+	.dialog.auto.auto.auto.auto.auto .spins-title {
+		margin: 0;
+		font-size: 12px;
+	}
+	.dialog.auto.auto.auto.auto.auto .start-auto {
+		height: 34px;
+		margin: 6px 0 0;
+		font-size: 12px;
+	}
+}
+/* The confirm panel at the design's 467px (its 32px title fits on one line); the card art
+   scales with it (607×377 at 400 wide). */
+.dialog.confirm.confirm.confirm.confirm.confirm {
+	width: min(467px, calc(100% - 16px));
+}
+.dialog.confirm.confirm.confirm.confirm.confirm .cf-art {
+	height: 175px;
+	background-size: 709px 440px;
+}
+

@@ -33,8 +33,8 @@
 		APPLE: ['#fff1cf', '#ffdb8f', 'sleep'],
 		BASKET: ['#fff7a4', '#e9a820', 'happy'],
 	};
-	// Symbol art (public/symbols/v3, scripts/build-symbol-masters.py + build-body-shapes.py + build-symbols.py). The masters
-	// carry the design's framing (Figma 11318:41751), so every box is the whole viewBox.
+	// Symbol art (public/symbols/v4, scripts/build-symbol-masters.py + build-body-shapes.py + build-symbols.py). The masters
+	// carry the design's framing (Figma 11440:*, the 2026-11-04 vectors), so every box is the whole viewBox.
 	const ART: Record<string, [number, number, number, number]> = {
 		WATERMELON: [0, 0, 100, 100],
 		CHERRIES: [0, 0, 100, 100],
@@ -76,7 +76,7 @@
 	// (Figma 11318:41751): each expression is now drawn on purpose and shown as painted.
 	const MOOD: Record<string, [boolean, number, number]> = {};
 	let mood = $derived(MOOD[symbol]);
-	// The premium blobs' gear (scripts/build-premium-gear.py): crest, horns, antennae, flower,
+	// The premium blobs' gear (scripts/build-premium-gear.py): crest, horns, flower,
 	// behind or over the body, each moving round where it meets it (BoardView's tickGear).
 	type Gear = { src: string; part: string; front: boolean; cx: number; cy: number; rot: number; flip: boolean; x: number; y: number; w: number; h: number; px: number; py: number };
 	let gear = $derived((GEAR as Record<string, Gear[]>)[symbol] ?? []);
@@ -693,7 +693,11 @@
 		animation: none !important;
 		transform: scaleY(0);
 	}
+	/* Round its own centre: an SVG shape's transform origin is otherwise the art box's 0,0, so
+	   the 1.12 swing threw both cheeks down and right over the chin every beat (2026-11-04). */
 	.cheer .blush {
+		transform-box: fill-box;
+		transform-origin: center;
 		animation: cheer-blush 0.9s ease-in-out var(--cheer-delay, 1s) infinite !important;
 	}
 	.cheer .open-eye {
@@ -753,11 +757,11 @@
 	@keyframes cheer-blush {
 		0%,
 		100% {
-			opacity: 0.85;
+			opacity: 0.75;
 		}
 		30% {
-			opacity: 1;
-			transform: scale(1.12);
+			opacity: 0.95;
+			transform: scale(1.08);
 		}
 	}
 	@media (prefers-reduced-motion: reduce) {
@@ -785,14 +789,6 @@
 		--fright: 0deg;
 		--quiver: 3deg;
 		--shrink: -0.2;
-	}
-	.gear-antenna {
-		--sway: 5deg;
-		--kick: -20deg;
-		--stretch: 0.05;
-		--fright: 12deg;
-		--quiver: 4deg;
-		--shrink: 0;
 	}
 	.gear-horn {
 		--sway: 0.8deg;
@@ -1047,9 +1043,13 @@
 		66.8% {
 			rotate: -4.9deg;
 		}
-		76%,
-		100% {
+		76% {
 			rotate: 0deg;
+			scale: 1;
+		}
+		/* Ends where gear-sway starts (its 0% frame), so the sway takes over without a jump. */
+		100% {
+			rotate: calc(var(--sway) * -0.7);
 			scale: 1;
 		}
 	}

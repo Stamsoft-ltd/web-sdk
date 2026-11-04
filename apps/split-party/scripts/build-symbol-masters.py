@@ -1,91 +1,101 @@
-"""The 2026-10-28 symbol redraw (Figma 11318:41751 "Base game"): frame each new body image
-into the 100-unit art box, at the spot the design draws it, as a 1254px square master.
+"""The 2026-11-04 symbol redraw (Figma 11440:31841..32164, ten vector blobs): render each body
+SVG and frame it into the 100-unit art box as a 1254px square master.
 
-The new bodies are non-square images (≈1349x1166) that Figma places differently per cell
-(cover crops, a scaled-up crop for LEMON), so the low symbols are placed by MEASURING the
-design: each "Low symbols" cell exported at 4x, the body's opaque box found against the cell
-fill #4b3981, converted to art units. Art units are Group 176's box (WATERMELON, 75.211 px at
-(7.065, -1.635) in the cell row), the frame every master already used. Measured: left/right
-edge and top (the cell clips the feet, so the height comes from the image's own aspect).
+The vectors carry their own body shapes (KIWI round, BLUEBERRY a drop, APPLE a mochi ...), so
+build-body-shapes.py no longer warps anything. They are drawn on a loose canvas page, not in
+board cells, so each is fitted to the box its predecessor held (BOX, measured on the
+2026-10-29 masters, art-src/symbols-v2-shaped/):
 
-The premium bodies sit inside their symbol groups (gear.json's frames), from the design's CSS:
-  CHERRIES   Group 179: left 1.45%, right 2.9%, top 9px of 75.211
-  STRAWBERRY Group 175: left/right -4.35%, top 4px of 71.067 (its own frame, as before)
-  GRAPES     Group 238: 67x65 cover at (12.71, 5.03); the art box is BODY_227 (8.92, 0.88, 75.211)
-WATERMELON and all gear are unchanged (pixel-identical to the old sources).
+  premiums (gear on top): width, left and top matched, so the horns keep their place (checked
+            on CHERRIES: the new body's opaque box has the old one's aspect to 3 digits, and its
+            horns scale by the same 1.158). WATERMELON's new body is lower (its crest stands
+            taller on it), so it keeps the old bottom instead; build-premium-gear.py places the
+            new crest and flower on the framed bodies.
+  GRAPES    its antennae are drawn into the art now (user: "use the new art"), so the body's
+            width (measured BODY_ROW down, under the antennae) and the bottom are matched.
+  low       area matched, centred on the old box, capped to the cell's art box (CAP).
 
-art-src/symbols-v2/<S>.png   Figma raw fills (transparent), gitignored
-  -> art-src/symbols-framed/<S>.png  1254x1254 framed masters (build-body-shapes.py reads these and
-                                     writes art-src/symbols/, which build-symbols.py reads)
-The previous masters are in art-src/symbols-v1/.
+art-src/symbols-v3/<S>.svg     Figma vectors (crest.svg, flower.svg: gear, build-premium-gear.py)
+  -> art-src/symbols-framed/<S>.png  1254x1254 masters (build-body-shapes.py copies them into
+                                     art-src/symbols/, which build-symbols.py reads)
+The previous masters are in art-src/symbols-v2-framed/ and art-src/symbols-v2-shaped/.
     python3 apps/split-party/scripts/build-symbol-masters.py
 """
 
+import io
 from pathlib import Path
 
+import cairosvg
+import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
-SRC = ROOT / 'art-src' / 'symbols-v2'
-# Framed designer bodies; build-body-shapes.py shapes the low symbols into art-src/symbols.
+SRC = ROOT / 'art-src' / 'symbols-v3'
 OUT = ROOT / 'art-src' / 'symbols-framed'
 N = 1254
 DETECT = 224
-
-# Low symbols: opaque box measured in the 4x cell renders, art units (left, right, top).
-MEASURED = {
-	'BLUEBERRY': (3.9, 95.2, 12.5),
-	'KIWI': (2.6, 96.8, 13.1),
-	'LEMON': (14.5, 86.2, 10.1),
-	'PLUM': (7.5, 91.5, 10.1),
-	'APPLE': (4.5, 94.5, 11.8),
-	'ORANGE': (6.9, 92.2, 11.1),
+SYMBOLS = ('APPLE', 'BLUEBERRY', 'CHERRIES', 'GRAPES', 'KIWI', 'LEMON', 'ORANGE', 'PLUM', 'STRAWBERRY', 'WATERMELON')
+PREMIUM = {'CHERRIES', 'STRAWBERRY', 'WATERMELON'}
+# The old masters' opaque boxes, art units (x0, y0, x1, y1).
+BOX = {
+	'APPLE': (4.5, 22.0, 94.4, 84.5),
+	'BLUEBERRY': (2.2, 14.0, 97.0, 91.5),
+	'CHERRIES': (12.4, 19.5, 86.0, 87.3),
+	'GRAPES': (9.6, 13.7, 89.8, 85.2),
+	'KIWI': (15.6, 9.3, 87.6, 90.4),
+	'LEMON': (10.3, 18.9, 90.4, 84.4),
+	'ORANGE': (7.8, 15.2, 91.4, 90.8),
+	'PLUM': (7.6, 10.1, 91.5, 92.7),
+	'STRAWBERRY': (6.7, 13.3, 92.8, 91.1),
+	'WATERMELON': (10.6, 13.2, 88.9, 87.6),
 }
+CAP = (94.0, 82.0)  # widest / tallest a low body may get, art units
+BODY_ROW = 0.8  # GRAPES: the row (share of its height) where the body's width is measured
+PROBE = 8  # px per svg px for the measuring render
 
 
-def image_rect(w: int, h: int, sym: str) -> tuple[float, float, float, float]:
-	"""Where the whole source image goes, in art units: (x, y, width, height)."""
-	if sym == 'CHERRIES':
-		g = 75.21112823486328
-		x, rw = 1.45, 100 - 1.45 - 2.9
-		return x, 9 / g * 100, rw, rw * h / w
-	if sym == 'STRAWBERRY':
-		g = 71.06707763671875
-		rw = 100 + 2 * 4.35
-		return -4.35, 4 / g * 100, rw, rw * h / w
+def render(svg: bytes, scale: float) -> Image.Image:
+	return Image.open(io.BytesIO(cairosvg.svg2png(bytestring=svg, scale=scale))).convert('RGBA')
+
+
+def opaque(im: Image.Image) -> tuple[int, int, int, int]:
+	return im.getchannel('A').point(lambda a: 255 if a > 128 else 0).getbbox()
+
+
+def place(sym: str, im: Image.Image) -> tuple[float, float, float]:
+	"""(units per probe px, left, top) of the probe render inside the art box."""
+	x0, y0, x1, y1 = opaque(im)
+	bx0, by0, bx1, by1 = BOX[sym]
+	if sym in PREMIUM:
+		k = (bx1 - bx0) / (x1 - x0)
+		if sym == 'WATERMELON':
+			return k, bx0 - x0 * k, by1 - y1 * k
+		return k, bx0 - x0 * k, by0 - y0 * k
 	if sym == 'GRAPES':
-		bx, by, bs = 8.92, 0.88, 75.21112823486328
-		k = max(67 / w, 65 / h)  # object-cover into 67x65
-		dw, dh = w * k, h * k
-		return (12.71 - (dw - 67) / 2 - bx) / bs * 100, (5.03 - (dh - 65) / 2 - by) / bs * 100, dw / bs * 100, dh / bs * 100
-	raise KeyError(sym)
-
-
-def measured_rect(im: Image.Image, sym: str) -> tuple[float, float, float, float]:
-	left, right, top = MEASURED[sym]
-	x0, y0, x1, _ = im.getchannel('A').point(lambda a: 255 if a > 128 else 0).getbbox()
-	k = (right - left) / (x1 - x0)  # art units per source px
-	return left - x0 * k, top - y0 * k, im.width * k, im.height * k
+		row = np.nonzero(np.asarray(im)[round(y0 + (y1 - y0) * BODY_ROW), :, 3] > 128)[0]
+		k = (bx1 - bx0) / (row.max() - row.min())
+		return k, (bx0 + bx1) / 2 - (row.min() + row.max()) / 2 * k, by1 - y1 * k
+	w, h = x1 - x0, y1 - y0
+	k = ((bx1 - bx0) * (by1 - by0) / (w * h)) ** 0.5
+	k = min(k, CAP[0] / w, CAP[1] / h)
+	return k, (bx0 + bx1) / 2 - (x0 + x1) / 2 * k, (by0 + by1) / 2 - (y0 + y1) / 2 * k
 
 
 def main():
 	(OUT / 'detect').mkdir(parents=True, exist_ok=True)
-	for path in sorted(SRC.glob('*.png')):
-		sym = path.stem
-		im = Image.open(path).convert('RGBA')
-		x, y, w, h = measured_rect(im, sym) if sym in MEASURED else image_rect(im.width, im.height, sym)
+	for sym in SYMBOLS:
+		svg = (SRC / f'{sym}.svg').read_bytes()
+		k, left, top = place(sym, render(svg, PROBE))
 		px = N / 100
-		# Resample premultiplied so the transparent edge doesn't fringe.
-		part = im.convert('RGBa').resize((round(w * px), round(h * px)), Image.LANCZOS).convert('RGBA')
+		# Render straight at the master's scale: the vector stays sharp, no resample.
+		part = render(svg, PROBE * k * px)
+		ox, oy = round(left * px), round(top * px)
 		master = Image.new('RGBA', (N, N))
-		ox, oy = round(x * px), round(y * px)
-		# alpha_composite takes no negative offset: crop what hangs off the top/left instead.
 		part = part.crop((max(0, -ox), max(0, -oy), part.width, part.height))
 		master.alpha_composite(part, (max(0, ox), max(0, oy)))
-		bbox = master.getchannel('A').point(lambda a: 255 if a > 128 else 0).getbbox()
 		master.save(OUT / f'{sym}.png')
 		master.resize((DETECT, DETECT), Image.LANCZOS).save(OUT / 'detect' / f'{sym}.webp', 'WEBP', quality=95, method=6)
-		print(sym, 'rect %.1f %.1f %.1f %.1f' % (x, y, w, h), 'opaque units', tuple(round(v / px, 1) for v in bbox))
+		print(sym, 'opaque units', tuple(round(v / px, 1) for v in opaque(master)))
 
 
 if __name__ == '__main__':

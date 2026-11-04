@@ -156,7 +156,7 @@
 					<ul class="tiles">
 						{#each [['grid', '7x7', 'INFO TILE REELS'], ['cluster', tr('INFO TILE CLUSTER'), 'INFO TILE WINS'], ['trophy', MAX_WIN, 'INFO TILE MAX'], ['rtp', RTP, 'RTP']] as [icon, big, small], i}
 							<li class="card" style={`--i:${i}`}>
-								<img src={`./info/tile-${icon}.webp`} alt="" /><span
+								<img src={`./info/v2/tile-${icon}.webp`} alt="" /><span
 									><b>{big}</b><small>{tr(small)}</small></span
 								>
 							</li>

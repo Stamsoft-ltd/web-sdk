@@ -85,10 +85,12 @@ def shapes(b):
     }
 
 
-SHAPES = ('ORANGE', 'KIWI', 'APPLE', 'LEMON', 'BLUEBERRY')
+# Empty since the 2026-11-04 vector redraw: those bodies are drawn in their own shapes now
+# (build-symbol-masters.py), so every master is copied through.
+SHAPES = ()
 # Bodies whose top-left gloss sat in the crown bumps (now cut) get a jelly highlight back, in
 # the new body's box: centre (x, y) and radii as shares of it, alpha.
-GLOSS = {'ORANGE': (0.3, 0.2, 0.15, 0.075, 0.6), 'LEMON': (0.32, 0.22, 0.13, 0.065, 0.55)}
+GLOSS = {}
 
 
 def radii(mask, c):

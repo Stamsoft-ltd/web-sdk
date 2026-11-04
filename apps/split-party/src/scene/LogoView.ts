@@ -11,6 +11,7 @@ import { bezier, keyframes, EASE_IN_OUT, type Frame } from '../board/anim';
 import { clipConvex, circlePts, convex, flat, parsePts } from '../board/BoardView';
 import type { Pt } from '../board/crackGeom';
 import { PixiApp, watchReducedMotion } from '../board/pixiApp';
+import { canvasRes } from '../lib/canvasRes';
 
 type Eye = { hull: string; top: number; bottom: number; left: number; right: number; white: string; lid: string; px: number; py: number; pr: number; pupil: string };
 type Drop = (typeof LAYERS.drops)[number];
@@ -215,7 +216,8 @@ export class LogoView {
 		const dpr = devicePixelRatio || 1;
 		if (!h?.offsetWidth) return this.res || dpr;
 		const scale = h.getBoundingClientRect().width / h.offsetWidth;
-		this.res = Math.min(3, Math.max(1, dpr * scale));
+		// Raised while pinch-zoomed, within a GPU budget (lib/canvasRes.ts).
+		this.res = canvasRes(dpr * scale, h.offsetWidth, h.offsetHeight);
 		return this.res;
 	}
 	// Only the resolution: the size follows the host through resizeTo (and layout() through the

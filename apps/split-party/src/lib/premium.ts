@@ -1,4 +1,4 @@
-// The premium blobs' cells (Figma 11300:28009 "SYmbols"): a rim in the blob's colour with an
+// The premium blobs' cells (Figma 11395:4052 "SYmbols"): a rim in the blob's colour with an
 // inset glow of it. Shared by the Pixi board (BoardView) and the DOM board's cells (App).
 // Each blob's body colour: split-tile tints, and the cluster win pill and its confetti.
 export const BLOB_TINT: Record<string, string> = {

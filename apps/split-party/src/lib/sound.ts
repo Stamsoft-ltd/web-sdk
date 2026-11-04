@@ -18,8 +18,8 @@ export type Sfx =
 	| 'tick'
 	| 'thud'
 	| 'heart';
-/** The base game's music, or each bonus world's (normal, super, hidden). */
-export type Bed = 'base' | 'normal' | 'super' | 'hidden';
+/** The base game's music, each bonus world's (normal, super, hidden), or the mystery egg's. */
+export type Bed = 'base' | 'normal' | 'super' | 'hidden' | 'mystery';
 export type Sting = 'win' | 'bigWin' | 'bonusEnd';
 
 const FILES: Record<Exclude<Sfx, keyof typeof ALIAS> | Bed | Sting, string> = {
@@ -33,10 +33,11 @@ const FILES: Record<Exclude<Sfx, keyof typeof ALIAS> | Bed | Sting, string> = {
 	pop: 'blobs-pop',
 	winSmall: 'win-small',
 	base: 'music-base',
-	// The super and hidden tracks are the normal one reworked (scripts/build-bonus-music.py).
+	// The super, hidden and mystery tracks are the normal one reworked (scripts/build-bonus-music.py).
 	normal: 'music-bonus',
 	super: 'music-bonus-super',
 	hidden: 'music-bonus-hidden',
+	mystery: 'music-mystery',
 	win: 'music-win',
 	bigWin: 'music-big-win',
 	bonusEnd: 'bonus-completed',
@@ -59,6 +60,7 @@ const LEVEL: Partial<Record<Sfx | Bed | Sting, number>> = {
 	normal: 0.45,
 	super: 0.45,
 	hidden: 0.45,
+	mystery: 0.45,
 	win: 0.85,
 	bigWin: 0.95,
 	bonusEnd: 0.85,
@@ -74,8 +76,8 @@ const ALIAS = {
 } as const satisfies Record<string, [clip: Sfx, rate: number]>;
 // Seconds each pass of a bed overlaps the next: music-base fades out over its last ~0.45s, so
 // a plain loop dipped to silence once per pass; music-bonus (v2, 20.8s) ends on the beat, and
-// its two reworks are rendered to loop.
-const BED_XF: Record<Bed, number> = { base: 0.5, normal: 0.03, super: 0.03, hidden: 0.03 };
+// its reworks are rendered to loop.
+const BED_XF: Record<Bed, number> = { base: 0.5, normal: 0.03, super: 0.03, hidden: 0.03, mystery: 0.03 };
 const BED_DUCK = 0.2;
 const FADE_S = 0.4;
 // The same effect fired again within this window (a column's blobs, several eggs) is dropped.

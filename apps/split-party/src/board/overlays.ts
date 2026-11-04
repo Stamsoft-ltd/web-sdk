@@ -34,10 +34,13 @@ const AMOUNT: Frame<{ a: number; ty: number; s: number }>[] = [
 	[0, { a: 0, ty: 14, s: 0.3 }],
 	[0.22, { a: 1, ty: -6, s: 1.12 }],
 	[0.36, { a: 1, ty: -10, s: 1 }],
-	[0.8, { a: 1, ty: -10, s: 1 }],
+	// The exit eases in on its own: under the spring it overshot past -26 and under 0.9.
+	[0.8, { a: 1, ty: -10, s: 1 }, bezier(0.5, 0, 0.9, 0.6)],
 	[1, { a: 0, ty: -26, s: 0.9 }],
 ];
 const C_SPRING = bezier(0.3, 1.5, 0.5, 1);
+/** A pill App clears before its own exit fades out over this, instead of vanishing. */
+const POP_GONE_MS = 160;
 const C_SPARK = bezier(0.15, 0.7, 0.4, 1);
 const SPARK_A: Frame<{ v: number }>[] = [
 	[0, { v: 1 }],
@@ -229,7 +232,7 @@ function teaseBubble() {
 }
 // ---- Layer ------------------------------------------------------------------------------------
 
-type Pop = { root: Container; pill: Sprite; sparks: Graphics[]; start: number; k: number };
+type Pop = { root: Container; pill: Sprite; sparks: Graphics[]; start: number; k: number; gone: number | null };
 
 export class Overlays {
 	pops = new Container();
@@ -279,14 +282,9 @@ export class Overlays {
 		return !!t && t.spans.some((s) => now >= t.start + s.from && now < t.start + s.to);
 	}
 	update(now: number, pops: ClusterPop[]) {
-		// Cluster pops live until App clears them.
+		// Cluster pops live until App clears them, then fade out (tick removes them).
 		const ids = new Set(pops.map((p) => p.id));
-		for (const [id, v] of this.popViews)
-			if (!ids.has(id)) {
-				v.pill.texture.destroy(true);
-				v.root.destroy(DISPOSE);
-				this.popViews.delete(id);
-			}
+		for (const [id, v] of this.popViews) if (!ids.has(id)) v.gone ??= now;
 		for (const p of pops) {
 			if (this.popViews.has(p.id)) continue;
 			const root = new Container();
@@ -304,7 +302,7 @@ export class Overlays {
 			pill.anchor.set(0.5, (PILL_MARGIN + PILL_H / 2) / (PILL_H + DRIP + 2 * PILL_MARGIN));
 			root.addChild(pill);
 			this.pops.addChild(root);
-			this.popViews.set(p.id, { root, pill, sparks, start: now, k: p.s ?? 1 });
+			this.popViews.set(p.id, { root, pill, sparks, start: now, k: p.s ?? 1, gone: null });
 		}
 	}
 
@@ -371,7 +369,17 @@ export class Overlays {
 
 	tick(now: number, reduced: boolean) {
 		this.tickTease(now, reduced);
-		for (const v of this.popViews.values()) {
+		for (const [id, v] of this.popViews) {
+			if (v.gone != null) {
+				const f = reduced ? 1 : (now - v.gone) / POP_GONE_MS;
+				if (f >= 1) {
+					v.pill.texture.destroy(true);
+					v.root.destroy(DISPOSE);
+					this.popViews.delete(id);
+					continue;
+				}
+				v.root.alpha = 1 - f * f;
+			}
 			const p = reduced ? 0.5 : Math.min(1, (now - v.start) / 1500);
 			const a = keyframes(AMOUNT, p, C_SPRING);
 			v.pill.alpha = a.a;

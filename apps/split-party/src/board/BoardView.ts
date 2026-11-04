@@ -10,13 +10,14 @@ import GEAR from '../lib/gear.json';
 import MINI_EYES from '../lib/mini-eyes.json';
 import MINI_FACES from '../lib/mini-face.json';
 import { BLOB_TINT, PREMIUM_RIM } from '../lib/premium';
-import { bezier, keyframes, progress, EASE, EASE_IN_OUT, EASE_OUT, LINEAR, GRAVITY, SURPRISE_MS, type Frame } from './anim';
+import { bezier, keyframes, progress, EASE, EASE_IN_OUT, EASE_OUT, LINEAR, GRAVITY, SHORT_IMPACT_MS, SURPRISE_MS, type Frame } from './anim';
 import { crackPlan, prefix, sliver, type Pt } from './crackGeom';
 import { Overlays, type ClusterPop, type Tease } from './overlays';
 import { Splats } from './splats';
 
 import { CELL_W, CELL_H, MARGIN, VIEW_W, VIEW_H, cellX, cellY } from './geometry';
 import { DISPOSE, PixiApp, SharedGraphics, textureLookup, watchReducedMotion } from './pixiApp';
+import { canvasRes } from '../lib/canvasRes';
 const N = 7;
 // Blob art box: 74.08px, centred across the pad and hung from its top border (measured on the
 // DOM board: the box overflows its grid track, which starts at the top). Blob's 100-unit space
@@ -99,10 +100,11 @@ const FACE_DATA = FACES as unknown as Record<string, Face>;
 // an outline and a contact shadow, cut at their own size rather than the symbol shrunk.
 const MINI_EYE_DATA = MINI_EYES as unknown as Record<string, Eye[]>;
 const MINI_FACE_DATA = MINI_FACES as unknown as Record<string, Face>;
-// The premium blobs' gear (scripts/build-premium-gear.py, Figma 11300:28009): crest, horns,
-// antennae, flower. A part's rect sits round (cx, cy), mirrored by `flip` then turned by `rot`
-// degrees; (px, py) is where it meets the body, which its motion pivots on.
-type GearKind = 'crest' | 'horn' | 'antenna' | 'flower';
+// The premium blobs' gear (scripts/build-premium-gear.py): crest, horns, flower (GRAPES draws
+// its antennae into the body since the 2026-11-04 redraw). A part's rect sits round (cx, cy),
+// mirrored by `flip` then turned by `rot` degrees; (px, py) is where it meets the body, which
+// its motion pivots on.
+type GearKind = 'crest' | 'horn' | 'flower';
 type Gear = {
 	src: string;
 	part: GearKind;
@@ -297,19 +299,40 @@ const C_POP = bezier(0.3, 0, 0.6, 1);
 const C_TEAR = bezier(0.2, 0.6, 0.35, 1);
 const C_CHIP = bezier(0.25, 0.6, 0.5, 1);
 const C_BURST = bezier(0.2, 0.7, 0.4, 1);
+// The fall's stretch at full speed (FALL_SX/SY at touchdown, the gravity curve's end); IMPACT
+// starts from it, so the squash snaps out of the stretch rather than out of a rest pose.
+const FALL_SX = 0.92;
+const FALL_SY = 1.12;
+// A bouncing jelly (2026-11-04, user: "more bouncy or cooler"): a deep squash, a rebound hop of
+// a fifth of a cell, a second smaller landing, a little third hop, then it settles. Rises ease
+// out and falls ease in, like a thrown ball. style.css land-impact keeps the same beats.
+const C_UP = bezier(0.33, 0.66, 0.66, 1);
+const C_DOWN = bezier(0.33, 0, 0.66, 0.33);
 const IMPACT: Frame<TS>[] = [
-	[0, ID],
-	[0.16, { ...ID, sx: 1.22, sy: 0.76 }],
-	[0.38, { ...ID, ty: -0.07 * CELL_H, sx: 0.9, sy: 1.12 }],
-	[0.58, { ...ID, sx: 1.08, sy: 0.93 }],
-	[0.76, { ...ID, ty: -0.015 * CELL_H, sx: 0.98, sy: 1.03 }],
+	[0, { ...ID, sx: FALL_SX, sy: FALL_SY }, EASE_OUT],
+	[0.1, { ...ID, sx: 1.28, sy: 0.7 }, C_UP],
+	[0.3, { ...ID, ty: -0.2 * CELL_H, sx: 0.92, sy: 1.1 }, C_DOWN],
+	[0.46, { ...ID, sx: 1.14, sy: 0.85 }, C_UP],
+	[0.6, { ...ID, ty: -0.06 * CELL_H, sx: 0.97, sy: 1.04 }, C_DOWN],
+	[0.72, { ...ID, sx: 1.05, sy: 0.95 }, EASE_OUT],
+	[0.86, { ...ID, sx: 0.99, sy: 1.01 }, EASE_OUT],
+	[1, ID],
+];
+// Turbo, late cascades and a slam stop (under SHORT_IMPACT_MS): one squash and a settle.
+const SLAM_LAND_MS = 180;
+const IMPACT_SHORT: Frame<TS>[] = [
+	[0, { ...ID, sx: FALL_SX, sy: FALL_SY }, EASE_OUT],
+	[0.3, { ...ID, sx: 1.2, sy: 0.82 }, EASE_OUT],
+	[0.65, { ...ID, sx: 0.97, sy: 1.04 }, EASE_OUT],
 	[1, ID],
 ];
 // Swells, then bursts at the peak (the jelly splash, splats.ts, takes over from there).
 const POP_BURST = 0.32;
+// A dip first (anticipation, 2026-11-02: the pop read weak), then the swell.
 const POP: Frame<{ s: number; r: number; a: number }>[] = [
 	[0, { s: 1, r: 0, a: 1 }],
-	[0.26, { s: 1.24, r: -4 * DEG, a: 1 }],
+	[0.1, { s: 0.88, r: 3 * DEG, a: 1 }],
+	[0.26, { s: 1.26, r: -4 * DEG, a: 1 }],
 	[POP_BURST, { s: 1.32, r: 0, a: 1 }],
 	[0.5, { s: 0.35, r: 12 * DEG, a: 0 }],
 	[1, { s: 0, r: 12 * DEG, a: 0 }],
@@ -614,12 +637,14 @@ function rrect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h
 	ctx.beginPath();
 	ctx.roundRect(x, y, w, h, r);
 }
-// Pad textures, the CSS cells: #4b3981 (#5a4596 split) with the depth gradient and a top
-// highlight, the scatter's inset gold glow, and the lit pad with its pink outer glow.
+// Pad textures, the CSS cells: flat #4b3981 (#5a4596 split) in a #22257c border as the design
+// draws them (Figma 11395:4052), the scatter's inset gold glow, and the lit pad with its pink
+// outer glow.
 const GLOW = 26;
 // The veil over the pads a win passes by: enough to lift the winners, light enough that the
-// rest of the board stays in colour (0.5 turned a busy bonus board grey).
-const VEIL = 0.32;
+// rest of the board stays in colour (0.5 turned a busy bonus board grey; 0.32 still read grey
+// through every win, 2026-11-02: the winners' glowing pads and bounce lift them).
+const VEIL = 0.16;
 type PadKind = 'pad' | 'split' | 'scatter' | 'split-scatter' | 'lit';
 function padTexture(kind: PadKind) {
 	const lit = kind === 'lit';
@@ -642,7 +667,6 @@ function padTexture(kind: PadKind) {
 		rrect(ctx, 0, 0, CELL_W, CELL_H, R);
 		ctx.fillStyle = lit ? '#6a4cc0' : kind.startsWith('split') ? '#5a4596' : '#4b3981';
 		ctx.fill();
-		if (!lit) padMaterial(ctx, R);
 		// Border.
 		rrect(ctx, B / 2, B / 2, CELL_W - B, CELL_H - B, R - B / 2);
 		ctx.lineWidth = B;
@@ -666,73 +690,18 @@ function padTexture(kind: PadKind) {
 			ctx.roundRect(B, B, CELL_W - 2 * B, CELL_H - 2 * B, R - B);
 			ctx.fillStyle = '#fece06';
 			ctx.fill('evenodd');
-		} else {
-			// A lit top lip and a shaded foot: the pad reads as a socket, not a flat tile.
-			ctx.fillStyle = '#ffffff2e';
-			ctx.fillRect(0, B, CELL_W, 1.5);
-			ctx.fillStyle = '#00000030';
-			ctx.fillRect(0, CELL_H - B - 2, CELL_W, 2);
 		}
 		ctx.restore();
 	});
-}
-// The pad's material (all but the lit pad), over its base colour: a soft jelly socket. Light
-// from above: the body deepens to the foot, the rim casts a shadow in at the top and the floor
-// bounces a little light back up at the foot, a broad dull gloss sits top-left, and a fine
-// fixed speckle keeps the surface from reading as a flat fill. Calm on purpose: nothing moves
-// and nothing sparkles (board shine was rejected as noisy).
-function padMaterial(ctx: CanvasRenderingContext2D, R: number) {
-	const W = CELL_W;
-	const H = CELL_H;
-	ctx.save();
-	ctx.clip();
-	const g = ctx.createLinearGradient(0, 0, 0, H);
-	g.addColorStop(0, '#ffffff24');
-	g.addColorStop(0.42, '#ffffff00');
-	g.addColorStop(1, '#0a002e47');
-	ctx.fillStyle = g;
-	ctx.fillRect(0, 0, W, H);
-	// Gloss: a wide, faint oval high on the left.
-	const gl = ctx.createRadialGradient(W * 0.3, H * 0.1, 0, W * 0.3, H * 0.1, W * 0.5);
-	gl.addColorStop(0, '#ffffff1c');
-	gl.addColorStop(1, '#ffffff00');
-	ctx.save();
-	ctx.scale(1, 0.55);
-	ctx.fillStyle = gl;
-	ctx.fillRect(0, 0, W, H / 0.55);
-	ctx.restore();
-	// Bounce light along the foot.
-	const bl = ctx.createLinearGradient(0, H * 0.82, 0, H);
-	bl.addColorStop(0, '#b9a2ff00');
-	bl.addColorStop(1, '#b9a2ff1a');
-	ctx.fillStyle = bl;
-	ctx.fillRect(0, H * 0.82, W, H * 0.18);
-	// Speckle: the same seeded grain on every pad.
-	let seed = 7;
-	const rnd = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
-	for (let i = 0; i < 70; i++) {
-		ctx.fillStyle = rnd() < 0.5 ? '#ffffff0d' : '#0000000f';
-		ctx.beginPath();
-		ctx.arc(rnd() * W, rnd() * H, 0.5 + rnd() * 1.1, 0, Math.PI * 2);
-		ctx.fill();
-	}
-	// The rim's shadow falling in from the top edge (a frame round the pad, its shadow only).
-	ctx.shadowColor = '#0b032ab3';
-	ctx.shadowBlur = 5 * TEX_RES;
-	ctx.shadowOffsetY = 2 * TEX_RES;
-	ctx.beginPath();
-	ctx.rect(-40, -40, W + 80, H + 80);
-	ctx.roundRect(0, 0, W, H, R);
-	ctx.fillStyle = '#000';
-	ctx.fill('evenodd');
-	ctx.restore();
 }
 // A split tile wears its fruit's colour over the pad, deeper the more it has split, so a
 // late-bonus board reads as patches of colour rather than 49 crowds of small blobs. Sampled
 // from the symbol art (mean of its saturated pixels; APPLE and PLUM by eye, being pale).
 const TINT = BLOB_TINT;
 const tintAlpha = (units: number) => 0.14 + 0.035 * (units - 2);
-// The premium cells' rim and inset glow (inset 0 0 20.55px, 70%) over the plain pad.
+// The premium cells (Figma 11395:4052 "SYmbols"), over the plain pad: a rim in the blob's colour
+// and an inset glow of it at 70%, 20.86px at the design's 90.72px cell; as style.css
+// .cell.premium.
 function premiumTexture(color: string) {
 	return canvasTexture(CELL_W, CELL_H, (ctx) => {
 		const B = 1.074;
@@ -742,8 +711,8 @@ function premiumTexture(color: string) {
 		ctx.clip();
 		ctx.globalAlpha = 0.7;
 		ctx.shadowColor = color;
-		// The design's 20.55px at its 89.38px cell, on ours; device pixels (see the lit pad).
-		ctx.shadowBlur = 20.55 * (CELL_W / 89.38) * TEX_RES;
+		// Device pixels (see the lit pad).
+		ctx.shadowBlur = 20.863 * (CELL_W / 90.72) * TEX_RES;
 		ctx.beginPath();
 		ctx.rect(-50, -50, CELL_W + 100, CELL_H + 100);
 		ctx.roundRect(B, B, CELL_W - 2 * B, CELL_H - 2 * B, R - B);
@@ -881,8 +850,7 @@ type DaughterParts = {
 };
 
 // Gear motion, pivoting where each part meets the body. Angles are in the part's own frame, so
-// a mirrored pair moves symmetrically (negative turns an antenna's ball, positive a horn's tip,
-// outward). The win bounce and a landing kick each part's spring: a damped wobble from the
+// a mirrored pair moves symmetrically (positive turns a horn's tip outward). The win bounce and a landing kick each part's spring: a damped wobble from the
 // moment the body hits the ground, so the gear trails the body instead of moving with it.
 // Sine-shaped, so the kick builds from rest (a cosine would snap the part on the landing frame).
 const spring = (ms: number, period: number, decay: number) =>
@@ -893,8 +861,6 @@ const GEAR_MOVE: Record<
 > = {
 	// The crest leans with the breath, squashes on impact and whips back up; fright stands it on end.
 	crest: { sway: 3, kick: 7, period: 300, decay: 260, stretch: 0.2, fright: 0, quiver: 3, shrink: -0.2 },
-	// Antennae: a slow sway, a boing on every landing; frightened, they stiffen up and jitter.
-	antenna: { sway: 5, kick: -20, period: 260, decay: 300, stretch: 0.05, fright: 12, quiver: 4, shrink: 0 },
 	// Horns are rigid: they flex out on a landing and draw back in a fright.
 	horn: { sway: 0.8, kick: 7, period: 240, decay: 200, stretch: 0.08, fright: -10, quiver: 1, shrink: 0.1 },
 	// The flower nods, bobs on a landing; frightened, it wilts.
@@ -960,11 +926,6 @@ function tickGear(v: GearView, now: number, m: BlobMode, breathe: number, delay:
 		// Idle sway on the blob's breath clock, a beat behind it, plus a slow wander of its own.
 		const t = cycle(now, breathe, delay - 0.12 * breathe);
 		r = k.sway * (0.7 * Math.sin(2 * Math.PI * t) + 0.3 * Math.sin((now + v.seed) / 900));
-		// Antennae twitch now and then (one quick boing every ~7s, offset per blob).
-		if (v.g.part === 'antenna') {
-			const tw = (now + v.seed * 13) % 7000;
-			r += k.kick * 0.45 * spring(tw - 6200, k.period, k.decay);
-		}
 		// The spring: from the last bounce landing (every 960ms of the win hop, its ground at 0),
 		// a surprise hop or a fall.
 		let since = -1;
@@ -1636,10 +1597,16 @@ class CrackView {
 			if (c.closed && p >= c.full) this.halo.closePath();
 			this.halo.stroke({ width: c.w * 2.4, color: '#f782fe', join: 'round', cap: 'butt' });
 			const taper = (w0: number, w1: number, shift = 0) => sliver(pts, at, w0, w1, shift);
+			// The pad sinks into the gap: a dark rim round it, the gap, a lit lip on one broken
+			// edge and a shadowed one on the other.
+			const [r0, r1] = W(1.7, 1.6);
+			this.body.poly(taper(r0, r1), true).fill({ color: '#0b0418', alpha: 0.38 });
 			const [g0, g1] = W(1, 1);
 			this.body.poly(taper(g0, g1), true).fill('#12061f');
 			const [l0, l1] = W(0.16, 0.25);
-			this.body.poly(taper(l0, l1, -c.w * 0.6), true).fill({ color: '#c3b0ff', alpha: 0.55 });
+			this.body.poly(taper(l0, l1, -c.w * 0.6), true).fill({ color: '#c3b0ff', alpha: 0.7 });
+			const [d0, d1] = W(0.16, 0.25);
+			this.body.poly(taper(d0, d1, c.w * 0.6), true).fill({ color: '#05020c', alpha: 0.6 });
 			const [s0, s1] = W(0.5, 0.45);
 			this.seam.poly(taper(s0, s1), true).fill('#fff');
 		});
@@ -1676,10 +1643,11 @@ class CrackView {
 		// Halo: .3, pulsing to .55 twice after the beat.
 		const hp = (el - D) / 2600;
 		this.halo.alpha = hp > 0 && hp < 2 ? 0.3 + 0.25 * EASE_IN_OUT(1 - Math.abs(1 - 2 * (hp - Math.floor(hp)))) : 0.3;
-		// Settle to a faint scar after two beats (its pink glow gone, so a split board doesn't
-		// read as tiles ruled into boxes); fade with the blobs when the tile is harvested.
+		// Settle to a scar after two beats (its pink glow gone, so a split board doesn't read as
+		// tiles ruled into boxes; 0.7, user 2026-11-04 "more visible", was 0.25); fade with the
+		// blobs when the tile is harvested.
 		const sk = EASE_OUT(Math.min(1, Math.max(0, (el - 2 * D) / 900)));
-		const settle = 1 - 0.75 * sk;
+		const settle = 1 - 0.3 * sk;
 		this.halo.alpha *= 1 - sk;
 		const target = popped ? 0 : 1;
 		if (target !== this.fade.to) {
@@ -1749,7 +1717,7 @@ type CellView = {
 	tint: Sprite;
 	tintFade: { from: number; to: number; at: number };
 	tintSym: string;
-	/** A premium blob's coloured rim and glow over the pad. */
+	/** A premium blob's coloured glow over the pad. */
 	gem: Sprite;
 	gemFade: { from: number; to: number; at: number };
 	gemSym: string;
@@ -1949,7 +1917,8 @@ export class BoardView {
 		if (!h) return dpr;
 		const r = h.getBoundingClientRect();
 		const scale = h.offsetWidth ? r.width / h.offsetWidth : 1;
-		this.res = Math.min(3, Math.max(1, dpr * scale));
+		// Raised while pinch-zoomed, within a GPU budget (lib/canvasRes.ts).
+		this.res = canvasRes(dpr * scale, VIEW_W, VIEW_H);
 		return this.res;
 	}
 	private onResize = () => {
@@ -1980,7 +1949,13 @@ export class BoardView {
 			for (const c of this.cells) {
 				c.blob?.rushDivide(now);
 				c.crack?.rush(now);
-				c.fall = null;
+				// Still in the air or mid-bounce: it lands now with the short squash (IMPACT_SHORT),
+				// rather than teleporting to rest. App's slamStop does the same for the DOM board.
+				if (c.fall) {
+					const { drop } = c.fall;
+					c.fall = { start: now - drop.delay - drop.dur, drop, impact: SLAM_LAND_MS };
+					c.landAt = now;
+				}
 			}
 		}
 		if (s.wave.id !== this.waveId) {
@@ -2183,12 +2158,13 @@ export class BoardView {
 				if (fp < 1) {
 					inAir = true;
 					const e = GRAVITY(Math.max(0, fp));
-					t = { tx: 0, ty: -1.05 * drop.rows * CELL_H * (1 - e), sx: 0.97 + 0.03 * e, sy: 1.06 - 0.06 * e, r: 0 };
+					// Stretching as it picks up speed (FALL_SX/SY at touchdown).
+					t = { tx: 0, ty: -1.05 * drop.rows * CELL_H * (1 - e), sx: 1 + (FALL_SX - 1) * e, sy: 1 + (FALL_SY - 1) * e, r: 0 };
 				} else {
 					c.landAt ??= landsAt(c.fall);
 					const ip = progress(now, start, drop.delay + drop.dur, impact);
 					if (ip >= 1) c.fall = null;
-					else t = keyframes(IMPACT, ip, LINEAR);
+					else t = keyframes(impact < SHORT_IMPACT_MS ? IMPACT_SHORT : IMPACT, ip, LINEAR);
 				}
 			}
 			c.sym.position.set(cellX(c.col) + CELL_W / 2 + t.tx, cellY(c.row) + CELL_H + t.ty);

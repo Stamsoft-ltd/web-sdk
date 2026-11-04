@@ -1,12 +1,13 @@
-// Crack geometry for the Pixi board, ported from components/Crack.svelte (same seeds, same
-// plans): tapered tears out of the junctions where the new blobs meet, a side twig per
-// branch, and chips that jump off as the tear passes. Coordinates are Blob's 0–100 space.
+// Crack geometry for both boards (BoardView's CrackView and the DOM fallback's Crack.svelte):
+// tapered tears out of the junctions where the new blobs meet, two side twigs per branch (the
+// odd one forking again), hairline fractures splayed round each junction, and chips that jump
+// off as the tear passes. Coordinates are Blob's 0–100 space.
 
 export type Pt = [number, number];
 // [from, to, start, duration, base width]: start/duration are fractions of the divide beat.
 type Branch = [Pt, Pt, number, number, number];
 
-const out = (from: Pt, to: Pt, delay = 0, w = 4.8): Branch => [from, to, 0.3 + delay, 0.32, w];
+const out = (from: Pt, to: Pt, delay = 0, w = 5.4): Branch => [from, to, 0.3 + delay, 0.32, w];
 const RING: Pt = [50, 50];
 const RING_R = 22;
 const PLANS: Record<number, Branch[]> = {
@@ -14,16 +15,16 @@ const PLANS: Record<number, Branch[]> = {
 	3: [out([50, 48], [50, 108]), out([50, 48], [-14, 48]), out([50, 48], [114, 48])],
 	4: [out([50, 49], [50, -8]), out([50, 49], [50, 108]), out([50, 49], [-14, 49]), out([50, 49], [114, 49])],
 	5: ([[0, -1], [0, 1], [-1, 0], [1, 0]] as Pt[]).map(([sx, sy]) =>
-		out([RING[0] + sx * RING_R, RING[1] + sy * RING_R], [RING[0] + sx * 64, RING[1] + sy * 58], 0.08, 3.8),
+		out([RING[0] + sx * RING_R, RING[1] + sy * RING_R], [RING[0] + sx * 64, RING[1] + sy * 58], 0.08, 4.4),
 	),
 	6: [
-		out([29, 50], [71, 50], 0, 3.8),
-		out([29, 50], [-14, 50], 0, 3.8),
-		out([71, 50], [114, 50], 0, 3.8),
-		out([29, 50], [29, -8], 0, 3.8),
-		out([29, 50], [29, 108], 0, 3.8),
-		out([71, 50], [71, -8], 0, 3.8),
-		out([71, 50], [71, 108], 0, 3.8),
+		out([29, 50], [71, 50], 0, 4.4),
+		out([29, 50], [-14, 50], 0, 4.4),
+		out([71, 50], [114, 50], 0, 4.4),
+		out([29, 50], [29, -8], 0, 4.4),
+		out([29, 50], [29, 108], 0, 4.4),
+		out([71, 50], [71, -8], 0, 4.4),
+		out([71, 50], [71, 108], 0, 4.4),
 	],
 };
 export const JUNCTIONS: Record<number, Pt[]> = {
@@ -79,15 +80,28 @@ export function crackPlan(units: number, seed: number) {
 		}
 		tears.push({ pts, closed: true, s: 0.28, t: 0.2, w: 3.4 });
 	}
+	// A side twig off `pts` at point k, tearing as the parent passes it.
+	const twig = (pts: Pt[], dir: number, s: number, t: number, w: number, k: number, len: number): Pt[] => {
+		const [px, py] = pts[k];
+		const ang = dir + (rand() < 0.5 ? -1 : 1) * (0.5 + rand() * 0.45);
+		const tw = jag([px, py], [px + Math.cos(ang) * len, py + Math.sin(ang) * len], rand, 1.3);
+		tears.push({ pts: tw, closed: false, s: s + (t * k) / (pts.length - 1), t: 0.1, w });
+		return tw;
+	};
 	for (const [a, b, s, t, w] of PLANS[Math.min(units, 6)] ?? []) {
 		const pts = jag(a, b, rand);
 		tears.push({ pts, closed: false, s, t, w });
-		const k = 1 + Math.floor(rand() * (pts.length - 2));
-		const [px, py] = pts[k];
-		const ang = Math.atan2(b[1] - a[1], b[0] - a[0]) + (rand() < 0.5 ? -1 : 1) * (0.5 + rand() * 0.45);
-		const len = 6 + rand() * 7;
-		const twig = jag([px, py], [px + Math.cos(ang) * len, py + Math.sin(ang) * len], rand, 1.3);
-		tears.push({ pts: twig, closed: false, s: s + (t * k) / (pts.length - 1), t: 0.1, w: w * 0.55 });
+		const dir = Math.atan2(b[1] - a[1], b[0] - a[0]);
+		// Two twigs, one in each half of the branch; the first forks again now and then.
+		const half = Math.max(1, Math.floor((pts.length - 2) / 2));
+		const k1 = 1 + Math.floor(rand() * half);
+		const k2 = Math.min(pts.length - 2, half + 1 + Math.floor(rand() * half));
+		const t1 = twig(pts, dir, s, t, w * 0.55, k1, 7 + rand() * 7);
+		if (k2 !== k1) twig(pts, dir, s, t, w * 0.42, k2, 5 + rand() * 5);
+		if (rand() < 0.6 && t1.length > 2) {
+			const tdir = Math.atan2(t1[t1.length - 1][1] - t1[0][1], t1[t1.length - 1][0] - t1[0][0]);
+			twig(t1, tdir, s + (t * k1) / (pts.length - 1), 0.1, w * 0.3, 1, 3 + rand() * 3);
+		}
 		for (let c = 0; c < 2; c++) {
 			const i = 1 + Math.floor(rand() * Math.min(4, pts.length - 2));
 			const [x, y] = pts[i];
@@ -105,7 +119,27 @@ export function crackPlan(units: number, seed: number) {
 			});
 		}
 	}
-	return { tears, chips, junctions: JUNCTIONS[Math.min(units, 6)] ?? [] };
+	// Hairline fractures splayed round each junction, between the branches: the pad shattered
+	// where the blob pinched apart.
+	const junctions = JUNCTIONS[Math.min(units, 6)] ?? [];
+	for (const [jx, jy] of junctions) {
+		const n = 3 + Math.floor(rand() * 2);
+		const a0 = rand() * Math.PI * 2;
+		for (let i = 0; i < n; i++) {
+			const a = a0 + (i / n) * Math.PI * 2 + (rand() - 0.5) * 0.6;
+			const r0 = units === 5 ? RING_R : 2.5;
+			const len = 4 + rand() * 5;
+			const from: Pt = [jx + Math.cos(a) * r0, jy + Math.sin(a) * r0];
+			tears.push({
+				pts: jag(from, [from[0] + Math.cos(a) * len, from[1] + Math.sin(a) * len], rand, 0.9),
+				closed: false,
+				s: 0.3 + rand() * 0.05,
+				t: 0.12,
+				w: 1.5,
+			});
+		}
+	}
+	return { tears, chips, junctions };
 }
 
 // The first `p` (0..1, by length) of a polyline, ending on an interpolated point. Returns the

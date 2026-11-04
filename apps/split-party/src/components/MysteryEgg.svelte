@@ -1,25 +1,33 @@
 <script lang="ts" module>
 	/** Full length of the break-open at pace 1, ms; App waits this (times its pace). */
-	export const MYSTERY_MS = 6650;
+	export const MYSTERY_MS = 7800;
 	/** When the egg bursts, and the four knocks before it that each open the crack further. */
 	export const BURST_MS = 4300;
 	export const KNOCKS_MS = [1300, 2100, 2900, 3700];
 	/** Blobs per tile each drawn bonus starts with (the math's 1 / 2 / 3). */
 	export const START_BLOBS: Record<string, number> = { normal: 1, super: 2, hidden: 3 };
+	/** The sacs' two heartbeats, and when the first hatches (each next one HATCH_GAP_MS later). */
+	export const HEARTS_MS = [5700, 6000];
+	export const HATCH_MS = 6350;
+	export const HATCH_GAP_MS = 120;
 </script>
 
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Blob from './Blob.svelte';
 	import PixiMama from './PixiMama.svelte';
+	import { SHOW_MAMA } from '../lib/features';
 
 	// Mystery buy reveal: the mystery egg (Figma 11174:5039) drops in and sits still, then takes
 	// four knocks, each opening the crack further from the middle out while a light that cycles
 	// through all three tiers' colours swells behind it (the crack leaks white: nothing gives the
-	// draw away early); a held breath, and it bursts open in the drawn tier's colour (top flies
-	// off, shell bits and a flash); a blob climbs out
-	// and divides into as many blobs as the drawn bonus starts its tiles with (Normal 1, Super 2,
-	// Hidden 3), side by side over the egg; App then shows the result card. Parts from
+	// draw away early); a held breath as the room goes dark round it, and it bursts open in the
+	// drawn tier's colour (top flies off, shell bits and a flash, the question marks dissolve).
+	// The blobs are born (user 2026-11-04: "somehow like born"): a glowing jelly sac in the tier's
+	// colour rises out of the egg and divides like a cell into as many sacs as the drawn bonus
+	// starts its tiles with (Normal 1, Super 2, Hidden 3), each holding a dark curled-up
+	// silhouette; two heartbeats, the silhouettes kick, and the sacs pop one by one, each blob
+	// bursting out in full colour with a newborn squash. App then shows the result card. Parts from
 	// scripts/build-mystery-egg.py. Every time is scaled by `pace` (turbo plays it faster).
 	let { tier, pace = 1 }: { tier: string; pace?: number } = $props();
 	const count = START_BLOBS[tier] ?? 1;
@@ -34,7 +42,7 @@
 	const END_SCALE = 0.86;
 	const RISE_AT = 4400;
 	const RISE_MS = 520;
-	const SPLIT_GAP = 420; // ms per generation
+	const SPLIT_GAP = 360; // ms per generation
 	// The final blobs stand in a row at the root's height, 118px apart.
 	const leaves = Array.from({ length: count }, (_, i) => ({ x: (i - (count - 1) / 2) * 118, y: ROOT.y }));
 	// paths[i][g]: blob i's spot at generation g (a group's spot = the middle of its leaves).
@@ -186,6 +194,8 @@
 		[50, 6, 8, 2],
 		[96, 8, 7, 1.4],
 	] as const;
+	// A sac's droplets as it pops: angles, deg.
+	const SAC_DROPS = [-160, -115, -65, -20, 30, 150];
 	// Droplets in the tier's colour.
 	const DROPS = Array.from({ length: 12 }, (_, i) => [i * 30 + 8, 150 + ((i * 37) % 90), 8 + ((i * 5) % 9)]);
 </script>
@@ -206,9 +216,13 @@
 			<span class="spark" style={`left:${x}%;top:${y}%;width:${size}px;height:${size}px;--delay:${-delay}s`}></span>
 		{/each}
 	</div>
-	<div class="mama">
-		<PixiMama instant edge={mamaHope} win={mamaWin} beat={mamaBeat} gaze={mamaWin ? null : narrow ? { x: 0.6, y: -0.8 } : { x: 1, y: -0.2 }} />
-	</div>
+	<!-- The lights go down for the held breath; the burst's flash brings them back. -->
+	<div class="hush"></div>
+	{#if SHOW_MAMA}
+		<div class="mama">
+			<PixiMama instant edge={mamaHope} win={mamaWin} beat={mamaBeat} gaze={mamaWin ? null : narrow ? { x: 0.6, y: -0.8 } : { x: 1, y: -0.2 }} />
+		</div>
+	{/if}
 	<div class="stage">
 		<div class="rays"></div>
 		<div class="podium"></div>
@@ -231,8 +245,11 @@
 			<span class="drop" style={`--a:${a}deg;--r:${r}px;width:${s}px;height:${s}px`}></span>
 		{/each}
 		{#each paths as _, i}
-			<div class="egg-blob" bind:this={blobs[i]} style={`width:${BLOB}px;height:${BLOB}px;margin:${-BLOB / 2}px`}>
-				<Blob {symbol} uid={`mystery-blob-${i}`} />
+			<div class="egg-blob" bind:this={blobs[i]} style={`width:${BLOB}px;height:${BLOB}px;margin:${-BLOB / 2}px;--i:${i}`}>
+				<div class="sac"></div>
+				<div class="embryo"><Blob {symbol} uid={`mystery-blob-${i}`} /></div>
+				<span class="hatch-ring"></span>
+				{#each SAC_DROPS as a}<span class="sac-drop" style={`--a:${a}deg`}></span>{/each}
 			</div>
 		{/each}
 	</div>
@@ -241,8 +258,9 @@
 <style>
 	/* Timeline (ms at pace 1): drop 0-550, still to 1300; knocks at 1300 / 2100 / 2900 / 3700,
 	   each widening the crack (shudder building between them, the light behind swelling); held
-	   breath 3810-4300; burst at 4300; blob climbs out 4400-4920 and splits up to twice (420ms
-	   each) to ~5760, holds, everything fades 6250-6650. Transform/opacity only. */
+	   breath 3810-4300 with the room darkening; burst at 4300; the sac rises 4400-4920 and
+	   divides up to twice (360ms each) to ~5640; heartbeats at 5700 / 6000 (HEARTS_MS); the sacs
+	   hatch from 6350, 120ms apart (HATCH_MS); everything fades 7400-7800. */
 	.mystery {
 		--c1: #b6f04a;
 		--c2: #2bc4b4;
@@ -252,7 +270,7 @@
 		display: grid;
 		place-items: center;
 		pointer-events: none;
-		animation: m-out calc(400ms * var(--p)) calc(6250ms * var(--p)) both;
+		animation: m-out calc(400ms * var(--p)) calc(7400ms * var(--p)) both;
 	}
 	.mystery.super {
 		--c1: #ff7ce5;
@@ -362,7 +380,7 @@
 			transform: translate(var(--dx), -60px);
 		}
 	}
-	/* Big faint question marks, bobbing. */
+	/* Big faint question marks, bobbing; the burst answers them and they dissolve outward. */
 	.mark {
 		position: absolute;
 		font-family: 'Coiny', sans-serif;
@@ -370,7 +388,37 @@
 		color: #ffffff12;
 		-webkit-text-stroke: 2px #ffffff1a;
 		rotate: var(--tilt);
-		animation: m-bob 4.6s ease-in-out calc(var(--i) * -0.8s) infinite alternate;
+		animation:
+			m-bob 4.6s ease-in-out calc(var(--i) * -0.8s) infinite alternate,
+			mark-out calc(500ms * var(--p)) calc((4300ms + var(--i) * 40ms) * var(--p)) ease-out forwards;
+	}
+	@keyframes mark-out {
+		to {
+			opacity: 0;
+			scale: 1.6;
+		}
+	}
+	/* 4400ms from 0: dark from the last knock's tail (85%) into the held breath (96.6% = 4250),
+	   gone in the flash (98.4% = 4330). Under the stage, so the egg and its light stay lit. */
+	.hush {
+		position: absolute;
+		inset: 0;
+		background: radial-gradient(closest-side, #05010f99, #05010f);
+		opacity: 0;
+		animation: hush calc(4400ms * var(--p)) both;
+	}
+	@keyframes hush {
+		0%,
+		85% {
+			opacity: 0;
+		}
+		96.6% {
+			opacity: 0.78;
+		}
+		98.4%,
+		100% {
+			opacity: 0;
+		}
 	}
 	@keyframes m-bob {
 		to {
@@ -918,12 +966,159 @@
 			rotate: 360deg;
 		}
 	}
-	/* Each blob's path is a WAAPI animation (onMount); hidden until it rises. */
+	/* Each blob's path is a WAAPI animation (onMount); hidden until it rises. Inside: its sac,
+	   the blob as a silhouette until it hatches (--hatch), the pop's ring and droplets. */
 	.egg-blob {
 		position: absolute;
 		left: 50%;
 		top: 50%;
 		opacity: 0;
+		--hatch: calc((6350ms + var(--i) * 120ms) * var(--p));
+	}
+	.egg-blob > * {
+		position: absolute;
+	}
+	.sac {
+		inset: -16%;
+		border-radius: 50%;
+		background:
+			radial-gradient(circle at 33% 27%, #fffe 0 6%, #fff6 11%, #fff0 21%),
+			radial-gradient(closest-side, color-mix(in srgb, var(--c1), transparent 72%) 52%, color-mix(in srgb, var(--c1), transparent 22%) 86%, color-mix(in srgb, var(--c2), transparent 5%));
+		box-shadow:
+			0 0 34px color-mix(in srgb, var(--c1), transparent 35%),
+			inset 0 0 0 2px #ffffff70;
+		animation:
+			sac-wobble 1.1s ease-in-out infinite,
+			sac-beat calc(300ms * var(--p)) calc(5700ms * var(--p)) ease-in-out 2,
+			sac-pop calc(240ms * var(--p)) var(--hatch) ease-out forwards;
+	}
+	@keyframes sac-wobble {
+		0%,
+		100% {
+			border-radius: 50%;
+		}
+		33% {
+			border-radius: 54% 46% 50% 50% / 47% 53% 47% 53%;
+		}
+		66% {
+			border-radius: 47% 53% 52% 48% / 53% 47% 52% 48%;
+		}
+	}
+	@keyframes sac-beat {
+		0%,
+		100% {
+			scale: 1;
+		}
+		30% {
+			scale: 1.12 1.05;
+		}
+		55% {
+			scale: 0.97 1.01;
+		}
+	}
+	@keyframes sac-pop {
+		0% {
+			scale: 1;
+			opacity: 1;
+		}
+		35% {
+			scale: 1.2;
+			opacity: 0.9;
+		}
+		100% {
+			scale: 1.45;
+			opacity: 0;
+		}
+	}
+	/* Curled up and dark inside the sac, kicking on the heartbeats; then born. */
+	.embryo {
+		inset: 0;
+		filter: brightness(0.1) saturate(0.3);
+		scale: 0.74;
+		rotate: -8deg;
+		opacity: 0.85;
+		animation:
+			embryo-kick calc(300ms * var(--p)) calc(5700ms * var(--p)) ease-in-out 2,
+			embryo-born calc(560ms * var(--p)) var(--hatch) forwards;
+	}
+	@keyframes embryo-kick {
+		0%,
+		100% {
+			rotate: -8deg;
+		}
+		35% {
+			rotate: 6deg;
+			scale: 0.8 0.7;
+		}
+	}
+	@keyframes embryo-born {
+		0% {
+			filter: brightness(0.1) saturate(0.3);
+			scale: 0.74;
+			rotate: -8deg;
+			opacity: 0.85;
+		}
+		22% {
+			filter: brightness(2.4) saturate(0.5);
+			scale: 0.72 1.22;
+			rotate: 0deg;
+			opacity: 1;
+		}
+		52% {
+			filter: brightness(1.15);
+			scale: 1.2 0.82;
+		}
+		76% {
+			scale: 0.95 1.06;
+		}
+		100% {
+			filter: brightness(1);
+			scale: 1;
+			rotate: 0deg;
+			opacity: 1;
+		}
+	}
+	.hatch-ring {
+		inset: -10%;
+		border-radius: 50%;
+		border: 4px solid #fff;
+		opacity: 0;
+		animation: hatch-ring calc(460ms * var(--p)) var(--hatch) ease-out forwards;
+	}
+	@keyframes hatch-ring {
+		0% {
+			opacity: 1;
+			scale: 0.7;
+		}
+		100% {
+			opacity: 0;
+			scale: 1.9;
+			border-width: 0.5px;
+		}
+	}
+	.sac-drop {
+		left: 50%;
+		top: 50%;
+		width: 14px;
+		height: 14px;
+		margin: -7px;
+		border-radius: 50%;
+		background: radial-gradient(circle at 35% 30%, #fffc 0 20%, var(--c1) 34%, var(--c2));
+		opacity: 0;
+		animation: sac-drop calc(520ms * var(--p)) var(--hatch) cubic-bezier(0.2, 0.7, 0.4, 1) forwards;
+	}
+	@keyframes sac-drop {
+		0% {
+			opacity: 1;
+			transform: rotate(var(--a)) translateX(30px) scale(0.6);
+		}
+		70% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+			transform: rotate(var(--a)) translateX(92px) translateY(18px) scale(1);
+		}
 	}
 	.bit,
 	.drop {

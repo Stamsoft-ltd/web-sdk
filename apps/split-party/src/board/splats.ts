@@ -6,11 +6,17 @@ import { BLOB_TINT, shade } from '../lib/premium';
 
 const TEX_RES = 3;
 const G = 900; // board px/s²
-const DROPS = 9;
-const DROP_MS = [520, 760];
+// A few small drops that stay near their tile (2026-11-02 review "poor animations": 13 big drops a
+// pop sprayed ovals over the whole board on bonus wins, where dozens of tiles pop at once). They
+// stay in the blob's own colour so they never read as pale specks on the light blobs.
+const DROPS = 6;
+// Past this many live drops (a crowded bonus win) each pop throws only CROWD_DROPS.
+const CROWD = 60;
+const CROWD_DROPS = 2;
+const DROP_MS = [380, 540];
 const RING_MS = 380;
 const FLASH_MS = 220;
-const MAX = 700;
+const MAX = 400; // a full-board win: 49 pops × 8 bits
 
 function canvasTexture(size: number, draw: (ctx: CanvasRenderingContext2D, r: number) => void) {
 	const c = document.createElement('canvas');
@@ -87,23 +93,25 @@ export class Splats {
 		const color = BLOB_TINT[symbol] ?? '#f782fe';
 		const flash = this.sprite(this.tex.flash);
 		flash.position.set(x, y);
-		flash.tint = shade(color, 0.6);
+		flash.tint = shade(color, 0.45);
 		flash.blendMode = 'add';
-		this.live.push({ kind: 'flash', s: flash, at: now, ms: FLASH_MS, size: 110 });
+		this.live.push({ kind: 'flash', s: flash, at: now, ms: FLASH_MS, size: 140 });
 		const ring = this.sprite(this.tex.ring);
 		ring.position.set(x, y);
-		ring.tint = shade(color, 0.25);
+		ring.tint = shade(color, 0.1);
 		ring.blendMode = 'normal';
-		this.live.push({ kind: 'ring', s: ring, at: now, ms: RING_MS, size: 120 });
-		for (let i = 0; i < DROPS; i++) {
-			// Mostly up and out, like goo flicked off a spoon; one or two fall straight off.
-			const a = -Math.PI / 2 + (i / (DROPS - 1) - 0.5) * 2.6 + (Math.random() - 0.5) * 0.4;
-			const v = 150 + Math.random() * 150;
+		this.live.push({ kind: 'ring', s: ring, at: now, ms: RING_MS, size: 140 });
+		const crowded = this.live.reduce((n, b) => n + (b.kind === 'drop' ? 1 : 0), 0) > CROWD;
+		const drops = crowded ? CROWD_DROPS : DROPS;
+		for (let i = 0; i < drops; i++) {
+			// Mostly up and out, like goo flicked off a spoon.
+			const a = -Math.PI / 2 + ((i + 0.5) / drops - 0.5) * 2.4 + (Math.random() - 0.5) * 0.4;
+			const v = 130 + Math.random() * 120;
 			const s = this.sprite(this.tex.drop);
 			// Lifted toward white: candy goo, never a red splatter.
-			s.tint = shade(color, i % 3 === 2 ? 0.5 : 0.22);
+			s.tint = shade(color, i % 3 === 2 ? 0.3 : 0.08);
 			s.blendMode = 'normal';
-			const r = 3.8 + Math.random() * 4.6;
+			const r = 3.5 + Math.random() * 3;
 			this.live.push({
 				kind: 'drop',
 				s,
@@ -146,7 +154,7 @@ export class Splats {
 				const st = 1 + Math.min(0.5, speed / 900) + 0.08 * Math.sin(t / 45 + b.spin);
 				b.s.rotation = Math.atan2(vy, b.vx) + Math.PI / 2;
 				b.s.scale.set(k / Math.sqrt(st), k * st);
-				b.s.alpha = 1;
+				b.s.alpha = Math.min(1, (1 - p) / 0.35);
 			} else if (b.kind === 'ring') {
 				const e = 1 - (1 - p) ** 3;
 				const k = ((0.35 + 0.75 * e) * b.size) / (96 * TEX_RES);

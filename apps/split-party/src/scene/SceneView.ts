@@ -1437,6 +1437,9 @@ const BONUS_SRCS = [
 ];
 const FADE_MS = 700;
 
+/** The backdrop's resolution: up to 2x, 1x while pinch-zoomed (SceneView.onZoom). */
+const sceneRes = () => ((window.visualViewport?.scale ?? 1) > 1.05 ? 1 : Math.min(2, devicePixelRatio || 1));
+
 export class SceneView {
 	private pixi = new PixiApp();
 	private app = this.pixi.app;
@@ -1469,7 +1472,7 @@ export class SceneView {
 			antialias: false,
 			// The backdrops are soft (blur baked in), but the domes, puff clouds, birds and blobs
 			// are crisp: 1.5 drew them at 75% on a retina screen. 2 costs ~1.8× the fill.
-			resolution: Math.min(2, devicePixelRatio || 1),
+			resolution: sceneRes(),
 		});
 		if (!ok) return;
 		await Promise.all(
@@ -1523,7 +1526,15 @@ export class SceneView {
 		// resizeTo resizes the renderer a frame after the window's resize event: lay out then,
 		// from the new screen size, not from the event.
 		this.app.renderer.on('resize', () => this.layout());
+		window.visualViewport?.addEventListener('resize', this.onZoom);
 	}
+	// Pinch-zoomed, the full-window backdrop drops to 1x: at 2x it was ~15MP on a 2560-wide
+	// window, and with the board's canvas that starved Chrome's tile memory, so the zoomed DOM
+	// (menu, buy cards) showed blocky low-res tiles (user, 2026-11-04: either canvas off fixed it).
+	private onZoom = () => {
+		const res = sceneRes();
+		if (this.app && res !== this.app.renderer.resolution) this.app.renderer.resize(this.app.screen.width, this.app.screen.height, res);
+	};
 
 	/** Called once if the view stops working after init (a throw in a frame, a lost context). */
 	set onfail(fn: ((e: unknown) => void) | null) {
@@ -1601,6 +1612,7 @@ export class SceneView {
 
 	destroy() {
 		this.destroyed = true;
+		window.visualViewport?.removeEventListener('resize', this.onZoom);
 		this.unwatchMotion?.();
 		this.base?.destroy();
 		for (const b of this.bonus) b.world.destroy();

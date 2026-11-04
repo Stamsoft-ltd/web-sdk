@@ -1,9 +1,9 @@
 """Cut each symbol's painted brows and mouth into their own layers so Blob.svelte can move them.
 
-public/symbols/v3/<S>.webp (untouched; build-symbols.py)
-  -> public/symbols/v3/face/<S>-base.webp    the art with brows + mouth painted over in body colour
-  -> public/symbols/v3/face/<S>-brow-N.webp  each brow, cropped
-  -> public/symbols/v3/face/<S>-mouth.webp   the mouth (with tongue), cropped
+art-src/symbols-448/<S>.webp (untouched; build-symbols.py)
+  -> public/symbols/v4/face/<S>-base.webp    the art with brows + mouth painted over in body colour
+  -> public/symbols/v4/face/<S>-brow-N.webp  each brow, cropped
+  -> public/symbols/v4/face/<S>-mouth.webp   the mouth (with tongue), cropped
   -> src/lib/face-layers.json             crops in the symbol's 100x100 unit box
 
 Features are the dark strokes on the face outside the eyes (eyes.json from build-eyes.py):
@@ -26,8 +26,8 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
-SYMBOLS = ROOT / 'public' / 'symbols' / 'v3'
-OUT_DIR = SYMBOLS / 'face'
+SYMBOLS = ROOT / 'art-src' / 'symbols-448'
+OUT_DIR = ROOT / 'public' / 'symbols' / 'v4' / 'face'
 EYES = json.loads((ROOT / 'src' / 'lib' / 'eyes.json').read_text())
 OUT_JSON = ROOT / 'src' / 'lib' / 'face-layers.json'
 # The scatter egg has no painted face.
@@ -98,15 +98,25 @@ def up(mask, shape):
     return np.asarray(m) >= 128
 
 
-def layer(a, mask, k, name):
+def feather(mask, r):
+    """A soft 0..1 coverage for a binary mask: its edge blurred over ~r px."""
+    from PIL import ImageFilter
+    m = Image.fromarray((mask * 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(r))
+    return np.asarray(m, np.float32) / 255
+
+
+def layer(a, mask, k, name, soft=None):
+    """Crop the art under `mask`; `soft` (0..1) fades its edge instead of a hard cut."""
     ys, xs = np.nonzero(mask)
     y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
     crop = np.zeros((y1 - y0, x1 - x0, 4), np.uint8)
     region = mask[y0:y1, x0:x1]
     crop[region] = a[y0:y1, x0:x1][region]
+    if soft is not None:
+        crop[..., 3] = (crop[..., 3] * soft[y0:y1, x0:x1]).round().astype(np.uint8)
     Image.fromarray(crop).save(OUT_DIR / name, 'WEBP', quality=92, method=6)
     return {
-        'src': f'./symbols/v3/face/{name}',
+        'src': f'./symbols/v4/face/{name}',
         'x': round(x0 * k, 2),
         'y': round(y0 * k, 2),
         'w': round((x1 - x0) * k, 2),
@@ -182,14 +192,23 @@ def build(path):
             if h * 0.36 < ys.mean() < h * 0.6 and abs(xs.mean() - w / 2) > w * 0.08:
                 (closed if lum[ys, xs].mean() < body_lum * 0.4 else brows).append(m)
                 continue
-        cy, cx = np.nonzero(m)[0].mean(), np.nonzero(m)[1].mean() * k
+        ys, xs = np.nonzero(m)
+        cy, cx = ys.mean(), xs.mean() * k
         over_eye = any(e['left'] - 4 < cx < e['right'] + 4 for e in eyes)  # not side shading
-        if cy < eye_top + (eye_bot - eye_top) * 0.25 and over_eye:
+        # Brows are low strokes: a tall one is an outline (GRAPES' antenna stalks, 2026-11-04).
+        short = (ys.max() - ys.min()) * k < 12
+        # The mouth is centred; GRAPES' sits level with its eyes' lower half.
+        centred = abs(cx - 50) < 20
+        low = cy > eye_bot - 2 or (cy > (eye_top + eye_bot) / 2 and abs(cx - 50) < 12)
+        if cy < eye_top + (eye_bot - eye_top) * 0.25 and over_eye and short:
             brows.append(m)
-        elif cy > eye_bot - 2 and (mouth is None or m.sum() > mouth.sum()):
+        elif low and centred and (mouth is None or m.sum() > mouth.sum()):
             mouth = m
-    out = {'base': f'./symbols/v3/face/{s}-base.webp', 'brows': [], 'mouth': None, 'cheeks': cheeks(a, lum, body_lum, eye_bot, k)}
+    out = {'base': f'./symbols/v4/face/{s}-base.webp', 'brows': [], 'mouth': None, 'cheeks': cheeks(a, lum, body_lum, eye_bot, k)}
     hole = np.zeros(full.shape[:2], bool)
+    # One brow a side, the outermost: PLUM's forehead wrinkles sit between its brows.
+    sides = [[m for m in brows if (np.nonzero(m)[1].mean() < w / 2) == left] for left in (True, False)]
+    brows = [max(side, key=lambda m: abs(np.nonzero(m)[1].mean() - w / 2)) for side in sides if side]
     brows.sort(key=lambda m: np.nonzero(m)[1].mean())
     for j, m in enumerate(brows):
         g = up(dilate(m, 3) & ~eye_m, full.shape)
@@ -204,10 +223,16 @@ def build(path):
     if mouth is not None:
         ys, xs = np.nonzero(mouth)
         hm = hull_mask(list(zip(xs.tolist(), ys.tolist())), (h, w)) | mouth
-        # The tongue/teeth aren't dark: take any off-body colour touching the mouth too.
-        hm |= dilate(hm, 6) & (off > 60) & (a[..., 3] > 200)
+        # The tongue/teeth aren't dark: take any off-body colour touching the mouth too, but never
+        # the eye whites (KIWI's teeth touch its eyes, 2026-11-04).
+        clear = ~dilate(eye_m, 2)
+        hm |= dilate(hm, 6) & (off > 60) & (a[..., 3] > 200) & clear
+        # The hole erased from the base stays wide; the layer itself is cut close to the mouth's
+        # outline with a soft edge. A body-coloured margin drawn over the eyes showed as notches
+        # once the minis scale the mouth and the eyes apart (splash split, 2026-11-04).
         g = up(dilate(hm, 3) & ~eye_m, full.shape)
-        out['mouth'] = layer(full, g, kf, f'{s}-mouth.webp')
+        tight = up(dilate(hm, 1) & clear, full.shape)
+        out['mouth'] = layer(full, g, kf, f'{s}-mouth.webp', soft=feather(tight, full.shape[1] / 448 * 1.2))
         hole |= g
     base = full.copy()
     # A 3x3 pass spreads ~1px: (size ratio)^2 times the passes for the same softening.
