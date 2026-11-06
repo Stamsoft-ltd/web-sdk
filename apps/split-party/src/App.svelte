@@ -39,7 +39,7 @@
 		type Mode,
 		type Round,
 	} from './lib/model';
-	import { launch, createTransport } from './lib/transport';
+	import { launch, launchProblem, createTransport } from './lib/transport';
 	import * as sfx from './lib/sound';
 	import { activate, t, languages } from './lib/i18n';
 	import { formatWalletAmount, formatWinAmount } from './lib/reference/currency';
@@ -246,6 +246,9 @@
 	const hudFont = (text: string, slot: 'metric' | 'bet', extra = 0) =>
 		`font-size:${hudSize(text, slot, extra).toFixed(1)}px`;
 	let error = $state('');
+	// A launch the game must refuse (Stake review 2026-11-06): no valid rgs_url, or no session.
+	// It is fatal and says why; every control stays locked (via `error`) and no request is sent.
+	const launchFault = launchProblem(q);
 	// Recoverable problems (not enough balance, a play request that failed before any round came
 	// back): a dismissible notice over a game that stays playable. `error` is for fatal states.
 	let notice = $state('');
@@ -1330,6 +1333,11 @@
 		}
 	}
 	async function boot() {
+		if (launchFault) {
+			ready = false;
+			error = 'launch';
+			return;
+		}
 		if (busy) return;
 		busy = true;
 		error = '';
@@ -1342,10 +1350,6 @@
 				activeMode = replay.mode;
 				ready = true;
 				started = true;
-				return;
-			}
-			if (!q.demo && (!q.rgsUrl || !q.sessionID)) {
-				ready = false;
 				return;
 			}
 			const data = await api.authenticate();
@@ -2062,6 +2066,8 @@
 	}
 	async function confirmBuy() {
 		const mode = chosen;
+		// Feature Spin is a switch: confirming turns it on for the following spins.
+		if (mode === 'feature') return toggleMode('feature');
 		closeModal();
 		await spin(mode);
 	}
@@ -2597,15 +2603,20 @@
 			in:pop
 			out:popOut
 		>
-			<!-- An unfinished round to restore, or just a lost connection (nothing to restore). -->
-			<span class="eyebrow">{pending ? tr('UNFINISHED ROUND') : tr('NOTICE')}</span>
-			<h2 id="recovery-title">{pending ? tr('RECOVERY TITLE') : tr('ERROR')}</h2>
-			<p>{pending ? tr('RECOVERY BODY') : tr('ERROR BODY')}</p>
-<button
-				class="primary"
-				onclick={() => (pending ? resume() : boot())}
-				disabled={busy}>{pending ? tr('RETRY RESUME') : tr('RELOAD')}</button
-			>
+			<!-- A refused launch (says why, nothing to retry), an unfinished round to restore, or just
+			     a lost connection (nothing to restore). -->
+			{#if launchFault}
+				<span class="eyebrow">{tr('NOTICE')}</span>
+				<h2 id="recovery-title">{tr('LAUNCH ERROR TITLE')}</h2>
+				<p>{tr(launchFault === 'rgs' ? 'LAUNCH ERROR RGS' : 'LAUNCH ERROR SESSION')}</p>
+			{:else}
+				<span class="eyebrow">{pending ? tr('UNFINISHED ROUND') : tr('NOTICE')}</span>
+				<h2 id="recovery-title">{pending ? tr('RECOVERY TITLE') : tr('ERROR')}</h2>
+				<p>{pending ? tr('RECOVERY BODY') : tr('ERROR BODY')}</p>
+				<button class="primary" onclick={() => (pending ? resume() : boot())} disabled={busy}
+					>{pending ? tr('RETRY RESUME') : tr('RELOAD')}</button
+				>
+			{/if}
 		</section>
 	</div>
 {/if}
@@ -2688,6 +2699,7 @@
 			<div class="bm-cards">
 				{#each SWITCHES as s, i (s.mode)}
 					{@const on = toggled === s.mode}
+					{@const price = money(bet * MODES[s.mode])}
 					<article class={`bm-card wide ${s.key}`} class:on style={`--i:${i}`}>
 						<img class="bm-hero" src={`./buy/v3/${s.hero}.webp`} alt="" />
 						<ul class="bm-chips" aria-hidden="true">
@@ -2703,14 +2715,22 @@
 							<p>{tr(s.copy)}</p>
 						</div>
 						<div class="bm-well">
-							<b class="bm-price">{money(bet * MODES[s.mode])}</b>
+							<!-- 172px beside the pill: a long amount (a high bet) steps its size down to fit. -->
+							<b class="bm-price" style={`font-size:${Math.min(30, 172 / (price.length * 0.64)).toFixed(1)}px`}>{price}</b>
 							<!-- A switch for every following spin (its price shows on the HUD bet while on). -->
 							<button
 								class="bm-button activate"
 								class:on
 								aria-pressed={on}
 								disabled={autoCount > 0}
-								onclick={() => toggleMode(s.mode)}>{tr(on ? 'DEACTIVATE' : 'ACTIVATE')}</button
+								onclick={() => {
+									// Feature Spin costs 50 bets a spin: switching it on asks first (Stake review
+									// 2026-11-06); switching anything off, or Extra on, needs no confirmation.
+									if (s.mode === 'feature' && !on) {
+										chosen = 'feature';
+										modal = 'confirm';
+									} else toggleMode(s.mode);
+								}}>{tr(on ? 'DEACTIVATE' : 'ACTIVATE')}</button
 							>
 						</div>
 					</article>
@@ -2798,17 +2818,18 @@
 				{#if modal === 'confirm'}
 					<!-- A small copy of the bonus card it confirms (the buy menu's art, colour and pills;
 					     user, 2026-10-30), over Figma 9185:17341's copy and buttons. -->
-					{@const buy = BONUS_BUYS.find((b) => b.mode === chosen)}
+					{@const buy = [...BONUS_BUYS, ...SWITCHES].find((b) => b.mode === chosen)}
+					{@const name = tr(chosen === 'feature' ? 'FEATURE' : chosen.toUpperCase())}
 					{#if buy}
 						<div class={`cf-art ${buy.mode}`} aria-hidden="true">
 							<img class="bm-hero" src={`./buy/v3/${buy.hero}.webp`} alt="" />
 							<div class="bm-shade"></div>
 						</div>
 					{/if}
-					<h2 id="modal-title">{tr('CONFIRM')} {tr(chosen.toUpperCase())}</h2>
+					<h2 id="modal-title">{tr('CONFIRM')} {name}</h2>
 					<p class="confirm-line">
-						{tr('BUY FOR')
-							.replace('%name%', tr(chosen.toUpperCase()))
+						{tr(chosen === 'feature' ? 'ACTIVATE FOR' : 'BUY FOR')
+							.replace('%name%', name)
 							.replace('%price%', money(bet * MODES[chosen]))}
 					</p>
 					<b class="cf-price" aria-hidden="true">{money(bet * MODES[chosen])}</b>

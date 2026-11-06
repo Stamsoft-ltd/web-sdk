@@ -234,6 +234,7 @@
 							<article class="card bonus" style={`--i:${i + 2}`}>
 								<h3>{tr(tier)}</h3>
 								<p>{tr(`INFO ${tier} TEXT`)}</p>
+								<p class="no-retrigger">{tr('INFO NO RETRIGGER')}</p>
 								<span class="egg-row"
 									><b>{n}x</b><img src="./splash/egg.webp" alt="" /></span
 								>
@@ -712,14 +713,23 @@
 		padding-top: 14px;
 		gap: 6px;
 	}
+	/* Tight enough that the longest locales (ru/fr) fit the copy, the no-retrigger note and the
+	   egg row in the fixed card. */
 	.features .bonus {
 		width: 208px;
 		height: 335px;
-		padding: 34px 20px 30px;
-		gap: 22px;
+		padding: 22px 18px 12px;
+		gap: 8px;
 	}
-	.features .bonus p {
-		flex: 1;
+	.features .bonus .egg-row img {
+		width: 46px;
+		height: 46px;
+	}
+	.features .bonus p:not(.no-retrigger) {
+		flex: 1 1 auto;
+	}
+	.features .no-retrigger {
+		font-weight: 700;
 	}
 	.feature-art {
 		display: block;
@@ -730,7 +740,7 @@
 	   card's scatter note). */
 	.features .small .feature-art {
 		flex: 0 1 52px;
-		min-height: 34px;
+		min-height: 22px;
 		width: auto;
 		aspect-ratio: 1;
 	}

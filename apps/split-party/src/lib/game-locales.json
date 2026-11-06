@@ -92,6 +92,7 @@
 		"INFO NORMAL TEXT": "تُفعَّل بـ 3 بيضات. تمنح 10 دورات مجانية وتبدأ كل خانة بوحدة Blob واحدة. تبقى مستويات الانقسام طوال المكافأة.",
 		"INFO SUPER TEXT": "تُفعَّل بـ 4 بيضات. تمنح 10 دورات مجانية وتبدأ كل خانة بـ 2 وحدة Blob. تبقى مستويات الانقسام طوال المكافأة.",
 		"INFO HIDDEN TEXT": "تُفعَّل بـ 5 بيضات أو أكثر. تمنح 10 دورات مجانية وتبدأ كل خانة بـ 3 وحدات Blob. تبقى مستويات الانقسام طوال المكافأة.",
+		"INFO NO RETRIGGER": "لا إعادة تفعيل: لا يمكن ربح دورات مجانية إضافية أثناء المكافأة.",
 		"INFO WAYS": "طرق الربح",
 		"INFO WAYS 1": "تستخدم Blob Split أرباح المجموعات بدلًا من الخطوط.",
 		"INFO WAYS 2": "يتطلب الربح Blob متجاورة من اللون نفسه: خانتان على الأقل تحملان 5 وحدات Blob أو أكثر إجمالًا.",
@@ -140,7 +141,11 @@
 		"SKIP BONUS": "تخطي المكافأة",
 		"SKIP BONUS TITLE": "تخطي المكافأة؟",
 		"SKIP BONUS TEXT": "يكتمل باقي المكافأة فورًا ويظهر إجمالي ربحك.",
-		"SKIP": "تخطي"
+		"SKIP": "تخطي",
+		"LAUNCH ERROR TITLE": "تعذّر تحميل اللعبة",
+		"LAUNCH ERROR RGS": "رابط اللعبة لا يحتوي على عنوان خادم صالح (rgs_url)، لذا لا يمكن للعبة الاتصال ولا يمكن اللعب. يُرجى فتح اللعبة مجددًا من الردهة.",
+		"LAUNCH ERROR SESSION": "رابط اللعبة لا يحتوي على جلسة، لذا لا يمكن للعبة الاتصال ولا يمكن اللعب. يُرجى فتح اللعبة مجددًا من الردهة.",
+		"ACTIVATE FOR": "تفعيل %name% مقابل %price% لكل دورة؟"
 	},
 	"da": {
 		"BONUS": "Bonus",
@@ -235,6 +240,7 @@
 		"INFO NORMAL TEXT": "Udløses af 3 æg. Giver 10 gratisspins, hvor hvert felt starter med 1 Blob-enhed. Delingsniveauer bevares gennem hele bonussen.",
 		"INFO SUPER TEXT": "Udløses af 4 æg. Giver 10 gratisspins, hvor hvert felt starter med 2 Blob-enheder. Delingsniveauer bevares gennem hele bonussen.",
 		"INFO HIDDEN TEXT": "Udløses af 5 eller flere æg. Giver 10 gratisspins, hvor hvert felt starter med 3 Blob-enheder. Delingsniveauer bevares gennem hele bonussen.",
+		"INFO NO RETRIGGER": "Ingen genudløsning: der kan ikke vindes ekstra gratisspins under bonussen.",
 		"INFO WAYS": "Måder at vinde på",
 		"INFO WAYS 1": "Blob Split bruger klyngegevinster i stedet for linjer.",
 		"INFO WAYS 2": "En gevinst kræver nabo-Blobs i samme farve: mindst 2 felter med i alt 5 eller flere Blob-enheder.",
@@ -283,7 +289,11 @@
 		"SKIP BONUS": "Spring bonus over",
 		"SKIP BONUS TITLE": "Spring bonus over?",
 		"SKIP BONUS TEXT": "Resten af bonussen afspilles med det samme, og din samlede gevinst vises.",
-		"SKIP": "Spring over"
+		"SKIP": "Spring over",
+		"LAUNCH ERROR TITLE": "Spillet kan ikke indlæses",
+		"LAUNCH ERROR RGS": "Dette spillink har ingen gyldig spilserveradresse (rgs_url), så spillet kan ikke forbinde og kan ikke spilles. Åbn spillet igen fra lobbyen.",
+		"LAUNCH ERROR SESSION": "Dette spillink har ingen session, så spillet kan ikke forbinde og kan ikke spilles. Åbn spillet igen fra lobbyen.",
+		"ACTIVATE FOR": "Aktivér %name% for %price% pr. spin?"
 	},
 	"de": {
 		"INFO LEGAL BODY 1": "Eine Fehlfunktion macht alle Gewinne und Spiele ungültig. Eine stabile Internetverbindung ist erforderlich. Im Falle einer Verbindungsunterbrechung lade das Spiel neu, um noch nicht abgeschlossene Runden zu beenden.",
@@ -382,6 +392,7 @@
 		"INFO NORMAL TEXT": "Ausgelöst durch 3 Eier. Gewährt 10 Freispiele, wobei jedes Feld mit 1 Blob-Einheit startet. Teilungsstufen bleiben während des gesamten Bonus erhalten.",
 		"INFO SUPER TEXT": "Ausgelöst durch 4 Eier. Gewährt 10 Freispiele, wobei jedes Feld mit 2 Blob-Einheiten startet. Teilungsstufen bleiben während des gesamten Bonus erhalten.",
 		"INFO HIDDEN TEXT": "Ausgelöst durch 5 oder mehr Eier. Gewährt 10 Freispiele, wobei jedes Feld mit 3 Blob-Einheiten startet. Teilungsstufen bleiben während des gesamten Bonus erhalten.",
+		"INFO NO RETRIGGER": "Kein Retrigger: Während des Bonus können keine zusätzlichen Freispiele gewonnen werden.",
 		"INFO WAYS": "Gewinnwege",
 		"INFO WAYS 1": "Blob Split verwendet Cluster-Gewinne statt Linien.",
 		"INFO WAYS 2": "Für einen Gewinn braucht es benachbarte Blobs derselben Farbe: mindestens 2 Felder mit insgesamt 5 oder mehr Blob-Einheiten.",
@@ -426,7 +437,11 @@
 		"SKIP BONUS": "Bonus überspringen",
 		"SKIP BONUS TITLE": "Bonus überspringen?",
 		"SKIP BONUS TEXT": "Der Rest des Bonus wird sofort ausgespielt und dein Gesamtgewinn angezeigt.",
-		"SKIP": "Überspringen"
+		"SKIP": "Überspringen",
+		"LAUNCH ERROR TITLE": "Spiel kann nicht geladen werden",
+		"LAUNCH ERROR RGS": "Diesem Spiellink fehlt eine gültige Spielserver-Adresse (rgs_url), daher kann sich das Spiel nicht verbinden und nicht gespielt werden. Bitte öffne das Spiel erneut aus der Lobby.",
+		"LAUNCH ERROR SESSION": "Diesem Spiellink fehlt eine Sitzung, daher kann sich das Spiel nicht verbinden und nicht gespielt werden. Bitte öffne das Spiel erneut aus der Lobby.",
+		"ACTIVATE FOR": "%name% für %price% pro Spin aktivieren?"
 	},
 	"es": {
 		"INFO LEGAL BODY 1": "Cualquier mal funcionamiento anula todos los premios y jugadas. Se requiere una conexión a internet estable. En caso de desconexión, recarga el juego para terminar las rondas incompletas.",
@@ -525,6 +540,7 @@
 		"INFO NORMAL TEXT": "Se activa con 3 huevos. Otorga 10 giros gratis y cada casilla empieza con 1 unidad de Blob. Los niveles de división se mantienen durante todo el bono.",
 		"INFO SUPER TEXT": "Se activa con 4 huevos. Otorga 10 giros gratis y cada casilla empieza con 2 unidades de Blob. Los niveles de división se mantienen durante todo el bono.",
 		"INFO HIDDEN TEXT": "Se activa con 5 o más huevos. Otorga 10 giros gratis y cada casilla empieza con 3 unidades de Blob. Los niveles de división se mantienen durante todo el bono.",
+		"INFO NO RETRIGGER": "Sin reactivación: no se pueden ganar giros gratis adicionales durante el bono.",
 		"INFO WAYS": "Formas de ganar",
 		"INFO WAYS 1": "Blob Split usa premios por clúster en lugar de líneas.",
 		"INFO WAYS 2": "Un premio necesita Blobs vecinos del mismo color: al menos 2 casillas con 5 o más unidades de Blob en total.",
@@ -569,7 +585,11 @@
 		"SKIP BONUS": "Saltar bono",
 		"SKIP BONUS TITLE": "¿Saltar el bono?",
 		"SKIP BONUS TEXT": "El resto del bono se juega al instante y se muestra tu ganancia total.",
-		"SKIP": "Saltar"
+		"SKIP": "Saltar",
+		"LAUNCH ERROR TITLE": "No se puede cargar el juego",
+		"LAUNCH ERROR RGS": "Este enlace no tiene una dirección de servidor de juego válida (rgs_url), así que el juego no puede conectarse ni jugarse. Vuelve a abrir el juego desde el lobby.",
+		"LAUNCH ERROR SESSION": "Este enlace no tiene una sesión, así que el juego no puede conectarse ni jugarse. Vuelve a abrir el juego desde el lobby.",
+		"ACTIVATE FOR": "¿Activar %name% por %price% por giro?"
 	},
 	"fi": {
 		"BONUS": "Bonus",
@@ -664,6 +684,7 @@
 		"INFO NORMAL TEXT": "Käynnistyy 3 munalla. Antaa 10 ilmaiskierrosta, ja jokainen ruutu alkaa 1 Blob-yksiköllä. Jakotasot säilyvät koko bonuksen ajan.",
 		"INFO SUPER TEXT": "Käynnistyy 4 munalla. Antaa 10 ilmaiskierrosta, ja jokainen ruutu alkaa 2 Blob-yksiköllä. Jakotasot säilyvät koko bonuksen ajan.",
 		"INFO HIDDEN TEXT": "Käynnistyy 5 tai useammalla munalla. Antaa 10 ilmaiskierrosta, ja jokainen ruutu alkaa 3 Blob-yksiköllä. Jakotasot säilyvät koko bonuksen ajan.",
+		"INFO NO RETRIGGER": "Ei uudelleenkäynnistystä: bonuksen aikana ei voi voittaa lisää ilmaiskierroksia.",
 		"INFO WAYS": "Voittotavat",
 		"INFO WAYS 1": "Blob Split käyttää rypäsvoittoja linjojen sijaan.",
 		"INFO WAYS 2": "Voitto vaatii vierekkäisiä samanvärisiä Blobeja: vähintään 2 ruutua, joissa on yhteensä 5 tai useampi Blob-yksikkö.",
@@ -712,7 +733,11 @@
 		"SKIP BONUS": "Ohita bonus",
 		"SKIP BONUS TITLE": "Ohitetaanko bonus?",
 		"SKIP BONUS TEXT": "Loput bonuksesta pelataan heti, ja kokonaisvoittosi näytetään.",
-		"SKIP": "Ohita"
+		"SKIP": "Ohita",
+		"LAUNCH ERROR TITLE": "Peliä ei voi ladata",
+		"LAUNCH ERROR RGS": "Tästä pelilinkistä puuttuu kelvollinen pelipalvelimen osoite (rgs_url), joten peli ei voi muodostaa yhteyttä eikä sitä voi pelata. Avaa peli uudelleen aulasta.",
+		"LAUNCH ERROR SESSION": "Tästä pelilinkistä puuttuu istunto, joten peli ei voi muodostaa yhteyttä eikä sitä voi pelata. Avaa peli uudelleen aulasta.",
+		"ACTIVATE FOR": "Aktivoidaanko %name% hintaan %price% per pyöräytys?"
 	},
 	"fr": {
 		"INFO LEGAL BODY 1": "Tout dysfonctionnement annule tous les gains et toutes les parties. Une connexion Internet stable est requise. En cas de déconnexion, rechargez le jeu pour terminer les tours inachevés.",
@@ -811,6 +836,7 @@
 		"INFO NORMAL TEXT": "Déclenché par 3 œufs. Accorde 10 tours gratuits, chaque case commençant avec 1 unité Blob. Les niveaux de division restent pendant tout le bonus.",
 		"INFO SUPER TEXT": "Déclenché par 4 œufs. Accorde 10 tours gratuits, chaque case commençant avec 2 unités Blob. Les niveaux de division restent pendant tout le bonus.",
 		"INFO HIDDEN TEXT": "Déclenché par 5 œufs ou plus. Accorde 10 tours gratuits, chaque case commençant avec 3 unités Blob. Les niveaux de division restent pendant tout le bonus.",
+		"INFO NO RETRIGGER": "Pas de redéclenchement : aucun tour gratuit supplémentaire ne peut être gagné pendant le bonus.",
 		"INFO WAYS": "Façons de gagner",
 		"INFO WAYS 1": "Blob Split utilise des gains en grappes au lieu de lignes.",
 		"INFO WAYS 2": "Un gain nécessite des Blobs voisins de même couleur : au moins 2 cases contenant 5 unités Blob ou plus au total.",
@@ -855,7 +881,11 @@
 		"SKIP BONUS": "Passer le bonus",
 		"SKIP BONUS TITLE": "Passer le bonus ?",
 		"SKIP BONUS TEXT": "La suite du bonus se joue instantanément et ton gain total s’affiche.",
-		"SKIP": "Passer"
+		"SKIP": "Passer",
+		"LAUNCH ERROR TITLE": "Impossible de charger le jeu",
+		"LAUNCH ERROR RGS": "Ce lien n'a pas d'adresse de serveur de jeu valide (rgs_url) : le jeu ne peut pas se connecter et ne peut pas être joué. Rouvrez le jeu depuis le lobby.",
+		"LAUNCH ERROR SESSION": "Ce lien n'a pas de session : le jeu ne peut pas se connecter et ne peut pas être joué. Rouvrez le jeu depuis le lobby.",
+		"ACTIVATE FOR": "Activer %name% pour %price% par tour ?"
 	},
 	"hi": {
 		"BONUS": "बोनस",
@@ -950,6 +980,7 @@
 		"INFO NORMAL TEXT": "3 अंडों से ट्रिगर होता है। 10 फ्री स्पिन देता है, जिसमें हर टाइल 1 Blob यूनिट से शुरू होती है। स्प्लिट लेवल पूरे बोनस में बने रहते हैं।",
 		"INFO SUPER TEXT": "4 अंडों से ट्रिगर होता है। 10 फ्री स्पिन देता है, जिसमें हर टाइल 2 Blob यूनिट से शुरू होती है। स्प्लिट लेवल पूरे बोनस में बने रहते हैं।",
 		"INFO HIDDEN TEXT": "5 या ज़्यादा अंडों से ट्रिगर होता है। 10 फ्री स्पिन देता है, जिसमें हर टाइल 3 Blob यूनिट से शुरू होती है। स्प्लिट लेवल पूरे बोनस में बने रहते हैं।",
+		"INFO NO RETRIGGER": "कोई रीट्रिगर नहीं: बोनस के दौरान कोई अतिरिक्त फ्री स्पिन नहीं जीते जा सकते।",
 		"INFO WAYS": "जीतने के तरीके",
 		"INFO WAYS 1": "Blob Split लाइनों की जगह क्लस्टर जीत का उपयोग करता है।",
 		"INFO WAYS 2": "जीत के लिए एक ही रंग के पड़ोसी Blobs चाहिए: कम से कम 2 टाइलें, जिनमें कुल 5 या ज़्यादा Blob यूनिट हों।",
@@ -998,7 +1029,11 @@
 		"SKIP BONUS": "बोनस छोड़ें",
 		"SKIP BONUS TITLE": "बोनस छोड़ें?",
 		"SKIP BONUS TEXT": "बाकी बोनस तुरंत पूरा हो जाएगा और आपकी कुल जीत दिखाई जाएगी।",
-		"SKIP": "छोड़ें"
+		"SKIP": "छोड़ें",
+		"LAUNCH ERROR TITLE": "गेम लोड नहीं हो सकता",
+		"LAUNCH ERROR RGS": "इस गेम लिंक में मान्य गेम सर्वर पता (rgs_url) नहीं है, इसलिए गेम कनेक्ट नहीं हो सकता और खेला नहीं जा सकता। कृपया लॉबी से गेम दोबारा खोलें।",
+		"LAUNCH ERROR SESSION": "इस गेम लिंक में सत्र नहीं है, इसलिए गेम कनेक्ट नहीं हो सकता और खेला नहीं जा सकता। कृपया लॉबी से गेम दोबारा खोलें।",
+		"ACTIVATE FOR": "%name% को %price% प्रति स्पिन पर सक्रिय करें?"
 	},
 	"id": {
 		"BONUS": "Bonus",
@@ -1093,6 +1128,7 @@
 		"INFO NORMAL TEXT": "Dipicu oleh 3 telur. Memberikan 10 putaran gratis dengan setiap petak dimulai dari 1 unit Blob. Level belah bertahan sepanjang bonus.",
 		"INFO SUPER TEXT": "Dipicu oleh 4 telur. Memberikan 10 putaran gratis dengan setiap petak dimulai dari 2 unit Blob. Level belah bertahan sepanjang bonus.",
 		"INFO HIDDEN TEXT": "Dipicu oleh 5 telur atau lebih. Memberikan 10 putaran gratis dengan setiap petak dimulai dari 3 unit Blob. Level belah bertahan sepanjang bonus.",
+		"INFO NO RETRIGGER": "Tanpa pemicu ulang: putaran gratis tambahan tidak dapat dimenangkan selama bonus.",
 		"INFO WAYS": "Cara menang",
 		"INFO WAYS 1": "Blob Split menggunakan kemenangan klaster, bukan garis.",
 		"INFO WAYS 2": "Kemenangan memerlukan Blob bertetangga yang berwarna sama: minimal 2 petak yang berisi total 5 unit Blob atau lebih.",
@@ -1141,7 +1177,11 @@
 		"SKIP BONUS": "Lewati bonus",
 		"SKIP BONUS TITLE": "Lewati bonus?",
 		"SKIP BONUS TEXT": "Sisa bonus dimainkan seketika dan total kemenanganmu ditampilkan.",
-		"SKIP": "Lewati"
+		"SKIP": "Lewati",
+		"LAUNCH ERROR TITLE": "Game tidak dapat dimuat",
+		"LAUNCH ERROR RGS": "Tautan game ini tidak memiliki alamat server game yang valid (rgs_url), jadi game tidak dapat terhubung dan tidak dapat dimainkan. Silakan buka kembali game dari lobi.",
+		"LAUNCH ERROR SESSION": "Tautan game ini tidak memiliki sesi, jadi game tidak dapat terhubung dan tidak dapat dimainkan. Silakan buka kembali game dari lobi.",
+		"ACTIVATE FOR": "Aktifkan %name% seharga %price% per putaran?"
 	},
 	"ja": {
 		"BONUS": "ボーナス",
@@ -1236,6 +1276,7 @@
 		"INFO NORMAL TEXT": "タマゴ3個で発動。フリースピン10回を獲得し、すべてのタイルがブロブ1ユニットからスタートします。分裂レベルはボーナス中ずっと残ります。",
 		"INFO SUPER TEXT": "タマゴ4個で発動。フリースピン10回を獲得し、すべてのタイルがブロブ2ユニットからスタートします。分裂レベルはボーナス中ずっと残ります。",
 		"INFO HIDDEN TEXT": "タマゴ5個以上で発動。フリースピン10回を獲得し、すべてのタイルがブロブ3ユニットからスタートします。分裂レベルはボーナス中ずっと残ります。",
+		"INFO NO RETRIGGER": "再トリガーなし：ボーナス中に追加のフリースピンは獲得できません。",
 		"INFO WAYS": "勝利の方法",
 		"INFO WAYS 1": "Blob Splitはラインではなくクラスターで勝利します。",
 		"INFO WAYS 2": "勝利には隣り合う同じ色のブロブが必要です：合計5ユニット以上のブロブを含む最低2タイル。",
@@ -1284,7 +1325,11 @@
 		"SKIP BONUS": "ボーナスをスキップ",
 		"SKIP BONUS TITLE": "ボーナスをスキップしますか？",
 		"SKIP BONUS TEXT": "残りのボーナスが即座に消化され、合計獲得額が表示されます。",
-		"SKIP": "スキップ"
+		"SKIP": "スキップ",
+		"LAUNCH ERROR TITLE": "ゲームを読み込めません",
+		"LAUNCH ERROR RGS": "このゲームリンクには有効なゲームサーバーのアドレス（rgs_url）がないため、ゲームに接続できず、プレイできません。ロビーからゲームを開き直してください。",
+		"LAUNCH ERROR SESSION": "このゲームリンクにはセッションがないため、ゲームに接続できず、プレイできません。ロビーからゲームを開き直してください。",
+		"ACTIVATE FOR": "%name%を1スピンあたり%price%で有効にしますか？"
 	},
 	"ko": {
 		"BONUS": "보너스",
@@ -1379,6 +1424,7 @@
 		"INFO NORMAL TEXT": "알 3개로 발동. 모든 타일이 블롭 1유닛으로 시작하는 프리 스핀 10회를 지급합니다. 분열 레벨은 보너스 내내 유지됩니다.",
 		"INFO SUPER TEXT": "알 4개로 발동. 모든 타일이 블롭 2유닛으로 시작하는 프리 스핀 10회를 지급합니다. 분열 레벨은 보너스 내내 유지됩니다.",
 		"INFO HIDDEN TEXT": "알 5개 이상으로 발동. 모든 타일이 블롭 3유닛으로 시작하는 프리 스핀 10회를 지급합니다. 분열 레벨은 보너스 내내 유지됩니다.",
+		"INFO NO RETRIGGER": "재발동 없음: 보너스 중에는 추가 프리 스핀을 획득할 수 없습니다.",
 		"INFO WAYS": "당첨 방법",
 		"INFO WAYS 1": "Blob Split은 라인 대신 클러스터 당첨을 사용합니다.",
 		"INFO WAYS 2": "당첨하려면 같은 색의 인접한 블롭이 필요합니다: 합계 블롭 5유닛 이상을 담은 최소 2개 타일.",
@@ -1427,7 +1473,11 @@
 		"SKIP BONUS": "보너스 건너뛰기",
 		"SKIP BONUS TITLE": "보너스를 건너뛸까요?",
 		"SKIP BONUS TEXT": "남은 보너스가 즉시 진행되고 총 당첨금이 표시됩니다.",
-		"SKIP": "건너뛰기"
+		"SKIP": "건너뛰기",
+		"LAUNCH ERROR TITLE": "게임을 불러올 수 없습니다",
+		"LAUNCH ERROR RGS": "이 게임 링크에 유효한 게임 서버 주소(rgs_url)가 없어 게임에 연결할 수 없으며 플레이할 수 없습니다. 로비에서 게임을 다시 열어 주세요.",
+		"LAUNCH ERROR SESSION": "이 게임 링크에 세션이 없어 게임에 연결할 수 없으며 플레이할 수 없습니다. 로비에서 게임을 다시 열어 주세요.",
+		"ACTIVATE FOR": "%name%을(를) 스핀당 %price%에 활성화할까요?"
 	},
 	"pl": {
 		"BONUS": "Bonus",
@@ -1522,6 +1572,7 @@
 		"INFO NORMAL TEXT": "Uruchamiany przez 3 jajka. Przyznaje 10 darmowych spinów, a każde pole zaczyna z 1 jednostką Bloba. Poziomy podziału zostają przez cały bonus.",
 		"INFO SUPER TEXT": "Uruchamiany przez 4 jajka. Przyznaje 10 darmowych spinów, a każde pole zaczyna z 2 jednostkami Blobów. Poziomy podziału zostają przez cały bonus.",
 		"INFO HIDDEN TEXT": "Uruchamiany przez 5 lub więcej jajek. Przyznaje 10 darmowych spinów, a każde pole zaczyna z 3 jednostkami Blobów. Poziomy podziału zostają przez cały bonus.",
+		"INFO NO RETRIGGER": "Brak ponownej aktywacji: podczas bonusu nie można wygrać dodatkowych darmowych spinów.",
 		"INFO WAYS": "Sposoby wygrywania",
 		"INFO WAYS 1": "Blob Split stosuje wygrane klastrowe zamiast linii.",
 		"INFO WAYS 2": "Wygrana wymaga sąsiadujących Blobów tego samego koloru: co najmniej 2 pól zawierających łącznie 5 lub więcej jednostek Blobów.",
@@ -1570,7 +1621,11 @@
 		"SKIP BONUS": "Pomiń bonus",
 		"SKIP BONUS TITLE": "Pominąć bonus?",
 		"SKIP BONUS TEXT": "Reszta bonusu rozegra się natychmiast, a zobaczysz swoją łączną wygraną.",
-		"SKIP": "Pomiń"
+		"SKIP": "Pomiń",
+		"LAUNCH ERROR TITLE": "Nie można wczytać gry",
+		"LAUNCH ERROR RGS": "Ten link do gry nie zawiera prawidłowego adresu serwera gry (rgs_url), więc gra nie może się połączyć i nie można w nią grać. Otwórz grę ponownie z lobby.",
+		"LAUNCH ERROR SESSION": "Ten link do gry nie zawiera sesji, więc gra nie może się połączyć i nie można w nią grać. Otwórz grę ponownie z lobby.",
+		"ACTIVATE FOR": "Aktywować %name% za %price% za spin?"
 	},
 	"pt": {
 		"BONUS": "Bônus",
@@ -1665,6 +1720,7 @@
 		"INFO NORMAL TEXT": "Ativado por 3 ovos. Concede 10 giros grátis com todas as casas começando com 1 unidade de Blob. Os níveis de divisão ficam durante todo o bônus.",
 		"INFO SUPER TEXT": "Ativado por 4 ovos. Concede 10 giros grátis com todas as casas começando com 2 unidades de Blob. Os níveis de divisão ficam durante todo o bônus.",
 		"INFO HIDDEN TEXT": "Ativado por 5 ou mais ovos. Concede 10 giros grátis com todas as casas começando com 3 unidades de Blob. Os níveis de divisão ficam durante todo o bônus.",
+		"INFO NO RETRIGGER": "Sem reativação: não é possível ganhar giros grátis extras durante o bônus.",
 		"INFO WAYS": "Formas de ganhar",
 		"INFO WAYS 1": "Blob Split usa ganhos por cluster em vez de linhas.",
 		"INFO WAYS 2": "Um ganho exige Blobs vizinhos da mesma cor: pelo menos 2 casas com 5 ou mais unidades de Blob no total.",
@@ -1713,7 +1769,11 @@
 		"SKIP BONUS": "Pular bônus",
 		"SKIP BONUS TITLE": "Pular o bônus?",
 		"SKIP BONUS TEXT": "O resto do bônus é jogado na hora e o seu ganho total é exibido.",
-		"SKIP": "Pular"
+		"SKIP": "Pular",
+		"LAUNCH ERROR TITLE": "Não é possível carregar o jogo",
+		"LAUNCH ERROR RGS": "Este link não tem um endereço de servidor de jogo válido (rgs_url), por isso o jogo não consegue ligar-se nem ser jogado. Abra o jogo novamente a partir do lobby.",
+		"LAUNCH ERROR SESSION": "Este link não tem uma sessão, por isso o jogo não consegue ligar-se nem ser jogado. Abra o jogo novamente a partir do lobby.",
+		"ACTIVATE FOR": "Ativar %name% por %price% por rodada?"
 	},
 	"ru": {
 		"BONUS": "Бонус",
@@ -1808,6 +1868,7 @@
 		"INFO NORMAL TEXT": "Запускается 3 яйцами. Даёт 10 бесплатных вращений, в начале на каждой клетке 1 единица Blob. Уровни деления сохраняются до конца бонуса.",
 		"INFO SUPER TEXT": "Запускается 4 яйцами. Даёт 10 бесплатных вращений, в начале на каждой клетке 2 единицы Blob. Уровни деления сохраняются до конца бонуса.",
 		"INFO HIDDEN TEXT": "Запускается 5 или более яйцами. Даёт 10 бесплатных вращений, в начале на каждой клетке 3 единицы Blob. Уровни деления сохраняются до конца бонуса.",
+		"INFO NO RETRIGGER": "Без повторного запуска: во время бонуса нельзя выиграть дополнительные бесплатные вращения.",
 		"INFO WAYS": "Как выиграть",
 		"INFO WAYS 1": "В Blob Split выигрыши считаются по кластерам, а не по линиям.",
 		"INFO WAYS 2": "Для выигрыша нужны соседние Blob одного цвета: минимум 2 клетки, на которых в сумме 5 или более единиц Blob.",
@@ -1856,7 +1917,11 @@
 		"SKIP BONUS": "Пропустить бонус",
 		"SKIP BONUS TITLE": "Пропустить бонус?",
 		"SKIP BONUS TEXT": "Остаток бонуса разыграется мгновенно, и вы увидите общий выигрыш.",
-		"SKIP": "Пропустить"
+		"SKIP": "Пропустить",
+		"LAUNCH ERROR TITLE": "Не удаётся загрузить игру",
+		"LAUNCH ERROR RGS": "В ссылке на игру нет действительного адреса игрового сервера (rgs_url), поэтому игра не может подключиться и в неё нельзя играть. Откройте игру заново из лобби.",
+		"LAUNCH ERROR SESSION": "В ссылке на игру нет сессии, поэтому игра не может подключиться и в неё нельзя играть. Откройте игру заново из лобби.",
+		"ACTIVATE FOR": "Включить %name% за %price% за спин?"
 	},
 	"tr": {
 		"BONUS": "Bonus",
@@ -1951,6 +2016,7 @@
 		"INFO NORMAL TEXT": "3 yumurta ile tetiklenir. Her kare 1 Blob birimiyle başlayarak 10 bedava çevirme verir. Bölünme seviyeleri bonus boyunca kalır.",
 		"INFO SUPER TEXT": "4 yumurta ile tetiklenir. Her kare 2 Blob birimiyle başlayarak 10 bedava çevirme verir. Bölünme seviyeleri bonus boyunca kalır.",
 		"INFO HIDDEN TEXT": "5 veya daha fazla yumurta ile tetiklenir. Her kare 3 Blob birimiyle başlayarak 10 bedava çevirme verir. Bölünme seviyeleri bonus boyunca kalır.",
+		"INFO NO RETRIGGER": "Yeniden tetikleme yok: bonus sırasında ek bedava çevirme kazanılamaz.",
 		"INFO WAYS": "Kazanma yolları",
 		"INFO WAYS 1": "Blob Split, çizgiler yerine küme kazançları kullanır.",
 		"INFO WAYS 2": "Kazanç için aynı renkteki komşu Blobs gerekir: toplamda 5 veya daha fazla Blob birimi taşıyan en az 2 kare.",
@@ -1999,7 +2065,11 @@
 		"SKIP BONUS": "Bonusu atla",
 		"SKIP BONUS TITLE": "Bonus atlansın mı?",
 		"SKIP BONUS TEXT": "Bonusun geri kalanı anında oynanır ve toplam kazancın gösterilir.",
-		"SKIP": "Atla"
+		"SKIP": "Atla",
+		"LAUNCH ERROR TITLE": "Oyun yüklenemiyor",
+		"LAUNCH ERROR RGS": "Bu oyun bağlantısında geçerli bir oyun sunucusu adresi (rgs_url) yok; bu yüzden oyun bağlanamıyor ve oynanamıyor. Lütfen oyunu lobiden yeniden açın.",
+		"LAUNCH ERROR SESSION": "Bu oyun bağlantısında oturum yok; bu yüzden oyun bağlanamıyor ve oynanamıyor. Lütfen oyunu lobiden yeniden açın.",
+		"ACTIVATE FOR": "%name% spin başına %price% karşılığında etkinleştirilsin mi?"
 	},
 	"vi": {
 		"BONUS": "Thưởng",
@@ -2094,6 +2164,7 @@
 		"INFO NORMAL TEXT": "Kích hoạt bởi 3 trứng. Tặng 10 vòng quay miễn phí, mỗi ô bắt đầu với 1 đơn vị Blob. Cấp phân chia được giữ suốt vòng thưởng.",
 		"INFO SUPER TEXT": "Kích hoạt bởi 4 trứng. Tặng 10 vòng quay miễn phí, mỗi ô bắt đầu với 2 đơn vị Blob. Cấp phân chia được giữ suốt vòng thưởng.",
 		"INFO HIDDEN TEXT": "Kích hoạt bởi 5 trứng trở lên. Tặng 10 vòng quay miễn phí, mỗi ô bắt đầu với 3 đơn vị Blob. Cấp phân chia được giữ suốt vòng thưởng.",
+		"INFO NO RETRIGGER": "Không kích hoạt lại: không thể nhận thêm vòng quay miễn phí trong vòng thưởng.",
 		"INFO WAYS": "Cách thắng",
 		"INFO WAYS 1": "Blob Split dùng thắng theo cụm thay vì theo dòng.",
 		"INFO WAYS 2": "Để thắng cần các Blobs cùng màu kề nhau: ít nhất 2 ô chứa tổng cộng từ 5 đơn vị Blob trở lên.",
@@ -2142,7 +2213,11 @@
 		"SKIP BONUS": "Bỏ qua thưởng",
 		"SKIP BONUS TITLE": "Bỏ qua vòng thưởng?",
 		"SKIP BONUS TEXT": "Phần còn lại của vòng thưởng sẽ diễn ra ngay lập tức và tổng tiền thắng của bạn được hiển thị.",
-		"SKIP": "Bỏ qua"
+		"SKIP": "Bỏ qua",
+		"LAUNCH ERROR TITLE": "Không thể tải trò chơi",
+		"LAUNCH ERROR RGS": "Liên kết trò chơi này không có địa chỉ máy chủ trò chơi hợp lệ (rgs_url), nên trò chơi không thể kết nối và không thể chơi. Vui lòng mở lại trò chơi từ sảnh.",
+		"LAUNCH ERROR SESSION": "Liên kết trò chơi này không có phiên, nên trò chơi không thể kết nối và không thể chơi. Vui lòng mở lại trò chơi từ sảnh.",
+		"ACTIVATE FOR": "Kích hoạt %name% với %price% mỗi lượt quay?"
 	},
 	"zh": {
 		"BONUS": "奖励",
@@ -2237,6 +2312,7 @@
 		"INFO NORMAL TEXT": "由 3 个蛋触发。奖励 10 次免费旋转，每格初始 1 个 Blob 单位。分裂等级在整个奖励中保留。",
 		"INFO SUPER TEXT": "由 4 个蛋触发。奖励 10 次免费旋转，每格初始 2 个 Blob 单位。分裂等级在整个奖励中保留。",
 		"INFO HIDDEN TEXT": "由 5 个或以上蛋触发。奖励 10 次免费旋转，每格初始 3 个 Blob 单位。分裂等级在整个奖励中保留。",
+		"INFO NO RETRIGGER": "无再次触发：奖励期间无法获得额外的免费旋转。",
 		"INFO WAYS": "获胜方式",
 		"INFO WAYS 1": "Blob Split 采用集群获胜，而非赢线。",
 		"INFO WAYS 2": "获胜需要相邻的同色 Blob：至少 2 格，且共有 5 个或以上 Blob 单位。",
@@ -2285,6 +2361,10 @@
 		"SKIP BONUS": "跳过奖励",
 		"SKIP BONUS TITLE": "跳过奖励回合？",
 		"SKIP BONUS TEXT": "奖励回合的剩余部分将立即完成，并显示你的总赢额。",
-		"SKIP": "跳过"
+		"SKIP": "跳过",
+		"LAUNCH ERROR TITLE": "无法加载游戏",
+		"LAUNCH ERROR RGS": "此游戏链接缺少有效的游戏服务器地址（rgs_url），因此游戏无法连接，也无法进行。请从大厅重新打开游戏。",
+		"LAUNCH ERROR SESSION": "此游戏链接缺少会话，因此游戏无法连接，也无法进行。请从大厅重新打开游戏。",
+		"ACTIVATE FOR": "以每次旋转 %price% 启用%name%？"
 	}
 }

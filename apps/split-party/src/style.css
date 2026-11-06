@@ -4358,11 +4358,18 @@ main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
 	transition: box-shadow 0.2s;
 	animation: bm-card-in 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) calc(var(--i) * 60ms) backwards;
 }
+/* Cards flow (Stake review 2026-11-06: on Popout S and small phones the copy ran over the price
+   and button): the design's 166/326px are minimum heights, the copy, price and button stack in
+   order from the design's offsets, and copy that the on-screen minimum font makes taller grows
+   the card instead (the row grows with it; the menu scrolls). The art covers whatever height. */
 .bm-card.wide {
 	grid-column: span 3;
-	height: 166px;
+	min-height: 166px;
+	display: flex;
+	flex-direction: column;
+	padding: 22px 24px 14px;
 	background-image: url('/buy/v3/extra.webp');
-	background-size: 525px 166px;
+	background-size: cover;
 	background-position: left top;
 }
 .bm-card.wide.feature {
@@ -4370,10 +4377,14 @@ main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
 }
 .bm-card.tall {
 	grid-column: span 2;
-	height: 326px;
+	min-height: 326px;
+	display: flex;
+	flex-direction: column;
+	padding: 146px 24px 14px;
 	border-color: #e0c8ff;
+	background-color: #3a3981;
 	background-image: url('/buy/v3/normal.webp');
-	background-size: 525px 326px;
+	background-size: cover;
 	background-position: center top;
 }
 .bonus-overlay.portrait .bm-card {
@@ -4490,6 +4501,11 @@ main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
 	left: 13px;
 	top: 20px;
 }
+/* The wide cards' chips keep to the art on the left, clear of the copy column. */
+.wide .bm-chips {
+	right: auto;
+	max-width: 220px;
+}
 .chip-break {
 	flex-basis: 100%;
 }
@@ -4544,11 +4560,12 @@ main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
 
 /* Copy: Coiny titles, Poppins lines. Wide cards keep theirs in a column on the right. */
 .bm-card h3 {
+	position: relative;
 	margin: 0;
 	font: 400 20px/1.2 'Coiny', sans-serif;
 	letter-spacing: 0.6px;
 	text-transform: uppercase;
-	white-space: nowrap;
+	overflow-wrap: anywhere;
 }
 .bm-card p {
 	margin: 0;
@@ -4558,10 +4575,9 @@ main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
 	letter-spacing: 0.36px;
 }
 .bm-text {
-	position: absolute;
-	left: 266px;
+	position: relative;
+	margin-left: 242px;
 	width: 232px;
-	top: 22px;
 }
 .bm-text p {
 	margin-top: 5px;
@@ -4570,25 +4586,16 @@ main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
 	font-size: max(11px, calc(9px / var(--k, 1)));
 	letter-spacing: 0.33px;
 }
-.tall h3 {
-	position: absolute;
-	left: 0;
-	right: 0;
-	top: 146px;
-}
 .tall p:not(.sr-only) {
-	position: absolute;
-	left: 24px;
-	right: 24px;
-	top: 174px;
+	position: relative;
+	margin: 4px 0 8px;
 	color: #fff3e8;
 }
 /* The wide cards' well: a dark pill with the price, the white ACTIVATE pill in its right side. */
 .bm-well {
-	position: absolute;
-	left: 24px;
-	right: 24px;
-	top: 108px;
+	position: relative;
+	flex: none;
+	margin-top: auto;
 	height: 44px;
 	border-radius: 63px;
 	background: rgb(0 0 0 / 0.2);
@@ -4596,17 +4603,18 @@ main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
 .bm-well .bm-price {
 	position: absolute;
 	left: 0;
-	width: 204px;
+	/* Clear of the ACTIVATE pill (269 + its 32 padding); App fits a long amount's size. */
+	width: 172px;
 	top: 0;
 	font: 700 30px/44px 'Poppins', sans-serif;
+	white-space: nowrap;
 }
 .tall .bm-price {
-	position: absolute;
-	left: 0;
-	right: 0;
-	top: 219px;
+	position: relative;
+	margin-top: auto;
 	font: 400 30px/1.2 'Coiny', sans-serif;
 	letter-spacing: 0.9px;
+	white-space: nowrap;
 }
 .bm-button {
 	height: 44px;
@@ -4648,10 +4656,9 @@ main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
 	color: #fff;
 }
 .bm-button.buy {
-	position: absolute;
-	left: 24px;
-	right: 24px;
-	top: 268px;
+	position: relative;
+	flex: none;
+	margin-top: 13px;
 	background: #fb89b9;
 }
 .super .bm-button.buy {
@@ -4764,12 +4771,16 @@ main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
 
 /* The menu popover is frosted (user, 2026-10-30: "lets add some more frost"): a real backdrop blur
    and a milkier tint. The other glass panels stay unblurred (see the glass pass); this one is small
-   and only open briefly. Classes ×4 to outrank the glass pass. */
+   and only open briefly. The blur was dropped with the rest on 2026-11-04 (see .overlay) and brought
+   back for this panel alone the same day (user: "add some more blur in background"), accepting the
+   pinch-zoom artifacts on Stake while the menu is open. Classes ×4 to outrank the glass pass. */
 .menu-panel.menu-panel.menu-panel.menu-panel {
 	border-color: rgb(255 255 255 / 0.28);
 	background:
 		linear-gradient(rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.04) 55%),
-		rgb(40 30 80 / 0.86); /* no backdrop blur: see .overlay */
+		rgb(40 30 80 / 0.62);
+	-webkit-backdrop-filter: blur(14px) saturate(1.3);
+	backdrop-filter: blur(14px) saturate(1.3);
 	box-shadow:
 		inset 0 1px 0 rgb(255 255 255 / 0.3),
 		0 12px 30px rgb(0 0 0 / 0.35);
@@ -4823,6 +4834,21 @@ main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
 }
 .cf-art.mystery {
 	background-image: url('/buy/v3/mystery.webp');
+}
+/* Feature Spin's confirmation (it is a switch, but 50 bets a spin): its wide sky card, the
+   volcano standing on the left. */
+.dialog.confirm.confirm.confirm.confirm[data-mode='feature'] {
+	--accent: #5ab8ff;
+}
+.dialog.confirm.confirm.confirm.confirm.confirm .cf-art.feature {
+	background-image: url('/buy/v3/feature.webp');
+	background-size: cover;
+}
+.cf-art.feature .bm-hero {
+	left: 24px;
+	top: 6px;
+	width: 160px;
+	height: 160px;
 }
 /* The card's foot gradient, ending in the dialog's indigo so the art runs into it. */
 .cf-art .bm-shade {

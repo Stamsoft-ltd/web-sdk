@@ -100,19 +100,6 @@
 		[1075, 26, 85, 71],
 		[1119, 176, 50, 42],
 	];
-	// The bubbles are party balloons (user 2026-11-04 "make the ballons ... more cool"): each
-	// wears a little blob face and trails a string from a knot, in the blobs' colours (the
-	// purple art hue-shifted; the big two stay the design's purple and pink).
-	const TINTS = [
-		'hue-rotate(55deg) saturate(1.1)',
-		'none',
-		'hue-rotate(-95deg) saturate(1.1)',
-		'hue-rotate(150deg) saturate(1.35) brightness(1.3)',
-		'hue-rotate(-40deg)',
-		'hue-rotate(-160deg) saturate(1.2) brightness(1.1)',
-		'hue-rotate(55deg) saturate(1.1)',
-		'hue-rotate(125deg) saturate(1.3) brightness(1.2)',
-	];
 	const CLOVERS = [
 		[217, 334.69, 73.3, 71.82, -8],
 		[684.85, 459.23, 67.02, 65.66, 14],
@@ -144,7 +131,7 @@
 			.catch(() => {});
 	}
 
-	// When the card closes the balloons pop where they are, one after another (the wrapper's
+	// When the card closes the bubbles pop where they are, one after another (the wrapper's
 	// fade alone left them hanging in place). On `transform`, which nothing else animates on
 	// them, so it adds to the running rise and sway.
 	const popOut = (node: HTMLElement, i: number) => ({
@@ -223,25 +210,7 @@
 					></i>{/each}
 			{/if}
 			{#each BUBBLES as box, i}
-				<div use:release={i} out:popOut|global={i} class="balloon" style={`${px(box)};--i:${i};filter:${TINTS[i]}`}>
-					<svg class="string" viewBox="0 0 14 100" preserveAspectRatio="none" aria-hidden="true"
-						><path d="M7 0 C1 16 13 30 7 48 S1 80 7 100" /></svg
-					>
-					<span class="knot"></span>
-					<img src={BUBBLE} alt="" />
-					<!-- A blob's face, in the art's 700x580 box (the ball is centred at 350,295). -->
-					<svg class="face" viewBox="0 0 700 580" aria-hidden="true">
-						<ellipse class="cheek" cx="236" cy="352" rx="34" ry="19" />
-						<ellipse class="cheek" cx="464" cy="352" rx="34" ry="19" />
-						<g class="eyes">
-							<ellipse cx="292" cy="290" rx="24" ry="33" />
-							<ellipse cx="408" cy="290" rx="24" ry="33" />
-							<circle class="hi" cx="284" cy="278" r="9" />
-							<circle class="hi" cx="400" cy="278" r="9" />
-						</g>
-						<path class="smile" d="M310 352 Q350 392 390 352" />
-					</svg>
-				</div>
+				<img use:release={i} out:popOut|global={i} class="bubble" src={BUBBLE} alt="" style={`${px(box)};--i:${i}`} />
 			{/each}
 			<!-- Behind the banner: the medallion rises out of its top. -->
 			<div class="medal">
@@ -567,9 +536,9 @@
 		}
 	}
 
-	/* The design's bubbles, as balloons: they pop in on their spots and bob and sway (release()
-	   then floats them away), the string swinging under the knot and the face blinking. */
-	.balloon {
+	/* The design's bubbles (11195:9763 art) pop in on their spots and bob and sway (release() then
+	   floats them away; popOut pops them when the card closes). */
+	.bubble {
 		animation:
 			fs-pop calc(450ms * var(--p)) cubic-bezier(0.3, 1.6, 0.5, 1) calc((250ms + var(--i) * 90ms) * var(--p)) both,
 			fs-float calc(2.4s + var(--i) * 0.27s) ease-in-out calc(var(--i) * -0.8s) infinite,
@@ -594,82 +563,7 @@
 			rotate: 6deg;
 		}
 	}
-	.balloon > * {
-		position: absolute;
-	}
-	.balloon img {
-		inset: 0;
-		width: 100%;
-		height: 100%;
-	}
-	.balloon .face {
-		inset: 0;
-		width: 100%;
-		height: 100%;
-	}
-	.face .eyes {
-		fill: #2a0b5c;
-		transform-box: fill-box;
-		transform-origin: center;
-		animation: fs-blink calc(3.2s + var(--i) * 0.45s) calc(var(--i) * -0.9s) infinite;
-	}
-	.face .hi {
-		fill: #fff;
-	}
-	.face .cheek {
-		fill: #ff86cf;
-		opacity: 0.55;
-	}
-	.face .smile {
-		fill: none;
-		stroke: #2a0b5c;
-		stroke-width: 15;
-		stroke-linecap: round;
-	}
-	@keyframes fs-blink {
-		0%,
-		93%,
-		100% {
-			scale: 1;
-		}
-		96.5% {
-			scale: 1 0.12;
-		}
-	}
-	/* The knot under the ball (it sits at 90% of the art's height) and the string from it. */
-	.knot {
-		left: calc(50% - 5px);
-		top: calc(89% - 2px);
-		width: 10px;
-		height: 8px;
-		background: #6a26d8;
-		clip-path: polygon(50% 0, 100% 100%, 0 100%);
-	}
-	.string {
-		left: calc(50% - 7px);
-		top: calc(89% + 5px);
-		width: 14px;
-		height: 160%;
-		overflow: visible;
-		transform-origin: 50% 0;
-		animation: fs-string calc(1.5s + var(--i) * 0.17s) ease-in-out calc(var(--i) * -0.6s) infinite alternate;
-	}
-	.string path {
-		fill: none;
-		stroke: #ffffffc0;
-		stroke-width: 1.6;
-		vector-effect: non-scaling-stroke;
-	}
-	@keyframes fs-string {
-		from {
-			rotate: -9deg;
-			scale: 1 1;
-		}
-		to {
-			rotate: 9deg;
-			scale: 1 0.96;
-		}
-	}
+
 	/* The jelly clovers stuck on the banner: pop on, then a slow jiggle. */
 	.clover {
 		rotate: var(--r);
@@ -732,33 +626,9 @@
 		}
 	}
 
-	/* Each bonus tier opens in its own colours: Normal is the design's pink, Super sunset gold
-	   under turning rays (sepia first: a plain hue turn splits the pink's shading in two),
-	   Hidden violet on a night sky with twinkling stars. */
-	.t-super :is(.banner, .clover) {
-		filter: sepia(1) saturate(3.4) hue-rotate(8deg) brightness(1.04);
-	}
-	.t-hidden :is(.banner, .clover) {
-		filter: hue-rotate(-62deg) saturate(1.1);
-	}
-	.t-super .bonus-box {
-		border-color: #e08a12;
-		background: rgb(255 214 120 / 0.55);
-	}
-	.t-hidden .bonus-box {
-		border-color: #8a3ff0;
-		background: rgb(196 160 255 / 0.55);
-	}
-	.t-super .medal-pill {
-		background: #ffc24d;
-		color: #6b3a0e;
-		border-color: #6b3a0e;
-	}
-	.t-hidden .medal-pill {
-		background: #ff7ae0;
-		color: #3b1470;
-		border-color: #3b1470;
-	}
+	/* Every tier's card is the design's pink (user 2026-11-04: "make this pink like figma"; Super
+	   was tinted gold and Hidden violet); the tiers differ by what is behind it: Super's turning
+	   rays, Hidden's night sky with twinkling stars. */
 	.mystery.t-hidden .dim {
 		background: radial-gradient(120% 90% at 50% 45%, #1a0b3dcc, #05021aee);
 	}
@@ -797,9 +667,7 @@
 		}
 	}
 	@media (prefers-reduced-motion: reduce) {
-		.prompt,
-		.string,
-		.face .eyes {
+		.prompt {
 			animation: none;
 		}
 		.rays,
@@ -811,7 +679,7 @@
 		.spins span,
 		.medal,
 		.medal-blob,
-		.balloon,
+		.bubble,
 		.clover,
 		.mascot,
 		.total-box,

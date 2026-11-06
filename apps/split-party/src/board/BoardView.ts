@@ -153,13 +153,16 @@ const layout = (units: number): number[][] =>
 								[-9, 47, 0.46],
 								[63, 47, 0.46],
 							]
-						: [
-								[-12, 2, 0.44],
-								[26, 2, 0.44],
-								[64, 2, 0.44],
-								[-12, 50, 0.44],
-								[26, 50, 0.44],
-								[64, 50, 0.44],
+						: // Six a little smaller and spread to the cell's edges (user 2026-11-04: at 0.44 they
+							// "fit very hard", the wide ones overlapping): columns centred at 10.5 / 50 / 89.5,
+							// rows at 26.5 / 72.5, so even APPLE (the widest) clears its neighbours.
+							[
+								[-9, 7, 0.39],
+								[30.5, 7, 0.39],
+								[70, 7, 0.39],
+								[-9, 53, 0.39],
+								[30.5, 53, 0.39],
+								[70, 53, 0.39],
 							];
 const centre = ([x, y, s]: number[]) => [x + 50 * s, y + 50 * s];
 const dist = (a: number[], b: number[]) => {

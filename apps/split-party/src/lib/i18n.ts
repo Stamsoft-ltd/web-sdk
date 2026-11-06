@@ -61,6 +61,11 @@ const en: Record<string, string> = {
 	'SKIP BONUS': 'Skip bonus',
 	'SKIP BONUS TITLE': 'Skip bonus?',
 	'SKIP BONUS TEXT': 'The rest of the bonus plays out instantly and your total win is shown.',
+	'LAUNCH ERROR TITLE': "Game can't be loaded",
+	'LAUNCH ERROR RGS':
+		"This game link has no valid game server address (rgs_url), so the game can't connect and can't be played. Please open the game again from the lobby.",
+	'LAUNCH ERROR SESSION':
+		"This game link has no session, so the game can't connect and can't be played. Please open the game again from the lobby.",
 	SKIP: 'Skip',
 	PREVIEW: 'Visual preview · not live play',
 	LIVE: 'Connected to RGS',
@@ -81,6 +86,7 @@ const en: Record<string, string> = {
 	CHOOSE: 'Pick your party',
 	'BUY BONUS': 'Buy bonus',
 	'BUY FOR': 'Buy %name% for %price%?',
+	'ACTIVATE FOR': 'Activate %name% for %price% per spin?',
 	'FEATURE DESC': 'Play one spin with random Split levels across the grid. Tiles can hold up to 6 Blobs.',
 	'NORMAL DESC':
 		'Awards 10 Free Spins. Each winning connection upgrades the tiles involved, allowing them to split into up to 6 Blobs. Upgrades remain active throughout the bonus.',
@@ -163,6 +169,7 @@ const en: Record<string, string> = {
 		'Triggered by 4 eggs. Awards 10 free spins with every tile starting at 2 blob units. Split levels stay for the whole bonus.',
 	'INFO HIDDEN TEXT':
 		'Triggered by 5 or more eggs. Awards 10 free spins with every tile starting at 3 blob units. Split levels stay for the whole bonus.',
+	'INFO NO RETRIGGER': 'No retriggers: no extra free spins can be won during the bonus.',
 	'INFO WAYS': 'Ways to win',
 	'INFO WAYS 1': 'Blob Split uses cluster wins instead of lines.',
 	'INFO WAYS 2': 'A win needs neighbouring blobs of the same colour: at least 2 tiles holding 5 or more blob units in total.',
@@ -213,10 +220,12 @@ const social: Record<string, string> = {
 	BUY: 'Play',
 	'BUY BONUS': 'Get bonus',
 	'BUY FOR': 'Play %name% for %price%?',
+	'ACTIVATE FOR': 'Activate %name% for %price% per play?',
 	'BASE BET': 'Base play',
 	'BET REPLAY': 'Play replay',
 	'PAYOUT MULTIPLIER': 'Win multiplier',
 	'TOTAL BET COST': 'Total play',
+	'COST MULTIPLIER': 'Play multiplier',
 	'INFO CTRL PLUS': 'Increase play amount',
 	'INFO CTRL MINUS': 'Decrease play amount',
 	PAYTABLE: 'Win table',

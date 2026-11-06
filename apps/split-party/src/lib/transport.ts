@@ -6,6 +6,9 @@ const check = (d: any) => {
 		throw Error(d?.message ?? d?.error?.message ?? 'RGS request failed');
 	return d;
 };
+// The no-RGS visual preview (?demo=1) is for development only: a production build never plays
+// without a valid rgs_url (Stake review 2026-11-06). Under the Node tests there is no Vite env.
+const DEMO_ALLOWED = (import.meta as { env?: { PROD?: boolean } }).env?.PROD !== true;
 export function launch(search: string) {
 	const p = new URLSearchParams(search);
 	return {
@@ -13,7 +16,7 @@ export function launch(search: string) {
 		rgsUrl: (p.get('rgs_url') ?? '').replace(/^https?:\/\//, '').replace(/\/$/, ''),
 		lang: p.get('lang') ?? 'en',
 		social: p.get('social') === 'true',
-		demo: p.get('demo') === '1',
+		demo: DEMO_ALLOWED && p.get('demo') === '1',
 		replay: p.get('replay') === 'true',
 		game: p.get('game') ?? '',
 		version: p.get('version') ?? '',
@@ -27,12 +30,30 @@ export function launch(search: string) {
 	};
 }
 export type Launch = ReturnType<typeof launch>;
+// A usable RGS address: a host name (or IP), optionally with a port and path, nothing else.
+function validRgs(host: string) {
+	if (!host || /[\s@?#\\]/.test(host)) return false;
+	try {
+		const { hostname } = new URL(`https://${host}`);
+		return hostname === 'localhost' || /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(hostname);
+	} catch {
+		return false;
+	}
+}
+/** Why a live launch can't run: no valid rgs_url, or no session. Null when it can (or in demo). */
+export function launchProblem(q: Launch): 'rgs' | 'session' | null {
+	if (q.demo) return null;
+	if (!validRgs(q.rgsUrl)) return 'rgs';
+	if (!q.replay && !q.sessionID) return 'session';
+	return null;
+}
 export function createTransport(q: Launch) {
 	let demoBalance = 10000;
 	const cursor: Partial<Record<Mode, number>> = {};
 	let pending: Round | null = null;
 	return {
 		async authenticate() {
+			if (launchProblem(q)) throw Error('Invalid launch: missing or invalid rgs_url or session');
 			if (q.demo)
 				return {
 					balance: { amount: demoBalance * 1e6, currency: q.social ? 'XGC' : 'USD' },
@@ -46,7 +67,7 @@ export function createTransport(q: Launch) {
 			return check(await requestAuthenticate({ ...q, language: q.lang }));
 		},
 		async replay() {
-			if (!q.rgsUrl || !q.game || !q.version || !q.event) throw Error('Incomplete replay launch');
+			if (launchProblem(q) || !q.game || !q.version || !q.event) throw Error('Incomplete replay launch');
 			return parseRound(check(await requestReplay({ ...q, language: q.lang })), q.amount, q.mode);
 		},
 		async play(mode: Mode, amount: number, currency: string) {
@@ -66,6 +87,8 @@ export function createTransport(q: Launch) {
 				demoBalance -= amount * MODES[mode];
 				return { round: pending, balance: { amount: Math.round(demoBalance * 1e6), currency } };
 			}
+			// Never a wallet request without a valid launch.
+			if (launchProblem(q)) throw Error('Invalid launch: missing or invalid rgs_url or session');
 			// requestBet accepts display base-bet amount and applies API 1e6 itself.
 			return check(await requestBet({ ...q, mode, amount, currency }));
 		},
@@ -80,6 +103,7 @@ export function createTransport(q: Launch) {
 					balance: { amount: Math.round(demoBalance * 1e6), currency: q.social ? 'XGC' : 'USD' },
 				};
 			}
+			if (launchProblem(q)) throw Error('Invalid launch: missing or invalid rgs_url or session');
 			return check(await requestEndRound(q));
 		},
 	};
