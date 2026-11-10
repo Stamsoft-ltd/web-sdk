@@ -1,4 +1,7 @@
 import { GATE_CYCLE } from './gateAnimation.ts';
+export function gateCounterResetDelay(reduced: boolean, speedFactor = 1) {
+	return reduced ? 0 : (GATE_CYCLE.impact * 1000) / Math.max(1, speedFactor);
+}
 export const GATE_OPEN_DURATION_MS = Math.round(GATE_CYCLE.openStart * 1000);
 export const GATE_REWARD_ENTER_MS = Math.round(
 	(GATE_CYCLE.rewardStart - GATE_CYCLE.openStart) * 1000,

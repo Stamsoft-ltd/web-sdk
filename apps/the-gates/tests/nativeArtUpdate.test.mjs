@@ -16,7 +16,7 @@ const root = new URL('../static/assets/the-gates/', import.meta.url);
 const read = (path) => readFileSync(new URL(path, root));
 const source = (path) => readFileSync(new URL('../src/' + path, import.meta.url), 'utf8');
 test('regular symbols share equal visible ink size, independent of export padding', () => {
-	const inventory = JSON.parse(read('figma-20261012/asset-manifest.json'));
+	const inventory = JSON.parse(read('art/asset-manifest.json'));
 	for (const [name, viewport] of Object.entries(SYMBOL_VIEWPORT)) {
 		const art = inventory.assets.find((a) => a.path === `symbols/${SYMBOL_ART[name]}.png`);
 		const [x, y, right, bottom] = art.alphaBounds;
@@ -27,7 +27,7 @@ test('regular symbols share equal visible ink size, independent of export paddin
 	assert.match(source('game/gpuBoard.ts'), /symbolViewport\(tile.name\)/);
 });
 test('base chevron preserves native bytes and gate coverage at every orientation', () => {
-	const dir = 'base-gate-20261016/';
+	const dir = 'gates-base/';
 	const provenance = JSON.parse(read(dir + 'provenance.json'));
 	assert.equal(
 		createHash('sha256')
@@ -61,8 +61,8 @@ test('base chevron preserves native bytes and gate coverage at every orientation
 	assert.match(source('components/TempleGate.svelte'), /tier === 'base'\s*\? BASE_GATE_ROOT/);
 });
 test('Wild uses standalone flower with generated Key-style frame and separate pay animation', () => {
-	const rig = JSON.parse(read('rainbow-wild-20261016/WILD.json'));
-	assert.equal(rig.skins[0].attachments.body['rainbow-wild'].height, (260 * 117) / 118);
+	const rig = JSON.parse(read('wild/WILD.json'));
+	assert.equal(rig.skins[0].attachments.body['rainbow-wild'].height, (260 * 292) / 278);
 	assert.ok(rig.animations.paying.bones.body.rotate.length >= 4);
 	assert.match(source('game/gpuBoard.ts'), /name === 'KEY' \|\| name === 'WILD'/);
 	for (const title of ['TUMBLES', 'MULTIPLIER', 'FREE SPINS', 'TOTAL WIN'])

@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-22",
+  "tool": "built-in image_gen",
+  "status": "Concept only; live unchanged",
+  "file": "gold-chalice-pink-juice-v2.png",
+  "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-9f717832-19e0-420f-af62-fc54542fc860.png",
+  "prompt": "Precise edit of this simplified cartoon chalice. Preserve its exact simple goblet silhouette, two smooth C-shaped handles, short stem, plain oval foot, gold rim, single small cyan diamond in gold bezel, bold navy outlines and glossy 2D cartoon style.\nChange ONLY the color/material of the bowl and its contents:\n1. The ENTIRE OUTSIDE of the chalice must be GOLD, including the large outer bowl that is currently pink. Match the same bright warm yellow-gold, orange edge shadows and broad painted white glints as the handles, rim, stem and foot. No pink enamel anywhere on the outside.\n2. Inside the top opening, show ROSE-PINK JUICE / magical pink liquid, with an unmistakable visible elliptical liquid surface just below the gold lip. Saturated hot rose pink with a darker raspberry edge and one soft pale-pink surface reflection. The pink is ONLY the drink inside the cup, not the outer material. The gold lip stays gold, with a narrow visible gold inner wall above the pink liquid.\nKeep the front cyan diamond gem blue, not pink. Keep all simple shapes and proportions unchanged. No added decoration, new gems, scrolls, particles, bubbles, smoke, splashes or exterior glow. Full centered icon on true transparent background with clean alpha, no backdrop, cast shadow, captions, letters or watermark. This is a single clean concept icon.",
+  "sha256": "64c5a17d166ef3218c2344bb2902d02dc8f2474b954260f10c17512e0ba9cca2",
+  "size": [
+    1254,
+    1254
+  ],
+  "alphaExtrema": [
+    0,
+    255
+  ]
+}

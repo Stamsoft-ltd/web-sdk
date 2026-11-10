@@ -10,7 +10,7 @@ import {
 import { SpinePose } from '../src/game/spine.ts';
 import { gateViewport, projectFullscreenGate } from '../src/game/gateViewport.ts';
 import { GATE_CYCLE } from '../src/game/gateAnimation.ts';
-const base = new URL('../static/assets/the-gates/figma-20261012/motion/', import.meta.url);
+const base = new URL('../static/assets/the-gates/art/animations/', import.meta.url);
 const sizes = [
 	[1200, 784],
 	[1920, 1080],

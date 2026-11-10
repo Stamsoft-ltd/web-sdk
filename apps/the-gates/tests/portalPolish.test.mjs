@@ -30,7 +30,7 @@ test('mini and gate portals collapse uniformly in 60/130 ms after the hold', () 
 		shrinking(portalRemovalTracks(seed).bones['portal-root'].scale, 0.87, 0.93);
 		shrinking(gateCycleTracks(seed).bones['portal-root'].scale, 1.85, 1.98);
 	}
-	for (const dir of ['figma-20261012/motion', 'portrait-20261015'])
+	for (const dir of ['art/animations', 'portrait'])
 		for (const tier of ['normal', 'super', 'hidden']) {
 			const file = new URL(`../static/assets/the-gates/${dir}/gate-${tier}.json`, import.meta.url);
 			const rig = JSON.parse(readFileSync(file, 'utf8'));
@@ -80,18 +80,18 @@ test('Keys continue pulsing over repeated cycles until acknowledged; reduced mot
 	);
 	assert.match(
 		entry,
-		/await present\(signal, undefined, TIMING.overlayGuard\);\s*runtime.scatterCelebration = null/,
+		/await present\(signal, undefined, TIMING.overlayGuard\);[\s\S]*?kind: 'dismiss'[\s\S]*?runtime.scatterCelebration = null/,
 	);
 });
 test('only landed Keys use the unmasked over-frame layer; controls never bubble into click-skip', () => {
 	const board = source('game/gpuBoard.ts');
-	assert.match(board, /root.addChild\(background, field, mask, frame, keyLayer\)/);
+	assert.match(board, /root.addChild\(background, field, mask, frame, keyLayer, payouts\)/);
 	assert.match(board, /parent = overFrame \? keyLayer : tile.root/);
 	assert.match(board, /overFrame \? tile.root.x \+ tile.width \/ 2/);
 	assert.doesNotMatch(board, /keyLayer.mask\s*=/);
 	assert.match(
 		board,
-		/if \(state.reduced \|\| \(state.paused && !celebration\?\.keys.includes\(key\)\)\)/,
+		/if \(state.reduced \|\| \(state.paused && !celebrating\)\)/,
 	);
 	const game = source('components/Game.svelte');
 	const handler = game.slice(
@@ -119,7 +119,7 @@ test('only landed Keys use the unmasked over-frame layer; controls never bubble 
 	assert.match(game, /onclick=\{screenFastForward\}/);
 });
 test('rainbow Wild has a valid native rig, tight count-first reward and cluster-specific glow', () => {
-	const root = new URL('../static/assets/the-gates/rainbow-wild-20261016/', import.meta.url);
+	const root = new URL('../static/assets/the-gates/wild/', import.meta.url);
 	const atlas = new TextureAtlas(readFileSync(new URL('symbols.atlas', root), 'utf8'));
 	for (const page of atlas.pages)
 		page.setTexture(new FakeTexture({ width: page.width, height: page.height }));
@@ -138,7 +138,7 @@ test('rainbow Wild has a valid native rig, tight count-first reward and cluster-
 	const provenance = JSON.parse(readFileSync(new URL('provenance.json', root), 'utf8'));
 	assert.equal(
 		createHash('sha256')
-			.update(readFileSync(new URL('rainbow-wild.png', root)))
+			.update(readFileSync(new URL('flower.png', root)))
 			.digest('hex'),
 		provenance.sha256,
 	);

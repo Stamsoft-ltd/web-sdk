@@ -1,0 +1,17 @@
+{
+  "source": "User-provided separate logo layers, unchanged PNGs",
+  "assets": {
+    "gates.png": {
+      "source": "Gates Wordmark Glossy.png",
+      "sha256": "0dd4a02d910c2180e8c4839591bfd662cb52f6817faa46180e64b66dcba4df03"
+    },
+    "the.png": {
+      "source": "The Gates Wordmark.png",
+      "sha256": "6b279564e1d121c7bdf284480a3ebd815e3b5202ac8206d00f21daebb1cb9529"
+    },
+    "badge.png": {
+      "source": "pad7.png",
+      "sha256": "67b8d11bf89fe8013a416ac6c468ff6bbff6064825ac0ac3627e7f25473d7a12"
+    }
+  }
+}

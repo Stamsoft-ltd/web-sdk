@@ -97,7 +97,7 @@
 	height: 80px;
 	border: 2px solid #fcd100;
 	border-radius: 26px;
-	background: url('./assets/the-gates/figma-20261013/f6355.png') center / cover;
+	background: url('./assets/the-gates/ui/hud-panel.png') center / cover;
 }
 .figma-layout .hud-left,
 .figma-layout .hud-utilities,
@@ -142,8 +142,7 @@
 	place-items: center;
 	border: 0;
 	border-radius: 31px;
-	background: url('./assets/the-gates/figma-20261012/hud/bonus-button-blank.png') center / contain
-		no-repeat;
+	background: url('./assets/the-gates/art/hud/bonus-button-blank.png') center / contain no-repeat;
 	font:
 		18px GatesCartoon,
 		system-ui;
@@ -196,7 +195,7 @@
 	width: 24px;
 	height: 24px;
 	top: 12px;
-	background: url('./assets/the-gates/figma-20261013/afa46.svg') center no-repeat;
+	background: url('./assets/the-gates/ui/bet-coins.svg') center no-repeat;
 }
 .figma-layout .hud-metrics span {
 	margin-bottom: 8px;
@@ -621,7 +620,7 @@
 	content: '';
 	position: absolute;
 	inset: 0;
-	background: url('./assets/the-gates/figma-20261013/d883a.png') center / 115.87% 122.81% no-repeat;
+	background: url('./assets/the-gates/ui/modal-frame.png') center / 115.87% 122.81% no-repeat;
 	z-index: -1;
 }
 .cartoon-modal .mode-art {
@@ -804,11 +803,11 @@
 .gold-button,
 .cartoon-modal .gold-button,
 .cartoon-modal .mode-action {
-	background-image: url('./assets/the-gates/figma-20261013/4e7e5.png');
+	background-image: url('./assets/the-gates/ui/button-primary.png');
 	background-size: 100% 100%;
 }
 .cartoon-modal .quiet-button {
-	background-image: url('./assets/the-gates/figma-20261013/d1e33.png');
+	background-image: url('./assets/the-gates/ui/button-secondary.png');
 	background-size: 100% 100%;
 }
 @media (max-width: 650px) {
@@ -1120,7 +1119,7 @@
 }
 .figma-layout:is(.portrait, .compact) .control-deck::before {
 	border: 5px solid #071f35;
-	background: #0044b5 url('./assets/the-gates/figma-20261013/f6355.png') center/cover;
+	background: #0044b5 url('./assets/the-gates/ui/hud-panel.png') center/cover;
 	box-shadow:
 		inset 0 0 0 5px #fac73c,
 		inset 0 0 0 8px #081f35;
@@ -1568,7 +1567,9 @@
 }
 /* Keep the full pill above the inner gold frame, with a gap above it too. */
 .cartoon-modal.fit-wide .mode-art {
-	margin-top: 61px;
+	margin-top: 78px;
+	width: 40px;
+	height: 40px;
 }
 .cartoon-modal.fit-wide .mode-action {
 	bottom: 48px;
@@ -1623,7 +1624,7 @@
 		inset 0 0 0 8px #081f35;
 }
 .figma-layout .control-deck button:focus-visible {
-	outline: 2px solid var(--cyan);
+	outline: 2px solid #ffd224;
 	outline-offset: 4px;
 }
 .figma-layout .feature-button.return-to-base > span {
@@ -1992,7 +1993,7 @@
 	bottom: auto;
 }
 .figma-layout:is(.portrait, .compact) .hud-button-rail button:focus-visible {
-	outline: 2px solid var(--cyan);
+	outline: 2px solid #ffd224;
 	outline-offset: 4px;
 }
 /* Beat the legacy per-breakpoint autoplay absolute-position selector too. */
@@ -2411,7 +2412,7 @@
 	inset: -8px 0;
 	border-style: solid;
 	border-width: 60px 60px 54px;
-	border-image: url('./assets/the-gates/confirmation-frame.png') 130 120 110 120 fill / 60px 60px
+	border-image: url('./assets/the-gates/ui/confirmation-frame.png') 130 120 110 120 fill / 60px 60px
 		54px / 0 stretch;
 }
 .modal-overlay .asset-confirm .modal-frame img {
@@ -2564,9 +2565,10 @@
 	content: '';
 	position: absolute;
 	width: 43px;
-	height: 5px;
+	height: 7px;
 	background: white;
-	border: 1px solid #051d39;
+	border: 2px solid #000;
+	box-sizing: border-box;
 	border-radius: 4px;
 	transform: rotate(-45deg);
 }
@@ -2775,4 +2777,292 @@
 	to {
 		opacity: 1;
 	}
+}
+
+/* Anchor the desktop popover above the rail, independent of stage height/zoom. */
+.figma-layout:not(.portrait):not(.compact) .utility-menu {
+	top: auto;
+	bottom: calc(100% - var(--hud-center-y) + 50px);
+}
+
+/* Decorative control art must not become a native drag ghost or text selection. */
+.figma-temple button,
+.modal-overlay button {
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-user-drag: none;
+	-webkit-tap-highlight-color: transparent;
+}
+.figma-temple button img,
+.modal-overlay button img {
+	-webkit-user-drag: none;
+	user-select: none;
+	pointer-events: none;
+}
+.figma-temple button:focus:not(:focus-visible),
+.modal-overlay button:focus:not(:focus-visible) {
+	outline: none;
+}
+.figma-temple button:focus-visible,
+.modal-overlay button:focus-visible {
+	outline: 2px solid #ffd224;
+	outline-offset: 3px;
+}
+
+/* Autoplay visual refresh: one aspect-fitted art sheet, unchanged toggle policy. */
+.modal-overlay > .cartoon-modal.autoplay-sheet {
+	width: min(1020px, calc(100dvw - 24px), calc((100dvh - 40px) * 1.18));
+	min-height: 0;
+	height: auto;
+	aspect-ratio: 1.18;
+	max-height: none;
+	padding: 0;
+	background: none;
+	border: 0;
+	border-radius: 0;
+	overflow: visible;
+	container-type: inline-size;
+}
+.modal-overlay .autoplay-sheet .modal-frame {
+	display: block;
+	inset: 0;
+	border: 0 solid transparent;
+	background: url('./assets/the-gates/ui/modal-frame.png') 50% 49.8155% / 117.6628% 129.3926%
+		no-repeat;
+}
+.modal-overlay .autoplay-sheet .modal-frame img,
+.modal-overlay .autoplay-sheet .modal-head {
+	display: none;
+}
+.modal-overlay .autoplay-sheet .modal-body {
+	width: 100%;
+	height: 100%;
+	max-height: none;
+	padding: 14cqw 13cqw 10cqw;
+	overflow: visible;
+}
+.autoplay-sheet .autoplay-controls {
+	display: grid;
+	height: 100%;
+	grid-template-rows: minmax(0, 1fr) auto auto auto;
+	gap: 2cqw;
+}
+.autoplay-sheet .autoplay-switches {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 2cqw;
+	align-content: start;
+}
+.autoplay-sheet .autoplay-switches > label {
+	flex-direction: row;
+	justify-content: space-between;
+	gap: 2cqw;
+	font-size: 3cqw;
+	line-height: 1.15;
+	text-transform: uppercase;
+	text-align: left;
+	paint-order: stroke fill;
+	-webkit-text-stroke: 0.4cqw #061140;
+}
+.autoplay-sheet .autoplay-switches input {
+	order: 0;
+}
+.modal-overlay .autoplay-sheet .autoplay-policy {
+	font: 1.4cqw/1.3 system-ui;
+	margin: 0;
+	color: #c5dcff;
+	text-align: center;
+}
+.autoplay-count-picker {
+	display: grid;
+	gap: 2cqw;
+}
+.autoplay-count-title {
+	font:
+		3cqw/1.2 GatesCartoon,
+		system-ui;
+	color: #ffd500;
+	text-transform: uppercase;
+	paint-order: stroke fill;
+	-webkit-text-stroke: 0.4cqw #061140;
+}
+.autoplay-count-stepper {
+	display: grid;
+	grid-template-columns: 8.5cqw 12cqw 8.5cqw;
+	justify-content: center;
+	align-items: center;
+	gap: 4cqw;
+}
+.autoplay-count-stepper output {
+	font:
+		4.5cqw/1 GatesCartoon,
+		system-ui;
+	color: white;
+	text-align: center;
+}
+.autoplay-count-button {
+	width: 8.5cqw;
+	height: 8.5cqw;
+	min-height: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: none;
+	box-shadow: none;
+	cursor: pointer;
+}
+.autoplay-count-button img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	pointer-events: none;
+}
+.autoplay-count-button:disabled {
+	cursor: not-allowed;
+	filter: brightness(0.7);
+}
+.modal-overlay .autoplay-sheet .autoplay-start {
+	width: 80%;
+	max-width: none;
+	min-height: 0;
+	height: 11cqw;
+	padding: 2cqw 4cqw;
+	margin: 2cqw 0 0;
+	justify-self: center;
+	font:
+		3.7cqw/1 GatesCartoon,
+		system-ui;
+	text-transform: uppercase;
+	border: 0.7cqw solid #eac344;
+	border-radius: 8cqw;
+	box-shadow:
+		0 0 0 0.35cqw #021d42,
+		inset 0 0 0 0.4cqw #021d42;
+	background: linear-gradient(#fff65e, #ffe314 40%, #ff9700);
+}
+@media (max-width: 600px), (max-height: 450px) {
+	.autoplay-sheet .autoplay-switches input {
+		width: 9cqw;
+		height: 5cqw;
+		flex-basis: 9cqw;
+		border-width: 0.35cqw;
+	}
+	.autoplay-sheet .autoplay-switches input::before {
+		width: 3.3cqw;
+		height: 3.3cqw;
+		margin: 0.5cqw;
+	}
+	.autoplay-sheet .autoplay-switches input:checked::before {
+		transform: translateX(4cqw);
+	}
+}
+@media (max-width: 600px) and (min-height: 451px) {
+	.modal-overlay > .cartoon-modal.autoplay-sheet {
+		width: min(calc(100dvw - 24px), calc((100dvh - 40px) * 0.78));
+		aspect-ratio: 0.78;
+	}
+	.modal-overlay .autoplay-sheet .modal-body {
+		padding: 18cqw 11cqw 14cqw;
+	}
+	.autoplay-sheet .autoplay-controls {
+		gap: 4cqw;
+	}
+	.autoplay-sheet .autoplay-switches {
+		gap: 4cqw;
+	}
+	.autoplay-sheet .autoplay-switches > label {
+		font-size: 4cqw;
+		min-height: 12cqw;
+	}
+	.autoplay-sheet .autoplay-switches input {
+		width: 12cqw;
+		height: 6.7cqw;
+		flex-basis: 12cqw;
+	}
+	.autoplay-sheet .autoplay-switches input::before {
+		width: 4.8cqw;
+		height: 4.8cqw;
+		margin: 0.6cqw;
+	}
+	.autoplay-sheet .autoplay-switches input:checked::before {
+		transform: translateX(5cqw);
+	}
+	.modal-overlay .autoplay-sheet .autoplay-policy {
+		font-size: 2.6cqw;
+	}
+	.autoplay-count-title {
+		font-size: 4.2cqw;
+	}
+	.autoplay-count-stepper {
+		grid-template-columns: 12cqw 16cqw 12cqw;
+		gap: 5cqw;
+	}
+	.autoplay-count-button {
+		width: 12cqw;
+		height: 12cqw;
+	}
+	.autoplay-count-stepper output {
+		font-size: 6cqw;
+	}
+	.modal-overlay .autoplay-sheet .autoplay-start {
+		width: 100%;
+		height: 14cqw;
+		font-size: 4.5cqw;
+	}
+}
+
+/* Viewport-sized clock, independent of authored stage dimensions. */
+.figma-temple .status-line .game-clock {
+	font-size: clamp(8px, 0.9vw, 11px);
+	line-height: 1.2;
+	letter-spacing: 0.15px;
+}
+/* Buy sheet has no visible heading: do not reserve a blank 44px header. */
+.cartoon-modal.fit-wide .modal-head {
+	display: none;
+}
+.cartoon-modal.fit-wide .mode-card h3 {
+	font-size: 24px;
+}
+.cartoon-modal.fit-wide .mode-card p {
+	top: 68px;
+	font-size: 13px;
+	line-height: 1.25;
+}
+.cartoon-modal.fit-wide .mode-action {
+	font-size: 20px;
+}
+.cartoon-modal.fit-wide .buy-bet-adjuster {
+	min-height: 100px;
+	height: 100px;
+	margin-top: 8px;
+}
+
+.cartoon-modal.fit-wide .modal-body > .quiet-button {
+	margin: 8px auto 0;
+	height: 48px;
+}
+
+/* Portrait autoplay uses the rectangular frame with fixed-shape corners/rails. */
+@media (max-width: 600px) and (orientation: portrait) {
+	.modal-overlay .autoplay-sheet .modal-frame {
+		background: none;
+		border-style: solid;
+		border-width: 0;
+		border-image: url('./assets/the-gates/ui/confirmation-frame.png') 130 120 110 120 fill / 10cqw
+			10cqw 9cqw / 0 stretch;
+	}
+}
+
+/* Match autoplay's viewport-minus-24px width; prevent an oversized implicit grid track. */
+.modal-overlay:has(> .autoplay-sheet) {
+	padding: 12px;
+	grid-template-columns: minmax(0, 1fr);
+	grid-template-rows: minmax(0, 1fr);
+	place-items: center;
+}
+.modal-overlay > .cartoon-modal.autoplay-sheet {
+	justify-self: center;
+	margin-inline: auto;
+	max-width: 100%;
 }

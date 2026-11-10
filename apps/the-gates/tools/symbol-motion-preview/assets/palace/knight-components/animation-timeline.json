@@ -1,0 +1,94 @@
+{
+  "name": "Separate knight visor approval animation",
+  "states": [
+    "lowered",
+    "animating"
+  ],
+  "events": [
+    "play",
+    "finish",
+    "replay"
+  ],
+  "transitions": [
+    {
+      "from": "lowered",
+      "event": "play",
+      "to": "animating"
+    },
+    {
+      "from": "animating",
+      "event": "finish",
+      "to": "lowered"
+    },
+    {
+      "from": "animating",
+      "event": "replay",
+      "to": "animating"
+    }
+  ],
+  "timelines": [
+    {
+      "event": "play",
+      "fromState": "lowered",
+      "toState": "animating",
+      "steps": [
+        {
+          "id": "open",
+          "target": "one visor; two fixed end anchors",
+          "startMs": 240,
+          "durationMs": 720,
+          "easing": "easeInOut"
+        },
+        {
+          "id": "hold-raised",
+          "target": "visor",
+          "startMs": 960,
+          "durationMs": 700,
+          "easing": "linear"
+        },
+        {
+          "id": "close",
+          "target": "same visor",
+          "startMs": 1660,
+          "durationMs": 700,
+          "easing": "easeInOut"
+        }
+      ]
+    },
+    {
+      "event": "finish",
+      "fromState": "animating",
+      "toState": "lowered",
+      "steps": [
+        {
+          "id": "rest",
+          "target": "visor",
+          "startMs": 2360,
+          "durationMs": 240,
+          "easing": "linear"
+        }
+      ]
+    },
+    {
+      "event": "replay",
+      "fromState": "animating",
+      "toState": "animating",
+      "steps": [
+        {
+          "id": "reset",
+          "target": "timeline",
+          "startMs": 0,
+          "durationMs": 1,
+          "easing": "linear"
+        }
+      ]
+    }
+  ],
+  "guards": {
+    "reducedMotion": "hold lowered; no moving plate",
+    "hiddenDocument": "freeze study age; reset previous timestamp on visibility",
+    "replay": "reset same clock and resume from lowered pose",
+    "pauseAndScrub": "retain current pose without advancing clock"
+  },
+  "scope": "Authoring preview only; not production 3D asset or live gameplay sequencing."
+}

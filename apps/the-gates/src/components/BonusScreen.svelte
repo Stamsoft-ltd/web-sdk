@@ -22,7 +22,7 @@
 	const skin = $derived(artTier(tier)),
 		summary = $derived(kind === 'summary'),
 		title = $derived(t(summary ? 'BONUS COMPLETE' : skin.toUpperCase()));
-	const canContinue = $derived(runtime.waiting && !runtime.bonusTransition);
+	const canContinue = $derived(runtime.waiting && (!runtime.bonusTransition || runtime.bonusTransition.kind === 'hold'));
 	let overlay: HTMLDivElement;
 	onMount(() =>
 		installModalFocus(overlay, {
@@ -37,7 +37,7 @@
 <div
 	bind:this={overlay}
 	class="bonus-dialog"
-	data-pixi-shade="true"
+	data-pixi-shade={!(summary && runtime.baseCountersReset)}
 	data-pixi-overlay
 	data-bonus-stage={kind}
 	data-bonus-tier={skin}
@@ -46,12 +46,12 @@
 	aria-label={title}
 	tabindex="-1"
 	onclick={() => {
-		if (runtime.waiting && !runtime.bonusTransition) continuePresentation();
+		if (runtime.waiting && (!runtime.bonusTransition || runtime.bonusTransition.kind === 'hold')) continuePresentation();
 	}}
 	onkeydown={(event) => {
 		if (['Enter', ' '].includes(event.key)) {
 			event.preventDefault();
-			if (runtime.waiting && !runtime.bonusTransition) continuePresentation();
+			if (runtime.waiting && (!runtime.bonusTransition || runtime.bonusTransition.kind === 'hold')) continuePresentation();
 		}
 	}}
 >

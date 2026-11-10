@@ -9,8 +9,9 @@ test('bonus presentation requires acknowledgement, darkens only, with no button 
 		win = source('components/WinScreen.svelte');
 	assert.match(bonus, /<GpuBonusArt/);
 	assert.doesNotMatch(bonus, /<button|GATE HINT|<p>|backdrop-filter|<dialog|showModal/);
+	assert.match(bonus, /data-pixi-shade=\{!\(summary && runtime.baseCountersReset\)\}/);
+	assert.match(win, /data-pixi-shade="true"/);
 	for (const screen of [bonus, win]) {
-		assert.match(screen, /data-pixi-shade="true"/);
 		assert.match(screen, /data-pixi-overlay/);
 		assert.match(screen, /installModalFocus/);
 		assert.doesNotMatch(screen, /backdrop-filter|showModal/);

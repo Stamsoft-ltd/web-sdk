@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+	<meta charset="utf-8" /><meta
+		name="viewport"
+		content="width=device-width,initial-scale=1"
+	/><title>The Gates · anchored knight visor</title>
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+		body {
+			margin: 0;
+			background: #101e33;
+			color: #fff;
+			font: 15px system-ui;
+		}
+		main {
+			max-width: 1250px;
+			margin: auto;
+			padding: 22px;
+		}
+		h1 {
+			font-size: 26px;
+			margin: 5px 0 10px;
+		}
+		h2 {
+			font-size: 18px;
+			margin: 16px 16px 0;
+		}
+		p {
+			color: #bed1e7;
+			line-height: 1.5;
+		}
+		.tag {
+			color: #ffda36;
+			font-size: 12px;
+			letter-spacing: 1px;
+		}
+		.panels {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 14px;
+		}
+		article {
+			min-width: 0;
+			background: #0b2342;
+			border: 1px solid #385778;
+			border-radius: 15px;
+			overflow: hidden;
+		}
+		canvas {
+			display: block;
+			width: 100%;
+			height: auto;
+		}
+		.controls {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 14px;
+			align-items: center;
+			margin: 18px 0;
+		}
+		button {
+			font: inherit;
+			background: #0845a0;
+			color: white;
+			border: 2px solid #ffd128;
+			border-radius: 9px;
+			padding: 9px 13px;
+			cursor: pointer;
+		}
+		label {
+			display: flex;
+			gap: 6px;
+			align-items: center;
+			cursor: pointer;
+		}
+		.timeline {
+			display: flex;
+			gap: 14px;
+			align-items: center;
+			margin-bottom: 16px;
+		}
+		.timeline input {
+			width: min(70%, 700px);
+		}
+		.timeline span {
+			color: #ffdc36;
+		}
+		.note {
+			font-size: 13px;
+		}
+		a {
+			color: #7ddeff;
+		}
+		@media (max-width: 650px) {
+			.panels {
+				grid-template-columns: 1fr 1fr;
+			}
+			.animated {
+				grid-column: 1/-1;
+				max-width: 400px;
+				justify-self: center;
+				width: 100%;
+			}
+			main {
+				padding: 14px;
+			}
+		}
+	</style>
+	<main>
+		<div class="tag">THE GATES · TWO-LAYER MOTION STUDY · NOT LIVE GAME</div>
+		<h1>Two fixed ends. One rotating visor.</h1>
+		<p>
+			Visor shifted slightly left/up; spirit lifted inside the unchanged shell. Real transparent eye
+			slit throughout. The lifting arc peaks slightly left to follow the lower guard’s three-quarter
+			view. Both end anchors remain fixed.
+		</p>
+		<div class="controls">
+			<button id="replay">Replay</button><button id="pause">Pause</button
+			><label><input id="visor-visible" type="checkbox" checked />Show visor</label
+			><label><input id="pins" type="checkbox" />Show hinge anchors</label
+			><label><input id="reduced" type="checkbox" />Reduced motion</label>
+		</div>
+		<div class="timeline">
+			<input
+				id="scrub"
+				aria-label="Animation timeline"
+				type="range"
+				min="0"
+				max="1000"
+				value="0"
+			/><span id="time">Loading components…</span>
+		</div>
+		<div class="panels">
+			<article class="animated">
+				<h2>Win motion</h2>
+				<canvas
+					id="animated"
+					width="600"
+					height="600"
+					aria-label="Knight visor opening around both fixed anchors"
+				></canvas>
+			</article>
+			<article>
+				<h2>Lowered</h2>
+				<canvas
+					id="closed"
+					width="600"
+					height="600"
+					aria-label="Helmet with repositioned lowered visor"
+				></canvas>
+			</article>
+			<article>
+				<h2>Raised</h2>
+				<canvas
+					id="open"
+					width="600"
+					height="600"
+					aria-label="Helmet with visor raised on both anchors"
+				></canvas>
+			</article>
+		</div>
+		<p class="note">
+			Preview only. Same PNG parts in every pose; no frame swapping or shell scaling.
+			<a href="./short-knight-components-static.html">Separate PNG components</a> ·
+			<a href="./short-knight-selected-reference.html">Original concept</a>
+		</p>
+	</main>
+	<script type="module" src="./component-knight-preview.mjs"></script>
+</html>

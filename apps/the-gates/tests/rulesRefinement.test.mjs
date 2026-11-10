@@ -23,7 +23,7 @@ test('native rules cards hold aspect and fit bold copy without scrolling', () =>
 });
 test('legal frame uses original nine-sliced artwork, without stretching corner pixels', () => {
 	const frame = src('components/RulesFrame.svelte');
-	assert.match(frame, /d883a.png/);
+	assert.match(frame, /modal-frame.png/);
 	assert.match(frame, /grid-template-columns: 26px minmax\(0, 1fr\) 26px/);
 	const xs = [99, 199, 1120],
 		ys = [135, 235, 957],

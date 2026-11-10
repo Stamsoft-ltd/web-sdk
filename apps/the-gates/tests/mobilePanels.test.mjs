@@ -94,11 +94,40 @@ test('all four stat cards use ornate frames only on desktop; no Remaining label 
 	assert.match(frame, /frame.visible = !mobile/);
 	assert.match(frame, /fill: mobileGold/);
 	assert.match(panels, /new NineSliceSprite/);
-	assert.match(panels, /stat-art-20261016\/stat-frame.png/);
-	assert.match(panels, /stat-art-20261016\/tumble-gem.png/);
+	assert.match(panels, /stat-panels\/stat-frame.png/);
+	assert.match(panels, /stat-panels\/tumble-gem.png/);
 	assert.doesNotMatch(panels, /String\(i \+ 1\)/);
 	assert.doesNotMatch(src('components/ScenePanels.svelte'), /REMAINING/);
 	const desktop = statPanelLayout(1200, 583, true);
 	assert.deepEqual(desktop.freeSpins, { x: 1000, y: 170, width: 175, height: 115 });
 	assert.deepEqual(desktop.totalWin, { x: 1000, y: 292, width: 175, height: 115 });
+});
+
+test('base, Chance and Feature gate metadata cannot reveal bonus-only cards', async () => {
+	const { initialState, reduceEvent } = await import('../src/game/reducer.ts');
+	for (const mode of ['BASE', 'CHANCE', 'FEATURE']) {
+		let state = initialState();
+		state = reduceEvent(state, {
+			type: 'gateReward',
+			index: 1,
+			spinId: 0,
+			gate: 1,
+			order: 1,
+			reward: { kind: 'addMultiplier', value: 2 },
+			previousMultiplier: 1,
+			multiplier: 2,
+			multiplierActive: true,
+			totalFs: 15,
+			stickyPositions: [],
+		});
+		assert.equal(state.tier, null, mode);
+		assert.equal(state.totalFs, 15, 'preserve authoritative metadata');
+		const layout = statPanelLayout(800, 352, !!state.tier);
+		assert.equal(layout.tumbles.height, 64, mode + ' keeps base layout');
+	}
+	const panels = src('game/gpuPanels.ts');
+	assert.match(panels, /fs.visible = state.bonus;/);
+	assert.match(panels, /bonusTotal.visible = fs.visible;/);
+	assert.doesNotMatch(panels, /fs.visible = .*totalFs/);
+	assert.match(src('components/Game.svelte'), /bonus: !!visualTier/);
 });

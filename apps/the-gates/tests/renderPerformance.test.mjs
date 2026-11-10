@@ -114,7 +114,7 @@ test('renderer metrics bounded at 180 samples; hidden gaps ignored', () => {
 	resetMotionMetrics();
 });
 test('larger win view contains every tier horn and crown through full entrance/idle', () => {
-	const base = new URL('../static/assets/the-gates/figma-20261012/motion/', import.meta.url);
+	const base = new URL('../static/assets/the-gates/art/animations/', import.meta.url);
 	for (const tier of ['sweet', 'wild', 'epic', 'mythic', 'legendary']) {
 		const name = `win-${tier}`,
 			atlas = new TextureAtlas(readFileSync(new URL(`${name}.atlas`, base), 'utf8'));
@@ -160,5 +160,5 @@ test('win popup freezes covered board actors; coins share the GPU stage; only de
 		source('components/Game.svelte'),
 		/dev && demo && page.url.searchParams.has\('motionStats'\)/,
 	);
-	assert.match(source('components/WinScreen.svelte'), /viewBox=\{WIN_ART_VIEW\}/);
+	assert.match(source('components/WinScreen.svelte'), /viewBox=\{capped \? \{ width: 850, height: 660, offsetY: 0 \} : WIN_ART_VIEW\}/);
 });

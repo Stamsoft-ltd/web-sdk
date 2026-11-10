@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { gateCloseProgress, portalPalette } from '../game/portalClose';
+	import { applyPortalClose, drawPortalClose } from '../game/portalCloseVfx';
 	import { playGameSound } from '../game/audio';
 	import { untrack } from 'svelte';
-	import { Container, Text, Matrix } from 'pixi.js';
+	import { Container, Text, Matrix, Graphics } from 'pixi.js';
 	import { createRewardFlight } from '../game/gpuRewardFlight';
 	import { REWARD_FLIGHT_START_MS } from '../game/rewardDelivery';
 	import { dingRewardArrival } from '../game/rewardAudio';
@@ -79,6 +81,8 @@
 					wildData,
 				);
 				destroyFlight = () => flight.destroy();
+				const closeFx = new Graphics();
+				root.addChild(closeFx);
 				const audioBeats = new Set<string>();
 				remove = engine.register({
 					root,
@@ -142,6 +146,20 @@
 								const slot = pose.actor.skeleton.findSlot(name);
 								if (slot) slot.color.a = 1;
 							}
+						}
+						closeFx.clear();
+						const closing = gateCloseProgress(time);
+						if (!frame.portalStable && time >= GATE_CYCLE.rewardHoldEnd) {
+							applyPortalClose(pose.actor.skeleton, closing, state.reduced);
+							drawPortalClose(
+								closeFx,
+								closing,
+								engine.app.screen.width / 2,
+								engine.app.screen.height / 2,
+								Math.min(engine.app.screen.width, engine.app.screen.height) * (170 / 440),
+								portalPalette(tier),
+								state.reduced,
+							);
 						}
 						if (frame.ended) for (const slot of pose.actor.skeleton.slots) slot.color.a = 0;
 						element.style.setProperty('--gate-shade', String(frame.backdrop));

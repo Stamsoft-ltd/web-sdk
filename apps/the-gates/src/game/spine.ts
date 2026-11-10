@@ -17,7 +17,7 @@ import { loadAssetImage, recordAssetFetch } from './imageAssets.ts';
 import { motionMetrics } from './motionMetrics.ts';
 export const spineMetrics = () => motionMetrics(0);
 
-export const WILD_ROOT = './assets/the-gates/rainbow-wild-20261016/';
+export const WILD_ROOT = './assets/the-gates/wild/';
 export const LEGACY_SPINE_ROOT = './assets/the-gates/spine/';
 const atlasCache = new Map<string, Promise<TextureAtlas>>();
 const rigCache = new Map<string, Promise<SkeletonData>>();

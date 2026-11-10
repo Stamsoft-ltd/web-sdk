@@ -16,6 +16,7 @@ export const SYMBOL_GLOW: Record<SymbolName, number> = {
 };
 
 /** Idle accents only for the five premium symbols; paying highlights remain universal. */
+export const PREMIUM_IDLE_GLOW_STRENGTH = 0.42;
 export const PREMIUM_GLOW_SYMBOLS: readonly SymbolName[] = [
 	'GUARDIAN_MASK',
 	'SUN_MEDALLION',
@@ -27,7 +28,7 @@ export function ambientSymbolGlow(name?: SymbolName) {
 	if (!name || !PREMIUM_GLOW_SYMBOLS.includes(name)) return 0x0b192c;
 	const color = SYMBOL_GLOW[name];
 	const blend = (shift: number) =>
-		Math.round(((0x0b192c >> shift) & 255) * 0.72 + ((color >> shift) & 255) * 0.28);
+		Math.round(((0x0b192c >> shift) & 255) * (1 - PREMIUM_IDLE_GLOW_STRENGTH) + ((color >> shift) & 255) * PREMIUM_IDLE_GLOW_STRENGTH);
 	return (blend(16) << 16) | (blend(8) << 8) | blend(0);
 }
 

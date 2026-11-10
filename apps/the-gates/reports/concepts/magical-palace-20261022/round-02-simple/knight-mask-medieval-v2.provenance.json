@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-22",
+  "tool": "built-in image_gen",
+  "status": "Concept only, no live changes",
+  "file": "knight-mask-medieval-v2.png",
+  "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-1ab9fede-b6e7-4313-9641-34aa6f9f92a1.png",
+  "prompt": "Use case: stylized-concept.\nAsset type: ONE simple cartoon medieval knight helmet mask slot symbol for THE GATES.\nInput image 1: the current gold knight concept, REJECTED for looking futuristic. Use its bright gold/cyan palette and polished cartoon rendering ONLY, NOT its visor design or silhouette.\nInput image 2: game Wild is the STYLE reference for chunky illustrated gold, orange shadows, dark navy outlines, simple white glints and signature cyan gem.\nPrimary request: an unmistakably OLD MEDIEVAL STORYBOOK KNIGHT'S GREAT HELM, NOT a futuristic helmet. A squat rounded-top golden barrel-shaped great helm seen mostly from the front with a VERY slight three-quarter turn, giving it a clear faceplate and rounded side. Two simple narrow BLACK open eye slits separated by a broad vertical gold nose guard. Eye slits are HOLES in the metal, absolutely not blue glass. A smooth modest domed cap. A few large simple rivet heads attach the flat faceplate at its outer edges. Three small round black breathing holes on the visible cheek, not long aggressive vent blades. Plain short lower rim. One SMALL cyan diamond-shaped gem set flush on the forehead. Front plate has a gently rounded lower edge, not a pointed robotic jaw. No actual human face or eyes. Keep small and charming like an enchanted palace knight icon.\nCRITICAL DIFFERENCE FROM REJECTED INPUT: No wraparound visor, NO blue windshield, NO ear discs or circular side modules, NO angular superhero face, NO robotic jaw, NO sleek futuristic panel seams, NO layered sci-fi cheek vents. Use historic medieval bucket-helm construction with rounded cap, open eye slits, simple plates and rivets.\nSIMPLE: 4\u20136 big forms, no scrollwork, crown, wings, horns, plume, neck, torso, weapons or shield. Don't add an outline of a human face. Bright warm GOLD dominates; navy appears only as outline and dark holes; cyan ONLY the one small forehead gem. Gold-to-orange shading and a few broad white painted glints, clean 2D cartoon game illustration, NOT photoreal metal, not detailed 3D render. Bold legible silhouette at 100px.\nFull helmet centered and completely visible with 10% clear padding. Square composition. True transparent background, no floor, cast shadow, aura, smoky haze, text or watermark. One finished standalone concept.",
+  "sha256": "5bb6f302e20c4accb34b61956a6cbb1d4ffa32ec7213dd2e6ae89d15a63fd900",
+  "size": [
+    1254,
+    1254
+  ],
+  "alphaExtrema": [
+    0,
+    255
+  ]
+}

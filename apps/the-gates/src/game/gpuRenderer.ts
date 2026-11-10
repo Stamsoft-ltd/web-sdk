@@ -25,8 +25,12 @@ type Job = {
 export class GpuEngine {
 	readonly app = new Application();
 	readonly overlayApp = new Application();
+	boardImpactAt: number | null = null;
+	setBoardImpact(now: number) { this.boardImpactAt = now; this.invalidate(); }
 	readonly rewardTargets = new Map<string, RewardTarget>();
 	entry: { startedAt: number; reduced: boolean } | null = null;
+	/** One pulse clock survives the landing-to-main logo handoff. */
+	logoPulseStartedAt: number | null = null;
 	setEntryTransition(value: typeof this.entry) {
 		this.entry = value;
 		this.invalidate();
@@ -246,6 +250,9 @@ export class GpuEngine {
 		const started = dev ? performance.now() : 0;
 		let moving = false;
 		for (const job of this.jobs) if (job.root.visible) moving = job.draw(dt, now) || moving;
+		// Overlay attributes can change without registering/removing a GPU job.
+		// Read before rendering so closed exit gates reveal an undimmed base scene.
+		this.shade.visible = this.overlay?.dataset.pixiShade === 'true';
 		this.app.render();
 		if (this.overlay) this.overlayApp.render();
 		this.overlayApp.canvas.style.visibility = this.overlay ? 'visible' : 'hidden';

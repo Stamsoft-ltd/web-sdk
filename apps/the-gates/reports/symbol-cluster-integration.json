@@ -1,0 +1,43 @@
+{
+  "date": "2026-10-21",
+  "scope": [
+    "CRYSTAL_ORB",
+    "SACRED_EYE",
+    "SUN_MEDALLION",
+    "RED_GEM",
+    "BLUE_GEM",
+    "GREEN_GEM",
+    "PURPLE_GEM",
+    "AMBER_GEM"
+  ],
+  "integration": "Pixi slot object on original Spine body; preserves body landing/suction matrix and alpha, replaces original flat body attachment",
+  "art": "static/assets/the-gates/symbol-parts/{orb,eye,sun}; PNGs unchanged, prepared once per board, textures shared by cells",
+  "motion": "Eye / Sun / Orb 900ms; gem shimmer 1800ms (half previous rate). Cosmetic one-shots within existing event barriers; Normal/Fast/Turbo 1/2/3; continuous speed changes; paused clock frozen; reduced rest; Graphics masks, no per-frame bitmap uploads.",
+  "untouched": [
+    "maths",
+    "payouts",
+    "event ordering",
+    "playback wait durations",
+    "Envelope",
+    "Pharaoh",
+    "Key",
+    "Wild"
+  ],
+  "checks": {
+    "tests": {
+      "passed": 373,
+      "failed": 0
+    },
+    "typescript": "PASS",
+    "viteBuild": "PASS",
+    "productionDependencyClosure": "all 8 layer files + provenance retained",
+    "whitespace": "PASS",
+    "browserVisualQA": "NOT RUN: local browser use disabled in Work settings",
+    "mobilePerformance": "NOT MEASURED"
+  },
+  "releaseNote": "Local code/build integration only; no commit, push or remote deployment performed",
+  "followUp": {
+    "scatterTrigger": "Refresh Key cell addresses before each reveal drop; glow, sparks and outline follow moving tile coordinates; only current Key cells animate; original trigger clock preserved until acknowledgement.",
+    "performance": "No new textures, particles, timers or renderers. Same draw work per frame; longer gem gesture only within existing presentation phases. GPU/mobile frame times not measured: browser control disabled."
+  }
+}

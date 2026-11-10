@@ -11,7 +11,7 @@ import {
 } from '@esotericsoftware/spine-core';
 import { SpinePose } from '../src/game/spine.ts';
 test('native Wild can rest/freeze on arrival without requiring a fabricated setup animation', () => {
-	const root = new URL('../static/assets/the-gates/rainbow-wild-20261016/', import.meta.url);
+	const root = new URL('../static/assets/the-gates/wild/', import.meta.url);
 	const atlas = new TextureAtlas(readFileSync(new URL('symbols.atlas', root), 'utf8'));
 	for (const page of atlas.pages)
 		page.setTexture(new FakeTexture({ width: page.width, height: page.height }));

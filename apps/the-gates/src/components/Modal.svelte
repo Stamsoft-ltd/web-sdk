@@ -15,6 +15,7 @@
 		rules = false,
 		compact = false,
 		framed = false,
+		autoplay = false,
 		fitted,
 	}: {
 		title: string;
@@ -27,6 +28,7 @@
 		rules?: boolean;
 		compact?: boolean;
 		framed?: boolean;
+		autoplay?: boolean;
 		fitted?: { width: number; height: number; scale: number; columns: number };
 	} = $props();
 	let overlay: HTMLDivElement;
@@ -50,6 +52,7 @@
 	<div
 		class="cartoon-modal"
 		class:asset-confirm={framed}
+		class:autoplay-sheet={autoplay}
 		class:rules
 		class:long-content={scrollable}
 		class:wide
@@ -68,7 +71,7 @@
 				: undefined}
 		>
 			<div class="modal-frame" aria-hidden="true">
-				<img src={`${UI_ART_ROOT}51301.png`} alt="" />
+				<img src={`${UI_ART_ROOT}modal-close.png`} alt="" />
 			</div>
 			<div class="modal-head"><h2>{title}</h2></div>
 			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -91,6 +94,6 @@
 	.modal-content.fitted {
 		display: flex;
 		flex-direction: column;
-		padding: 24px;
+		padding: 12px;
 	}
 </style>

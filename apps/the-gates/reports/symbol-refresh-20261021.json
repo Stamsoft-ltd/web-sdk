@@ -1,0 +1,84 @@
+{
+  "date": "2026-10-21",
+  "scope": [
+    "Wild redraw and authoritative cluster-colored petal light",
+    "Pharaoh supplied component blink / asymmetric brow lift",
+    "Envelope supplied flap/front + approved full wax seal extraction",
+    "Key replacement with alpha>96 atlas-only crop",
+    "Menu/landing rest SVG compositions",
+    "Live-aligned browser preview"
+  ],
+  "sources": "static/assets/the-gates/symbol-parts/provenance.json: 20 byte-preserved supplied PNGs, including ZIP members",
+  "keyCrop": {
+    "sourceSize": [
+      930,
+      926
+    ],
+    "bounds": [
+      215,
+      252,
+      500,
+      431
+    ],
+    "method": "raw source bytes retained; native atlas crop / static SVG viewBox only"
+  },
+  "wildCrop": {
+    "sourceSize": [
+      304,
+      304
+    ],
+    "bounds": [
+      12,
+      6,
+      278,
+      292
+    ],
+    "legacyRegionIdRetained": "rainbow-wild",
+    "oldSourceArchive": "reports/concepts/symbol-redesign-20261021/archive-rainbow-wild.png"
+  },
+  "runtime": {
+    "host": "components/Board.svelte",
+    "adapter": "game/gpuBoard.ts",
+    "art": "game/gpuClusterSymbols.ts",
+    "preparation": "game/premiumSymbolParts.ts",
+    "motion": "game/premiumSymbolMotion.ts",
+    "lifecycle": "Existing board-owned native Spine slot objects; no new Pixi application, ticker or event listeners. Shared prepared textures destroyed with board, instances destroyed on tile revision/unmount.",
+    "fit": "Key/Wild keep masked falling layer and above-frame promotion only after landing. Updated native aspect ratios, no PNG stretching. Envelope front export receives affine alignment to the supplied closed-paper extent.",
+    "performance": "One-time 300px texture preparation; no per-frame image reads, uploads or bitmap masks. Approximately 28 shared 300px RGBA textures (~9.6MiB raw pixels, excluding GPU mipmaps/source caches); additional simple part sprites/glints. Actual GPU/mobile frame time not measured."
+  },
+  "timing": "Existing spin/selection/removal barriers unchanged. 900ms Pharaoh/Envelope cosmetics; Wild 1800ms within existing phases; shared Normal/Fast/Turbo clock. Reduced motion uses exact neutral/closed rest.",
+  "preview": {
+    "url": "http://127.0.0.1:3032/tools/symbol-motion-preview/index.html",
+    "wildVariants": "http://127.0.0.1:3032/tools/symbol-motion-preview/wild.html",
+    "generatedFromLive": "node tools/symbol-motion-preview/build-premium-preview.mjs --check",
+    "visualQA": "Browser/native surfaces unavailable in computer-use inventory. Offline geometry frames inspected; not browser screenshots. Live visual sign-off remains pending."
+  },
+  "untouched": [
+    "maths",
+    "books",
+    "pay eligibility",
+    "payouts",
+    "RTP",
+    "bonus/trigger chance",
+    "original Key paying/trigger timing"
+  ],
+  "checks": {
+    "appTests": "383 PASS",
+    "previewTests": "14 PASS",
+    "typescript": "PASS",
+    "viteBuild": "PASS",
+    "pngHashes": "PASS for all 20 sources",
+    "rigs": "new Key/Wild atlas parses and finite setup/pay/land/remove samples PASS",
+    "productionDependencyClosure": "PASS: all 19 layer PNGs + both static SVG compositions retained; old rainbow removed from public assets",
+    "whitespace": "PASS",
+    "losslessBuildOptimization": "PASS: 103 PNGs verified, 3,775,122 bytes saved; static originals unchanged"
+  },
+  "release": "Local integration only; no commit, push or remote deployment.",
+  "refinement": {
+    "wild": "Whole six connected pale crystal interiors; no tiny highlights on gold, center jewel protected. One-time connected-component mask shared with preview.",
+    "pharaoh": "Both eye PNGs verified distinct. ZIP eyebrow PNGs are byte-identical; supplied right file mirrored in runtime and static SVG.",
+    "envelope": "No composite/part crossfade. Hinge y=78 overlaps body top by 6px. Supplied broken lower seal stays; approved upper extraction follows lid. Paper discarded around wax crop; front/back order changes edge-on.",
+    "additionalAssets": "Not required for this correction. Distinct right eyebrow source needed if a different shape is wanted. For exact closed-composite match, optional envelope layers should share one aligned canvas.",
+    "visualQA": "Browser/native surfaces unavailable in computer-use inventory. Offline geometry frames inspected; not browser screenshots. Live visual sign-off remains pending."
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-22",
+  "tool": "built-in image_gen (knight body); Canvas-coded masks/FX (preview animation)",
+  "scope": "Concept-only replacements of Envelope/RUNE_CHALICE and Pharaoh/GUARDIAN_MASK in authoring preview. No live changes.",
+  "assets": [
+    {
+      "file": "spirit-knight-body.png",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-b82c527c-8b50-4d1c-a226-f7417f5bb68f.png",
+      "prompt": "Use case: precise-object-edit / stylized-concept.\nCreate ONE standalone SPIRIT KNIGHT HELMET BODY based on the OPEN LEFT helmet of this reference study. Same exact glossy 2D cartoon golden medieval helm, orange shadows, bold navy contours, modest central ridge, cyan forehead diamond, broad rolled lower edge and slight three-quarter view pointing left.\nImportant authoring change: REMOVE the raised visor completely, including its side arms. No faceplate across the brow, no extra plate floating nearby. Show the complete smooth golden dome and cyan forehead gem that were obscured by the raised plate. Keep a clean unobstructed large rounded face opening bounded by the gold cheek guards and lower rim. Visor will be a separate animated overlay later; do not draw any visor on this body.\nFill the previously dark empty face opening with a friendly GOLDEN SPIRIT: luminous amber-gold magical essence, a soft pale-gold central heart of light and TWO simple glowing pale-gold eyes floating in it, no mouth, no human skin, no nose or realistic face. The essence should feel like warm magical mist gently curling inside the helmet, three broad soft flame-like shapes, not fire exploding out. The very edges of the chamber remain dark amber/navy for contrast. All spirit light and mist stays INSIDE the face opening; no smoke or aura outside the helmet. A mystical knight inhabits the armor. Eye shapes are calm and friendly, not menacing, no angry slant. Gold and cream light, no blue spirit.\nThe fixed helmet body has no visible round bolts or rivets, no round hinge caps. Clean concealed visor pivot locations at the temple edges. Moderate detail matching reference, not futuristic and not overly ornate. No crown, plume, horns, neck, shoulders, weapons or other objects.\nComposition: ONLY ONE complete helmet body centered on square transparent canvas with 8\u201310% clear padding all around. Full silhouette uncropped. True transparent background, no external glow, floor shadow, text, watermark, labels or diagram. Clean still cartoon game-symbol concept suitable for adding a movable faceplate separately.",
+      "sha256": "d124ba52092c699c0376f575e6c11ff08c84dd5cf42c6fff810e728d41f29afc",
+      "size": [
+        1254,
+        1254
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "file": "knight-visor-source.png",
+      "source": "reports/concepts/magical-palace-20261022/round-03-animated-designs/knight-concealed-pivot-study-v4.png",
+      "method": "Unchanged original source PNG. One runtime clipped faceplate is used in both poses, not two generated states.",
+      "sha256": "a3c25264723ec6c99edb50cc71c3f54cf3383d5984ecbaf800226ac5c52a1c17",
+      "size": [
+        1983,
+        793
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "file": "gold-chalice-pink.png",
+      "source": "reports/concepts/magical-palace-20261022/round-03-animated-designs/gold-chalice-luminous-pink-v3.png",
+      "method": "Unchanged concept PNG. Cached code-only surface mask for liquid.",
+      "sha256": "293e7f100a1831bdcea72f2bb9bf7f9e51ce6fb58bfa36099caad8d6b035c3ee",
+      "size": [
+        1254,
+        1254
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ]
+    }
+  ],
+  "requiredFinalLayers": [
+    "Knight: aligned fully painted helmet body + separate visor (same pivot) + spirit/eyes/emission",
+    "Chalice: aligned gold body + liquid surface + foreground gold rim"
+  ],
+  "limitations": [
+    "Rough masks/pivots are concept quality, not production rig exports.",
+    "No maths, payout mapping, live palette or production runtime changes.",
+    "Canvas frame time shown in preview is local CPU cost, not device FPS/GPU certification."
+  ]
+}

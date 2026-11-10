@@ -85,7 +85,7 @@ test('100 rig state/seed updates issue no additional asset fetches or image deco
 		};
 	};
 	try {
-		const root = 'https://rig-reuse.test/assets/the-gates/figma-20261012/motion/';
+		const root = 'https://rig-reuse.test/assets/the-gates/art/animations/';
 		const original = await loadRig('RED_GEM', 'symbols-normal', root);
 		const warm = { requests: requests.length, images: images.length };
 		const actor = new SpinePose(original, 'idle');

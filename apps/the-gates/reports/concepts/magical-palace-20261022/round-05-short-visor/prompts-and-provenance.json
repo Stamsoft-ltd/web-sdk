@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-22",
+  "tool": "built-in image_gen",
+  "status": "Redesign concept only; existing animation preview and live game unchanged.",
+  "file": "spirit-knight-short-visor-study-v1.png",
+  "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-9a1c54b3-d338-48f6-bebe-1302b3775b65.png",
+  "prompt": "Use case: stylized-concept, animation-friendly medieval helmet redesign.\nDeliver ONE wide TWO-POSE concept sheet of the SAME Spirit Knight helmet: left EYE VISOR RAISED, right EYE VISOR LOWERED. No text, labels, arrows, background or watermark. True transparent background. Each full helmet completely visible with padding, identical scale, angle, fixed body and lighting.\nReference: retain this image's glossy GOLD cartoon metal, warm orange shading, thick dark navy outlines, cyan forehead diamond, rounded medieval dome and friendly GOLDEN SPIRIT with pale glowing eyes inside. No real human face. Moderate simple craft detail, not ornate and not futuristic.\nPRIMARY DESIGN CHANGE: replace the giant full-face moving plate with a SHORT CURVED EYE VISOR ONLY. The helmet's lower face/cheek/chin guard is a FIXED part of the shell in both states, with THREE small round breathing holes. It NEVER lifts. Only a modest broad gold eye-band visor can rotate, about one quarter of the entire helmet height, NOT a full-length face mask.\nThe movable eye visor is a distinct SHORT ARCHED GOLD BAND, with ONE narrow horizontal dark viewing slit. It has small tapered side lugs connecting to two concealed temple hinges. NO giant circular bolts or ear discs. Keep both temple joint positions in EXACTLY the same place in both drawings. Left and right hinge tabs remain attached to the helmet, never float or translate.\nLEFT raised: the SAME short gold eye visor pivots smoothly upward to nest over the forehead/upper brow, just below the small cyan gem, freeing a clear horizontal window that reveals the spirit's two pale golden eyes. The raised visor must remain clearly recognizable as the same thick gold band with the same SINGLE slit; do not compress it into a ribbon, stretch it, turn it upside down, or detach it from its side mounts. Shape the dome and forehead clearance to accommodate the visor naturally. Put the fixed cyan gem high enough on the dome that it does not obstruct the visor's travel.\nRIGHT lowered: the SAME short gold eye visor rests across the spirit's eyes, with warm gold light visible through its single dark viewing slit. The fixed lower guard is identical to the left state, with the same three holes and same silhouette.\nThis is a believable MEDIEVAL hinged brow/eye visor, not a blue glass windshield, robot jaw or sliding shutter. No extra masks underneath and no giant full-face plate. All moveable pieces should read as separable illustrator layers: fixed shell/lower guard, spirit, short eye visor. State differences are ONLY the visor angle and corresponding visible eye window.\nPrefer a near-frontal slight three-quarter view with BOTH temple attachments understandable. Same viewing angle in both poses, not mirrored. Friendly magical palace armor, compact near-square slot symbol. Crisp polished 2D illustrated cartoon surfaces with broad painted white glints, not photoreal steel, not detailed3D rendering. No plume, horns, wings, crown, neck, shoulders, weapons, outer smoke, aura or loose sparks.",
+  "rationale": "Shorter moving eye visor reduces required perspective compression. Lower guard stays fixed; golden spirit remains visible through open eye window.",
+  "productionRequirements": [
+    "One aligned painted shell with fixed lower guard",
+    "Separate short visor with matching geometry in all poses",
+    "Two fixed temple pivots, no translating hinge vertices",
+    "Separate spirit/emission layer"
+  ],
+  "caveat": "AI two-pose study, not final aligned animation layers; needs canonical visor/body split before rigging.",
+  "sha256": "546eb6c8da06c9864137e3c8b2b42aee983cf66499760a93fde97b3a9d3a37d5",
+  "size": [
+    1774,
+    887
+  ],
+  "alphaExtrema": [
+    0,
+    255
+  ]
+}

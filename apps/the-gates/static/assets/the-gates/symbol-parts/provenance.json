@@ -1,0 +1,126 @@
+{
+  "purpose": "Live layered symbol art; 2026-10-21 user approval",
+  "assets": [
+    {
+      "file": "sun/badge.png",
+      "source": "apps/the-gates/tools/symbol-motion-preview/assets/sun-badge.png",
+      "sha256": "cfcbbccdbdbaf7b8ec966b9d1e81e789c9bb53315fbd5ed58c9e88e7cdd13610",
+      "policy": "Supplied PNG copied unchanged; runtime fit only"
+    },
+    {
+      "file": "sun/rays.png",
+      "source": "apps/the-gates/tools/symbol-motion-preview/assets/sun-rays.png",
+      "sha256": "9cf5c8d614f937ec2510bd34eb13e0214596a9fe4a56c7000bf476966ac13c87",
+      "policy": "Supplied PNG copied unchanged; runtime fit only"
+    },
+    {
+      "file": "sun/face.png",
+      "source": "apps/the-gates/tools/symbol-motion-preview/assets/sun-face.png",
+      "sha256": "b8de31b20aad0271d554f3c2000b890d818516eb93cc22979a44f76b3489e5af",
+      "policy": "Supplied PNG copied unchanged; runtime fit only"
+    },
+    {
+      "file": "orb/frame.png",
+      "source": "apps/the-gates/tools/symbol-motion-preview/assets/orb-frame.png",
+      "sha256": "71a5ce5aa72e98220afae2c0832bf400d5d46754831a01b4ba43d0d96ffec586",
+      "policy": "Supplied PNG copied unchanged; runtime fit only"
+    },
+    {
+      "file": "orb/spiral.png",
+      "source": "apps/the-gates/tools/symbol-motion-preview/assets/orb-spiral.png",
+      "sha256": "02595e3ff8ca0a5c068e9fdb76c887d71ef95102cffeaa46fa1435e4fad8a182",
+      "policy": "Supplied PNG copied unchanged; runtime fit only"
+    },
+    {
+      "file": "eye/border.png",
+      "source": "apps/the-gates/tools/eye-look-preview/assets/eye-border.png",
+      "sha256": "e40cec0d8075816203786c852d8e2b019c275f155090b8f9c07075869c36204e",
+      "policy": "Supplied PNG copied unchanged; runtime fit only"
+    },
+    {
+      "file": "eye/background.png",
+      "source": "apps/the-gates/tools/eye-look-preview/assets/eye-background.png",
+      "sha256": "f1749ebf9a592a3a47795e995d2df150b109083b7d1b5e3d0e3bc9c09797899c",
+      "policy": "Supplied PNG copied unchanged; runtime fit only"
+    },
+    {
+      "file": "eye/iris.png",
+      "source": "apps/the-gates/tools/eye-look-preview/assets/eye-iris-new.png",
+      "sha256": "1e2ade173f8cd31be4c5d895886f2410eaec9c6e3f77140f5186d0ff532497fd",
+      "policy": "Supplied PNG copied unchanged; runtime fit only"
+    },
+    {
+      "file": "pharaoh/body.png",
+      "source": "/Users/simeonhristov/Downloads/The Gates Slot.png",
+      "sha256": "2d886fd65d98e693568047b6ea30262dd23511d34ab9a4e8723781ac89ebd530",
+      "modified": false
+    },
+    {
+      "file": "pharaoh/brow-left.png",
+      "source": "/tmp/gates-symbol-splits-20261021/Vector.png",
+      "sha256": "91d6d390a485c3e65d40d025945144df623cc1e9d0295189223777acc249e618",
+      "modified": false
+    },
+    {
+      "file": "pharaoh/brow-right.png",
+      "source": "/tmp/gates-symbol-splits-20261021/Vector-1.png",
+      "sha256": "91d6d390a485c3e65d40d025945144df623cc1e9d0295189223777acc249e618",
+      "modified": false
+    },
+    {
+      "file": "pharaoh/gem.png",
+      "source": "/tmp/gates-symbol-splits-20261021/Glossy Blue Gem Gold Badge 18.png",
+      "sha256": "2d48ad57c3773e47bfda6f42eb2a08e54dabe8cd1a082496e1ac9f1de5e50a70",
+      "modified": false
+    },
+    {
+      "file": "pharaoh/eye-left.png",
+      "source": "/tmp/gates-symbol-splits-20261021/Glossy Blue Eye Icon 3.png",
+      "sha256": "62c412e68bb90b509f5206016f30103d6ffb68dfdca60383c64891e55dbe6b6c",
+      "modified": false
+    },
+    {
+      "file": "pharaoh/eye-right.png",
+      "source": "/tmp/gates-symbol-splits-20261021/Glossy Blue Eye Icon 4.png",
+      "sha256": "f2312ce169e0b904e3324b86137525db3d3862a02a32acc390e53e7f15fe0b27",
+      "modified": false
+    },
+    {
+      "file": "envelope/body.png",
+      "source": "/Users/simeonhristov/Downloads/The Gates Slot (1).png",
+      "sha256": "bcd1f03f27d3c16dd16cd0679eedc7c3d48f9886e4d91c4413dea57f73fcf08b",
+      "modified": false
+    },
+    {
+      "file": "envelope/flap.png",
+      "source": "/Users/simeonhristov/Downloads/The Gates Slot Group 361.png",
+      "sha256": "ad934cf92f88869d8acb5faa7fa8e14aa3b5f363c780dbc1ff4ec5810420fd75",
+      "modified": false
+    },
+    {
+      "file": "envelope/seal-lower.png",
+      "source": "/Users/simeonhristov/Downloads/Subtract from The Gates.png",
+      "sha256": "fb4477362f3abb11b91cf56953d591f62bfa1192d1877ee15ae7dc6156beb97f",
+      "modified": false
+    },
+    {
+      "file": "../wild/flower.png",
+      "source": "/Users/simeonhristov/Downloads/Glossy Blue Gem Flower Emblem.png",
+      "sha256": "35185a02ebc7711bd8a3c67730f5cee7a0a076a081a91dcbdc7665b7a63c10ab",
+      "modified": false
+    },
+    {
+      "file": "../art/symbols/key.png",
+      "source": "/Users/simeonhristov/Downloads/Glossy Golden Gem Key.png",
+      "sha256": "fdcd7f444a8861f36c8fffeb2fa165069c0e5fa7365f2d2362a9fd1da5b84a8f",
+      "modified": false
+    },
+    {
+      "file": "../art/symbols/envelope.png",
+      "source": "/Users/simeonhristov/Downloads/The Gates Slot Group 364.png",
+      "sha256": "1f90da66fab4c44957c4b89ec0e7ed29f1698a5ae183b2f39a3cb177c5a3fd26",
+      "modified": false
+    }
+  ],
+  "revision": "2026-10-21 supplied redraw and separated Pharaoh/Envelope; seal extracted in code with approval"
+}

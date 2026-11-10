@@ -47,6 +47,8 @@ type Payload =
 	| { type: 'featureSpinStart'; cost: number }
 	| {
 			type: 'spinStart';
+			/** v11 authoritative bonus meter; absent in legacy books. */
+			gateProgressStart?: number;
 			spinId: number;
 			gameType: string;
 			tier: Tier | null;

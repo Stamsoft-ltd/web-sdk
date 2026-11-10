@@ -13,10 +13,10 @@ export const MOTION = {
 		reel: 50,
 		jitter: 8,
 		impact: 240,
-		remove: 820,
+		remove: 1320,
 	},
-	fast: { unit: 55, min: 50, row: 8, tumbleRow: 6, reel: 24, jitter: 8, impact: 160, remove: 500 },
-	turbo: { unit: 24, min: 20, row: 3, tumbleRow: 2, reel: 10, jitter: 4, impact: 80, remove: 180 },
+	fast: { unit: 55, min: 50, row: 8, tumbleRow: 6, reel: 24, jitter: 8, impact: 160, remove: 760 },
+	turbo: { unit: 24, min: 20, row: 3, tumbleRow: 2, reel: 10, jitter: 4, impact: 80, remove: 400 },
 } as const;
 export type Wave = {
 	speed: Speed;

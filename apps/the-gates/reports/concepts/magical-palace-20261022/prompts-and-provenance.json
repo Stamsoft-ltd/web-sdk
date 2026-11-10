@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-22",
+  "tool": "built-in image_gen",
+  "intent": "Concept-only; no live replacements or maths changes",
+  "styleReference": "static/assets/the-gates/wild/flower.png",
+  "assets": [
+    {
+      "file": "royal-gatekeeper-v1.png",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-f50d7d56-c2d0-452d-baf8-bff22ed7c632.png",
+      "prompt": "Use case: stylized-concept.\nAsset type: single premium slot-game symbol concept for THE GATES.\nInput image 1 is a STYLE REFERENCE ONLY: copy its chunky hand-drawn cartoon finish, glossy warm yellow-gold bevels, orange shaded edges, very dark navy outlines, strong white painted highlights, cyan/royal-blue faceted gem. Do not copy the flower shape.\nPrimary request: ROYAL GATEKEEPER. A friendly expressive golden guardian face/mask wearing a compact royal gold crown with ONE prominent cyan diamond-shaped gem centered on the forehead. A magical palace guardian, not Egyptian. Warm confident smile, large readable blue eyes, two separate visible eyebrows, polished golden cheeks. Crown should frame the face elegantly with small rounded side flourishes; the entire silhouette is compact, nearly square, front-facing, bilaterally balanced, recognizable at 100px.\nStyle: polished flat illustrated cartoon game icon with dimensional painted shading, NOT realistic metal, not detailed 3D render. Match supplied Wild's rendering and bold outlines closely.\nComposition: one fully visible isolated icon, centered, fills 80\u201385% of square canvas with ample transparent padding around crown. Truly transparent background. No rectangular card/frame, scenery, captions, letters or watermark.\nAvoid: Egyptian striped nemes/headdress, pharaoh beard, hieroglyphics, Tutankhamun imagery, photoreal skin, angry or sinister face, extraneous neck/torso, thin filigree, different colored jewels, floating sparkle clouds. Crown and blue gem are part of the actual mask design. Finished still concept, not an animation sheet.",
+      "sha256": "1e13a2d870d99b2336048e1e57b3edec27930f4171e7646915d36f446f6300a5",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "file": "watchful-gate-relic-v1.png",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-f263bf60-4858-4ce0-a938-5751624b9ba4.png",
+      "prompt": "Use case: stylized-concept.\nAsset type: single premium slot-game symbol concept for THE GATES, a whimsical magical palace.\nInput image is STYLE REFERENCE ONLY: reproduce its glossy illustrated cartoon surfaces, chunky warm gold bevels, dark navy outline, orange shading, strong painted white glints and cyan-to-royal-blue gemstone palette. Do not make a flower.\nPrimary request: WATCHFUL GATE RELIC, an enchanted palace eye. A large clear cyan-blue iris with deep navy pupil and lively white eye reflections, inset in a luminous cobalt-blue eye chamber. Surround it with a thick rounded gold-and-blue ornamental bezel shaped like a compact oval magical door medallion, NOT a sharp Egyptian eye outline. Small elegant symmetrical gold curls at left/right, one cyan diamond gem on the top and one smaller gem on the bottom. Interior opening is wide and unobstructed so iris can later look around independently; do not hide the iris under decorations. Looks like a friendly vigilant enchanted object from a magical palace, not a biological detached eyeball.\nComposition: isolated front-facing single icon, symmetrical gold frame, compact near-square overall silhouette. Large clean readable central eye. Full silhouette visible with transparent padding. Real transparent background.\nStyle: clean 2D painted cartoon game symbol matching the supplied Wild, dimensional illustrated highlights, not realistic metal, not detailed 3D render. Broad simple surfaces with intentional ornament, readable at 100px.\nNo text, cards, captions, watermark, backdrop or particles.\nAvoid: Eye of Horus marks, Egyptian tear/cheek hooks, wings, pyramids, hieroglyphs, triangles around the eye, realistic veins, frightening expression, thin busy filigree, rainbow colors. Gold + blue + cyan with white glints only. Finished still concept, not layered export or sheet.",
+      "sha256": "aab49a872c84a0bdc4900de217eda3b853c5a0a6e824e174aa7e4f54c23ed816",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ]
+    },
+    {
+      "file": "enchanted-chalice-v1.png",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-7b5aed09-5845-4048-8732-fced8d4c8492.png",
+      "prompt": "Use case: stylized-concept.\nAsset type: single premium slot-game symbol concept for THE GATES.\nInput image is a STYLE REFERENCE ONLY. Match this game's glossy cartoon gold, thick dark navy contours, warm orange shaded bevels, simple bold faceted cyan-blue gems, white painted shine, rounded chunky proportions. Do not make a flower.\nPrimary request: ENCHANTED ROYAL CHALICE to replace the current envelope and return to the original Rune Chalice idea. A beautiful magical palace goblet, gold cup with a deep royal-blue enamel bowl inset, one prominent cyan diamond-shaped gem in a chunky gold bezel centered on the front. Two symmetrical thick curled gold handles integrated into the cup, a short sturdy ornamented stem and a broad gold foot. Bowl rim visibly oval, a little interior cyan magical light contained inside the cup, not smoke or a huge aura. A small restrained gold gate-like geometric engraving below the gem. No Egyptian imagery. No religious symbols.\nComposition: one isolated nearly square icon, front-facing with mild top-down view just sufficient to see the bowl opening. Chalice upright, straight central axis, clean symmetric handles, not tilted. Large bowl dominates; short stem makes it fill a slot cell rather than a tall thin wine glass. Entire silhouette visible with generous transparent padding, true transparent background.\nStyle: polished 2D cartoon illustration matching supplied Wild, readable at small symbol size, hand-painted dimensional shapes not realistic metal or photographic 3D. Gold + cobalt blue + cyan + white highlights. Similar craft/quality to the existing Key and Wild.\nNo text, captions, letters, watermark, backdrop, playing-card border, scattered extra gems, coins or objects.\nAvoid: wine, alcohol bottle, skulls, cross, pharaoh marks, excessive thin filigree, crooked stem, asymmetry, giant floating jewels, rainbow petals, photoreal reflections. Single finished concept only; not layer sheet or multi-icon collage.",
+      "cleanupPrompt": "Edit this chalice concept ONLY to clean the background. Preserve the exact cup design, silhouette, color palette, handles, blue enamel, central cyan diamond gem, painted highlights, proportions and sharp navy outlines. Remove ALL gray haze, gray patches, shadow clouds, glow clouds and stray colored fringe outside the solid cup silhouette, including inside the open spaces of the handles. Outside the actual cup must be fully transparent clean alpha, with only natural 1\u20132px antialiasing directly at the outline. Keep the cyan interior illumination strictly inside the bowl opening. No ground shadow, no exterior aura, no smoke, no scenery. Do not redesign, add, remove or move any part of the goblet. Isolated clean cartoon slot symbol on true transparent background.",
+      "draftSource": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-009820f4-8cc0-44dd-b471-bffd04fa175f.png",
+      "sha256": "53d6a298df0046e2b0cfb3d0a03425452c8229b2e69782be3fc8b57a05cd798f",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ]
+    }
+  ]
+}

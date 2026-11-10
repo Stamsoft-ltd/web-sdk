@@ -49,7 +49,7 @@ test('autoplay UI uses existing exclusive speed flags, bounded spin count and ea
 	assert.match(controls, /stateBet.isTurbo = selected === 'fast'/);
 	assert.match(controls, /stateBet.isSuperTurbo = selected === 'turbo'/);
 	assert.match(controls, /disabledSuperTurbo/);
-	assert.match(controls, /type="range"[\s\S]*?max=\{AUTOPLAY_COUNTS.length - 1\}/);
+	assert.match(controls, /disabled=\{countIndex >= AUTOPLAY_COUNTS.length - 1\}/);
 	assert.match(controls, /bind:checked=\{autoplaySettings.continueOnBonus\}/);
 	assert.match(source('game/autoplaySettings.svelte.ts'), /continueOnBonus: false/);
 	assert.doesNotMatch(controls, /requestBet|activeBetModeKey|AUTO_BET/);

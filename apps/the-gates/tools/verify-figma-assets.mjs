@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 // Read-only acquisition check. Does not certify rendered design fidelity.
-const root = fileURLToPath(new URL('../static/assets/the-gates/figma-20261012/', import.meta.url));
+const root = fileURLToPath(new URL('../static/assets/the-gates/art/', import.meta.url));
 const manifest = JSON.parse(await readFile(path.join(root, 'asset-manifest.json'), 'utf8'));
 const registered = new Set();
 const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -22,7 +22,7 @@ for (const asset of manifest.assets) {
 	assert.equal(data.length, asset.bytes, `${asset.path}: bytes`);
 	assert.equal(createHash('sha256').update(data).digest('hex'), asset.sha256, `${asset.path}: SHA-256`);
 	assert(['ready', 'reference-only', 'pending-node-mapping'].includes(asset.status), asset.path);
-	assert(asset.nodeId || asset.nodeIdCandidates?.length || (asset.sourceArchive && asset.exportName),
+	assert(asset.nodeId || asset.nodeIdCandidates?.length || ((asset.sourceArchive || asset.sourceFile) && asset.exportName),
 		`${asset.path}: missing source provenance`);
 	bytes += data.length;
 }
@@ -39,11 +39,11 @@ assert.equal(manifest.runtimeRulesToPreserve.internalMysteryMode, 'MYSTERY');
 assert.equal(manifest.runtimeRulesToPreserve.visibleMysteryLabel, 'HIDDEN');
 assert.equal(manifest.runtimeRulesToPreserve.mathChanges, false);
 const fontInfo = JSON.parse(await readFile(new URL('../reports/figma-20261012/font-provenance.json', import.meta.url), 'utf8'));
-const font = await readFile(new URL('../static/fonts/figma-20261012/TitanOne-Regular.ttf', import.meta.url));
+const font = await readFile(new URL('../static/fonts/title/TitanOne-Regular.ttf', import.meta.url));
 assert.equal(font.readUInt32BE(0), 0x00010000, 'Titan One: invalid TrueType header');
 assert.equal(font.length, fontInfo.bytes, 'Titan One: bytes');
 assert.equal(createHash('sha256').update(font).digest('hex'), fontInfo.sha256, 'Titan One: SHA-256');
-const license = await readFile(new URL('../static/fonts/figma-20261012/OFL.txt', import.meta.url), 'utf8');
+const license = await readFile(new URL('../static/fonts/title/OFL.txt', import.meta.url), 'utf8');
 assert(license.includes('SIL OPEN FONT LICENSE'), 'Titan One: missing license');
 console.log(JSON.stringify({
 	files: registered.size,

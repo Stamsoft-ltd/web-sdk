@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ART_ROOT, MOTION_ROOT, SYMBOL_ART, artTier } from '../game/art';
+	import { ART_ROOT, MOTION_ROOT, SYMBOL_ART, STATIC_SYMBOL_FILES, artTier } from '../game/art';
 	import { runtime } from '../game/playback.svelte';
 	import type { SymbolName } from '../game/contract';
 	import type { AshTiming } from '../game/symbolAsh';
@@ -47,7 +47,11 @@
 			{seed}
 			{ash}
 			{landing}
-		/>{:else}<img class="native-icon" src={`${ART_ROOT}symbols/${native}.png`} alt="" />{/if}
+		/>{:else}<img
+			class="native-icon"
+			src={STATIC_SYMBOL_FILES[name] ?? `${ART_ROOT}symbols/${native}.png`}
+			alt=""
+		/>{/if}
 </span>
 
 <style>

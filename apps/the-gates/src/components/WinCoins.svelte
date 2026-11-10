@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { runtime } from '../game/playback.svelte';
 	import { Container, Sprite } from 'pixi.js';
 	import { loadAssetImage } from '../game/imageAssets';
 	import { useGpu } from '../game/gpuContext';
@@ -39,7 +40,7 @@
 		});
 		observer.observe(element);
 		if (source) observer.observe(source);
-		void loadAssetImage('./assets/the-gates/win-coin-20261015/coin.png')
+		void loadAssetImage('./assets/the-gates/win-coins/coin.png')
 			.then((image) => {
 				if (dead) return;
 				const root = new Container(),
@@ -61,9 +62,9 @@
 					overlay: element.closest<HTMLElement>('[data-pixi-overlay]'),
 					priority: 10,
 					layout,
-					draw: (delta) => {
+					draw: (delta, now) => {
 						const dt = Math.min(delta, 0.04);
-						emission += dt;
+						if (!runtime.winExitAt) emission += dt;
 						while (emission >= frequency) {
 							emission -= frequency;
 							if (!free.length) continue;

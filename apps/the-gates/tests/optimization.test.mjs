@@ -62,25 +62,25 @@ test('numeric cache remains bounded rather than storing every distinct text/font
 	cached.measure('font-0', 10, 'initial');
 	assert.equal(calls - before, 11, 'old entries evicted; recompute bounded glyph + width data');
 });
-test('packaging includes every tier, native symbol, rainbow Wild, atlas page and required font', async () => {
+test('packaging includes every tier, native symbol, redrawn Wild, atlas page and required font', async () => {
 	const { keep } = await runtimeAssets();
 	for (const tier of ['normal', 'super', 'hidden']) {
 		for (const kind of ['gate', 'bonus']) {
-			assert.ok(keep.has(`assets/the-gates/figma-20261012/motion/${kind}-${tier}.json`));
-			assert.ok(keep.has(`assets/the-gates/figma-20261012/motion/${kind}-${tier}.atlas`));
+			assert.ok(keep.has(`assets/the-gates/art/animations/${kind}-${tier}.json`));
+			assert.ok(keep.has(`assets/the-gates/art/animations/${kind}-${tier}.atlas`));
 		}
-		assert.ok(keep.has(`assets/the-gates/portals-20261012/${tier}-portal-layers-v1.png`));
+		assert.ok(keep.has(`assets/the-gates/portals/${tier}-portal-layers-v1.png`));
 	}
 	for (const tier of ['sweet', 'wild', 'epic', 'mythic', 'legendary']) {
-		assert.ok(keep.has(`assets/the-gates/figma-20261012/motion/win-${tier}.json`));
-		assert.ok(keep.has(`assets/the-gates/figma-20261012/wins/${tier}-crown.png`));
+		assert.ok(keep.has(`assets/the-gates/art/animations/win-${tier}.json`));
+		assert.ok(keep.has(`assets/the-gates/art/wins/${tier}-crown.png`));
 	}
-	assert.ok(keep.has('assets/the-gates/rainbow-wild-20261016/WILD.json'));
-	assert.ok(keep.has('assets/the-gates/rainbow-wild-20261016/rainbow-wild.png'));
-	assert.ok(keep.has('assets/the-gates/figma-20261013/backgrounds/cloud-castle-original.png'));
-	assert.ok(keep.has('assets/the-gates/figma-20261013/d883a.png'));
-	assert.ok(keep.has('fonts/figma-20261013/OFL.txt'));
-	assert.ok(keep.has('fonts/figma-20261012/OFL.txt'));
+	assert.ok(keep.has('assets/the-gates/wild/WILD.json'));
+	assert.ok(keep.has('assets/the-gates/wild/flower.png'));
+	assert.ok(keep.has('assets/the-gates/ui/backgrounds/cloud-castle-original.png'));
+	assert.ok(keep.has('assets/the-gates/ui/modal-frame.png'));
+	assert.ok(keep.has('fonts/body/OFL.txt'));
+	assert.ok(keep.has('fonts/title/OFL.txt'));
 	for (const file of keep)
 		assert.ok(existsSync(new URL(`../static/${file}`, import.meta.url)), file);
 	assert.ok(!keep.has('assets/the-gates/scene-super.png'), 'retired art not shipped');
@@ -93,13 +93,21 @@ test('packaging includes every tier, native symbol, rainbow Wild, atlas page and
 		'retired source deleted',
 	);
 });
+test('release retains Pharaoh and Envelope; Knight and Chalice remain preview-only', async () => {
+	const { SYMBOL_ART } = await import('../src/game/art.ts');
+	assert.equal(SYMBOL_ART.GUARDIAN_MASK, 'pharaoh');
+	assert.equal(SYMBOL_ART.RUNE_CHALICE, 'envelope');
+	const { keep } = await runtimeAssets();
+	for (const file of keep)
+		assert.doesNotMatch(file, /knight|palace|symbol-motion-preview|gold-chalice/i);
+});
 test('asset scanners preserve CSS, preload and literal roots; atlas pages resolve independently', () => {
 	const refs = staticAssetReferences(`url('./assets/the-gates/symbols.png')
  href="%sveltekit.assets%/fonts/cinzel.woff2"
- src="\${UI_ART_ROOT}d883a.png" src="\${ART_ROOT}wins/\${tier}-title.png"`);
+ src="\${UI_ART_ROOT}modal-frame.png" src="\${ART_ROOT}wins/\${tier}-title.png"`);
 	assert.deepEqual([...refs].sort(), [
-		'assets/the-gates/figma-20261013/d883a.png',
 		'assets/the-gates/symbols.png',
+		'assets/the-gates/ui/modal-frame.png',
 		'fonts/cinzel.woff2',
 	]);
 	assert.deepEqual(

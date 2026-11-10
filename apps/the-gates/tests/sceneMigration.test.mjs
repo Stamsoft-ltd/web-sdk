@@ -49,7 +49,7 @@ test('main scene, welcome and loading share the owned GPU renderer without visua
 		assert.match(component, /dead = true/);
 	}
 	assert.doesNotMatch(source('components/LoadingScene.svelte'), /<img/);
-	assert.match(gpu, /press_play_wordmark.webp/);
+	assert.match(gpu, /press-play-wordmark.webp/);
 	assert.match(game, /loadingProgress \+= 0\.8 \/ assets\.length/);
 });
 

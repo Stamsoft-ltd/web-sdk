@@ -27,7 +27,7 @@ test('three distinct speeds shorten travel, removal and landing', () => {
 		assert.ok(duration[0] > duration[1] && duration[1] > duration[2]);
 	}
 	// Updated presentation spec: slower full-scale portal suction, not the retired 520ms curve.
-	assert.equal(MOTION.normal.remove, 820);
+	assert.equal(MOTION.normal.remove, 1320);
 });
 test('skip preserves landed cells, pulls pending cells forward, never lengthens fast cells', () => {
 	assert.deepEqual(skipAdjust(20, 80, 110), { delay: 20, duration: 80 });

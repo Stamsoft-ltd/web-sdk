@@ -1,0 +1,17 @@
+{
+  "date": "2026-10-22",
+  "tool": "built-in image_gen",
+  "status": "Concept study only; live unchanged; aligned body/visor layers required for animation",
+  "file": "knight-concealed-pivot-study-v4.png",
+  "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-7379f748-c590-4044-b2dc-5d904f5cdeab.png",
+  "prompt": "Precise redesign of BOTH poses in this cartoon golden knight helmet study.\nThe user rejects two problems: the open and closed faceplates do not match, and the closed plate looks bolted permanently to the helmet. FIX BOTH, not just one.\nCreate a clean two-pose concept sheet, left OPEN visor, right CLOSED visor, one identical medieval golden helmet in both poses. Same slight three-quarter viewing angle, same size, same skull dome, same fixed forehead cyan gem, same lighting, same lower rim and body. Both complete and uncropped.\nREDESIGN THE VISOR TO BE SIMPLE AND MATCHABLE:\n- ONE broad smooth gold lift-up faceplate.\n- ONE long narrow horizontal dark eye opening across the plate.\n- EXACTLY THREE small ROUND breathing holes in ONE horizontal row beneath the eye opening.\n- Exactly this SAME arrangement and SAME faceplate silhouette in both poses; in raised pose the pattern foreshortens with the plate but does not change count, shape or layout.\n- Plate has a softly rounded lower edge, modest central ridge, clearly bounded perimeter and a small dark clearance seam separating it from the fixed helmet body.\n- The faceplate is NOT screwed onto the helmet front.\nMECHANISM / REMOVE BOLTED LOOK:\nRemove EVERY visible circular bolt, round stud and rivet from BOTH helmets, including the large gold discs at temples and the small discs on the cheeks. No round gold attachments remain anywhere. Use smooth narrow integral visor side arms disappearing under the helmet's temple edge into concealed pivots. A subtle flat joint/seam only; NO circular hinge cap, bolt, screw or decorative button. When closed, the movable visor rests freely in front of the dark face opening with a slim shadow gap around its edge. When open, the exact same entire visor swings up from those concealed side pivots, exposing the hollow navy face opening underneath. No faceplate left underneath the lifted one. No actual human face or eyes inside.\nLEFT open: raise the whole plate enough to show the full dark face opening, and make its full surface and same one eye slit plus three round holes visible. RIGHT closed: same plate swung down to cover opening. Don't turn the open plate into a short grille or add extra holes.\nSTYLE / INVARIANTS:\nPreserve the polished 2D cartoon gold/orange/navy/cyan art style, rounded medieval great-helm dome and cyan forehead gem from reference. Moderate craftsmanship with a few broad gold bevels, not plain clip art, not ornate filigree. No futuristic blue windshield, ear pods, sci-fi panels, robot jaw, crown, plume, horns, neck or torso. Broad painted white shine, thick navy outline, readable at slot size.\nWide horizontal composition, equal spacing and generous clear padding around two complete silhouettes. True transparent background; no exterior haze, shadow, aura, arrows, labels, text or watermark. This is one mechanically consistent design shown twice, not two separately invented helmets.",
+  "sha256": "a3c25264723ec6c99edb50cc71c3f54cf3383d5984ecbaf800226ac5c52a1c17",
+  "size": [
+    1983,
+    793
+  ],
+  "alphaExtrema": [
+    0,
+    255
+  ]
+}

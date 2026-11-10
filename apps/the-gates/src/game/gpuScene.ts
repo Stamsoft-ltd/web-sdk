@@ -1,3 +1,4 @@
+import { createLogoArt, fitLogoArt, pulseLogoText } from './logoArt';
 import {
 	landingIntroFrame,
 	landingExitFrame,
@@ -8,7 +9,7 @@ import {
 import { Container, Graphics, Sprite, Text, Texture, Rectangle } from 'pixi.js';
 import type { GpuEngine } from './gpuRenderer';
 import { loadAssetImage } from './imageAssets';
-import { ART_ROOT, UI_ART_ROOT, SYMBOL_ART, PORTRAIT_ART_ROOT } from './art';
+import { ART_ROOT, UI_ART_ROOT, SYMBOL_ART, STATIC_SYMBOL_FILES, PORTRAIT_ART_ROOT } from './art';
 import { fitWelcome, WELCOME_CARDS } from './welcome';
 
 import { fitSceneImage, type SceneBox } from './sceneLayout';
@@ -66,7 +67,11 @@ export function createMainScene(
 	let dead = false,
 		current = '',
 		request = 0;
-	let logoTexture: Texture | undefined;
+	let pulseAge = 0;
+	let idle = false,
+		idleReduced = false,
+		idleStartedAt = 0;
+	let mainLogoBox: SceneBox = { x: 0, y: 0, width: 1, height: 1 };
 	const layout = () => {
 		const origin = engine.origin,
 			bounds = host.getBoundingClientRect(),
@@ -97,14 +102,14 @@ export function createMainScene(
 				height: studioBox.height,
 			});
 		}
-		const badge = logo.children[0] as Sprite | undefined;
-		if (badge)
-			fitSprite(badge, {
-				x: brand.left - origin.left,
-				y: brand.top - origin.top,
-				width: brand.width,
-				height: brand.height,
-			});
+		mainLogoBox = {
+			x: brand.left - origin.left,
+			y: brand.top - origin.top,
+			width: brand.width,
+			height: brand.height,
+		};
+		const badge = logo.children[0] as Container | undefined;
+		if (badge) fitLogoArt(badge, mainLogoBox);
 	};
 	const stop = engine.register({
 		root,
@@ -116,23 +121,28 @@ export function createMainScene(
 				!!engine.entry &&
 				now - engine.entry.startedAt < (engine.entry.reduced ? 140 : LANDING_EXIT_MS);
 			logo.visible = !entering;
-			return entering;
+			const badge = logo.children[0] as Container | undefined;
+			const moving = idle && !idleReduced && !entering && !!badge;
+			if (badge) fitLogoArt(badge, mainLogoBox);
+			if (moving || entering || engine.entry)
+				pulseAge = Math.max(0, now - (engine.logoPulseStartedAt ?? idleStartedAt));
+			if (badge) pulseLogoText(badge, pulseAge, idleReduced);
+			return entering || moving;
 		},
 	});
-	void image(engine, `${ART_ROOT}logo/logo.png`, new Rectangle(11, 81, 767, 418))
+	void createLogoArt(engine)
 		.then((badge) => {
 			if (dead) {
-				badge.destroy({ texture: true });
+				badge.destroy({ children: true });
 				return;
 			}
-			logoTexture = badge.texture;
 			logo.addChild(badge);
 			engine.layout();
 		})
 		.catch(error);
 	void Promise.all([
-		image(engine, `${UI_ART_ROOT}11cd1.svg`),
-		image(engine, `${UI_ART_ROOT}ee395.svg`),
+		image(engine, `${UI_ART_ROOT}studio-wordmark.svg`),
+		image(engine, `${UI_ART_ROOT}studio-mark.svg`),
 	])
 		.then((nodes) => {
 			if (dead) {
@@ -144,6 +154,13 @@ export function createMainScene(
 		})
 		.catch(error);
 	return {
+		setIdle(enabled: boolean, reduced: boolean) {
+			if (enabled === idle && reduced === idleReduced) return;
+			idle = enabled;
+			idleReduced = reduced;
+			idleStartedAt = performance.now();
+			engine.invalidate();
+		},
 		update(src: string) {
 			if (src === current) {
 				engine.layout();
@@ -167,7 +184,6 @@ export function createMainScene(
 		destroy() {
 			dead = true;
 			stop();
-			logoTexture?.destroy();
 		},
 	};
 }
@@ -215,7 +231,7 @@ export function createWelcomeScene(
 	content.visible = false;
 	let logoBox: SceneBox = { x: 0, y: 0, width: 1, height: 1 };
 	const backgrounds = new Map<string, Sprite>();
-	let logo: Sprite | undefined, frameTexture: Texture | undefined, logoTexture: Texture | undefined;
+	let logo: Container | undefined, frameTexture: Texture | undefined;
 	const ornaments: Sprite[] = [];
 	const layout = () => {
 		if (!state) return;
@@ -241,7 +257,7 @@ export function createWelcomeScene(
 				width: w,
 				height: (w * 418) / 767,
 			};
-			fitSprite(logo, logoBox);
+			fitLogoArt(logo, logoBox);
 		}
 		const cardX = portrait ? 18 : compact ? 80 : 40,
 			cardY = portrait ? 200 : compact ? 167 : 280;
@@ -320,7 +336,10 @@ export function createWelcomeScene(
 				return false;
 			}
 			content.visible = true;
-			if (!introStartedAt) introStartedAt = now;
+			if (!introStartedAt) {
+				introStartedAt = now;
+				engine.logoPulseStartedAt = introStartedAt + (state.reduced ? 140 : 1250);
+			}
 			const leaving = !!state.leavingAt,
 				elapsed = now - (state.leavingAt || introStartedAt || now);
 			const intro = landingIntroFrame(
@@ -352,6 +371,7 @@ export function createWelcomeScene(
 					leaving ? exit.caption : intro.caption;
 			background.alpha = leaving ? exit.background : 1;
 			let from = { ...logoBox, y: logoBox.y - (state.reduced ? 0 : intro.logo * distance) };
+
 			if (leaving && state.logoTarget) {
 				const rect = state.logoTarget.getBoundingClientRect(),
 					origin = engine.origin;
@@ -363,22 +383,23 @@ export function createWelcomeScene(
 				});
 				from = interpolateBox(from, target, exit.logo);
 			}
-			fitSprite(logo, from);
+			fitLogoArt(logo, from);
+			pulseLogoText(logo, Math.max(0, now - (engine.logoPulseStartedAt ?? now)), state.reduced);
 			logo.alpha = state.reduced ? (leaving ? exit.background : intro.alpha) : 1;
-			return leaving ? !exit.done : !intro.done;
+			return leaving ? !exit.done : !intro.done || !state.reduced;
 		},
 	});
 	const install = async () => {
 		const [wide, portrait, badge, frame] = await Promise.all([
-			image(engine, `${UI_ART_ROOT}28fc1.png`),
+			image(engine, `${UI_ART_ROOT}base-background.png`),
 			image(engine, `${UI_ART_ROOT}backgrounds/cloud-castle-original.png`),
-			image(engine, `${ART_ROOT}logo/logo.png`, new Rectangle(11, 81, 767, 418)),
-			image(engine, `${UI_ART_ROOT}fcdb7.png`, new Rectangle(130, 178, 1478, 1215)),
+			createLogoArt(engine),
+			image(engine, `${UI_ART_ROOT}landing-card-frame.png`, new Rectangle(130, 178, 1478, 1215)),
 		]);
 		if (dead) {
 			wide.destroy();
 			portrait.destroy();
-			badge.destroy({ texture: true });
+			badge.destroy({ children: true });
 			frame.destroy({ texture: true });
 			return;
 		}
@@ -386,7 +407,6 @@ export function createWelcomeScene(
 		backgrounds.set('portrait', portrait);
 		background.addChild(wide, portrait);
 		logo = badge;
-		logoTexture = badge.texture;
 		logoLayer.addChild(badge);
 		frameTexture = frame.texture;
 		frame.destroy();
@@ -404,7 +424,9 @@ export function createWelcomeScene(
 			'PURPLE_GEM',
 		] as const;
 		const nodes = await Promise.all(
-			symbols.map((name) => image(engine, `${ART_ROOT}symbols/${SYMBOL_ART[name]}.png`)),
+			symbols.map((name) =>
+				image(engine, STATIC_SYMBOL_FILES[name] ?? `${ART_ROOT}symbols/${SYMBOL_ART[name]}.png`),
+			),
 		);
 		if (dead) {
 			for (const node of nodes) node.destroy();
@@ -426,7 +448,6 @@ export function createWelcomeScene(
 			dead = true;
 			stop();
 			frameTexture?.destroy();
-			logoTexture?.destroy();
 		},
 	};
 }
@@ -477,12 +498,12 @@ export function createLoadingScene(engine: GpuEngine, host: HTMLElement) {
 		draw: () => false,
 	});
 	void Promise.all([
-		image(engine, `${UI_ART_ROOT}28fc1.png`),
+		image(engine, `${UI_ART_ROOT}base-background.png`),
 		image(engine, `${PORTRAIT_ART_ROOT}base-background.png`),
 		...Array.from({ length: 10 }, (_, i) =>
-			image(engine, `./assets/the-gates/loading/p0${i}.webp`),
+			image(engine, `./assets/the-gates/loading/frame-0${i}.webp`),
 		),
-		image(engine, './assets/the-gates/loading/press_play_wordmark.webp'),
+		image(engine, './assets/the-gates/loading/press-play-wordmark.webp'),
 	])
 		.then(([wide, tall, ...marks]) => {
 			const wordmark = marks.pop()!;

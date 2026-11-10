@@ -10,7 +10,7 @@
 
 <div class="rules-native-frame" aria-hidden="true">
 	{#each ys as y, row}{#each xs as x, column}<span
-				style={`background-image:url('${UI_ART_ROOT}d883a.png');background-size:${(1319 / widths[column]) * 100}% ${(1193 / heights[row]) * 100}%;background-position:${(x / (1319 - widths[column])) * 100}% ${(y / (1193 - heights[row])) * 100}%`}
+				style={`background-image:url('${UI_ART_ROOT}modal-frame.png');background-size:${(1319 / widths[column]) * 100}% ${(1193 / heights[row]) * 100}%;background-position:${(x / (1319 - widths[column])) * 100}% ${(y / (1193 - heights[row])) * 100}%`}
 			></span>{/each}{/each}
 </div>
 

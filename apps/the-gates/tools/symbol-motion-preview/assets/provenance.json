@@ -1,0 +1,53 @@
+{
+  "purpose": "Approval preview; original supplied images copied unchanged",
+  "assets": [
+    {
+      "file": "apps/the-gates/tools/symbol-motion-preview/assets/sun-rays.png",
+      "source": "/Users/simeonhristov/Downloads/Glossy Golden Sunburst Rays.png",
+      "sha256": "9cf5c8d614f937ec2510bd34eb13e0214596a9fe4a56c7000bf476966ac13c87",
+      "modified": false
+    },
+    {
+      "file": "apps/the-gates/tools/symbol-motion-preview/assets/sun-face.png",
+      "source": "/Users/simeonhristov/Downloads/Glossy Smiling Sun Emoji.png",
+      "sha256": "b8de31b20aad0271d554f3c2000b890d818516eb93cc22979a44f76b3489e5af",
+      "modified": false
+    },
+    {
+      "file": "apps/the-gates/tools/symbol-motion-preview/assets/sun-badge.png",
+      "source": "/Users/simeonhristov/Downloads/Glossy Orange Medallion Badge.png",
+      "sha256": "cfcbbccdbdbaf7b8ec966b9d1e81e789c9bb53315fbd5ed58c9e88e7cdd13610",
+      "modified": false
+    },
+    {
+      "file": "apps/the-gates/tools/symbol-motion-preview/assets/orb-frame.png",
+      "source": "/Users/simeonhristov/Downloads/Group 348.png",
+      "sha256": "71a5ce5aa72e98220afae2c0832bf400d5d46754831a01b4ba43d0d96ffec586",
+      "modified": false
+    },
+    {
+      "file": "apps/the-gates/tools/symbol-motion-preview/assets/orb-spiral.png",
+      "source": "/Users/simeonhristov/Downloads/Group\u0441 349.png",
+      "sha256": "02595e3ff8ca0a5c068e9fdb76c887d71ef95102cffeaa46fa1435e4fad8a182",
+      "modified": false
+    },
+    {
+      "file": "apps/the-gates/tools/eye-look-preview/assets/eye-border.png",
+      "source": "/Users/simeonhristov/Downloads/Group 353.png",
+      "sha256": "e40cec0d8075816203786c852d8e2b019c275f155090b8f9c07075869c36204e",
+      "modified": false
+    },
+    {
+      "file": "apps/the-gates/tools/eye-look-preview/assets/eye-iris-new.png",
+      "source": "/Users/simeonhristov/Downloads/Glossy Cyan Eye Iris Icon 3.png",
+      "sha256": "1e2ade173f8cd31be4c5d895886f2410eaec9c6e3f77140f5186d0ff532497fd",
+      "modified": false
+    },
+    {
+      "file": "apps/the-gates/tools/eye-look-preview/assets/eye-background.png",
+      "source": "/Users/simeonhristov/Downloads/Glossy Blue Almond Emblem.png",
+      "sha256": "f1749ebf9a592a3a47795e995d2df150b109083b7d1b5e3d0e3bc9c09797899c",
+      "modified": false
+    }
+  ]
+}

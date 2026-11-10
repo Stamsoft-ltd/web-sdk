@@ -7,8 +7,8 @@ import {
  TextureAtlas, FakeTexture, AtlasAttachmentLoader, SkeletonJson,
  Skeleton, AnimationState, AnimationStateData, Physics,
 } from '@esotericsoftware/spine-core';
-const root=new URL('../static/assets/the-gates/figma-20261012/',import.meta.url);
-const motion=new URL('motion/',root);
+const root=new URL('../static/assets/the-gates/art/',import.meta.url);
+const motion=new URL('animations/',root);
 const json=name=>JSON.parse(readFileSync(new URL(name+'.json',motion),'utf8'));
 const manifest=json('manifest');
 function parsed(name,atlasName){
@@ -153,7 +153,7 @@ test('portal rim stays below full-size symbol; slow suction, pinch and clear are
   }
   for(const animation of ['idle','land','paying'])assert.equal(pose(entry,animation,.05).skeleton.findSlot('portal-rim').color.a,0);
  }
- const source=new URL('../../portals-20261012/',motion),provenance=JSON.parse(readFileSync(new URL(manifest.removal.provenance,source),'utf8'));
+ const source=new URL('../../portals/',motion),provenance=JSON.parse(readFileSync(new URL(manifest.removal.provenance,source),'utf8'));
  assert.equal(provenance.rimCenterAlpha,0,'real transparent portal hole');assert.deepEqual(provenance.alphaRange,[0,255]);
  assert.equal(createHash('sha256').update(readFileSync(new URL(provenance.path,source))).digest('hex'),manifest.removal.sha256);
 });
@@ -167,7 +167,7 @@ test('portal eventId preserves replay motion; new cells/events change cosmetic s
  }
 });
 test('gate and symbol-removal portals use each mode palette and verified transparent layered art',()=>{
- const source=new URL('../../portals-20261012/',motion),hashes=new Set();
+ const source=new URL('../../portals/',motion),hashes=new Set();
  const expected={normal:['purple','hot pink','gold'],super:['royal blue','white','gold'],hidden:['ruby red','cream','gold']};
  for(const [tier,variant] of Object.entries(manifest.portalVariants)){
   assert.deepEqual(variant.palette,expected[tier]);
@@ -181,11 +181,11 @@ test('gate and symbol-removal portals use each mode palette and verified transpa
    assert.ok(p.regions[layer][0]>=0&&p.regions[layer][1]>=0);
    assert.ok(p.regions[layer][0]+p.regions[layer][2]<=p.width);
    assert.ok(p.regions[layer][1]+p.regions[layer][3]<=p.height);
-   assert.equal(pose(gate,'cycle',1.3).skeleton.findSlot(layer).getAttachment().region.page.name,`../../portals-20261012/${variant.path}`);
+   assert.equal(pose(gate,'cycle',1.3).skeleton.findSlot(layer).getAttachment().region.page.name,`../../portals/${variant.path}`);
   }
   for(const symbol of manifest.symbols){
    const data=parsed(symbol.name,variant.symbolAtlas);assert.equal(data.findAnimation('land').duration,Math.fround(.12));
-   assert.equal(data.defaultSkin.getAttachment(data.findSlot('portal-rim').index,'portal-rim').region.page.name,`../../portals-20261012/${variant.path}`);
+   assert.equal(data.defaultSkin.getAttachment(data.findSlot('portal-rim').index,'portal-rim').region.page.name,`../../portals/${variant.path}`);
   }
  }
  assert.equal(hashes.size,3,'never reuse one cyan portal across all gate modes');

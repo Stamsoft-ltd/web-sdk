@@ -51,20 +51,22 @@
 		}
 	}}
 	data-win-tier={art}
+	class:capped
 	class:reduced={runtime.reduced}
+	class:win-exiting={runtime.winExitAt > 0}
 	aria-label={title}
 >
 	<WinCoins origin={winArt} tier={WIN_TIERS.indexOf(tier)} reduced={runtime.reduced} />
 	<div class="win-body">
 		<section class="win-stage">
-			{#if capped}<h2 class="celebration-label">{t('MAX WIN')}</h2>{/if}
 			<div class="win-art" bind:this={winArt} class:spine-ready={ready}>
 				<GpuWinArt
 					{art}
+					{capped}
 					{amount}
 					{countMs}
 					{format}
-					viewBox={WIN_ART_VIEW}
+					viewBox={capped ? { width: 850, height: 660, offsetY: 0 } : WIN_ART_VIEW}
 					reduced={runtime.reduced}
 					onready={(value) => (ready = value)}
 				/>
@@ -74,6 +76,7 @@
 </div>
 
 <style>
+
 	.win-tier-dialog {
 		position: fixed;
 		inset: 0;
@@ -118,15 +121,10 @@
 		aspect-ratio: 860/600;
 		container-type: inline-size;
 	}
-	.celebration-label {
-		font:
-			clamp(24px, 4vw, 42px) / 1.2 GatesCartoon,
-			system-ui;
-		margin: 0;
-		text-align: center;
-		color: #ffdd52;
-		text-shadow: 0 3px #572231;
-	}
+	.capped .win-body { height: 100dvh; min-height: 0; padding: 2dvh 1dvw; }
+	.capped .win-stage { width: 100%; height: 100%; }
+	.capped .win-art { width: 100%; height: 100%; aspect-ratio: auto; }
+
 	@media (max-height: 500px) {
 		.win-art {
 			width: min(100%, 116dvh);

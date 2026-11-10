@@ -34,3 +34,12 @@ test('small-screen popover shrinks about its anchored corner; mobile rules reser
 	assert.match(css, /height: min\(600px, calc\(100dvh - 92px\)\)/);
 	assert.match(css, /\.figma-temple.mobile-scene ~ \.modal-overlay:has/);
 });
+
+test('desktop popover clears HUD and mute slashes retain an explicit black outline', () => {
+	const css = src('figma.css');
+	assert.match(
+		css,
+		/\.figma-layout:not\(\.portrait\):not\(\.compact\) \.utility-menu\s*\{[^}]*top: auto;[^}]*bottom: calc\(100% - var\(--hud-center-y\) \+ 50px\)/,
+	);
+	assert.match(css, /\.option-icon.muted::after\s*\{[^}]*height: 7px;[^}]*border: 2px solid #000;/);
+});

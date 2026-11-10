@@ -25,7 +25,7 @@ test('third-win selection completes every native paying cycle before gate closur
 	]) {
 		const rig = JSON.parse(
 			readFileSync(
-				new URL(`../static/assets/the-gates/figma-20261012/motion/${name}.json`, import.meta.url),
+				new URL(`../static/assets/the-gates/art/animations/${name}.json`, import.meta.url),
 			),
 		);
 		assert.ok(

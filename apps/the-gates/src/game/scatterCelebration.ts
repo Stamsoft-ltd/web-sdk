@@ -1,5 +1,20 @@
 import type { Board } from './contract';
-export const SCATTER_CELEBRATION_MS = { normal: 900, fast: 480, turbo: 260, reduced: 140 } as const;
+export type ScatterCelebration = { keys: string[]; startedAt: number; duration: number };
+/** Gravity changes cell addresses, not the trigger or its running animation clock. */
+export function refreshScatterCelebration(celebration: ScatterCelebration | null, board: Board) {
+	return celebration ? { ...celebration, keys: bonusScatterKeys(board) } : null;
+}
+/** Never leave trigger FX on an old cell now occupied by a regular symbol. */
+export function isCelebratingScatter(
+	celebration: ScatterCelebration | null | undefined,
+	key: string,
+	name: string | undefined,
+) {
+	return name === 'KEY' && !!celebration?.keys.includes(key);
+}
+// Decorative looping Keys stay readable even when the round/entry is accelerated.
+// Independent of gate timing: cap their speed-up at 1.2x, not the spin Turbo factor.
+export const SCATTER_CELEBRATION_MS = { normal: 900, fast: 825, turbo: 750, reduced: 140 } as const;
 /** Called only for an authoritative freeSpinTrigger as soon as its triggering Keys land; loops until bonus acknowledgement. */
 export function bonusScatterKeys(board: Board) {
 	return board.flatMap((column, reel) =>

@@ -142,8 +142,8 @@ export function createGpuPanels(
 		}
 	};
 	void Promise.all([
-		loadAssetImage('./assets/the-gates/stat-art-20261016/stat-frame.png'),
-		loadAssetImage('./assets/the-gates/stat-art-20261016/tumble-gem.png'),
+		loadAssetImage('./assets/the-gates/stat-panels/stat-frame.png'),
+		loadAssetImage('./assets/the-gates/stat-panels/tumble-gem.png'),
 	])
 		.then(([frame, gem]) => {
 			if (dead) return;
@@ -206,7 +206,8 @@ export function createGpuPanels(
 		panels.scale.set(scale);
 		tumbles.visible = true;
 		multiplier.visible = true;
-		fs.visible = state.bonus || state.totalFs > 0;
+		// Gate rewards may carry a default totalFs outside bonuses. Visibility follows the visible scene only.
+		fs.visible = state.bonus;
 		const geometry = statPanelLayout(
 				state.width,
 				(boardBounds.bottom - bounds.top) / scale,

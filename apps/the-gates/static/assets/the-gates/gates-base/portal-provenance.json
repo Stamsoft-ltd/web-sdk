@@ -1,0 +1,38 @@
+{
+  "tier": "base",
+  "path": "base-portal-layers-v1.png",
+  "tool": "built-in image_gen",
+  "mode": "Approved palette-only edit",
+  "editTarget": "../portals/normal-portal-layers-v1.png",
+  "paletteReference": "base-leaf.png",
+  "palette": [
+    "royal blue",
+    "gold",
+    "navy"
+  ],
+  "sha256": "d0ef5708a4633928319d2819bf82da2f7e8a3a29bec8c3564ca23a6cce8b9e51",
+  "width": 1774,
+  "height": 887,
+  "regions": {
+    "portal-rim": [
+      41,
+      46,
+      806,
+      790
+    ],
+    "portal-vortex": [
+      937,
+      60,
+      771,
+      757
+    ]
+  },
+  "regionThresholdAlpha": 16,
+  "rimCenterAlpha": 0,
+  "usage": [
+    "BASE",
+    "CHANCE",
+    "FEATURE"
+  ],
+  "animation": "Existing rim/vortex independent layers and timelines preserved; bonus assets untouched."
+}

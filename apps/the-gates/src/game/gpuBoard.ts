@@ -1,7 +1,17 @@
+import { loadClusterSymbols, type ClusterSymbol } from './gpuClusterSymbols';
+import { clusterClock, clusterGestureMs } from './symbolClusterMotion';
+import type { Speed } from './uiPolicy';
+import { PORTAL_CLOSE_MS, portalPalette } from './portalClose';
+import { applyPortalClose, drawPortalClose } from './portalCloseVfx';
+import { winGemBoardShake } from './winGemMotion';
 import { tumbleLabelAnchors } from './tumbleLabels';
 import { gameArrivalFrame } from './entryMotion';
 import type { Win } from './contract';
-import { scatterCelebrationFrame } from './scatterCelebration';
+import {
+	scatterCelebrationFrame,
+	isCelebratingScatter,
+	type ScatterCelebration,
+} from './scatterCelebration';
 import { playGameSound, type SoundCue } from './audio';
 import { createReelAudioTracker } from './reelAudio';
 import { Container, Graphics, FillGradient, Sprite, Text } from 'pixi.js';
@@ -9,7 +19,7 @@ import type { Board, SymbolName } from './contract';
 import { MOTION_ROOT, UI_ART_ROOT } from './art';
 import { loadAssetImage } from './imageAssets';
 import { symbolViewport } from './symbolFit';
-import { scatterCellScale, scatterOverFrame } from './scatterFit';
+import { scatterCellScale, scatterOverFrame, wildCellScale } from './scatterFit';
 import { boardGeometry } from './boardGeometry';
 import { ambientSymbolGlow, payingSymbolGlow } from './symbolGlow';
 import { loadRig } from './spine';
@@ -17,7 +27,8 @@ import { cellMotion, sampleTileTravel, landingProgress, type Wave } from './moti
 import { portalRemovalTracks, PORTAL_SECONDS } from './portalAnimation';
 import type { GpuEngine, GpuPose } from './gpuRenderer';
 export type BoardView = {
-	scatterCelebration?: null | { keys: string[]; startedAt: number; duration: number };
+	motionSpeed?: Speed;
+	scatterCelebration?: null | ScatterCelebration;
 	wins?: Win[];
 	multiplier?: number;
 	multiplierActive?: boolean;
@@ -38,12 +49,14 @@ export type BoardView = {
 	mobile: boolean;
 };
 type Tile = {
+	cluster?: ClusterSymbol;
 	root: Container;
 	pad: Graphics;
 	fx: Graphics;
 	pose?: GpuPose;
 	name?: SymbolName;
 	request: string;
+	revision: number;
 	removal: string;
 	x: number;
 	y: number;
@@ -62,15 +75,15 @@ export function createGpuBoard(
 		background = new Graphics(),
 		frame = new Sprite();
 	const field = new Container();
-	// Landed Keys alone bypass the reel mask/frame. Moving Keys stay in the masked field.
+	// Landed Keys/Wilds bypass the frame. Moving symbols share the same masked-field guard.
 	const keyLayer = new Container();
 	const labels: Text[] = [];
 	const payouts = new Container();
-	payouts.zIndex = 20;
-	field.addChild(payouts);
+	// Amounts must cover even landed Keys/Wilds in the over-frame layer.
 	field.sortableChildren = true;
-	root.addChild(background, field, mask, frame, keyLayer);
+	root.addChild(background, field, mask, frame, keyLayer, payouts);
 	field.mask = mask;
+	payouts.mask = mask;
 	const mobileGold = new FillGradient({
 		start: { x: 0, y: 0 },
 		end: { x: 0, y: 1 },
@@ -81,9 +94,17 @@ export function createGpuBoard(
 		],
 	});
 	let frameReady = false;
+	let clusterArt: Awaited<ReturnType<typeof loadClusterSymbols>> | undefined;
+	let payingKey = '',
+		payingAge = 0;
 	const updateReady = () =>
-		ready(!!state && (state.mobile || frameReady) && tiles.every((t) => !t.name || !!t.pose));
-	void loadAssetImage(`${UI_ART_ROOT}edb79.png`)
+		ready(
+			!!state &&
+				!!clusterArt &&
+				(state.mobile || frameReady) &&
+				tiles.every((t) => !t.name || !!t.pose),
+		);
+	void loadAssetImage(`${UI_ART_ROOT}reel-frame.png`)
 		.then((image) => {
 			if (dead) return;
 			frame.texture = engine.texture(image);
@@ -106,13 +127,40 @@ export function createGpuBoard(
 		field.addChild(fx);
 		fx.zIndex = 11;
 		field.addChild(root);
-		return { root, pad, fx, request: '', removal: '', x: 0, y: 0, width: 0, height: 0, pitch: 0 };
+		return {
+			root,
+			pad,
+			fx,
+			request: '',
+			revision: 0,
+			removal: '',
+			x: 0,
+			y: 0,
+			width: 0,
+			height: 0,
+			pitch: 0,
+		};
 	});
 	const gradients = new Map<string, FillGradient>();
 	let state: BoardView,
 		dead = false,
 		dirty = true;
-	let baseY = 0;
+	const clusterReady = loadClusterSymbols().then((art) => {
+		if (dead) {
+			art.destroy();
+			return undefined;
+		}
+		clusterArt = art;
+		updateReady();
+		engine.invalidate();
+		return art;
+	});
+	// Per-symbol promise consumers report errors; observe the shared request too.
+	void clusterReady.catch((error) => {
+		if (!dead) failed(error);
+	});
+	let baseY = 0,
+		baseX = 0;
 	const geometry = () => {
 		if (!state || dead) return;
 		dirty = true;
@@ -121,7 +169,8 @@ export function createGpuBoard(
 		const width = Math.max(1, host.clientWidth),
 			height = Math.max(1, host.clientHeight);
 		baseY = bounds.top - origin.top;
-		root.position.set(bounds.left - origin.left, baseY);
+		baseX = bounds.left - origin.left;
+		root.position.set(baseX, baseY);
 		root.scale.set(bounds.width / width, bounds.height / height);
 		const { field: opening, border, cells } = boardGeometry(width, height, state.mobile);
 		background.clear();
@@ -172,7 +221,7 @@ export function createGpuBoard(
 		tiles.forEach((tile, index) => {
 			const key = `${Math.floor(index / 5)}:${index % 5}`,
 				name = tile.name;
-			tile.root.zIndex = name === 'KEY' ? 10 : 0;
+			tile.root.zIndex = name === 'KEY' || name === 'WILD' ? 10 : 0;
 			const highlight = state.winning.includes(key) && ['winning', 'gate'].includes(state.phase);
 			const color = highlight
 				? name
@@ -188,10 +237,10 @@ export function createGpuBoard(
 					center: { x: tile.width / 2, y: tile.height / 2 },
 					innerRadius: 0,
 					outerCenter: { x: tile.width / 2, y: tile.height / 2 },
-					outerRadius: Math.max(tile.width, tile.height) * 0.72,
+					outerRadius: Math.max(tile.width, tile.height) * (highlight ? 0.72 : 0.8),
 					colorStops: [
 						{ offset: 0, color },
-						{ offset: highlight ? 0.45 : 0.12, color },
+						{ offset: highlight ? 0.45 : 0.24, color },
 						{ offset: 1, color: 0x0b192c },
 					],
 				});
@@ -240,7 +289,12 @@ export function createGpuBoard(
 			if (!state) return false;
 			const entry = engine.entry,
 				arrival = gameArrivalFrame(entry ? now - entry.startedAt : 99999, entry?.reduced);
-			root.y = baseY - (engine.app.screen.height + host.clientHeight) * arrival.offset;
+			const impact = winGemBoardShake(
+				engine.boardImpactAt === null ? 99999 : now - engine.boardImpactAt,
+				state.reduced,
+			);
+			root.x = baseX + impact.x;
+			root.y = baseY - (engine.app.screen.height + host.clientHeight) * arrival.offset + impact.y;
 			root.alpha = arrival.alpha;
 			if (state.phase === 'dropping' && !state.paused) {
 				for (const reel of landedReels(
@@ -272,7 +326,7 @@ export function createGpuBoard(
 					state.reduced ||
 					!['spinning', 'dropping', 'removing', 'winning', 'gate'].includes(state.phase))
 			)
-				return false;
+				return !impact.done;
 			dirty = false;
 			const amounts =
 				state.phase === 'removing' &&
@@ -306,7 +360,14 @@ export function createGpuBoard(
 				label.scale.set(1);
 				label.scale.set(Math.min(1, (tile.width * 2.1) / Math.max(1, label.width)));
 			});
-			let moving = !arrival.done;
+			if (payingKey && ['winning', 'gate'].includes(state.phase))
+				payingAge = clusterClock(
+					payingAge,
+					dt * 1000,
+					state.motionSpeed ?? state.wave.speed,
+					state.paused || state.reduced || state.phase === 'gate',
+				);
+			let moving = !arrival.done || !impact.done;
 			for (let index = 0; index < tiles.length; index++) {
 				const tile = tiles[index],
 					reel = Math.floor(index / 5),
@@ -331,21 +392,22 @@ export function createGpuBoard(
 				tile.root.scale.set(1);
 				tile.root.rotation = 0;
 				const celebration = state.scatterCelebration;
-				if (celebration?.keys.includes(key)) {
+				const celebrating = isCelebratingScatter(celebration, key, tile.name);
+				if (celebrating && celebration) {
 					const f = scatterCelebrationFrame(
 						now - celebration.startedAt,
 						celebration.duration,
 						state.reduced,
 					);
-					const cx = tile.x + tile.width / 2,
-						cy = tile.y + tile.height / 2,
+					const cx = tile.root.x + tile.width / 2,
+						cy = tile.root.y + tile.height / 2,
 						r = Math.min(tile.width, tile.height) * 0.42;
 					for (let i = 3; i >= 1; i--)
 						tile.fx
 							.circle(cx, cy, r * (1 + i * 0.22))
 							.fill({ color: 0xffd94b, alpha: f.glow * 0.05 * i });
 					tile.fx
-						.roundRect(tile.x + 2, tile.y + 2, tile.width - 4, tile.height - 4, 8)
+						.roundRect(tile.root.x + 2, tile.root.y + 2, tile.width - 4, tile.height - 4, 8)
 						.stroke({ color: 0xffed96, width: 3, alpha: f.glow });
 					if (!state.reduced)
 						for (let i = 0; i < 7; i++) {
@@ -365,11 +427,25 @@ export function createGpuBoard(
 				const pose = tile.pose;
 				if (!pose) continue;
 				pose.begin();
-				if (state.reduced || (state.paused && !celebration?.keys.includes(key)))
-					pose.actor.sample('setup', 0);
+				if (state.reduced || (state.paused && !celebrating)) pose.actor.sample('setup', 0);
 				else if (state.phase === 'removing' && state.removed.includes(key)) {
 					const progress = Math.max(0, Math.min(1, (elapsed - contact.delay) / contact.duration));
-					pose.actor.sample('remove', progress * PORTAL_SECONDS);
+					const closeMs = Math.min(PORTAL_CLOSE_MS[state.wave.speed], contact.duration * 0.65);
+					const symbolMs = Math.max(1, contact.duration - closeMs);
+					const age = Math.max(0, elapsed - contact.delay);
+					pose.actor.sample('remove', Math.min(0.87, (age / symbolMs) * 0.87) * PORTAL_SECONDS);
+					if (age >= symbolMs) {
+						const closing = Math.min(1, (age - symbolMs) / closeMs);
+						applyPortalClose(pose.actor.skeleton, closing);
+						drawPortalClose(
+							tile.fx,
+							closing,
+							tile.x + tile.width / 2,
+							tile.y + tile.height / 2,
+							Math.min(tile.width, tile.height) * 0.5,
+							portalPalette(state.palette),
+						);
+					}
 					moving ||= progress < 1;
 				} else if (state.phase === 'dropping' && travel) {
 					const progress = landingProgress(now, {
@@ -379,9 +455,12 @@ export function createGpuBoard(
 					});
 					pose.actor.sample(progress === null ? 'setup' : 'land', (progress ?? 0) * 0.12);
 				} else if (['winning', 'gate'].includes(state.phase) && state.winning.includes(key)) {
-					pose.actor.setAnimation('paying');
-					pose.actor.update(dt);
-					moving = true;
+					if (tile.cluster) pose.actor.sample('setup', 0);
+					else {
+						pose.actor.setAnimation('paying');
+						pose.actor.update(dt);
+					}
+					moving ||= !tile.cluster || payingAge < clusterGestureMs(tile.name!);
 				} else pose.actor.sample('setup', 0);
 				const viewport =
 						tile.name === 'WILD'
@@ -390,9 +469,11 @@ export function createGpuBoard(
 					scale =
 						tile.name === 'KEY'
 							? scatterCellScale(tile.width, tile.height)
-							: Math.min(tile.width, tile.height) / viewport;
+							: tile.name === 'WILD'
+								? wildCellScale(tile.width, tile.height)
+								: Math.min(tile.width, tile.height) / viewport;
 				const overFrame =
-						tile.name === 'KEY' &&
+						(tile.name === 'KEY' || tile.name === 'WILD') &&
 						scatterOverFrame(state.phase, travel, state.reduced, elapsed, contact),
 					parent = overFrame ? keyLayer : tile.root;
 				if (pose.view.parent !== parent) parent.addChild(pose.view);
@@ -402,7 +483,7 @@ export function createGpuBoard(
 				);
 				pose.view.visible = tile.root.visible;
 				pose.view.scale.set(scale, -scale);
-				if (celebration?.keys.includes(key)) {
+				if (celebrating && celebration) {
 					const f = scatterCelebrationFrame(
 						now - celebration.startedAt,
 						celebration.duration,
@@ -411,6 +492,16 @@ export function createGpuBoard(
 					pose.view.scale.set(scale * f.scale, -scale * f.scale);
 					pose.view.rotation = f.rotation;
 				} else pose.view.rotation = 0;
+				if (tile.cluster) {
+					const selected =
+						state.winning.includes(key) && ['winning', 'gate', 'removing'].includes(state.phase);
+					tile.cluster.update(
+						pose,
+						selected ? payingAge : 0,
+						state.reduced,
+						payingSymbolGlow(tile.name!, key, state.wins),
+					);
+				}
 			}
 			return moving;
 		},
@@ -422,6 +513,16 @@ export function createGpuBoard(
 		},
 		update(next: BoardView) {
 			state = next;
+			if (state.phase === 'winning' && state.winning.length) {
+				const selection = `${state.roundId}:${state.revealId}:${state.winning.join(',')}`;
+				if (payingKey !== selection) {
+					payingKey = selection;
+					payingAge = 0;
+				}
+			} else if (!['gate', 'removing'].includes(state.phase)) {
+				payingKey = '';
+				payingAge = 0;
+			}
 			tiles.forEach((tile, index) => {
 				const reel = Math.floor(index / 5),
 					row = index % 5,
@@ -430,19 +531,29 @@ export function createGpuBoard(
 				const request = `${name}:${state.palette}`;
 				if (tile.request !== request) {
 					tile.request = request;
+					const revision = ++tile.revision;
+					tile.removal = '';
 					tile.name = name;
+					if (tile.cluster) tile.pose?.view.removeSlotObject('body');
+					tile.cluster?.destroy();
+					tile.cluster = undefined;
 					tile.pose?.view.destroy();
 					tile.pose = undefined;
 					ready(false);
 					if (name)
-						void loadRig(
-							name,
-							name === 'WILD' ? 'symbols' : `symbols-${state.palette}`,
-							name === 'WILD' ? undefined : MOTION_ROOT,
-						)
-							.then((data) => {
-								if (dead || tile.request !== request) return;
+						void Promise.all([
+							loadRig(
+								name,
+								name === 'WILD' ? 'symbols' : `symbols-${state.palette}`,
+								name === 'WILD' ? undefined : MOTION_ROOT,
+							),
+							clusterReady,
+						])
+							.then(([data, art]) => {
+								if (dead || tile.request !== request || tile.revision !== revision) return;
 								tile.pose = engine.pose(data);
+								tile.cluster = art?.create(name);
+								if (tile.cluster) tile.pose.view.addSlotObject('body', tile.cluster.view);
 								dirty = true;
 								tile.root.addChild(tile.pose.view);
 								updateReady();
@@ -483,6 +594,7 @@ export function createGpuBoard(
 				engine.rewardTargets.delete(`cell:${Math.floor(i / 5)}:${i % 5}`);
 			dead = true;
 			remove();
+			clusterArt?.destroy();
 			for (const gradient of gradients.values()) gradient.destroy();
 			mobileGold.destroy();
 		},

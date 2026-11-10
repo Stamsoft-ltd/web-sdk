@@ -9,7 +9,7 @@ import {
 	SkeletonJson,
 } from '@esotericsoftware/spine-core';
 import { SpinePose } from '../src/game/spine.ts';
-const root = new URL('../static/assets/the-gates/figma-20261012/motion/', import.meta.url);
+const root = new URL('../static/assets/the-gates/art/animations/', import.meta.url);
 function data(name, atlasName = name) {
 	const atlas = new TextureAtlas(readFileSync(new URL(atlasName + '.atlas', root), 'utf8'));
 	for (const p of atlas.pages) p.setTexture(new FakeTexture({ width: p.width, height: p.height }));

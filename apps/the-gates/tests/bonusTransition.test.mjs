@@ -23,7 +23,7 @@ test('bonus entry emerges only as the doors open; exit retracts before doors clo
 	}
 	assert.equal(frame({ kind: 'entry', startedAt: 0, reduced: false }, 579).artScale, 0);
 	assert.equal(frame({ kind: 'exit', startedAt: 0, reduced: false }, 700).artScale, 0);
-	assert.equal(frame({ kind: 'exit', startedAt: 0, reduced: false }, 700).gateTime, 0);
+	assert.equal(frame({ kind: 'exit', startedAt: 0, reduced: false }, 900).gateTime, 0);
 });
 test('reduced motion fades without spinning/door movement; holds have neutral transform', () => {
 	for (const kind of ['entry', 'exit'])
@@ -66,7 +66,7 @@ test('entry allows remaining cascades and settlement before first free-spin boun
 test('exit never respawns a portal after summary removal while doors reopen to base', () => {
 	const transition = { kind: 'exit', startedAt: 100, reduced: false };
 	assert.equal(frame(transition, 799).portalVisible, true);
-	for (let t = 700; t <= duration('exit', false); t += 10) {
+	for (let t = 900; t <= duration('exit', false); t += 10) {
 		const f = frame(transition, 100 + t);
 		assert.equal(f.portalVisible, false);
 		assert.equal(f.artScale, 0);
@@ -83,7 +83,41 @@ test('exit never respawns a portal after summary removal while doors reopen to b
 // Retraction reaches the uniform portal close track before the second door cycle.
 test('summary portal shrinks closed, never abruptly cuts from its full-size hold', () => {
 	const transition = { kind: 'exit', startedAt: 0, reduced: false };
-	assert.ok(frame(transition, 600).gateTime >= 1.98);
+	assert.ok(frame(transition, 850).portalClose >= 0.9);
 	assert.equal(frame(transition, 600).portalVisible, true);
-	assert.equal(frame(transition, 700).portalVisible, false);
+	assert.equal(frame(transition, 900).portalVisible, false);
+});
+
+test('entry portal stays open indefinitely, then swallows popup before shrinking closed', () => {
+	const hold = { kind: 'hold', startedAt: 0, reduced: false };
+	for (const age of [0, 600, 10000, 120000]) {
+		const f = frame(hold, age);
+		assert.equal(f.gateVisible, true);
+		assert.equal(f.portalVisible, true);
+		assert.equal(f.gateTime, 1.1);
+		assert.equal(f.artScale, 1);
+		assert.equal(f.done, false);
+	}
+	assert.equal(frame({ kind: 'entry', startedAt: 0, reduced: false }, 2170).gateTime, 1.1);
+	const dismiss = { kind: 'dismiss', startedAt: 0, reduced: false };
+	assert.equal(frame(dismiss, 0).artScale, 1);
+	assert.equal(frame(dismiss, 400).artScale, 0);
+	assert.equal(frame(dismiss, 400).gateTime, 1.85);
+	assert.ok(frame(dismiss, 500).gateTime > 1.85);
+	assert.equal(frame(dismiss, 900).gateVisible, false);
+	assert.equal(frame(dismiss, 900).done, true);
+	const reduced = frame({ ...dismiss, reduced: true }, 160);
+	assert.equal(reduced.rotation, 0);
+	assert.equal(reduced.artScale, 1);
+	assert.equal(reduced.artAlpha, 0);
+	assert.equal(reduced.done, true);
+	const code = readFileSync(new URL('../src/game/playback.svelte.ts', import.meta.url), 'utf8');
+	const entry = code.slice(
+		code.indexOf('const enterBonus = async'),
+		code.indexOf('let waveDuration'),
+	);
+	assert.match(
+		entry,
+		/kind: 'hold'[\s\S]*?await present\(signal, undefined, TIMING.overlayGuard\);[\s\S]*?kind: 'dismiss'[\s\S]*?await delay\(runtime.reduced \? BONUS_ENTRY_DISMISS_MS.reduced : BONUS_ENTRY_DISMISS_MS.normal, signal\)/,
+	);
 });

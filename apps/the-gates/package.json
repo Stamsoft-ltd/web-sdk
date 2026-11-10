@@ -14,7 +14,9 @@
 		"build:motion": "node --experimental-strip-types tools/build-figma-motion.mjs && node tools/build-figma-motion-preview.mjs",
 		"test": "node --experimental-strip-types --test tests/*.test.mjs",
 		"audit:assets": "node --experimental-strip-types tools/clean-assets.mjs",
-		"optimize:build-assets": "node --experimental-strip-types tools/optimize-build-assets.mjs"
+		"optimize:build-assets": "node --experimental-strip-types tools/optimize-build-assets.mjs",
+		"assets:catalog": "node --experimental-strip-types tools/asset-catalog.mjs",
+		"assets:replace": "python3 tools/replace-asset.py"
 	},
 	"type": "module",
 	"devDependencies": {

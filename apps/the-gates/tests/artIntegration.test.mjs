@@ -19,7 +19,7 @@ import { gateCycleTracks, GATE_CYCLE } from '../src/game/gateAnimation.ts';
 import { portalRemovalTracks, PORTAL_SECONDS } from '../src/game/portalAnimation.ts';
 import { ashProgress } from '../src/game/symbolAsh.ts';
 import { cellMotion } from '../src/game/motion.ts';
-const base = new URL('../static/assets/the-gates/figma-20261012/motion/', import.meta.url);
+const base = new URL('../static/assets/the-gates/art/animations/', import.meta.url);
 const read = (name) => JSON.parse(readFileSync(new URL(`${name}.json`, base), 'utf8'));
 function actor(name, atlasName, animations = {}) {
 	const atlas = new TextureAtlas(readFileSync(new URL(`${atlasName}.atlas`, base), 'utf8'));

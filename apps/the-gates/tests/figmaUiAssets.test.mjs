@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-const root = new URL('../static/assets/the-gates/figma-20261013/', import.meta.url);
+const root = new URL('../static/assets/the-gates/ui/', import.meta.url);
 const manifest = JSON.parse(readFileSync(new URL('asset-manifest.json', root), 'utf8'));
 test('Figma UI native files retain original hash, dimensions and non-empty bytes', () => {
 	for (const a of manifest.assets) {
@@ -28,13 +28,13 @@ test('every fetched UI image has an inventory entry and the requested source fil
 	for (const name of readdirSync(root).filter((n) => /\.(png|svg)$/.test(n)))
 		assert.ok(names.has(name), name);
 	for (const name of [
-		'28fc1.png',
-		'edb79.png',
-		'd7111.png',
-		'19460.svg',
-		'f05f2.svg',
-		'd883a.png',
-		'51301.png',
+		'base-background.png',
+		'reel-frame.png',
+		'logo-badge.png',
+		'bet-plus.svg',
+		'spin.svg',
+		'modal-frame.png',
+		'modal-close.png',
 	])
 		assert.ok(names.has(name), name);
 });

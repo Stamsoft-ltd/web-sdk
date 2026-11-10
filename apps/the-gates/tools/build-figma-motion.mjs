@@ -8,8 +8,8 @@ import path from 'node:path';
 import { portalRemovalTracks, PORTAL_SECONDS, SYMBOL_GONE_SECONDS } from './portal-removal-rig.mjs';
 import { gateCycleTracks, GATE_CYCLE, GATE_SPARK_COUNT } from './gate-cycle-rig.mjs';
 import { WIN_COMPOSITION as WIN, WIN_TIER_COMPOSITION } from '../src/game/winLayout.ts';
-const root = fileURLToPath(new URL('../static/assets/the-gates/figma-20261012/', import.meta.url));
-const out = path.join(root, 'motion');
+const root = fileURLToPath(new URL('../static/assets/the-gates/art/', import.meta.url));
+const out = path.join(root, 'animations');
 mkdirSync(out, { recursive: true });
 const inventory = JSON.parse(readFileSync(path.join(root, 'asset-manifest.json'), 'utf8'));
 const assets = new Map(inventory.assets.map((a) => [a.path, a]));
@@ -26,7 +26,7 @@ function source(file) {
 function atlas(entries) {
  return entries.map(([region, file]) => {
   const a = source(file);
-  const crop = file === 'symbols/key-original.png' ? [12,13,113,95] : [0,0,a.width,a.height];
+  const crop = file === 'symbols/key.png' ? [12,13,113,95] : [0,0,a.width,a.height];
   return `../${file}\nsize: ${a.width},${a.height}\nfilter: Linear,Linear\npma: false\n${region}\n  bounds: ${crop.join(',')}\n\n`;
  }).join('');
 }
@@ -35,7 +35,7 @@ function rig(width, height) {
 }
 function bone(r, name, parent = 'root', x = 0, y = 0) { r.bones.push({ name, parent, x, y }); }
 function part(r, name, file, width, x = 0, y = 0, parent = 'root') {
- const original = source(file); const a = file === 'symbols/key-original.png' ? {...original,width:113,height:95} : original; bone(r, name, parent, x, y);
+ const original = source(file); const a = file === 'symbols/key.png' ? {...original,width:113,height:95} : original; bone(r, name, parent, x, y);
  r.slots.push({ name, bone: name, attachment: name });
  r.skins[0].attachments[name] = { [name]: { path: name, width, height: width*a.height/a.width } };
 }
@@ -47,19 +47,19 @@ const sway = (duration, angle) => rotate([[0,0],[duration*.25,angle],[duration*.
 const breathe = (duration, amount) => scale([[0,1],[duration*.5,amount],[duration,1]]);
 const symbols = {
  GUARDIAN_MASK: 'pharaoh', SUN_MEDALLION: 'coin', SACRED_EYE: 'eye',
- RUNE_CHALICE: 'letter', CRYSTAL_ORB: 'orb', RED_GEM: 'red-gem',
+ RUNE_CHALICE: 'envelope', CRYSTAL_ORB: 'orb', RED_GEM: 'red-gem',
  BLUE_GEM: 'blue-gem', GREEN_GEM: 'green-gem', PURPLE_GEM: 'purple-gem',
- AMBER_GEM: 'gold-gem', KEY: 'key-original',
+ AMBER_GEM: 'gold-gem', KEY: 'key',
 };
 const symbolEntries = [];
-const portalRoot=path.join(root,'../portals-20261012');
+const portalRoot=path.join(root,'../portals');
 const portalVariants=Object.fromEntries(['normal','super','hidden'].map(tier=>{
  const a=JSON.parse(readFileSync(path.join(portalRoot,`${tier}-provenance.json`),'utf8'));
  if(a.tier!==tier||a.rimCenterAlpha!==0||createHash('sha256').update(readFileSync(path.join(portalRoot,a.path))).digest('hex')!==a.sha256)throw new Error(`Invalid portal variant: ${tier}`);
  return [tier,a];
 }));
 const portalSource=portalVariants.normal;
-function portalAtlasFor(a){return `../../portals-20261012/${a.path}\nsize: ${a.width},${a.height}\nfilter: Linear,Linear\npma: false\n`+Object.entries(a.regions).map(([name,box])=>`${name}\n  bounds: ${box.join(',')}\n`).join('')+'\n';}
+function portalAtlasFor(a){return `../../portals/${a.path}\nsize: ${a.width},${a.height}\nfilter: Linear,Linear\npma: false\n`+Object.entries(a.regions).map(([name,box])=>`${name}\n  bounds: ${box.join(',')}\n`).join('')+'\n';}
 for (const [name, file] of Object.entries(symbols)) {
  const png = `symbols/${file}.png`, original = source(png), a = name === 'KEY' ? {...original,width:113,height:95,alphaBounds:[0,0,113,95]} : original, r = rig(240,240);
  const fit=144/Math.max(a.width,a.height);
@@ -169,9 +169,9 @@ for(const tier of ['normal','super','hidden']) {
  write(`bonus-${tier}.json`,r);write(`bonus-${tier}.atlas`,atlas([['title',`bonus/${tier}-title.png`],['award','panels/bonus-counter-blank.png']]));bonuses.push({name:`bonus-${tier}`,atlas:`bonus-${tier}`});
 }
 const gates=[];
-const sparkRoot=path.join(root,'../sparks-20261012'),sparkSource=JSON.parse(readFileSync(path.join(sparkRoot,'provenance.json'),'utf8'));
+const sparkRoot=path.join(root,'../sparks'),sparkSource=JSON.parse(readFileSync(path.join(sparkRoot,'provenance.json'),'utf8'));
 if(createHash('sha256').update(readFileSync(path.join(sparkRoot,sparkSource.path))).digest('hex')!==sparkSource.sha256)throw new Error('Cartoon spark hash changed');
-const sparkAtlas=`../../sparks-20261012/${sparkSource.path}\nsize: ${sparkSource.width},${sparkSource.height}\nfilter: Linear,Linear\npma: false\nimpact-spark\n  bounds: 0,0,${sparkSource.width},${sparkSource.height}\n\n`;
+const sparkAtlas=`../../sparks/${sparkSource.path}\nsize: ${sparkSource.width},${sparkSource.height}\nfilter: Linear,Linear\npma: false\nimpact-spark\n  bounds: 0,0,${sparkSource.width},${sparkSource.height}\n\n`;
 for(const tier of ['normal','super','hidden']){
  const modePortal=portalVariants[tier];
  const file=`gates/${tier}-leaf-original.png`,r=rig(1000,620);

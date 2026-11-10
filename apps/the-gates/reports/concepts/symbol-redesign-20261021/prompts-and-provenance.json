@@ -1,0 +1,46 @@
+{
+  "status": "Concept only \u2014 not integrated into live game",
+  "tool": "built-in image_gen",
+  "date": "2026-10-21",
+  "assets": [
+    {
+      "file": "wild-concept-v1.png",
+      "prompt": "Use case: stylized-concept. Asset type: single premium WILD symbol concept for THE GATES cartoon Egyptian slot game. References: image 1 is the mandatory cyan-blue diamond jewel with its gold rim and dark navy outline; faithfully use that distinctive jewel as the prominent central motif, not a generic different gemstone. Image 2 is style reference only for the existing Wild: match its chunky glossy vector-like cartoon rendering, thick dark ink outlines, rounded gold bevels and bold white specular highlights, but REDESIGN its rainbow flower entirely. New design: a compact royal winged gem sigil, large cyan diamond jewel at center, a sculptural gold and ivory-enamel wing pair flowing to both sides, a restrained small gold crown above. Cohesive chunky silhouette that reads at small slot-cell size. Jewel is blue/cyan only; wings are ivory with rich yellow-orange GOLD metal rims. No colored petals, no pink, no red, no green or purple decoration, no rainbow. This symbol substitutes for both gems AND premium icons, so convey universal royal magic rather than a collection of gem colors. Any future cluster-colored glow will be runtime VFX, do not bake it into the art. Flat 2D cel/gradient cartoon asset, clean bold forms, no photorealism, no ornamental micro-detail. One isolated complete centered symbol, generously fill square composition with modest padding, transparent background, no board, no card, no text, no labels, no watermark.",
+      "references": [
+        "/Users/simeonhristov/Downloads/Glossy Blue Gem Badge 14.png",
+        "/Users/simeonhristov/Documents/GitHub/web-sdk/apps/the-gates/static/assets/the-gates/wild/rainbow-wild.png"
+      ],
+      "generatedSource": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-e23ded15-524e-464e-8187-c4ae212c4eb8.png",
+      "sha256": "d80df61fdc33715f12e58af942e13d6f8ad28b546428a1e11e2327fa59018e58",
+      "width": 1254,
+      "height": 1254,
+      "pngColorType": 6
+    },
+    {
+      "file": "key-concept-v1.png",
+      "prompt": "Use case: stylized-concept. Asset type: single redesigned bonus SCATTER KEY concept for THE GATES cartoon Egyptian slot. Image 1 is mandatory jewel reference: cyan-blue diamond with gold bezel and thick navy outer ink; faithfully incorporate that jewel, including its blue facets, gold frame and white glint. Image 2 is the existing Key for glossy cartoon art style and diagonal pose only, NOT its circular handle. Redesign the handle radically: a bold oversized diamond-shaped gold bow containing the referenced blue gemstone, integrated with one short solid gold collar, NOT a circle, NOT a wheel, NOT a sun disc, NO ring of dots. Chunky golden shaft angles down-left from handle at upper-right, with a simple large stepped key bit and two readable teeth. Compact, readable key silhouette with strong negative space around teeth, substantial handle and shaft, no tiny chains or dangling extras. Match existing THE GATES style: vivid glossy yellow-orange gold, crisp thick dark navy/near-black outer outline, bold white specular blobs, smooth simple cel gradients, flat 2D vector-like cartoon game illustration. Blue/cyan jewel only; gold metal elsewhere, no rainbow. One complete isolated centered key, square composition, transparent background, no tile background, no border card, no text, labels or watermark.",
+      "references": [
+        "/Users/simeonhristov/Downloads/Glossy Blue Gem Badge 14.png",
+        "/Users/simeonhristov/Documents/GitHub/web-sdk/apps/the-gates/static/assets/the-gates/art/symbols/key.png"
+      ],
+      "generatedSource": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-a9d70700-8d39-438c-8f8d-aedac9b3e9be.png",
+      "sha256": "29c58ca1403b4c21b06ff45348d5a7edd124c8d7f6436a82cedbbe83ca068075",
+      "width": 1254,
+      "height": 1254,
+      "pngColorType": 6
+    },
+    {
+      "file": "pharaoh-concept-v1.png",
+      "prompt": "Use case: stylized-concept. Asset type: single highest-paying PHARAOH portrait symbol concept for THE GATES cartoon Egyptian slot. Image 1 mandatory central jewel reference: the specific cyan/blue faceted diamond, bright gold bevel surround and thick navy outline. Use this jewel prominently on the forehead of the headdress, larger than on the current design and recognizably the same framed jewel. Image 2 existing Pharaoh is subject/style reference. Restyle with bolder, richer premium treatment while keeping recognizably friendly cartoon Pharaoh: front-facing warm golden face, confident kind smile, expressive large blue eyes, blue and polished gold striped nemes headdress, short stylized gold false beard. Headdress curves around face as a single compact iconic silhouette. Strong thick clean dark navy outlines like other game symbols, plump rounded volumes, large white glossy highlights, simple vivid cel gradients, high contrast at tiny icon scale. Preserve friendly face, not realistic human skin, not sinister, no photorealistic 3D, no gritty texture. Cyan-blue forehead diamond is hero ornament; avoid excessive other jewels or tiny decorations. One complete head-and-headdress icon, centered and large in a square, transparent background, no body or pedestal, no background card, no labels, no text or watermark.",
+      "references": [
+        "/Users/simeonhristov/Downloads/Glossy Blue Gem Badge 14.png",
+        "/Users/simeonhristov/Documents/GitHub/web-sdk/apps/the-gates/static/assets/the-gates/art/symbols/pharaoh.png"
+      ],
+      "generatedSource": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-2ecf323b-e009-49ce-a3d5-51c664bae040.png",
+      "sha256": "dbe1d6265b964bf4c2816f63bd9d40762d790f27eaba9b8fd4fbd9401fe8fb50",
+      "width": 1254,
+      "height": 1254,
+      "pngColorType": 6
+    }
+  ]
+}

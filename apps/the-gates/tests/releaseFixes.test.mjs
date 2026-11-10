@@ -81,7 +81,7 @@ test('every autoplay reason is allowlisted, translated, social-safe; unknown rea
 
 test('bonus entry/end share a white slow prompt, only when acknowledgement is actually enabled', () => {
 	const screen = source('components/BonusScreen.svelte');
-	assert.match(screen, /runtime.waiting && !runtime.bonusTransition/);
+	assert.match(screen, /runtime.waiting && \(!runtime.bonusTransition \|\| runtime.bonusTransition.kind === 'hold'\)/);
 	assert.match(screen, /t\('TAP ANYWHERE TO CONTINUE'\)/);
 	assert.match(screen, /bonus-continue-pulse 2s ease-in-out infinite/);
 	assert.match(screen, /color: #fff/);

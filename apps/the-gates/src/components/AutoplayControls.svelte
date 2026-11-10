@@ -5,6 +5,7 @@
 	import { autoplaySettings } from '../game/autoplaySettings.svelte';
 	import { t } from '../i18n';
 	import { AUTOPLAY_COUNTS, autoplayCountAt, validAutoplayCount } from '../game/autoplayCounts';
+	import { ART_ROOT, UI_ART_ROOT } from '../game/art';
 	import ButtonLabel from './ButtonLabel.svelte';
 	let {
 		count = $bindable(100),
@@ -15,6 +16,10 @@
 		start: () => void;
 		preview?: boolean;
 	} = $props();
+	const countIndex = $derived(AUTOPLAY_COUNTS.indexOf(count));
+	function stepCount(direction: number) {
+		count = autoplayCountAt(Math.max(0, countIndex) + direction);
+	}
 	const speed = $derived(selectedSpeed(stateBet, stateConfig.jurisdiction));
 	function toggleSpeed(next: Speed) {
 		if (
@@ -57,21 +62,33 @@
 	<p id="autoplay-bonus-note" class="autoplay-policy">
 		{t(autoplaySettings.continueOnBonus ? 'AUTO BONUS CONTINUE' : 'AUTO BONUS STOP')}
 	</p>
-	<label class="autoplay-slider"
-		><span>{t('ROUND COUNT')}</span><output>{count}</output><input
-			aria-label={t('ROUND COUNT')}
-			type="range"
-			min="0"
-			max={AUTOPLAY_COUNTS.length - 1}
-			step="1"
-			value={AUTOPLAY_COUNTS.indexOf(count)}
-			aria-valuetext={String(count)}
-			oninput={(event) => (count = autoplayCountAt(event.currentTarget.valueAsNumber))}
-		/></label
-	>
+	<div class="autoplay-count-picker" role="group" aria-label={t('ROUND COUNT')}>
+		<span class="autoplay-count-title">{t('ROUND COUNT')}</span>
+		<div class="autoplay-count-stepper">
+			<button
+				type="button"
+				class="autoplay-count-button"
+				aria-label={`${t('ROUND COUNT')} −`}
+				disabled={countIndex <= 0}
+				onclick={() => stepCount(-1)}
+			>
+				<img draggable="false" src={`${ART_ROOT}hud/bet-decrease.png`} alt="" />
+			</button>
+			<output aria-live="polite" aria-atomic="true">{count}</output>
+			<button
+				type="button"
+				class="autoplay-count-button"
+				aria-label={`${t('ROUND COUNT')} +`}
+				disabled={countIndex >= AUTOPLAY_COUNTS.length - 1}
+				onclick={() => stepCount(1)}
+			>
+				<img draggable="false" src={`${UI_ART_ROOT}bet-plus.svg`} alt="" />
+			</button>
+		</div>
+	</div>
 	<button
 		class="gold-button autoplay-start"
 		disabled={preview || !validAutoplayCount(count) || stateConfig.jurisdiction.disabledAutoplay}
-		onclick={start}><ButtonLabel text={`${t('START AUTOPLAY')} (${count})`} /></button
+		onclick={start}><ButtonLabel text={t('START AUTOPLAY')} /></button
 	>
 </div>

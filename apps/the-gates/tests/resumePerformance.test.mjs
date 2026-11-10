@@ -10,7 +10,7 @@ import {
 import { SpinePose } from '../src/game/spine.ts';
 import { portalRemovalTracks } from '../src/game/portalAnimation.ts';
 const source = (name) => readFileSync(new URL(`../src/${name}`, import.meta.url), 'utf8');
-const root = new URL('../static/assets/the-gates/figma-20261012/motion/', import.meta.url);
+const root = new URL('../static/assets/the-gates/art/animations/', import.meta.url);
 function data(overrides) {
 	const atlas = new TextureAtlas(readFileSync(new URL('symbols-normal.atlas', root), 'utf8'));
 	for (const page of atlas.pages)
@@ -50,7 +50,7 @@ test('surviving cells stay mounted; covered board actors pause', () => {
 	assert.match(source('game/gpuRenderer.ts'), /if \(moving\) this.invalidate\(\)/);
 	assert.match(
 		source('game/gpuBoard.ts'),
-		/state.reduced \|\| \(state.paused && !celebration\?\.keys.includes\(key\)\)/,
+		/state.reduced \|\| \(state.paused && !celebrating\)/,
 	);
 	assert.match(source('game/gpuBoard.ts'), /tile.request !== request/);
 	assert.match(

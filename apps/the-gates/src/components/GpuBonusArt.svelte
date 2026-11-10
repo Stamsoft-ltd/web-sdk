@@ -1,8 +1,11 @@
 <script lang="ts">
+	import { portalPalette } from '../game/portalClose';
+	import { applyPortalClose, drawPortalClose } from '../game/portalCloseVfx';
 	import { PORTRAIT_ART_ROOT } from '../game/art';
 	import { playGameSound } from '../game/audio';
 	import { untrack, onMount } from 'svelte';
-	import { Container, Text, Matrix } from 'pixi.js';
+	import { Container, Text, Matrix, Graphics } from 'pixi.js';
+	import { Physics } from '@esotericsoftware/spine-core';
 	import { useGpu } from '../game/gpuContext';
 	import { runtime } from '../game/playback.svelte';
 	import { MOTION_ROOT } from '../game/art';
@@ -101,6 +104,8 @@
 				award.addChild(value, caption);
 				root.addChild(gate.view, content);
 				content.addChild(pose.view, award, heading);
+				const closeFx = new Graphics();
+				root.addChild(closeFx);
 				const started = performance.now();
 				let finishAt: number | null = null;
 				let beatId = -1;
@@ -153,7 +158,11 @@
 						heading.position.set(cx, cy - 270 * scale);
 						heading.scale.set(scale);
 						const transition = bonusTransitionFrame(state.transition, now);
-						if (state.transition && !state.transition.reduced) {
+						if (
+							state.transition &&
+							['entry', 'exit'].includes(state.transition.kind) &&
+							!state.transition.reduced
+						) {
 							const audioId = state.transition.startedAt;
 							if (audioId !== beatId) {
 								beatId = audioId;
@@ -179,10 +188,33 @@
 						content.scale.set(Math.max(0.0001, transition.artScale));
 						content.alpha = transition.artAlpha;
 						content.rotation = transition.rotation;
+						closeFx.clear();
 						gate.view.visible = transition.gateVisible;
 						if (transition.gateVisible) {
 							gate.begin();
 							gate.actor.sample('cycle', transition.gateTime);
+							if (
+								state.transition?.kind === 'hold' ||
+								state.transition?.kind === 'dismiss' ||
+								(state.transition?.kind === 'entry' && transition.gateTime >= 1.1)
+							) {
+								const vortex = gate.actor.skeleton.findBone('portal-vortex');
+								if (vortex) vortex.rotation = 100 + (now - started) * 0.12;
+								gate.actor.skeleton.updateWorldTransform(Physics.update);
+							}
+
+							if (transition.portalClose !== null && transition.portalClose !== undefined) {
+								applyPortalClose(gate.actor.skeleton, transition.portalClose, state.reduced);
+								drawPortalClose(
+									closeFx,
+									transition.portalClose,
+									engine.app.screen.width / 2,
+									engine.app.screen.height / 2,
+									Math.min(engine.app.screen.width, engine.app.screen.height) * (170 / 440),
+									portalPalette(tier),
+									state.reduced,
+								);
+							}
 							if (!transition.portalVisible) {
 								for (const name of ['portal-vortex', 'portal-rim']) {
 									const slot = gate.actor.skeleton.findSlot(name);
@@ -219,6 +251,7 @@
 	$effect(() => {
 		reduced;
 		runtime.bonusTransition;
+		runtime.baseCountersReset;
 		gpu.engine?.invalidate();
 	});
 </script>

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { panelCounters, panelBonusWin } from '../game/panelPresentation';
+	import { effectiveSpeed } from '../game/uiPolicy';
 	import { onMount } from 'svelte';
 	import { requestEndRound } from 'rgs-requests';
 	import { finishUnfinishedRound } from '../game/finishUnfinished';
@@ -17,7 +19,8 @@
 		normalizeCurrency,
 	} from 'utils-shared/currency';
 	import { COSTS, SYMBOLS, type Mode, type Bet } from '../game/contract';
-	import { gameActor } from '../game/actor';
+	import { createGatesActor } from '../game/actor';
+	const gameActor = createGatesActor();
 	import { initMetadata } from '../game/metadata';
 	import {
 		runtime,
@@ -41,7 +44,7 @@
 	import Rules from './Rules.svelte';
 	import { hudBetAmount } from '../game/hudPresentation';
 	import { winTier } from '../game/winPresentation';
-	import { selectedSpeed, nextSpeed } from '../game/uiPolicy';
+	import { nextSpeed } from '../game/uiPolicy';
 	import TempleGate from './TempleGate.svelte';
 	import MotionStats from './MotionStats.svelte';
 	import AssetAudit from './AssetAudit.svelte';
@@ -138,6 +141,7 @@
 		),
 	);
 	const shownGame = $derived.by(() => presentedReward(runtime.game, runtime.rewardDelivery));
+	const shownCounters = $derived(panelCounters(shownGame, runtime.baseCountersReset, runtime.gateMeterReset));
 	const visualTier = $derived(
 		runtime.sceneTierOverride ? runtime.sceneTierOverride.tier : runtime.game.tier,
 	);
@@ -151,13 +155,24 @@
 				? `${ART_ROOT}backgrounds/${artTier(visualTier)}-original.png`
 				: layoutWidth === 360 || layoutWidth === 800
 					? `${UI_ART_ROOT}backgrounds/cloud-castle-original.png`
-					: `${UI_ART_ROOT}28fc1.png`,
+					: `${UI_ART_ROOT}base-background.png`,
 	);
-	const speed = $derived(selectedSpeed(stateBet, stateConfig.jurisdiction));
+	const speed = $derived(
+		effectiveSpeed(
+			stateBet,
+			stateConfig.jurisdiction,
+			(runtime.busy && runtime.spinTurbo) || runtime.heldTurbo,
+		),
+	);
 	function changeSpeed() {
 		if (!canChangeSpeed) return;
 		const previous = speed;
 		const next = nextSpeed(speed, stateConfig.jurisdiction);
+		runtime.spinTurbo = false;
+		runtime.skipRequested = false;
+		const wasHeld = spaceHeld;
+		releaseSpace();
+		spaceHoldSuppressed = wasHeld;
 		stateBet.isTurbo = next === 'fast';
 		stateBet.isSuperTurbo = next === 'turbo';
 		speedChanged(previous);
@@ -369,14 +384,11 @@
 		gameActor.send({ type: 'AUTO_BET' });
 	}
 	let spaceHeld = $state(false);
-	let heldSpeed: { turbo: boolean; superTurbo: boolean } | null = null;
+	let spaceHoldSuppressed = false;
 	function releaseSpace() {
+		spaceHoldSuppressed = false;
 		spaceHeld = false;
-		if (heldSpeed) {
-			stateBet.isTurbo = heldSpeed.turbo;
-			stateBet.isSuperTurbo = heldSpeed.superTurbo;
-			heldSpeed = null;
-		}
+		runtime.heldTurbo = false;
 	}
 	$effect(() => {
 		if (
@@ -409,6 +421,7 @@
 		if (stateConfig.jurisdiction.disabledSpacebar) return;
 		if (
 			e.repeat &&
+			!spaceHoldSuppressed &&
 			!replay &&
 			!menuOpen &&
 			!modal &&
@@ -419,16 +432,15 @@
 			!stateConfig.jurisdiction.disabledTurbo &&
 			!stateConfig.jurisdiction.disabledSuperTurbo
 		) {
-			if (!heldSpeed) heldSpeed = { turbo: stateBet.isTurbo, superTurbo: stateBet.isSuperTurbo };
 			const previous = speed;
-			stateBet.isTurbo = false;
-			stateBet.isSuperTurbo = true;
+			runtime.heldTurbo = true;
+			if (runtime.busy) runtime.spinTurbo = true;
 			speedChanged(previous);
 			spaceHeld = true;
 		}
 		if (e.repeat && !spaceHeld) return;
 		if (runtime.waiting) continuePresentation();
-		else if (runtime.busy && !modal && !selected && !stateModal.modal) requestSkip();
+		else if (runtime.busy && !spaceHeld && !modal && !selected && !stateModal.modal) requestSkip();
 		else if (canPlay && !menuOpen) void spin();
 	}
 	function screenFastForward(event: MouseEvent) {
@@ -590,10 +602,10 @@
 		let disposed = false;
 		Promise.all(
 			[
-				`${UI_ART_ROOT}28fc1.png`,
+				`${UI_ART_ROOT}base-background.png`,
 				`${UI_ART_ROOT}backgrounds/cloud-castle-original.png`,
-				`${UI_ART_ROOT}edb79.png`,
-				`${UI_ART_ROOT}d7111.png`,
+				`${UI_ART_ROOT}reel-frame.png`,
+				`${UI_ART_ROOT}logo-badge.png`,
 				`${ART_ROOT}symbols/gold-gem.png`,
 			].map(async (src, _index, assets) => {
 				const image = await loadAssetImage(src);
@@ -648,7 +660,10 @@
 	onclick={screenFastForward}
 	onkeydown={keydown}
 	onkeyup={(e) => {
-		if (e.code === 'Space') releaseSpace();
+		if (e.code === 'Space') {
+			e.preventDefault();
+			releaseSpace();
+		}
 	}}
 	onblur={releaseSpace}
 	bind:innerWidth={windowWidth}
@@ -678,6 +693,8 @@
 	<TempleGate {rewardText} />
 	<MainScene
 		src={scene}
+		idle={entered && !entryLeavingAt && !gpu.presenting}
+		reduced={runtime.reduced}
 		host={stageViewport}
 		logoHost={sceneLogoHost}
 		studioHost={sceneStudioHost}
@@ -719,16 +736,16 @@
 						speed,
 						width: layoutWidth,
 						bonus: !!visualTier,
-						progress: runtime.game.progress,
+						progress: shownCounters.progress,
 						reduced: runtime.reduced,
 						positions: runtime.game.wins.flatMap((win) => win.positions),
-						multiplier: shownGame.multiplier,
-						multiplierActive: runtime.game.multiplierActive,
+						multiplier: shownCounters.multiplier,
+						multiplierActive: shownCounters.multiplierActive,
 						freeSpin: runtime.game.freeSpin,
 						totalFs: shownGame.totalFs,
 						remaining: shownGame.remaining,
 						bonusWin: winnings(
-							Math.max(runtime.game.total, runtime.spinTotalBefore + currentSpinWin),
+							panelBonusWin(runtime.game, runtime.spinTotalBefore, currentSpinWin),
 						),
 						caption:
 							runtime.phase === 'winning'
@@ -766,7 +783,7 @@
 							disabled={!entered}
 							onclick={() => (menuOpen = !menuOpen)}
 						>
-							<img src={`${ART_ROOT}hud/menu.png`} alt="" />
+							<img draggable="false" src={`${ART_ROOT}hud/menu.png`} alt="" />
 						</button>
 						{#if menuOpen}<div
 								class="utility-menu"
@@ -840,12 +857,14 @@
 										: requestSkip()
 									: spin()}
 						>{#if stateBet.autoSpinsCounter || busy}<img
+								draggable="false"
 								src="./assets/the-gates/hud/stop.svg"
 								alt=""
 							/>{#if stateBet.autoSpinsCounter > 0}<span>{stateBet.autoSpinsCounter}</span>{/if}
 						{:else}<img
+								draggable="false"
 								src={layoutWidth === 1200
-									? `${UI_ART_ROOT}f05f2.svg`
+									? `${UI_ART_ROOT}spin.svg`
 									: './assets/the-gates/hud/spin-mobile.svg'}
 								alt=""
 							/>{/if}</button
@@ -861,11 +880,12 @@
 						disabled={!canChangeSpeed}
 						onclick={changeSpeed}
 						><img
+							draggable="false"
 							src={speed === 'turbo'
 								? './assets/the-gates/hud/speed-2.svg'
 								: speed === 'fast'
-									? `${UI_ART_ROOT}c8de1.svg`
-									: './assets/the-gates/stat-art-20261016/speed-normal.svg'}
+									? `${UI_ART_ROOT}speed-fast.svg`
+									: './assets/the-gates/stat-panels/speed-normal.svg'}
 							alt=""
 						/></button
 					><button
@@ -878,7 +898,7 @@
 							stateConfig.jurisdiction.disabledAutoplay}
 						onclick={() => {
 							modal = 'auto';
-						}}><img src={`${ART_ROOT}hud/autoplay-en.png`} alt="" /></button
+						}}><img draggable="false" src={`${ART_ROOT}hud/autoplay-en.png`} alt="" /></button
 					>
 				</div>
 			</div>
@@ -890,7 +910,8 @@
 						stateBet.autoSpinsCounter > 0 ||
 						stateBet.betAmount <= stateConfig.betAmountOptions[0]}
 					use:holdBetStep={() => stepBet(-1)}
-					><img src={`${ART_ROOT}hud/bet-decrease.png`} alt="" /><span class="bet-step-label"
+					><img draggable="false" src={`${ART_ROOT}hud/bet-decrease.png`} alt="" /><span
+						class="bet-step-label"
 						><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" /></svg></span
 					></button
 				>
@@ -901,7 +922,8 @@
 						stateBet.autoSpinsCounter > 0 ||
 						stateBet.betAmount >= stateConfig.betAmountOptions.at(-1)!}
 					use:holdBetStep={() => stepBet(1)}
-					><img src={`${UI_ART_ROOT}19460.svg`} alt="" /><span class="bet-step-label"
+					><img draggable="false" src={`${UI_ART_ROOT}bet-plus.svg`} alt="" /><span
+						class="bet-step-label"
 						><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14" /></svg></span
 					></button
 				>
@@ -1003,7 +1025,7 @@
 	{#key runtime.overlay}<WinScreen
 			capped
 			amount={runtime.overlay?.amount ?? 0}
-			countMs={1050}
+			countMs={2600}
 			format={winnings}
 		/>{/key}
 {:else if dev && demo && !busy && page.url.searchParams.get('uiPreview') === 'replay'}<ReplaySummary
@@ -1124,7 +1146,7 @@
 				aria-label={`${t('BET')} −`}
 				disabled={busy || stateBet.betAmount <= stateConfig.betAmountOptions[0]}
 				use:holdBetStep={() => stepBet(-1)}
-				><img src={`${ART_ROOT}hud/bet-decrease.png`} alt="" /></button
+				><img draggable="false" src={`${ART_ROOT}hud/bet-decrease.png`} alt="" /></button
 			>
 			<div>
 				<span>{t('BET LABEL')}</span><strong><FitNumber text={money(stateBet.betAmount)} /></strong>
@@ -1133,7 +1155,8 @@
 				class="icon-button"
 				aria-label={`${t('BET')} +`}
 				disabled={busy || stateBet.betAmount >= stateConfig.betAmountOptions.at(-1)!}
-				use:holdBetStep={() => stepBet(1)}><img src={`${UI_ART_ROOT}19460.svg`} alt="" /></button
+				use:holdBetStep={() => stepBet(1)}
+				><img draggable="false" src={`${UI_ART_ROOT}bet-plus.svg`} alt="" /></button
 			>
 		</div>
 		{#if mode !== 'BASE'}<button
@@ -1158,7 +1181,7 @@
 				onclick={fullscreen}><ButtonLabel text={t('FULLSCREEN')} /></button
 			>{/if}
 	</Modal>
-{:else if modal === 'auto'}<Modal title={t('AUTO')} close={() => (modal = null)} compact>
+{:else if modal === 'auto'}<Modal title={t('AUTO')} close={() => (modal = null)} autoplay>
 		<AutoplayControls preview={demo} bind:count={autoCount} start={autoStart} />
 	</Modal>
 {:else if stateModal.modal?.name === 'autoSpinMessage'}<Modal

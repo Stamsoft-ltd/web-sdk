@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-22",
+  "selected": "../round-05-short-visor/spirit-knight-short-visor-study-v1.png",
+  "status": "User selected previous short-visor concept instead of latest shared-layer redraw.",
+  "scope": "Concept selection only. No production game changes.",
+  "rejectedLatest": {
+    "body": "../../../../tools/symbol-motion-preview/assets/palace/short-knight-body.png",
+    "prompt": "Precise asset extraction/edit for a shared-layer animation concept.\nUse the LEFT RAISED-VISOR helmet in this reference as the canonical design. Return ONE SINGLE helmet body only, not two views and not a sheet.\nPreserve the LEFT helmet's exact fixed shell design: rounded golden dome, cyan forehead diamond and gold mount, warm gold/orange shading, dark navy outline, fixed cheek walls, friendly golden spirit with two pale oval glowing eyes, FIXED lower gold face guard with EXACTLY THREE round dark breathing holes in one row, rolled lower rim. Keep the same slight three-quarter perspective, proportions and lighting. Do not replace it with a different helmet.\nONLY REMOVE the movable short gold eye visor/band across its brow, including the gold band and its long narrow viewing slit. Cleanly paint the shell and the spirit chamber behind the removed visor: smooth continuous golden forehead under the cyan gem, dark-edged golden spirit eye window. Do not remove or change the two small flat temple attachment pads; they belong to the fixed helmet shell and will serve as stationary hinge points. There should now be NO horizontal slitted eye band on the helmet and NO second visor anywhere.\nAll remaining gold helmet geometry must be fully painted behind where the moving visor would pass. Golden spirit remains visible above the FIXED lower guard; do not turn the lower guard into a hole or change its three round vents.\nThis single body will be reused unchanged in BOTH raised and lowered poses, with one separately extracted visor added in code. Exact same canonical shell is the priority; no design exploration or added decorations.\nOne complete helmet body, centered on a square true transparent canvas with clear padding, full silhouette uncropped. Same polished2D cartoon style, broad white painted glints, orange shadows, dark navy contours. No background, haze outside helmet, ground shadow, labels, captions, arrows, watermark, extra objects or separate parts.",
+    "note": "Preserved as rejected draft; not selected or live.",
+    "sha256": "a6a81d7761ba53a8322b98011c54bc9d415d597dfe1c63393855d4728aeec8d5",
+    "generatedSource": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-aa302b87-8791-455b-a935-2e5a6eddbb12.png"
+  },
+  "animationRequirement": "Keep selected design unchanged. Need matching aligned body/visor layers before claiming final animation fidelity.",
+  "selectedSha256": "546eb6c8da06c9864137e3c8b2b42aee983cf66499760a93fde97b3a9d3a37d5"
+}

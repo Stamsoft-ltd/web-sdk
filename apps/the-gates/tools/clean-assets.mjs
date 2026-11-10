@@ -12,24 +12,24 @@ export async function inspectSourceAssets() {
 	const { keep: runtime } = await runtimeAssets();
 	const keep = new Set(runtime);
 	const base = 'assets/the-gates/';
-	const motion = `${base}figma-20261012/motion/`;
+	const motion = `${base}art/animations/`;
 	const manifest = JSON.parse(
 		await readFile(path.join(app, 'static', motion, 'manifest.json'), 'utf8'),
 	);
-	for (const asset of manifest.sourceAssets) keep.add(`${base}figma-20261012/${asset.path}`);
+	for (const asset of manifest.sourceAssets) keep.add(`${base}art/${asset.path}`);
 	for (const file of await filesIn(path.join(app, 'static', motion))) {
 		const rel = path.relative(path.join(app, 'static'), file).split(path.sep).join('/');
 		if (!rel.includes('/symbol-removal.')) keep.add(rel); // retired shard export
 	}
 	const inventories = [
-		`${base}figma-20261012/asset-manifest.json`,
-		`${base}figma-20261013/asset-manifest.json`,
-		`${base}figma-20261013/backgrounds/asset-manifest.json`,
+		`${base}art/asset-manifest.json`,
+		`${base}ui/asset-manifest.json`,
+		`${base}ui/backgrounds/asset-manifest.json`,
 	];
 	for (const name of [
 		...inventories,
-		`${base}sparks-20261012/provenance.json`,
-		...['normal', 'super', 'hidden'].map((t) => `${base}portals-20261012/${t}-provenance.json`),
+		`${base}sparks/provenance.json`,
+		...['normal', 'super', 'hidden'].map((t) => `${base}portals/${t}-provenance.json`),
 		'favicon.svg',
 	])
 		keep.add(name);

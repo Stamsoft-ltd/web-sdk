@@ -55,7 +55,10 @@ export function reduceEvent(previous: GameState, e: BookEvent): GameState {
 				multiplier: e.multiplier,
 				multiplierActive: e.multiplierActive,
 				sticky: e.stickyPositions,
-				progress: 0,
+				progress:
+					e.freeSpin > 0 && (e.tier === 'super' || e.tier === 'hidden')
+						? (e.gateProgressStart ?? 0)
+						: 0,
 				gate: 0,
 				gateOpen: false,
 				reward: null,
@@ -117,6 +120,9 @@ export function reduceEvent(previous: GameState, e: BookEvent): GameState {
 			s.wins = [];
 			break;
 		case 'spinWin':
+			// A capped gate can end the spin without another reveal to clear its overlay.
+			s.gateOpen = false;
+			s.reward = null;
 			s.spinWin = e.amount;
 			s.raw = e.rawAmount;
 			s.multiplier = e.multiplier;
@@ -154,6 +160,7 @@ export function reduceEvent(previous: GameState, e: BookEvent): GameState {
 			break;
 		case 'freeSpinTrigger':
 			Object.assign(s, {
+				bonusWin: 0,
 				tier: e.tier,
 				totalFs: e.totalFs,
 				freeSpin: 0,

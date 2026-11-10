@@ -81,5 +81,5 @@ export const TIMING = {
 	bonusIntro: 2200,
 	bonusIntroReduced: 1100,
 	winAutoClose: 1800,
-	capAutoClose: 2400,
+	capAutoClose: 4500,
 } as const;

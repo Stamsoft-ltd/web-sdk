@@ -39,7 +39,7 @@ test('tiered native win rigs layer inward trumpet tips behind fitted titles and 
 		const rig = JSON.parse(
 			readFileSync(
 				new URL(
-					`../static/assets/the-gates/figma-20261012/motion/win-${tier}.json`,
+					`../static/assets/the-gates/art/animations/win-${tier}.json`,
 					import.meta.url,
 				),
 				'utf8',

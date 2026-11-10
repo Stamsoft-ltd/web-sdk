@@ -12,9 +12,9 @@ const src = (p) => readFileSync(new URL('../src/' + p, import.meta.url), 'utf8')
 test('current McSchmutzo loader selects ten native frames from real progress', () => {
 	const code = src('game/gpuScene.ts');
 	assert.match(code, /length: 10/);
-	assert.match(code, /loading\/p0\$\{i\}.webp/);
+	assert.match(code, /loading\/frame-0\$\{i\}.webp/);
 	assert.match(code, /Math.min\(9, Math.round\(progress \* 9\)\)/);
-	assert.match(code, /press_play_wordmark.webp/);
+	assert.match(code, /press-play-wordmark.webp/);
 	assert.doesNotMatch(code, /fill.mask = clip|press_play_p.webp/);
 });
 test('landing cards drop left to right before logo; exit drops cards and brings game from above', () => {
@@ -49,7 +49,7 @@ test('reduced entry avoids positional movement and finishes within 140ms', () =>
 test('bonus presentation accepts tap and Enter after guard but not while doors transition', () => {
 	const bonus = src('components/BonusScreen.svelte');
 	assert.match(bonus, /onclick=/);
-	assert.match(bonus, /runtime.waiting && !runtime.bonusTransition/);
+	assert.match(bonus, /runtime.waiting && \(!runtime.bonusTransition \|\| runtime.bonusTransition.kind === 'hold'\)/);
 	assert.match(bonus, /pointer-events: auto/);
 	assert.match(bonus, /onkeydown=/);
 });
@@ -71,7 +71,7 @@ test('loader remains mounted until landing art is installed; intro starts only a
 	assert.match(welcome, /if \(!dead\) onready\(\)/);
 	assert.match(scene, /content.visible = false/);
 	assert.match(scene, /!state.active \|\| !introInstalled/);
-	assert.match(scene, /if \(!introStartedAt\) introStartedAt = now/);
+	assert.match(scene, /if \(!introStartedAt\) \{\s*introStartedAt = now/);
 	const install = scene.slice(scene.indexOf('const install = async'));
 	assert.ok(install.indexOf('decorations.addChild') < install.indexOf('ready();'));
 });

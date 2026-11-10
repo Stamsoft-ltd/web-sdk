@@ -30,7 +30,7 @@ test('landing fits portrait, landscape and desktop without changing the card asp
 	assert.match(source, /cardWidth \* 1215\) \/ 1478/);
 	assert.match(source, /new Rectangle\(130, 178, 1478, 1215\)/);
 	assert.match(source, /backgrounds\.set\('wide', wide\)/);
-	assert.match(source, /UI_ART_ROOT\}28fc1\.png/);
+	assert.match(source, /UI_ART_ROOT\}base-background\.png/);
 	assert.match(source, /backgrounds\/cloud-castle-original\.png/);
 });
 

@@ -1,9 +1,18 @@
+import { gateCounterResetDelay } from './gatePlayback';
+import { consumedGateMeter } from './panelPresentation';
+import { WIN_EXIT_MS, WIN_REDUCED_EXIT_MS } from './winMotion';
 import { BASE_GATE_ROOT } from './art';
-import { bonusScatterKeys, SCATTER_CELEBRATION_MS } from './scatterCelebration';
+import {
+	bonusScatterKeys,
+	refreshScatterCelebration,
+	SCATTER_CELEBRATION_MS,
+	type ScatterCelebration,
+} from './scatterCelebration';
 import { playGameSound, stopGameSounds } from './audio';
 import { TUMBLE_FLIGHT_MS, TUMBLE_ARRIVAL_MS, tumbleFlightTiming } from './tumbleFlight';
 import {
 	bonusTransitionDuration,
+	BONUS_ENTRY_DISMISS_MS,
 	BONUS_SCENE_SWITCH_MS,
 	bonusEntryBoundary,
 	type BonusTransition,
@@ -23,14 +32,14 @@ import {
 	waitForDismissal,
 	waitForTarget,
 } from './presentation';
-import { selectedSpeed, speedFactor } from './uiPolicy';
+import { effectiveSpeed, speedFactor } from './uiPolicy';
 import { winTiming, winTier } from './winPresentation';
 import { cellMotion, type Wave } from './motion';
 import type { Speed } from './uiPolicy';
 import type { Bet, BookEvent, Position, Tier } from './contract';
 
 export const runtime = $state({
-	scatterCelebration: null as null | { keys: string[]; startedAt: number; duration: number },
+	scatterCelebration: null as ScatterCelebration | null,
 	game: initialState(),
 	roundId: 'preview',
 	busy: false,
@@ -48,10 +57,15 @@ export const runtime = $state({
 	waiting: false,
 	counting: false,
 	finishCount: false,
+	winExitAt: 0,
 	reduced: false,
 	error: '',
 	startedAt: 0,
 	skipRequested: false,
+	spinTurbo: false,
+	heldTurbo: false,
+	baseCountersReset: false,
+	gateMeterReset: false,
 	waveStartedAt: 0,
 	spinTotalBefore: 0,
 	gateSpeedFactor: 1,
@@ -64,7 +78,7 @@ let previewRound = 0;
 let active: AbortController | null = null;
 let acknowledge: (() => void) | null = null;
 function currentSpeed(): Speed {
-	return selectedSpeed(stateBet, stateConfig.jurisdiction);
+	return effectiveSpeed(stateBet, stateConfig.jurisdiction, runtime.spinTurbo || runtime.heldTurbo);
 }
 function accelerateWave(tail: number) {
 	if (!['spinning', 'dropping', 'removing'].includes(runtime.phase)) return;
@@ -81,7 +95,8 @@ export function requestSkip() {
 	if (!runtime.busy || runtime.overlay || stateConfig.jurisdiction.disabledSlamstop) return;
 	if (runtime.skipRequested) return;
 	runtime.skipRequested = true;
-	accelerateWave(130);
+	runtime.spinTurbo = true;
+	accelerateWave(currentSpeed() === 'turbo' ? 75 : 130);
 }
 function beginWave(kind: Wave['kind']) {
 	runtime.wave = {
@@ -134,11 +149,15 @@ export function cancelPlayback() {
 	acknowledge?.();
 	active = null;
 	runtime.busy = false;
+	runtime.spinTurbo = false;
 	runtime.waiting = false;
 	runtime.overlay = null;
+	runtime.winExitAt = 0;
 	runtime.rewardDelivery = null;
 }
 export function resetRound() {
+	runtime.baseCountersReset = false;
+	runtime.gateMeterReset = false;
 	runtime.scatterCelebration = null;
 	runtime.bonusTransition = null;
 	runtime.sceneTierOverride = null;
@@ -187,22 +206,31 @@ async function present(
 	await delay(guard, signal);
 	await pause(signal, autoCloseMs);
 }
+async function exitWin(signal: AbortSignal) {
+	if (signal.aborted) return;
+	runtime.winExitAt = performance.now();
+	await delay(runtime.reduced ? WIN_REDUCED_EXIT_MS : WIN_EXIT_MS, signal);
+}
 async function presentWin(amount: number, signal: AbortSignal) {
-	const timing = winTiming(amount, runtime.skipRequested ? 6 : speedFactor(currentSpeed()));
+	const timing = winTiming(amount, speedFactor(currentSpeed()));
+	runtime.winExitAt = 0;
 	runtime.overlay = { kind: 'win', amount, countMs: timing.countMs };
 	const cue = winTier(amount)?.key;
 	if (cue) playGameSound(cue, { group: 'win' });
 	try {
 		await present(signal, timing.holdMs);
+		await exitWin(signal);
 	} finally {
 		stopGameSounds('win');
 		runtime.overlay = null;
+		runtime.winExitAt = 0;
 	}
 }
 export function restoreBet(bet: Bet) {
 	runtime.roundId = String(bet.betID ?? bet.roundID ?? 'book');
 	const cursor = Number(bet.event ?? 0);
 	runtime.game = restorePrefix(bet.state, cursor);
+	runtime.gateMeterReset = consumedGateMeter(bet.state, cursor);
 	stateBet.winBookEventAmount = runtime.game.total;
 	return { ...bet, state: bet.state.slice(cursor) };
 }
@@ -213,6 +241,8 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 	active = controller;
 	const signal = controller.signal;
 	runtime.busy = true;
+	runtime.spinTurbo = false;
+	runtime.baseCountersReset = false;
 	runtime.skipRequested = false;
 	const wait = (ms: number, min = 70, normalScale = 1) =>
 		waitForTarget(
@@ -222,7 +252,7 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 					: Math.max(
 							min,
 							(ms * (!runtime.skipRequested && currentSpeed() === 'normal' ? normalScale : 1)) /
-								(runtime.skipRequested ? 6 : speedFactor(currentSpeed())),
+								speedFactor(currentSpeed()),
 						),
 			signal,
 		);
@@ -237,8 +267,25 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 		await delay(closedAt / factor, signal);
 		// Change scenery only while the leaves cover it. Reducer/result untouched.
 		runtime.sceneTierOverride = { tier: kind === 'entry' ? tier : null };
+		if (kind === 'exit') runtime.baseCountersReset = true;
 		await delay((bonusTransitionDuration(kind, reduced) - closedAt) / factor, signal);
 		runtime.bonusTransition = null;
+	};
+	let capShown = false;
+	const showMaxWin = async (amount: number) => {
+		if (capShown) return;
+		// Warm native composition before starting its tally/hold clock.
+		await loadRig('win-legendary', 'win-legendary', MOTION_ROOT);
+		if (signal.aborted) return;
+		capShown = true;
+		runtime.winExitAt = 0;
+		runtime.overlay = { kind: 'cap', amount };
+		playGameSound('legendary', { group: 'win' });
+		await present(signal, TIMING.capAutoClose);
+		await exitWin(signal);
+		stopGameSounds('win');
+		runtime.overlay = null;
+		runtime.winExitAt = 0;
 	};
 	let scatterCelebrated = false;
 	const celebrateScatters = async () => {
@@ -260,10 +307,24 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 
 		runtime.overlay = { kind: 'bonus', tier: e.tier, spins: e.totalFs };
 		await transition('entry', e.tier);
+		runtime.bonusTransition = {
+			kind: 'hold',
+			startedAt: performance.now(),
+			reduced: runtime.reduced,
+		};
 		playGameSound('bonus', { group: 'win' });
 		await present(signal, undefined, TIMING.overlayGuard);
+		runtime.bonusTransition = {
+			kind: 'dismiss',
+			startedAt: performance.now(),
+			reduced: runtime.reduced,
+		};
+		playGameSound('retract');
+		await delay(runtime.reduced ? BONUS_ENTRY_DISMISS_MS.reduced : BONUS_ENTRY_DISMISS_MS.normal, signal);
+		runtime.bonusTransition = null;
 		runtime.scatterCelebration = null;
 		runtime.overlay = null;
+		runtime.winExitAt = 0;
 		stopGameSounds('win');
 		runtime.sceneTierOverride = null;
 	};
@@ -365,9 +426,11 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 			}
 			if (e.type === 'freeSpinTrigger') runtime.sceneTierOverride = { tier: runtime.game.tier };
 			if (e.type === 'spinStart') runtime.spinTotalBefore = runtime.game.total;
+			if (e.type === 'spinStart' || e.type === 'gateProgress') runtime.gateMeterReset = false;
 			runtime.game = reduceEvent(runtime.game, e);
 			switch (e.type) {
 				case 'spinStart':
+					runtime.spinTurbo = false;
 					playGameSound('spin');
 					runtime.sceneTierOverride = null;
 					selectionStartedAt = null;
@@ -378,6 +441,11 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 					await waitMotion();
 					break;
 				case 'reveal':
+					// Bind the continuing trigger loop to the new gravity destinations before falling.
+					runtime.scatterCelebration = refreshScatterCelebration(
+						runtime.scatterCelebration,
+						e.board,
+					);
 					selectionStartedAt = null;
 					beginWave(e.cascadeIndex === 0 ? 'spin' : 'tumble');
 					runtime.phase = 'dropping';
@@ -419,10 +487,13 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 					break;
 				case 'gateOpen':
 					runtime.phase = 'gate';
-					await wait(
-						runtime.reduced ? 100 : TIMING.gateOpen / runtime.gateSpeedFactor,
-						runtime.reduced ? 100 : TIMING.gateOpen / runtime.gateSpeedFactor,
-					);
+					const closedDelay = gateCounterResetDelay(runtime.reduced, runtime.gateSpeedFactor);
+					const gateOpenDelay = runtime.reduced ? 100 : TIMING.gateOpen / runtime.gateSpeedFactor;
+					if (closedDelay > 0) await delay(closedDelay, signal);
+					// Consume the visible three gems exactly on door impact, not at the next spin.
+					// Book progress and all awarded values remain untouched.
+					runtime.gateMeterReset = true;
+					await delay(Math.max(0, gateOpenDelay - closedDelay), signal);
 					break;
 				case 'gateReward':
 					// Spin out while doors open, then readable 1.8s hold + delivery/arrival at every speed.
@@ -437,6 +508,8 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 					if (runtime.game.freeSpin > 0 && winTier(e.amount) && !runtime.game.capped)
 						await presentWin(e.amount, signal);
 					else if (e.amount) await wait(TIMING.settle, 80, 1.4);
+					runtime.spinTurbo = false;
+					runtime.skipRequested = false;
 					break;
 				case 'setTotalWin':
 				case 'setWin':
@@ -450,20 +523,21 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 					pendingBonus = e;
 					break;
 				case 'freeSpinEnd':
-					runtime.overlay = { kind: 'summary', tier: e.tier, amount: e.amount };
+					// Present the already-awarded cap before summary; consume book events in original order.
+					const cap = events.find((event) => event.type === 'maxWin' && event.index > e.index);
+					if (cap?.type === 'maxWin') await showMaxWin(cap.amount);
+					// freeSpinEnd.amount is bonus-only; cumulative total also includes entry/Key awards.
+					runtime.overlay = { kind: 'summary', tier: e.tier, amount: runtime.game.total };
 					playGameSound('summary', { group: 'win' });
 					await present(signal);
 					stopGameSounds('win');
 					playGameSound('retract');
 					await transition('exit', e.tier);
 					runtime.overlay = null;
+					runtime.winExitAt = 0;
 					break;
 				case 'maxWin':
-					runtime.overlay = { kind: 'cap', amount: e.amount };
-					playGameSound('legendary', { group: 'win' });
-					await present(signal, TIMING.capAutoClose);
-					stopGameSounds('win');
-					runtime.overlay = null;
+					await showMaxWin(e.amount);
 					break;
 			}
 		}
@@ -485,12 +559,14 @@ export async function playEvents(events: BookEvent[], demo = false, roundId?: st
 		stopGameSounds();
 		if (signal.aborted) runtime.sceneTierOverride = null;
 		runtime.busy = false;
+		runtime.spinTurbo = false;
 		runtime.rewardDelivery = null;
 		runtime.skipRequested = false;
 		runtime.phase = 'idle';
 		runtime.removed = [];
 		runtime.waiting = false;
 		runtime.overlay = null;
+		runtime.winExitAt = 0;
 		if (active === controller) active = null;
 	}
 }

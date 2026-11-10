@@ -1,9 +1,9 @@
 /** Approved eight-bar loops, independent of SFX mute and spin speed. */
 export const MUSIC_FILES = {
-	base: 'base-music-preview',
-	bonus: 'bonus-music-preview',
-	super: 'super-music-preview',
-	hidden: 'hidden-music-preview',
+	base: 'music/base',
+	bonus: 'music/normal',
+	super: 'music/super',
+	hidden: 'music/hidden',
 } as const;
 export type MusicScene = keyof typeof MUSIC_FILES;
 export const MUSIC_LOOP_SECONDS = { base: 20, bonus: 16, super: 15, hidden: 19.2 } as const;

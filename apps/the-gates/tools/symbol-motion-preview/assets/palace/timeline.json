@@ -1,0 +1,107 @@
+{
+  "name": "Palace replacement approval studies",
+  "states": [
+    "rest",
+    "paying"
+  ],
+  "events": [
+    "play",
+    "finish",
+    "reset"
+  ],
+  "transitions": [
+    {
+      "from": "rest",
+      "event": "play",
+      "to": "paying"
+    },
+    {
+      "from": "paying",
+      "event": "finish",
+      "to": "rest"
+    },
+    {
+      "from": "paying",
+      "event": "reset",
+      "to": "rest"
+    }
+  ],
+  "timelines": [
+    {
+      "event": "play",
+      "fromState": "rest",
+      "toState": "paying",
+      "steps": [
+        {
+          "id": "charge",
+          "target": "spirit + pink basin",
+          "startMs": 72,
+          "durationMs": 270,
+          "easing": "easeInOut",
+          "curve": "cubic smoothstep 3t²-2t³"
+        },
+        {
+          "id": "liquid-swirl",
+          "target": "masked pink basin",
+          "startMs": 144,
+          "durationMs": 1476,
+          "easing": "easeInOut",
+          "curve": "cubic smoothstep 3t²-2t³"
+        },
+        {
+          "id": "visor-close",
+          "target": "one visor plate",
+          "startMs": 252,
+          "durationMs": 450,
+          "easing": "easeInOut",
+          "curve": "cubic smoothstep 3t²-2t³"
+        },
+        {
+          "id": "splash-and-wobble",
+          "target": "pink liquid + gold cup",
+          "startMs": 324,
+          "durationMs": 1170,
+          "easing": "easeInOut",
+          "curve": "ballistic droplets; 0.025rad damped cup wobble"
+        }
+      ]
+    },
+    {
+      "event": "finish",
+      "fromState": "paying",
+      "toState": "rest",
+      "steps": [
+        {
+          "id": "visor-reopen",
+          "target": "one visor plate",
+          "startMs": 1170,
+          "durationMs": 468,
+          "easing": "easeInOut",
+          "curve": "cubic smoothstep 3t²-2t³"
+        },
+        {
+          "id": "glow-settle",
+          "target": "spirit + pink basin",
+          "startMs": 1422,
+          "durationMs": 342,
+          "easing": "easeInOut",
+          "curve": "cubic smoothstep 3t²-2t³"
+        }
+      ]
+    },
+    {
+      "event": "reset",
+      "fromState": "paying",
+      "toState": "rest",
+      "steps": [
+        {
+          "id": "neutral-pose",
+          "target": "both symbols",
+          "startMs": 0,
+          "durationMs": 1,
+          "easing": "linear"
+        }
+      ]
+    }
+  ]
+}

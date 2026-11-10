@@ -1,0 +1,68 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Gates · portal closure proposal</title>
+<style>body{margin:0;background:#101c30;color:#fff;font:15px system-ui}main{max-width:1500px;margin:auto;padding:24px}h1{margin:0 0 8px;font-size:26px}p{color:#b9c9e2}header{position:sticky;top:0;background:#101c30ee;padding:12px 0;z-index:1}button,select{background:#153e78;color:white;border:1px solid #597cae;border-radius:9px;padding:10px;margin:3px;cursor:pointer}button.active{background:#ffce30;color:#11223b}section{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}article{background:#0b284c;border:1px solid #35577e;border-radius:15px;overflow:hidden}h2{font-size:17px;margin:12px 14px 2px}canvas{width:100%;display:block}small{display:block;color:#a9c2df;padding:0 14px 14px}.note{font-size:13px}#status{color:#ffda54}@media(max-width:800px){section{grid-template-columns:repeat(2,minmax(0,1fr))}}</style>
+<main><h1>Portal closure · motion proposal</h1><p>Inward pulse → rotating circular collapse → light pin → fading sparks. Existing portal art. No gameplay changes. Use the scenario buttons and reward selector below.</p><header><div id="uses"></div><label id="rewardControl">Reward <select id="reward"><option value="add">Add multiplier · +12×</option><option value="boost">Multiplier boost · ×3</option><option value="wild">Sticky Wild · 3× symbol</option><option value="extra">Extra Spin · +1</option><option value="retrigger">Retrigger · +5 spins</option><option value="pair">Hidden · +12× then 3 Wilds</option></select></label><label><input id="auto" type="checkbox" checked> Auto-dismiss bonus screens</label><br><label>Speed <select id="speed"><option value="1">Normal · 500 ms closure</option><option value="2">Fast · 260 ms closure</option><option value="3">Turbo · 220 ms closure</option></select></label><button id="play">Replay all</button><button id="pause">Pause</button><label><input id="loop" type="checkbox" checked> Loop</label><label><input id="old" type="checkbox"> Compare current abrupt tail</label><div><input aria-label="Timeline" id="scrub" type="range" min="0" max="1" step="0.001" style="width:min(700px,100%)"><span id="status">Loading art…</span></div></header><section id="cards"></section><p class="note">Staged approval preview, not a capture of live game. Bonus entry/end use real title and counter art. Disable auto-dismiss to test click-to-continue. Select each Gate reward or the Hidden two-reward sequence. Base palette shown for reference; Base has no bonus entry/end. Reduced motion: recommended short fade, no spin.</p></main>
+<script type="module">
+const root='../static/assets/the-gates/';
+const palettes=[['base','Base / Chance / Feature','#ffd340'],['normal','Normal','#f866df'],['super','Super','#86e6ff'],['hidden','Hidden','#ff7e54']];
+const usages=[['symbols','Winning-symbol removal'],['reward','Gate reward · Hidden ×2'],['wild','Sticky Wild delivery'],['entry','Bonus entry · wait for click'],['exit','Bonus end · wait for click']];
+const assets={};async function img(path){const i=new Image();i.src=root+path;await i.decode();return i}
+for(const [tier] of palettes){const dir=tier==='base'?'gates-base/':'portals/';const meta=await fetch(root+dir+(tier==='base'?'portal-provenance.json':tier+'-provenance.json')).then(r=>r.json());assets[tier]={image:await img(dir+meta.path),regions:meta.regions}}
+assets.gem=await img('art/symbols/green-gem.png');
+assets.wild=await img('wild/rainbow-wild.png');
+assets.counter=await img('art/panels/bonus-counter-blank.png');
+for(const tier of ['normal','super','hidden'])assets['title-'+tier]=await img('art/bonus/'+tier+'-title.png');
+let mode='symbols',started=performance.now(),elapsed=0,paused=false,waiting=false,dismissAt=null;
+const cards=[];for(const [tier,title,color] of palettes){const a=document.createElement('article');a.innerHTML=`<h2>${title}</h2><canvas width="660" height="580"></canvas><small></small>`;document.querySelector('#cards').append(a);const canvas=a.querySelector('canvas');cards.push({tier,color,ctx:canvas.getContext('2d'),label:a.querySelector('small')});canvas.onclick=()=>{if(waiting){dismissAt=elapsed;waiting=false}}}
+for(const [key,title] of usages){const b=document.createElement('button');b.textContent=title;b.onclick=()=>{mode=key;restart();select()};b.dataset.mode=key;document.querySelector('#uses').append(b)}
+function select(){document.querySelector('#rewardControl').hidden=mode!=='reward';for(const b of document.querySelectorAll('[data-mode]'))b.classList.toggle('active',b.dataset.mode===mode)}
+function restart(){started=performance.now();elapsed=0;dismissAt=null;waiting=false;paused=false;document.querySelector('#pause').textContent='Pause'}
+const reward=document.querySelector('#reward'),auto=document.querySelector('#auto');reward.onchange=restart;auto.onchange=restart;
+const speed=document.querySelector('#speed'),old=document.querySelector('#old'),loop=document.querySelector('#loop'),scrub=document.querySelector('#scrub');
+document.querySelector('#play').onclick=restart;speed.onchange=restart;old.onchange=restart;
+document.querySelector('#pause').onclick=()=>{paused=!paused;if(!paused)started=performance.now()-elapsed;document.querySelector('#pause').textContent=paused?'Resume':'Pause'};
+scrub.oninput=()=>{paused=true;elapsed=Number(scrub.value)*duration();waiting=false;dismissAt=(mode==='entry'||mode==='exit')?1000:null;document.querySelector('#pause').textContent='Resume'};
+const clamp=x=>Math.max(0,Math.min(1,x)),mix=(a,b,t)=>a+(b-a)*t;
+function closing(){return speed.value==='1'?500:speed.value==='2'?260:220}
+function hold(){return speed.value==='1'?1200:650}
+function duration(){return hold()+closing()+1000}
+function layer(c,tier,name,size,angle,alpha=1){const a=assets[tier],r=a.regions[name];c.save();c.globalAlpha=alpha;c.rotate(angle);c.drawImage(a.image,...r,-size/2,-size/2,size,size);c.restore()}
+function text(c,t,y,size=28){c.save();c.textAlign='center';c.font=`900 ${size}px system-ui`;c.lineWidth=6;c.strokeStyle='#051125';c.strokeText(t,0,y);c.fillStyle='#fff4a7';c.fillText(t,0,y);c.restore()}
+function frame(card,t){const {ctx:c,tier,color,label}=card;c.clearRect(0,0,660,580);c.save();c.translate(330,280);
+ const bonus=mode==='entry'||mode==='exit',applicable=!(tier==='base'&&bonus)&&!(mode==='wild'&&(tier==='base'||tier==='normal'));
+ if(!applicable){text(c,'Not used in this mode',0,23);c.restore();label.textContent='No added portal usage proposed.';return}
+ c.strokeStyle='#315276';c.lineWidth=3;for(let i=-2;i<=2;i++)for(let j=-1;j<=1;j++)c.strokeRect(i*110-50,j*110-50,100,100);
+ const h=hold(),close=closing();let start=h;
+ if(bonus){if(dismissAt===null){start=Infinity;if(auto.checked&&t>=h){dismissAt=h;start=h+400;waiting=false}else if(t>=h&&!paused)waiting=true}else start=dismissAt+400}
+ let p=clamp((t-start)/close),radius=mode==='symbols'?94:150,alpha=1,scale=1,rotation=t*.001;
+ const opening=clamp(t/200);scale=1-Math.pow(1-opening,3);
+ if(old.checked){scale*=1-clamp((t-start)/65);alpha=1-clamp((t-start-55)/75)}else if(p>0){
+  // Smoothstep circular collapse: no anisotropic squash and no hard visibility cut.
+  const q=p*p*(3-2*p);scale*=p<.16?mix(1,.94,p/.16):mix(.94,.005,Math.pow((p-.16)/.84,1.15));rotation+=q*1.7;alpha=1-clamp((p-.72)/.28);
+ }
+ c.save();c.scale(scale,scale);layer(c,tier,'portal-vortex',radius*1.5,rotation*1.8,alpha);layer(c,tier,'portal-rim',radius*2,-rotation*.55,alpha);c.restore();
+ // Trailing light curls and small sparks settle into the final light pin.
+ if(!old.checked&&p>0&&p<1){for(let i=0;i<7;i++){const lag=clamp(p-i*.018),r=radius*(1-lag),a=i*2.4+rotation*3+lag*3;c.save();c.globalAlpha=Math.sin(Math.PI*p)*(1-i/9)*.7;c.strokeStyle=color;c.lineWidth=3;c.shadowColor=color;c.shadowBlur=12;c.beginPath();c.arc(0,0,r,a,a+.32);c.stroke();c.restore()}}
+ if(!old.checked&&p>.62&&p<1){const q=(p-.62)/.38;c.save();c.globalAlpha=Math.sin(Math.PI*q);c.fillStyle='#fff9db';c.shadowColor=color;c.shadowBlur=28;c.beginPath();c.arc(0,0,3+7*Math.sin(Math.PI*q),0,Math.PI*2);c.fill();c.restore()}
+ if(!old.checked&&p>.78&&p<1){for(let i=0;i<6;i++){let q=(p-.78)/.22,a=i*Math.PI/3;c.save();c.globalAlpha=(1-q)*.8;c.fillStyle=color;c.beginPath();c.arc(Math.cos(a)*(8+q*24),Math.sin(a)*(8+q*24),2*(1-q),0,7);c.fill();c.restore()}}
+ if(mode==='symbols'){let s=1-clamp((t-180)/(h-260));if(s>0){c.save();c.rotate((1-s)*3);c.scale(s,s);c.drawImage(assets.gem,-72,-72,144,144);c.restore()}}
+ if(mode==='reward'&&t>220&&t<h){
+  const chosen=reward.value,pair=chosen==='pair',r=pair?(t<h*.53?'add':'wild'):chosen;
+  const valid=tier==='hidden'||(tier==='super'&&!pair)||((tier==='base'||tier==='normal')&&r==='add'&&!pair);
+  if(!valid){text(c,'Reward not used in this mode',210,20)}else{
+   const phase=pair?(t<h*.53?(t-220)/(h*.53-220):(t-h*.53)/(h*.47)):(t-220)/(h-220),a=Math.min(1,phase*7),exit=clamp((phase-.75)/.25);
+   c.save();c.globalAlpha=a;c.scale(1-exit*.85,1-exit*.85);c.rotate(exit*.6);
+   if(r==='wild'){text(c,'3×',-5,42);c.drawImage(assets.wild,28,-60,104,104)}
+   else text(c,r==='add'?'+12×':r==='boost'?'×3':r==='extra'?'+1 SPIN':'+5 SPINS',12,r==='retrigger'?32:42);
+   c.restore();
+   if(r==='wild'&&exit>0){for(let n=0;n<3;n++){c.save();c.translate((n-1)*140*exit,100*exit);c.drawImage(assets.wild,-30,-30,60,60);c.restore()}}
+  }
+ }
+ if(mode==='wild'&&t<h){const q=clamp((t-h*.55)/(h*.4));c.save();c.translate(q*190,q*120);c.scale(1-q*.6,1-q*.6);text(c,'3×',10,40);c.drawImage(assets.wild,30,-44,90,90);c.restore()}
+ if(bonus){let s=dismissAt===null?1:1-clamp((t-dismissAt)/400);if(t<250)s*=clamp(t/250);if(s>0){c.save();c.rotate((1-s)*1.4);c.scale(s,s);
+  if(mode==='exit')text(c,'BONUS COMPLETE',-170,26);
+  const title=assets['title-'+tier],tw=380,th=tw*title.height/title.width;c.drawImage(title,-tw/2,-th/2-40,tw,th);
+  c.drawImage(assets.counter,-119,81,238,133);text(c,mode==='entry'?'15':'$1,234.50',133,30);text(c,mode==='entry'?'FREE SPINS':'TOTAL WIN',174,18);
+  c.restore()}if(dismissAt===null&&!auto.checked)text(c,'Tap to continue',245,22)}
+ c.restore();label.textContent=p>=1?'Closed · next action can overlap':p>0?`Closure ${Math.round(p*100)}% · ${close} ms`:bonus&&t>=h?'Looping hold · click to dismiss':'Playing · portal remains behind content';}
+function tick(now){if(!paused)elapsed=now-started;for(const card of cards)frame(card,elapsed);const d=duration();scrub.value=clamp(elapsed/d);document.querySelector('#status').textContent=waiting?'Waiting for click':`${Math.round(elapsed)} ms`;if(!paused&&loop.checked&&!waiting&&elapsed>(dismissAt===null?d:Math.max(d,dismissAt+closing()+1100)))restart();requestAnimationFrame(tick)}select();requestAnimationFrame(tick);
+</script></html>

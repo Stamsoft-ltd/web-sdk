@@ -1,0 +1,72 @@
+{
+  "status": "Concept art only; live assets unchanged",
+  "tool": "built-in image_gen",
+  "date": "2026-10-21",
+  "assets": [
+    {
+      "file": "wild-01-ivory-rosette.png",
+      "prompt": "Use case: stylized-concept. Asset type: a single WILD symbol concept for THE GATES cartoon Egyptian slot. Reference image 1 is the mandatory jewel: cyan-blue diamond, chunky gold beveled setting, deep navy outer outline and big white glint. Incorporate this distinctive framed jewel as a central inset, about one-third of the overall emblem width. Reference image 2 is the ORIGINAL six-petal Wild flower, used for compact rosette silhouette and cartoon art language ONLY: replace its rainbow colors and do not reproduce its multicolored petals. Match polished 2D vector-like game illustration: plump rounded forms, thick crisp deep navy/near-black ink outlines, vivid yellow-orange gold bevels, large clean white gloss marks, smooth simple cel/gradient shading. Readable at small slot-cell size; coherent premium jewel craftsmanship, not photorealistic, not gritty, not painterly, not a 3D render. Palette limited to gold, ivory/pearl white, navy accents, and cyan-blue ONLY in the central gem. No pink, red, green, purple or rainbow petals. It substitutes for all symbols; cluster color will be applied by animated runtime lighting later, not baked into this base art. Exactly one complete isolated centered emblem in square composition, about 85% canvas coverage with unclipped tips and clean transparent background. No text, no labels, no board or tile backdrop, no extra loose gems, no pedestal, no watermark. Specific design: IVORY-AND-GOLD ROSETTE. Six broad rounded ivory enamel petals radiate evenly around the central diamond, like a luxurious magical flower. Each petal has a substantial sculpted gold rim, a soft cream shadow and one bold white highlight. Petals sit as a tight radial arrangement with a few dark navy negative-space slivers between them, not wings. Gold backing quietly unifies the silhouette. Neutral ivory is the dominant petal surface, distinct from the blue center. No crown or wings. Preserve the warmth, simplicity and playful flower identity of the original Wild.",
+      "references": [
+        "/Users/simeonhristov/Downloads/Glossy Blue Gem Badge 14.png",
+        "/Users/simeonhristov/Documents/GitHub/web-sdk/apps/the-gates/static/assets/the-gates/wild/rainbow-wild.png"
+      ],
+      "generatedSource": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-d113cb1a-1a46-4ee0-8904-6b070f8233c5.png",
+      "sha256": "eacdcba70aaab7dfced2962356dab5a3eceaaf767fa41dec2886dd6e1ed5e9d4",
+      "width": 1254,
+      "height": 1254,
+      "pngColorType": 6
+    },
+    {
+      "file": "wild-02-crystal-lotus.png",
+      "prompt": "Use case: stylized-concept. Asset type: a single WILD symbol concept for THE GATES cartoon Egyptian slot. Reference image 1 is the mandatory jewel: cyan-blue diamond, chunky gold beveled setting, deep navy outer outline and big white glint. Incorporate this distinctive framed jewel as a central inset, about one-third of the overall emblem width. Reference image 2 is the ORIGINAL six-petal Wild flower, used for compact rosette silhouette and cartoon art language ONLY: replace its rainbow colors and do not reproduce its multicolored petals. Match polished 2D vector-like game illustration: plump rounded forms, thick crisp deep navy/near-black ink outlines, vivid yellow-orange gold bevels, large clean white gloss marks, smooth simple cel/gradient shading. Readable at small slot-cell size; coherent premium jewel craftsmanship, not photorealistic, not gritty, not painterly, not a 3D render. Palette limited to gold, ivory/pearl white, navy accents, and cyan-blue ONLY in the central gem. No pink, red, green, purple or rainbow petals. It substitutes for all symbols; cluster color will be applied by animated runtime lighting later, not baked into this base art. Exactly one complete isolated centered emblem in square composition, about 85% canvas coverage with unclipped tips and clean transparent background. No text, no labels, no board or tile backdrop, no extra loose gems, no pedestal, no watermark. Specific design: CRYSTAL LOTUS. A compact symmetrical six-petal magical lotus jewel with broad sculpted CLEAR FROSTED CRYSTAL petals. Petals are translucent pearl-white glass with restrained light cyan edge reflections and visible internal facet planes, NOT opaque ivory enamel. Gold socket tips and gold petal roots hold the glass together. Central reference blue diamond is inset in a raised gold bezel. Make the frosted glass and broad facets the defining feature so this looks visibly different from an enamel flower. No spectrum/rainbow refraction, no wings, no crown. The clear petals are suitable for future winning-cluster light passing through them.",
+      "references": [
+        "/Users/simeonhristov/Downloads/Glossy Blue Gem Badge 14.png",
+        "/Users/simeonhristov/Documents/GitHub/web-sdk/apps/the-gates/static/assets/the-gates/wild/rainbow-wild.png"
+      ],
+      "generatedSource": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-bb63298b-bc36-49e5-a378-1a477ca92546.png",
+      "sha256": "009af3de883a10f4804bfb4f963b3c365ef6cf1e046ff07f8ef90676f348a021",
+      "width": 1254,
+      "height": 1254,
+      "pngColorType": 6
+    },
+    {
+      "file": "wild-03-royal-gold-rosette.png",
+      "prompt": "Use case: stylized-concept. Asset type: a single WILD symbol concept for THE GATES cartoon Egyptian slot. Reference image 1 is the mandatory jewel: cyan-blue diamond, chunky gold beveled setting, deep navy outer outline and big white glint. Incorporate this distinctive framed jewel as a central inset, about one-third of the overall emblem width. Reference image 2 is the ORIGINAL six-petal Wild flower, used for compact rosette silhouette and cartoon art language ONLY: replace its rainbow colors and do not reproduce its multicolored petals. Match polished 2D vector-like game illustration: plump rounded forms, thick crisp deep navy/near-black ink outlines, vivid yellow-orange gold bevels, large clean white gloss marks, smooth simple cel/gradient shading. Readable at small slot-cell size; coherent premium jewel craftsmanship, not photorealistic, not gritty, not painterly, not a 3D render. Palette limited to gold, ivory/pearl white, navy accents, and cyan-blue ONLY in the central gem. No pink, red, green, purple or rainbow petals. It substitutes for all symbols; cluster color will be applied by animated runtime lighting later, not baked into this base art. Exactly one complete isolated centered emblem in square composition, about 85% canvas coverage with unclipped tips and clean transparent background. No text, no labels, no board or tile backdrop, no extra loose gems, no pedestal, no watermark. Specific design: ROYAL GOLD ROSETTE. Six thick sculpted metallic GOLD petals form an Egyptian royal sun-flower/rosette around the inset blue diamond. Gold must occupy most of the petal surfaces, not white enamel or clear glass. Petals have gracefully engraved sweeping channels with deep navy inset recesses, plus crisp broad gold bevel highlights. Larger, carefully designed channels remain readable at game icon size; they can carry cluster-colored energy later. Rich gold, small navy recesses, one blue center jewel. No face, wings, crown, colored secondary gemstones or rainbow.",
+      "references": [
+        "/Users/simeonhristov/Downloads/Glossy Blue Gem Badge 14.png",
+        "/Users/simeonhristov/Documents/GitHub/web-sdk/apps/the-gates/static/assets/the-gates/wild/rainbow-wild.png"
+      ],
+      "generatedSource": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-eeb93a60-bbe2-495a-ac77-390dc03e9500.png",
+      "sha256": "1cd0b0e8f0c00401cb4c77e323b44e0b336f9b7e8c14cc1b679930c7a37b864d",
+      "width": 1254,
+      "height": 1254,
+      "pngColorType": 6
+    },
+    {
+      "file": "wild-04-magic-seal.png",
+      "prompt": "Use case: stylized-concept. Asset type: a single WILD symbol concept for THE GATES cartoon Egyptian slot. Reference image 1 is the mandatory jewel: cyan-blue diamond, chunky gold beveled setting, deep navy outer outline and big white glint. Incorporate this distinctive framed jewel as a central inset, about one-third of the overall emblem width. Reference image 2 is the ORIGINAL six-petal Wild flower, used for compact rosette silhouette and cartoon art language ONLY: replace its rainbow colors and do not reproduce its multicolored petals. Match polished 2D vector-like game illustration: plump rounded forms, thick crisp deep navy/near-black ink outlines, vivid yellow-orange gold bevels, large clean white gloss marks, smooth simple cel/gradient shading. Readable at small slot-cell size; coherent premium jewel craftsmanship, not photorealistic, not gritty, not painterly, not a 3D render. Palette limited to gold, ivory/pearl white, navy accents, and cyan-blue ONLY in the central gem. No pink, red, green, purple or rainbow petals. It substitutes for all symbols; cluster color will be applied by animated runtime lighting later, not baked into this base art. Exactly one complete isolated centered emblem in square composition, about 85% canvas coverage with unclipped tips and clean transparent background. No text, no labels, no board or tile backdrop, no extra loose gems, no pedestal, no watermark. Specific design: MAGIC SEAL. Keep the original compact rounded radial emblem silhouette but replace solid petals with six interlocking rounded gold ribbon LOOPS, an intricate yet readable magical knot. Gold bands weave cleanly over and under each other around the inset central reference blue diamond, forming a six-lobed openwork seal. Ivory enamel inset sections occupy alternate gaps inside the loops; use deep navy negative-space gaps to show the woven structure. This must look like a gold knot/loop medallion, not another opaque six-petal flower. Thick jewelry-like bands, visibly legible crossings, no tiny filigree clutter. No crown or wings.",
+      "references": [
+        "/Users/simeonhristov/Downloads/Glossy Blue Gem Badge 14.png",
+        "/Users/simeonhristov/Documents/GitHub/web-sdk/apps/the-gates/static/assets/the-gates/wild/rainbow-wild.png"
+      ],
+      "generatedSource": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-4c93a08c-bff6-47cd-9008-d26d5dee38a0.png",
+      "sha256": "198c9f8335e70cd6111c74caedbc1c3af9c65469503fb1906239036c1054c483",
+      "width": 1254,
+      "height": 1254,
+      "pngColorType": 6
+    },
+    {
+      "file": "key-02-carved-gem-bow.png",
+      "prompt": "Use case: stylized-concept. Asset type: ONE redesigned SCATTER KEY symbol concept for THE GATES cartoon Egyptian slot. Reference image 1: required small inset cyan-blue diamond in its thick gold bezel and navy ink outline. Reference image 2: existing Key for its rich glossy cartoon treatment and recognizable key silhouette, but replace its circular wheel handle. User rejected an earlier very plain key with an enormous solid diamond handle and crooked joins: do NOT repeat that design. NEW DESIGN: a richly crafted golden key with a sculpted diamond-shaped OPENWORK handle at upper-right. Put a modest-sized reference blue gem at the handle's center, surrounded by a broad engraved gold structure with TWO clearly visible symmetric cutout openings either side of the gem, not one oversized solid gemstone filling the entire handle. Add simple Egyptian lotus/chevron engravings and small cobalt-blue enamel insets to the gold handle. A layered carved collar joins handle to a straight substantial gold shaft extending down-left. Add a recessed ornamental channel along the shaft, two clean gold ridges at its neck, and an ornate stepped key bit with two well-defined teeth and engraved inner edges. GEOMETRY IS CRITICAL: front-on flat view; one perfectly STRAIGHT shaft centerline running diagonally lower-left to upper-right through the exact center of collar AND handle, all parts precisely aligned on this one axis; no bend, kink, twist, offset or perspective warping. Teeth project perpendicular to shaft. Handle approximately 38% of total key length, not a giant dominant plate. Richer sculptural detail than a plain cartoon skeleton key, but chunky readable silhouette and restrained large-scale engravings, not microscopic clutter. Match THE GATES art: thick clean navy/near-black exterior contours, rounded vivid yellow-orange polished gold, large bold white glints, smooth simple 2D cel/gradient illustration. Not realistic, not 3D, not gritty. One complete key, isolated centered in square composition with modest padding, transparent background, no tile/card/frame, no glow cloud, no text or labels or watermark.",
+      "references": [
+        "/Users/simeonhristov/Downloads/Glossy Blue Gem Badge 14.png",
+        "/Users/simeonhristov/Documents/GitHub/web-sdk/apps/the-gates/static/assets/the-gates/art/symbols/key.png"
+      ],
+      "generatedSource": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-b45c9e02-b2d7-422e-bea8-0a7f5ffc7e67.png",
+      "sha256": "df94594db57b95835cc27ddc3416baf8acb5a99b735c740c97697c6a04099330",
+      "width": 1254,
+      "height": 1254,
+      "pngColorType": 6
+    }
+  ]
+}

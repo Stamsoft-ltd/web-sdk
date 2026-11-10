@@ -81,20 +81,23 @@ export async function runtimeAssets() {
 	for (const file of [...Object.values(AUDIO_FILES), ...Object.values(MUSIC_FILES)])
 		add(`assets/the-gates/audio/${file}.mp3`);
 	add('assets/the-gates/audio/provenance.json');
-	add('assets/the-gates/stat-art-20261016/provenance.json');
+	add('assets/the-gates/stat-panels/provenance.json');
+	add('assets/the-gates/symbol-parts/provenance.json');
 	// Distribution notices are required package dependencies, never unused artwork.
 	add('assets/the-gates/licenses/THIRD-PARTY.txt');
+	add('assets/the-gates/logo/provenance.json');
+	add('assets/the-gates/max-win/provenance.json');
 	for (const file of [
-		'press_play_wordmark.webp',
+		'press-play-wordmark.webp',
 		'provenance.json',
-		...Array.from({ length: 10 }, (_, i) => `p0${i}.webp`),
+		...Array.from({ length: 10 }, (_, i) => `frame-0${i}.webp`),
 	])
 		add(`assets/the-gates/loading/${file}`);
 	for (const tier of ['base', 'normal', 'super', 'hidden'])
-		add(`assets/the-gates/portrait-20261015/${tier}-background.png`);
+		add(`assets/the-gates/portrait/${tier}-background.png`);
 
-	add('assets/the-gates/portrait-20261015/provenance.json');
-	add('assets/the-gates/win-coin-20261015/provenance.json');
+	add('assets/the-gates/portrait/provenance.json');
+	add('assets/the-gates/win-coins/provenance.json');
 	const graph = await sourceGraph();
 	for (const file of graph)
 		for (const ref of staticAssetReferences(await readFile(file, 'utf8'))) add(ref);
@@ -103,7 +106,7 @@ export async function runtimeAssets() {
 		add(`${root}${atlas}.atlas`);
 	};
 	for (const tier of ['normal', 'super', 'hidden']) {
-		rig('assets/the-gates/portrait-20261015/', `gate-${tier}`);
+		rig('assets/the-gates/portrait/', `gate-${tier}`);
 	}
 	for (const [name, bitmap] of Object.entries(SYMBOL_ART)) {
 		add(`${ART_ROOT}symbols/${bitmap}.png`);
@@ -121,10 +124,12 @@ export async function runtimeAssets() {
 		add(`${ART_ROOT}wins/${key}-title.png`);
 		add(`${ART_ROOT}wins/${key}-banner.png`);
 	}
-	rig('./assets/the-gates/base-gate-20261016/', 'gate-base');
-	add('assets/the-gates/base-gate-20261016/provenance.json');
-	rig('./assets/the-gates/rainbow-wild-20261016/', 'WILD', 'symbols');
-	add('assets/the-gates/rainbow-wild-20261016/provenance.json');
+	rig('./assets/the-gates/gates-base/', 'gate-base');
+	add(`${MOTION_ROOT}symbols-base.atlas`);
+	add('assets/the-gates/gates-base/portal-provenance.json');
+	add('assets/the-gates/gates-base/provenance.json');
+	rig('./assets/the-gates/wild/', 'WILD', 'symbols');
+	add('assets/the-gates/wild/provenance.json');
 	// Every atlas page is a real loader dependency, including portal/spark layers.
 	for (const file of [...keep].filter((file) => file.endsWith('.atlas'))) {
 		for (const page of atlasPageReferences(

@@ -19,7 +19,7 @@ import {
 	GATE_CYCLE,
 } from '../tools/gate-cycle-rig.mjs';
 import { createHash } from 'node:crypto';
-const motion = new URL('../static/assets/the-gates/figma-20261012/motion/', import.meta.url);
+const motion = new URL('../static/assets/the-gates/art/animations/', import.meta.url);
 const manifest = JSON.parse(readFileSync(new URL('manifest.json', motion), 'utf8'));
 function pose(entry, t = 0, animation = 'cycle') {
 	const atlas = new TextureAtlas(readFileSync(new URL(entry.atlas + '.atlas', motion), 'utf8'));
@@ -211,7 +211,7 @@ test('cartoon sparks start at center seam only on impact, shoot both sides, clea
 		for (const animation of ['setup', 'idle'])
 			assert.ok(slots(pose(entry, 0.4, animation).skeleton).every((s) => s.color.a === 0));
 	}
-	const source = new URL('../../sparks-20261012/', motion),
+	const source = new URL('../../sparks/', motion),
 		provenance = JSON.parse(readFileSync(new URL('provenance.json', source), 'utf8'));
 	assert.deepEqual(provenance.alphaRange, [0, 255]);
 	assert.equal(

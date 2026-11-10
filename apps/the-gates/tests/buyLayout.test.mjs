@@ -1,7 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { BUY_CARD, BUY_MENU_PADDING, fitBuyMenu } from '../src/game/buyLayout.ts';
+import {
+	BUY_CARD,
+	BUY_MENU_PADDING,
+	BUY_MENU_FOOTER,
+	BUY_MENU_ACTIVE_FOOTER,
+	fitBuyMenu,
+} from '../src/game/buyLayout.ts';
 
 const sizes = [
 	[1920, 1080],
@@ -23,7 +29,10 @@ test('original card dimensions never change at any breakpoint', () => {
 			assert.equal(fit.rows, Math.ceil(5 / fit.columns));
 			assert.equal(
 				fit.height,
-				fit.rows * BUY_CARD.height + 44 + 140 + BUY_MENU_PADDING * 2 + (active ? 60 : 0),
+				fit.rows * BUY_CARD.height +
+					BUY_MENU_FOOTER +
+					BUY_MENU_PADDING * 2 +
+					(active ? BUY_MENU_ACTIVE_FOOTER : 0),
 			);
 		}
 });
@@ -37,7 +46,10 @@ test('all five cards fit without a scroll track; choose largest uniform scale', 
 			for (let columns = 1; columns <= 5; columns++) {
 				const width = columns * 355 + BUY_MENU_PADDING * 2,
 					height =
-						Math.ceil(5 / columns) * 295 + 44 + 140 + BUY_MENU_PADDING * 2 + (active ? 60 : 0);
+						Math.ceil(5 / columns) * 295 +
+						BUY_MENU_FOOTER +
+						BUY_MENU_PADDING * 2 +
+						(active ? BUY_MENU_ACTIVE_FOOTER : 0);
 				assert.ok(fit.scale + 1e-9 >= Math.min(1, (w - 24) / width, (h - 24) / height));
 			}
 		}
@@ -61,6 +73,23 @@ test('restored menu renders original captions and cards, not pages or new rectan
 		css,
 		/\.cartoon-modal\.fit-wide \.mode-card\s*\{\s*flex: 0 0 355px;\s*width: 355px;\s*height: 295px;/,
 	);
+});
+test('short-screen menu reclaims unused header/footer space for larger cards', () => {
+	for (const [w, h] of [
+		[782, 418],
+		[844, 390],
+		[667, 375],
+	]) {
+		for (const active of [false, true]) {
+			const oldScale = Math.min(
+				1,
+				(w - 24) / (3 * 355 + 48),
+				(h - 24) / (2 * 295 + 44 + 140 + 48 + (active ? 60 : 0)),
+			);
+			const fit = fitBuyMenu(w, h, active);
+			assert.ok(fit.scale > oldScale * 1.1, `${w}x${h} cards grow by at least 10%`);
+		}
+	}
 });
 test('HUD bonus caption remains plain visible text, not a collapsing fitted child', () => {
 	const source = readFileSync(new URL('../src/components/Game.svelte', import.meta.url), 'utf8');

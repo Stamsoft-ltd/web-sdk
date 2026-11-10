@@ -66,9 +66,9 @@ test('PNG optimizer is idempotent and refuses changed pixels/metadata or invalid
 });
 test('transparent Wild, native backdrops and legal frames retain source encoding semantics', () => {
 	for (const file of [
-		'rainbow-wild-20261016/rainbow-wild.png',
-		'figma-20261012/backgrounds/normal-original.png',
-		'figma-20261013/d883a.png',
+		'wild/flower.png',
+		'art/backgrounds/normal-original.png',
+		'ui/modal-frame.png',
 	]) {
 		const original = readFileSync(new URL('../static/assets/the-gates/' + file, import.meta.url));
 		const result = optimizePng(original);
@@ -80,10 +80,10 @@ test('source cleanup has no unused public assets left; runtime and authoring dep
 	const { report } = await inspectSourceAssets();
 	assert.deepEqual(report.removed, []);
 	const { keep } = await runtimeAssets();
-	assert.ok(keep.has('assets/the-gates/rainbow-wild-20261016/WILD.json'));
-	assert.ok(keep.has('assets/the-gates/rainbow-wild-20261016/symbols.atlas'));
-	assert.ok(keep.has('assets/the-gates/rainbow-wild-20261016/rainbow-wild.png'));
-	assert.equal(keep.has('assets/the-gates/figma-20261012/backgrounds/base-terrace.png'), false);
+	assert.ok(keep.has('assets/the-gates/wild/WILD.json'));
+	assert.ok(keep.has('assets/the-gates/wild/symbols.atlas'));
+	assert.ok(keep.has('assets/the-gates/wild/flower.png'));
+	assert.equal(keep.has('assets/the-gates/art/backgrounds/base-terrace.png'), false);
 	for (const file of keep)
 		assert.ok(existsSync(new URL('../static/' + file, import.meta.url)), file);
 	for (const file of [

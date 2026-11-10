@@ -237,7 +237,7 @@
 						>
 							<div class="control-art">
 								{#if item.art === 'spin'}<img
-										src={`${UI_ART_ROOT}f05f2.svg`}
+										src={`${UI_ART_ROOT}spin.svg`}
 										alt=""
 									/>{:else if item.art === 'menu'}<img
 										src={`${ART_ROOT}hud/menu.png`}
@@ -247,7 +247,7 @@
 											>{t('BONUS BUTTON')}</span
 										></span
 									>{:else if item.art === 'speed'}<img
-										src={`${UI_ART_ROOT}c8de1.svg`}
+										src={`${UI_ART_ROOT}speed-fast.svg`}
 										alt=""
 									/>{:else if item.art === 'auto'}<img
 										src={`${ART_ROOT}hud/autoplay-en.png`}
@@ -255,7 +255,7 @@
 									/>{:else if item.art === 'info'}<img
 										src={`${ART_ROOT}hud/info.png`}
 										alt=""
-									/>{:else if item.art === 'bet-plus'}<img src={`${UI_ART_ROOT}19460.svg`} alt="" />
+									/>{:else if item.art === 'bet-plus'}<img src={`${UI_ART_ROOT}bet-plus.svg`} alt="" />
 								{:else if item.art === 'bet-minus'}<img
 										src={`${ART_ROOT}hud/bet-decrease.png`}
 										alt=""
@@ -410,7 +410,7 @@
 		position: absolute;
 		inset: 0;
 		z-index: -1;
-		background: url('./assets/the-gates/figma-20261013/d883a.png') center / 115.87% 122.81%
+		background: url('./assets/the-gates/ui/modal-frame.png') center / 115.87% 122.81%
 			no-repeat;
 	}
 

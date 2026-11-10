@@ -184,3 +184,31 @@ test('entry Key award uses authoritative settlement and highlights without multi
 	s = apply(s, 'setTotalWin', { amount: 700 });
 	assert.equal(s.total, 700);
 });
+
+test('v11 Super/Hidden use authoritative carried progress, including blank spins', () => {
+ for (const tier of ['super', 'hidden']) {
+  let s = apply(initialState(), 'gateProgress', { progress: 2 });
+  s = apply(s, 'spinStart', { spinId: 2, freeSpin: 2, tier, gateProgressStart: 2, stickyPositions: [], multiplier: 1 });
+  assert.equal(s.progress, 2);
+  s = apply(s, 'spinStart', { spinId: 3, freeSpin: 3, tier, gateProgressStart: 2, stickyPositions: [], multiplier: 1 });
+  assert.equal(s.progress, 2);
+  s = apply(s, 'gateProgress', { progress: 3 });
+  s = apply(s, 'spinStart', { spinId: 4, freeSpin: 4, tier, gateProgressStart: 0, stickyPositions: [], multiplier: 1 });
+  assert.equal(s.progress, 0);
+ }
+});
+test('legacy books and Normal Bonus still reset the meter per spin', () => {
+ for (const tier of ['normal', 'super', 'hidden', null]) {
+  let s = apply(initialState(), 'gateProgress', { progress: 2 });
+  s = apply(s, 'spinStart', { spinId: 2, freeSpin: 2, tier, stickyPositions: [], multiplier: 1 });
+  assert.equal(s.progress, 0);
+ }
+});
+test('v11 unfinished-round restore retains the authoritative bonus meter', () => {
+ const events = [
+  { index: 0, type: 'spinStart', tier: 'hidden', freeSpin: 1, gateProgressStart: 0, stickyPositions: [] },
+  { index: 1, type: 'gateProgress', progress: 2 },
+  { index: 2, type: 'spinStart', tier: 'hidden', freeSpin: 2, gateProgressStart: 2, stickyPositions: [] },
+ ];
+ assert.equal(restorePrefix(events, events.length).progress, 2);
+});

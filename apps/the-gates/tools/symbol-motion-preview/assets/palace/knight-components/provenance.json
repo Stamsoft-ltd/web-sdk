@@ -1,0 +1,83 @@
+{
+  "date": "2026-10-22",
+  "tool": "built-in image_gen",
+  "scope": "Separate-component concept preview only. Live game unchanged.",
+  "reference": "/Users/simeonhristov/Documents/GitHub/web-sdk/apps/the-gates/reports/concepts/magical-palace-20261022/round-05-short-visor/spirit-knight-short-visor-study-v1.png",
+  "assets": [
+    {
+      "file": "helmet.png",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-1955715b-d220-4ff1-b4ac-afc43bfc9c54.png",
+      "prompt": "Use case: precise-object-edit. Create ONE isolated helmet BODY component for this exact selected cartoon gold knight from the reference, preferably the RIGHT closed pose as canonical shape. Preserve its rounded gold shell, cyan diamond forehead jewel, slight three-quarter view, bright glossy yellow-gold/orange highlights, dark navy outlines, fixed lower guard with three round vents, rolled base. REMOVE ONLY the movable short horizontal eye visor. Fully paint the area behind it as a dark-edged inner cavity containing the friendly glowing golden spirit and two bright cream oval eyes as seen in the LEFT open reference. The golden spirit fills the cavity, no human face. Keep the flat gold temple hinge pads attached to the stationary helmet. No movable visor or band across the eye area anywhere. Do not change helmet style, do not simplify it into the previous alternative taller helmet. Single helmet body only, large and centered with full uncropped silhouette, square transparent PNG, no background or ground shadow, no text, no other objects. This will be under a separate gold eye visor PNG."
+    },
+    {
+      "file": "visor.png",
+      "source": "/Users/simeonhristov/.codex/generated_images/01a0c4ac-4318-7f93-ad46-4bd9f7701b8f/exec-40d2de8a-c8b3-4650-a52c-7fb4f9469dd0.png",
+      "prompt": "Use case: background-extraction / precise-object-edit. Return ONLY ONE SEPARATE MOVABLE GOLD EYE VISOR component matching the short horizontal eye visor from the RIGHT helmet in image 1. Image 2 is the matching helmet body it will overlay. Do NOT draw a helmet body. Only the curved gold eye band plate, isolated on actual transparent background. Match this selected design: a broad curved shiny gold band, very slightly three-quarter perspective, left end narrower and right end taller, orange lower/right shadow, broad white glints, dark navy outline. A single long narrow rounded horizontal eye slit extends across most of the band. EXTREMELY IMPORTANT: the entire INTERIOR of that eye slit is a literal ALPHA=0 see-through PNG hole, exactly like the background outside the visor, NOT black painted fill, NOT eyes, NOT spirit, NOT glass, NOT golden glow. Retain the dark outline only around the rim of this empty hole. We must see the separate helmet's golden spirit eyes through it when layered. No bolts or hinge pads drawn on this movable plate; these are on the helmet. No side arms, no forehead jewel, no head dome, no lower breathing guard, no accessories. The plate follows the original short visor silhouette, not a full-face visor. Isolate one visor on a wide transparent canvas with generous clear padding and crisp edges. No text or labels or shadows outside the plate. Main objective is clean gold plate with genuine transparent viewing slot."
+    }
+  ],
+  "composition": {
+    "canvas": [
+      1254,
+      1254
+    ],
+    "helmet": {
+      "x": 0,
+      "y": 0,
+      "width": 1254
+    },
+    "visor": {
+      "x": 0,
+      "y": 486.0504,
+      "width": 1169.982
+    },
+    "order": [
+      "helmet",
+      "visor"
+    ]
+  },
+  "currentPreview": {
+    "date": "2026-10-22",
+    "page": "../../../short-knight.html",
+    "authoringSpace": [
+      300,
+      300
+    ],
+    "visorPlacement": {
+      "x": -5,
+      "y": 109,
+      "width": 279.9
+    },
+    "previousVisorPlacement": {
+      "x": 0,
+      "y": 116.28,
+      "width": 279.9
+    },
+    "spiritOffsetY": -7,
+    "spiritMethod": "Cached feathered interior sample from unchanged helmet PNG. Shell and lower rim remain stationary. Separate spirit export still preferable for production.",
+    "motion": "0\u201344 degree rigid 3D curved-plate rotation, projected to Canvas; both actual extreme artwork endpoints fixed. No global Y-scale or independently generated pose states.",
+    "timingMs": {
+      "open": [
+        240,
+        960
+      ],
+      "hold": [
+        960,
+        1660
+      ],
+      "close": [
+        1660,
+        2360
+      ],
+      "restEnd": 2600
+    },
+    "scope": "Preview only. No production game files changed.",
+    "arcCenterFromLeft": 0.4,
+    "perspectiveCorrection": "Arc apex shifted left by 10% of hinge span (~22.6px in 300px space), aligned with lower guard front. Same fixed hinges, original rest placement, spirit offset and timing.",
+    "meshRefinement": {
+      "arcSegments": 64,
+      "method": "Dense uniform span samples plus exact apex/pins; 0.12px triangle-clip overlap prevents hairline cracks. Shared vertices projected once per moving frame.",
+      "regression": "Arc midpoint deviation <0.05 authoring pixels (<0.1 backing pixel at 2x) across tested angles/rows. Same motion, pins, peak, timing and PNGs.",
+      "performance": "Raised/rest textures cached; single preview RAF. More draw triangles, fewer duplicate vertex projections. No FPS benchmark claimed."
+    }
+  }
+}

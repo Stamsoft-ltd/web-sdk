@@ -28,7 +28,7 @@ test('GPU drops move full tiles, keep event-driven timing, and remove actors/lis
 	assert.match(board, /tile.root.position.set/);
 	assert.match(
 		board,
-		/state.reduced \|\| \(state.paused && !celebration\?\.keys.includes\(key\)\)/,
+		/state.reduced \|\| \(state.paused && !celebrating\)/,
 	);
 	assert.match(board, /portalRemovalTracks\(seed\)/);
 	assert.match(board, /pose.actor.sample\(progress === null \? 'setup' : 'land'/);

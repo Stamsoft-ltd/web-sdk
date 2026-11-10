@@ -1,0 +1,60 @@
+{
+  "helmet.png": {
+    "size": [
+      1254,
+      1254
+    ],
+    "mode": "RGBA",
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "d4ffdcd730777e288f7aa30714f4daf392f48bca512908d5a9fb8860b21688f1"
+  },
+  "visor.png": {
+    "size": [
+      2172,
+      724
+    ],
+    "mode": "RGBA",
+    "alphaExtrema": [
+      0,
+      255
+    ],
+    "sha256": "c975e54e47e7f5ac7dc9674e23c2236f80bfdf32efb8dd311ffeb2f7189fbf1e"
+  },
+  "eyeSlit": {
+    "result": "PASS",
+    "transparentSamples": [
+      {
+        "xy": [
+          650,
+          360
+        ],
+        "alpha": 0
+      },
+      {
+        "xy": [
+          1086,
+          370
+        ],
+        "alpha": 0
+      },
+      {
+        "xy": [
+          1450,
+          400
+        ],
+        "alpha": 0
+      }
+    ],
+    "solidGoldSample": {
+      "xy": [
+        1086,
+        220
+      ],
+      "alpha": 252
+    },
+    "method": "Read-only PNG alpha inspection. Source images copied byte-identically from built-in image_gen."
+  }
+}

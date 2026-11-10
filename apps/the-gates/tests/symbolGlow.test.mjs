@@ -18,3 +18,13 @@ test('only five premium symbols have an idle halo', () => {
 	}
 	assert.equal(ambientSymbolGlow(), 0x0b192c);
 });
+
+test('premium idle glow is strengthened in Pixi, including clean Eye and Envelope art', () => {
+	for (const name of PREMIUM_GLOW_SYMBOLS) {
+		const accent=SYMBOL_GLOW[name], base=0x0b192c;
+		const old=[16,8,0].map(shift=>Math.round(((base>>shift)&255)*.72+((accent>>shift)&255)*.28));
+		const next=ambientSymbolGlow(name);
+		const distance=(rgb)=>[16,8,0].reduce((n,shift,i)=>n+Math.abs(rgb[i]-((base>>shift)&255)),0);
+		assert.ok(distance([16,8,0].map(shift=>(next>>shift)&255))>distance(old),name);
+	}
+});

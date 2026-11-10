@@ -15,7 +15,7 @@ import {
 	SYMBOL_GONE_SECONDS,
 	PORTAL_SECONDS,
 } from '../src/game/portalAnimation.ts';
-const root = new URL('../static/assets/the-gates/figma-20261012/motion/', import.meta.url);
+const root = new URL('../static/assets/the-gates/art/animations/', import.meta.url);
 
 test('suction spins over one full turn with consistent direction and no shortest-arc jumps', () => {
 	for (let seed = 0; seed < 100; seed++) {

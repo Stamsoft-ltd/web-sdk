@@ -31,7 +31,7 @@ test('suction holds full scale first, then shrinks smoothly through fifteen auth
 test('all speeds show the full slower removal; skipping still compresses only the remaining tail', () => {
 	assert.deepEqual(
 		[MOTION.normal.remove, MOTION.fast.remove, MOTION.turbo.remove],
-		[820, 500, 180],
+		[1320, 760, 400],
 	);
 	for (const speed of ['normal', 'fast', 'turbo']) {
 		const original = cellMotion({ speed, kind: 'remove', cut: null, tail: 130 }, 2, 2, 0);
@@ -43,14 +43,14 @@ test('all speeds show the full slower removal; skipping still compresses only th
 test('buy pill clears both native frame and cost capsule; multiplier has its own blue highlight', () => {
 	const css = readFileSync(new URL('../src/figma.css', import.meta.url), 'utf8');
 	const source = readFileSync(new URL('../src/components/Game.svelte', import.meta.url), 'utf8');
-	assert.equal(BUY_MENU_PADDING, 24);
-	assert.match(css, /\.cartoon-modal\.fit-wide \.mode-art\s*\{\s*margin-top: 61px;/);
+	assert.equal(BUY_MENU_PADDING, 12);
+	assert.match(css, /\.cartoon-modal\.fit-wide \.mode-art\s*\{\s*margin-top: 78px;/);
 	assert.match(css, /\.cartoon-modal\.fit-wide \.mode-action\s*\{\s*bottom: 48px;/);
 	assert.match(css, /\.cost-tier\s*\{[\s\S]*?background: linear-gradient\(#129ae9, #0275d1\)/);
 	assert.match(source, /class="cost-tier"/);
 	const actionBottom = BUY_CARD.height - 48;
 	const actionTop = actionBottom - (20 + 10 * 2 + 3 * 2);
-	const costBottom = 38 + 61 + 57 + 4 + 32;
+	const costBottom = 38 + 78 + 40 + 4 + 32;
 	assert.ok(264 - actionBottom >= 16, 'clear native inner bottom frame');
 	assert.ok(actionTop - costBottom >= 8, 'clear capsule above');
 });

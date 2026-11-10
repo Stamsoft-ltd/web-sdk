@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Gates · separate knight components</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101e33;color:white;font:16px system-ui}main{max-width:1280px;margin:auto;padding:24px}h1{font-size:26px;margin:4px 0 12px}h2{font-size:18px;margin:0 0 12px}p{color:#bed1e7;line-height:1.5}.tag{font-size:12px;color:#ffda36;letter-spacing:1px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{border:1px solid #385778;border-radius:16px;background:#0b2342;padding:16px;min-width:0}.stack{position:relative;width:100%;aspect-ratio:1}.stack img{position:absolute;display:block;pointer-events:none}.helmet{width:100%;inset:0}.visor{width:93.3%;left:0;top:38.76%}.solo{display:block;width:100%;height:auto}.check{background-color:#37485e;background-image:linear-gradient(45deg,#54677e 25%,transparent 25%),linear-gradient(-45deg,#54677e 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#54677e 75%),linear-gradient(-45deg,transparent 75%,#54677e 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0;border-radius:8px}.slot-proof{margin-top:16px}.controls{display:flex;gap:18px;flex-wrap:wrap;margin:16px 0}label{cursor:pointer}a{color:#7ddeff}.note{font-size:13px}.hide-visor .visor{visibility:hidden}@media(max-width:650px){.grid{grid-template-columns:1fr}main{padding:16px}}
+</style>
+<main>
+<div class="tag">THE GATES · COMPONENT STUDY · NOT LIVE GAME</div>
+<h1>Helmet + transparent eye visor</h1>
+<p>Two separate PNGs. The spirit lives underneath; the visor’s eye slit is a real transparent hole.</p>
+<div class="controls"><label><input id="visor-visible" type="checkbox" checked> Show visor</label></div>
+<div class="grid">
+ <section class="card"><h2>Layered together</h2><div class="stack" id="assembled"><img class="helmet" src="./assets/palace/knight-components/helmet.png" alt="Golden spirit helmet base"><img class="visor" src="./assets/palace/knight-components/visor.png" alt="Separate golden visor overlay with transparent eye slit"></div></section>
+ <section class="card"><h2>Helmet only</h2><img class="solo check" src="./assets/palace/knight-components/helmet.png" alt="Helmet component without any movable visor"></section>
+</div>
+<section class="card slot-proof"><h2>Visor only — checkerboard visible through eye slit</h2><img class="solo check" src="./assets/palace/knight-components/visor.png" alt="Visor component on checkerboard showing actual transparent viewing gap"></section>
+<p class="note">Same two images, no pose swapping or painted-on eyes. Static layering study; live game unchanged.</p>
+<p><a href="./assets/palace/knight-components/helmet.png" download>Helmet PNG</a> · <a href="./assets/palace/knight-components/visor.png" download>Visor PNG</a> · <a href="./short-knight-selected-reference.html">Selected concept reference</a></p>
+</main>
+<script type="module">
+document.querySelector('#visor-visible').addEventListener('change',event=>{
+ document.querySelector('#assembled').classList.toggle('hide-visor',!event.target.checked);
+});
+</script>
+</html>

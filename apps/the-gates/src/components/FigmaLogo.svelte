@@ -4,12 +4,12 @@
 
 <!-- Native image layers + crop geometry from 11291:151713. Source pixels untouched. -->
 <div class="figma-logo" role="img" aria-label="The Gates" data-design-node="11291:151713">
-	<img class="badge" src={`${UI_ART_ROOT}d7111.png`} alt="" />
+	<img class="badge" src={`${UI_ART_ROOT}logo-badge.png`} alt="" />
 	{#each ['bottom', 'left', 'right', 'top'] as side}
-		<img class={`gem ${side}`} src={`${UI_ART_ROOT}61f00.png`} alt="" />
+		<img class={`gem ${side}`} src={`${UI_ART_ROOT}logo-blue-gem.png`} alt="" />
 	{/each}
-	<div class="the"><img src={`${UI_ART_ROOT}a8485.png`} alt="" /></div>
-	<div class="gates"><img src={`${UI_ART_ROOT}0f6e5.png`} alt="" /></div>
+	<div class="the"><img src={`${UI_ART_ROOT}logo-the.png`} alt="" /></div>
+	<div class="gates"><img src={`${UI_ART_ROOT}logo-gates.png`} alt="" /></div>
 </div>
 
 <style>

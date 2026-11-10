@@ -52,11 +52,11 @@ test('Bonus and Spin render one native rim, without extra CSS ring stacks', () =
 		assert.match(rule(`${mobile} .hud-button-rail .${name}`), /box-shadow: none/);
 	assert.match(
 		game,
-		/layoutWidth === 1200\s*\? `\$\{UI_ART_ROOT\}f05f2.svg`\s*: '\.\/assets\/the-gates\/hud\/spin-mobile.svg'/,
+		/layoutWidth === 1200\s*\? `\$\{UI_ART_ROOT\}spin.svg`\s*: '\.\/assets\/the-gates\/hud\/spin-mobile.svg'/,
 	);
 	const art = (name) =>
 		readFileSync(
-			new URL(`../static/assets/the-gates/figma-20261013/${name}`, import.meta.url),
+			new URL(`../static/assets/the-gates/ui/${name}`, import.meta.url),
 			'utf8',
 		);
 	const mobileArt = readFileSync(
@@ -67,7 +67,7 @@ test('Bonus and Spin render one native rim, without extra CSS ring stacks', () =
 	assert.match(mobileArt, /r="54.5" fill="url\(#mobile-rim\)"/);
 	assert.match(mobileArt, /r="46.5"[^>]*stroke-width="2.5"/);
 	assert.doesNotMatch(mobileArt, /r="51.5"/);
-	assert.match(art('f05f2.svg'), /r="51.5"/);
+	assert.match(art('spin.svg'), /r="51.5"/);
 	const bonus = rule(`${mobile} .hud-button-rail .feature-button`);
 	assert.match(bonus, /bonus-mobile\.svg/);
 	assert.match(bonus, /background-size: 100% 100%/);
@@ -147,7 +147,7 @@ test('autoplay stop retains circular artwork and locks bet/autoplay controls', (
 	);
 	assert.match(
 		game,
-		/autoSpinsCounter \|\| busy\}<img\s+src="\.\/assets\/the-gates\/hud\/stop.svg"/,
+		/autoSpinsCounter \|\| busy\}<img\s+draggable="false"\s+src="\.\/assets\/the-gates\/hud\/stop.svg"/,
 	);
 	assert.match(stop, /<circle/);
 	assert.match(stop, /<rect[^>]*fill="white"[^>]*stroke="#021D42"/);
@@ -171,7 +171,7 @@ test('speed button shows outline, one and two bolts for normal, fast and turbo',
 	const game = readFileSync(new URL('../src/components/Game.svelte', import.meta.url), 'utf8');
 	assert.match(
 		game,
-		/speed === 'turbo'[\s\S]*hud\/speed-2.svg[\s\S]*speed === 'fast'[\s\S]*c8de1.svg[\s\S]*speed-normal.svg/,
+		/speed === 'turbo'[\s\S]*hud\/speed-2.svg[\s\S]*speed === 'fast'[\s\S]*speed-fast.svg[\s\S]*speed-normal.svg/,
 	);
 	for (const count of [2]) {
 		const art = readFileSync(

@@ -1,0 +1,37 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Gates · layered eye animation</title>
+<style>body{margin:0;background:#101e33;color:white;font:15px system-ui}main{max-width:1250px;margin:auto;padding:22px}h1{font-size:26px;margin:0}p{color:#b7cce6;line-height:1.5}.controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 0}button,select{background:#0744a4;border:2px solid #ffd430;color:white;border-radius:10px;padding:10px;font:inherit;cursor:pointer}button:disabled{opacity:.5}label{display:flex;gap:7px;align-items:center}.views{display:grid;grid-template-columns:1fr 1.5fr;gap:18px}article{background:#092348;border:1px solid #38577e;border-radius:16px;overflow:hidden}h2{font-size:18px;padding:0 18px}canvas{width:100%;display:block}small{display:block;color:#b3c5df;padding:14px 18px}.layers{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px}.layers figure{margin:0;background:#0c2c55;border-radius:12px;padding:14px;text-align:center}.layers img{width:120px;height:110px;object-fit:contain}.layers figcaption{padding:8px}input[type=range]{width:min(100%,550px)}@media(max-width:750px){.views{grid-template-columns:1fr}}#status{color:#ffdc47}</style>
+<main><h1>Eye paying-cluster animation</h1><p>New supplied split artwork. One continuous blue eyeball: smooth shading, soft reflection and iris perspective move together. No moving inner almond edge. Gold frame and gems stay locked. Approval preview only—no runtime asset replacement.</p>
+<div class="controls"><button id="replay">Play paying animation</button><button id="pause">Pause</button><label>Speed<select id="speed"><option value="1">Normal · 1.8s</option><option value="1.8">Fast · 1.0s</option><option value="3">Turbo · 0.6s</option></select></label><label><input id="loop" type="checkbox" checked>Loop</label><label><input id="reduced" type="checkbox">Reduced motion</label><label><input id="rolling" type="checkbox" checked>Rolling blue shading</label><label><input id="guides" type="checkbox">Layer guides</label></div>
+<input id="scrub" aria-label="Animation timeline" type="range" min="0" max="1" step=".001" value="0"><span id="status">Loading components…</span>
+<div class="views"><article><h2>Close-up · rotating eye</h2><canvas id="hero" width="640" height="500"></canvas><small>Center → left hold → right hold → upward glance → center. Blue highlights and shadows follow the gaze; no frame shaking.</small></article><article><h2>Paying cluster · actual cell scale</h2><canvas id="board" width="900" height="750"></canvas><small>Eight matching eyes. Paying glow stays behind each cell; frame/gems remain stationary. Other symbols stay idle.</small></article></div>
+<div class="layers"><figure><canvas id="background-layer" width="299" height="224" style="width:147px;height:110px"></canvas><figcaption>1 · Rolling blue backplate</figcaption></figure><figure><img src="assets/eye-iris-new.png" alt="Cyan iris"><figcaption>2 · Moving iris</figcaption></figure><figure><canvas id="border-layer" width="299" height="224" style="width:147px;height:110px"></canvas><figcaption>3 · Gold rim + fixed gems</figcaption></figure></div>
+</main><script type="module">
+import{eyeLookFrame,EYE_LOOK_MS,irisProjection}from'./motion.mjs';
+import{createSuppliedEyeLayers,eyeSilhouette,createRollingBackground}from'./layers.mjs';
+const byId=id=>document.getElementById(id),load=async src=>{let i=new Image();i.src=src;await i.decode();return i};
+const [frame,background,irisImage,red,blue,green,purple]=await Promise.all(['assets/eye-border.png','assets/eye-background.png','assets/eye-iris-new.png','../../static/assets/the-gates/art/symbols/red-gem.png','../../static/assets/the-gates/art/symbols/blue-gem.png','../../static/assets/the-gates/art/symbols/green-gem.png','../../static/assets/the-gates/art/symbols/purple-gem.png'].map(load));
+const layers=createSuppliedEyeLayers(frame,background,irisImage),iris=layers.iris,silhouette=eyeSilhouette(),rollBackground=createRollingBackground(layers.background,{supplied:true});
+let currentLook={x:0,y:0},currentBackground=layers.background;
+byId('background-layer').getContext('2d').drawImage(layers.background,0,0);
+byId('border-layer').getContext('2d').drawImage(layers.border,0,0);
+const hero=byId('hero').getContext('2d'),board=byId('board').getContext('2d');let started=performance.now(),age=0,paused=false;
+function restart(){started=performance.now();age=0;paused=false;byId('pause').textContent='Pause'}
+byId('replay').onclick=restart;byId('speed').onchange=restart;byId('pause').onclick=()=>{paused=!paused;if(!paused)started=performance.now()-age;byId('pause').textContent=paused?'Resume':'Pause'};
+byId('scrub').oninput=()=>{paused=true;age=Number(byId('scrub').value)*EYE_LOOK_MS/Number(byId('speed').value);byId('pause').textContent='Resume'};
+function eye(c,x,y,size,t){c.save();c.translate(x,y);c.scale(size/299,size/299);c.translate(-149.5,-112);
+ c.drawImage(currentBackground,0,0);
+ const f=currentLook,projection=irisProjection(f);
+ // Iris is behind the rim, not on top of the entire original image.
+ // Outer silhouette prevents leaks beyond transparent corners during wide glances.
+ c.save();c.clip(silhouette);c.translate(149.5+f.x,112+f.y);c.scale(projection.width/131,projection.height/131);c.drawImage(iris,-149.5,-112);c.restore();
+ c.drawImage(layers.border,0,0);c.translate(149.5,112);
+
+ if(byId('guides').checked){c.strokeStyle='#fffa';c.lineWidth=1;c.strokeRect(-149.5,-112,299,224);c.beginPath();c.moveTo(-150,0);c.lineTo(150,0);c.stroke();c.strokeStyle='#fc3';c.strokeRect(f.x-65.5,f.y-65.5,131,131)}c.restore()}
+const paying=new Set([1,4,7,9,12,17,21,28]);
+function draw(t){currentLook=eyeLookFrame(t,{speed:Number(byId('speed').value),reduced:byId('reduced').checked});
+ currentBackground=byId('rolling').checked?rollBackground(currentLook):layers.background;
+ const layerView=byId('background-layer').getContext('2d');layerView.clearRect(0,0,299,224);layerView.drawImage(currentBackground,0,0);
+ hero.clearRect(0,0,640,500);let g=hero.createRadialGradient(320,250,0,320,250,220);g.addColorStop(0,'#0097ea45');g.addColorStop(1,'#0097ea00');hero.fillStyle=g;hero.fillRect(0,0,640,500);eye(hero,320,250,510,t);
+ board.clearRect(0,0,900,750);for(let row=0;row<5;row++)for(let col=0;col<6;col++){let i=row*6+col,x=col*145+15,y=row*145+12;board.fillStyle='#102b49';board.strokeStyle=paying.has(i)?'#ffdc40':'#315477';board.lineWidth=paying.has(i)?3:2;board.beginPath();board.roundRect(x,y,137,137,12);board.fill();board.stroke();if(paying.has(i)){let g=board.createRadialGradient(x+68,y+68,5,x+68,y+68,70);g.addColorStop(0,'#00caff77');g.addColorStop(1,'#00caff00');board.fillStyle=g;board.fillRect(x,y,137,137);eye(board,x+68,y+68,130,t)}else{let img=[red,blue,green,purple][i%4];board.drawImage(img,x+16,y+16,105,105)}}}
+function tick(now){if(!paused)age=now-started;const duration=EYE_LOOK_MS/Number(byId('speed').value);draw(age);byId('scrub').value=Math.min(1,age/duration);byId('status').textContent=` ${Math.min(duration,Math.round(age))|0} / ${Math.round(duration)} ms`;if(!paused&&byId('loop').checked&&age>duration+400)restart();requestAnimationFrame(tick)}requestAnimationFrame(tick);
+</script></html>

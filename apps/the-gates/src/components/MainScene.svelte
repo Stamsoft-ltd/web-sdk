@@ -6,8 +6,16 @@
 		host,
 		logoHost,
 		studioHost,
-	}: { src: string; host?: HTMLElement; logoHost?: HTMLElement; studioHost?: HTMLElement } =
-		$props();
+		idle = false,
+		reduced = false,
+	}: {
+		src: string;
+		host?: HTMLElement;
+		logoHost?: HTMLElement;
+		studioHost?: HTMLElement;
+		idle?: boolean;
+		reduced?: boolean;
+	} = $props();
 	const gpu = useGpu();
 	let adapter = $state.raw<ReturnType<typeof createMainScene>>();
 	$effect(() => {
@@ -42,5 +50,6 @@
 	});
 	$effect(() => {
 		adapter?.update(src);
+		adapter?.setIdle(idle, reduced);
 	});
 </script>

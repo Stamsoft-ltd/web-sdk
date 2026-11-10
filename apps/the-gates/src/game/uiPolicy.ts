@@ -19,3 +19,13 @@ export function nextSpeed(
 export const speedFactor = (speed: Speed) => (speed === 'turbo' ? 3 : speed === 'fast' ? 2 : 1);
 /** Full win screens start at 20x; 10x..<20x is text only over the board. */
 export const showsWinPanel = (amount: number) => amount >= 2000;
+
+/** Spin speed-up never changes the player's selected setting. Jurisdiction caps still apply. */
+export function effectiveSpeed(
+	flags: { isTurbo: boolean; isSuperTurbo: boolean },
+	limits: { disabledTurbo?: boolean; disabledSuperTurbo?: boolean },
+	spinTurbo: boolean,
+): Speed {
+	if (!spinTurbo) return selectedSpeed(flags, limits);
+	return selectedSpeed({ isTurbo: true, isSuperTurbo: true }, limits);
+}

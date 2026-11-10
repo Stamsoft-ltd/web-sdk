@@ -75,7 +75,7 @@ test('card symbols have a fitting viewport and headings retain an opaque yellow 
 	assert.match(source('figma.css'), /-webkit-text-fill-color: #ffdc12;/);
 	const game = source('components/Game.svelte');
 	assert.match(game, /decorative\s+fit/);
-	const motion = new URL('../static/assets/the-gates/figma-20261012/motion/', import.meta.url);
+	const motion = new URL('../static/assets/the-gates/art/animations/', import.meta.url);
 	for (const name of ['RED_GEM', 'KEY', 'SACRED_EYE', 'GUARDIAN_MASK', 'CRYSTAL_ORB']) {
 		const rig = JSON.parse(readFileSync(new URL(`${name}.json`, motion), 'utf8'));
 		const body = rig.skins[0].attachments.body.body;
@@ -102,7 +102,7 @@ test('paytable matches the supplied authoritative symbol order and all 30 payout
 	assert.deepEqual(PAYS, Object.values(expected));
 	assert.equal(SYMBOL_ART.SUN_MEDALLION, 'coin');
 	assert.equal(SYMBOL_ART.SACRED_EYE, 'eye');
-	assert.equal(SYMBOL_ART.RUNE_CHALICE, 'letter');
+	assert.equal(SYMBOL_ART.RUNE_CHALICE, 'envelope');
 	assert.equal(SYMBOL_ART.CRYSTAL_ORB, 'orb');
 	const rules = source('components/Rules.svelte');
 	assert.match(rules, /data-pay-symbol=\{SYMBOLS\[i\]\}/);

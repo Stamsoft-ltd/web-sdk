@@ -8,7 +8,7 @@ export const rulesCopy: Record<string, string> = {
 		'Every 3rd winning Cascade opens a Gate. Gates reveal 2×–1,000× multipliers. Multiple Gate multipliers are added together. In the Base Game, the multiplier resets after the spin.',
 	'INFO BONUS FEATURES': 'BONUS FEATURES',
 	'INFO BONUS FEATURES COPY':
-		'3 Keys — 2× + Normal Bonus. 4 Keys — 10× + Super Bonus. 5+ Keys — 50× + Hidden Bonus. Normal Bonus: Gate multipliers stay active and keep growing across Free Spins. Super Bonus: each Gate gives 1 reward — Multiplier, Multiplier Boost, Sticky Wild, Extra Spin or Retrigger. Hidden Bonus: each Gate gives 2 Super Bonus rewards. Each Bonus starts with 15 Free Spins. Gate extra-spin rewards add 1, 2, 3 or 5 spins; a Retrigger adds 15 spins in Super and Hidden. Keys do not appear during Free Spins.',
+		'3 Keys — 2× + Normal Bonus. 4 Keys — 10× + Super Bonus. 5+ Keys — 50× + Hidden Bonus. Normal Bonus: Gate multipliers stay active and keep growing across Free Spins. Super Bonus: each Gate gives 1 reward — Multiplier, Multiplier Boost, Sticky Wild, Extra Spin or Retrigger. Hidden Bonus: each Gate gives 2 Super Bonus rewards. Super/Hidden retain tumble progress between Free Spins, including blanks; every third winning Cascade opens a Gate and the meter resets when its doors close. Each Bonus starts with 15 Free Spins. Gate extra-spin rewards add 1, 2, 3 or 5 spins; a Retrigger adds 15 spins in Super and Hidden. Keys do not appear during Free Spins.',
 	'INFO FEATURE OPTIONS': 'FEATURE OPTIONS',
 	'INFO FEATURE OPTIONS COPY':
 		'Extra Bonus Chance — 2× bet, 3× bonus chance. Feature Spin — 20×, guarantees at least 1 Gate. Normal Bonus — 100×. Super Bonus — 300×. Mystery Bonus — 400×. Mystery result: 65% Normal / 30% Super / 5% Hidden.',
@@ -26,13 +26,13 @@ export const rulesCopy: Record<string, string> = {
 		'Every 3rd consecutive winning Cascade opens a Gate. Gates open after Cascades 3, 6, 9, 12 and so on within the same spin. In the Base Game, each Gate reveals an additive 2×–1,000× Multiplier. Multiple Gate Multipliers are added together and apply to the complete win from the current spin.',
 	'INFO NORMAL BONUS': 'NORMAL BONUS',
 	'INFO NORMAL BONUS COPY':
-		'Every 3rd winning Cascade opens a Gate containing an additive 2×–1,000× Multiplier. Unlike the Base Game, the Multiplier remains active between Free Spins and continues growing whenever another Gate opens.',
+		'Every 3rd winning Cascade opens a Gate containing an additive 2×–1,000× Multiplier. Tumble progress resets each Free Spin. Unlike the Base Game, the Multiplier remains active between Free Spins and continues growing whenever another Gate opens.',
 	'INFO SUPER BONUS': 'SUPER BONUS',
 	'INFO SUPER BONUS COPY':
-		'Every opened Gate awards one Super Reward: Additive Multiplier, Multiplier of Multiplier, Sticky Wild, Extra Spin or Retrigger. Multiplier Boost multiplies the current multiplier by 2, 3 or 5. Sticky Wilds substitute for any regular paying symbol and stay in place across Cascades and Free Spins, up to 3 at once. An Extra Spin award adds 1, 2, 3 or 5 spins; Retrigger adds 15. The active Multiplier and Sticky Wilds remain throughout the Bonus.',
+		'Tumble progress carries between Free Spins, including blanks. Every third winning Cascade opens a Gate; tumble progress resets when the doors close. Each Gate awards one Super Reward: Additive Multiplier, Multiplier of Multiplier, Sticky Wild, Extra Spin or Retrigger. Multiplier Boost multiplies the current multiplier by 2, 3 or 5. Sticky Wilds substitute for any regular paying symbol and stay in place across Cascades and Free Spins, up to 3 at once. An Extra Spin award adds 1, 2, 3 or 5 spins; Retrigger adds 15. The active Multiplier and Sticky Wilds remain throughout the Bonus.',
 	'INFO HIDDEN BONUS': 'HIDDEN BONUS',
 	'INFO HIDDEN BONUS COPY':
-		'The Hidden Bonus uses the same rewards as the Super Bonus. However, every Gate awards 2 rewards instead of 1. Both rewards activate immediately in the order they are revealed. Multiplier Boost is ×2, ×3 or ×5; Wilds substitute for regular symbols (up to 3 sticky positions), Extra Spins add 1, 2, 3 or 5 and Retrigger adds 15. No Keys appear during Free Spins.',
+		'The Hidden Bonus retains tumble progress between Free Spins, including blanks. Every third winning Cascade opens a Gate; progress resets when the doors close. It uses the same rewards as the Super Bonus. However, every Gate awards 2 rewards instead of 1. Both rewards activate immediately in the order they are revealed. Multiplier Boost is ×2, ×3 or ×5; Wilds substitute for regular symbols (up to 3 sticky positions), Extra Spins add 1, 2, 3 or 5 and Retrigger adds 15. No Keys appear during Free Spins.',
 	'INFO ANYWHERE PAYOUTS': 'ANYWHERE PAYOUTS',
 	'INFO ANYWHERE PAYOUTS COPY':
 		'Land 8 or more matching symbols anywhere on the grid to win. Payouts increase at: 8–9 Symbols, 10–11 Symbols and 12+ Symbols. Winning symbols do not need to touch.',

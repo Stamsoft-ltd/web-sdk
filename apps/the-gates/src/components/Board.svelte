@@ -3,8 +3,9 @@
 	import { runtime } from '../game/playback.svelte';
 	import { presentedReward } from '../game/rewardDelivery';
 	import { posKey } from '../game/contract';
-	import { artTier } from '../game/art';
-	import { stateBet } from 'state-shared';
+	import { portalTier } from '../game/art';
+	import { stateBet, stateConfig } from 'state-shared';
+	import { effectiveSpeed } from '../game/uiPolicy';
 	import { formatExactWinAmount as formatWinAmount } from 'utils-shared/currency';
 	import { useGpu } from '../game/gpuContext';
 	import type { createGpuBoard } from '../game/gpuBoard';
@@ -53,6 +54,11 @@
 		if (!target) return;
 		const shown = presentedReward(runtime.game, runtime.rewardDelivery);
 		target.update({
+			motionSpeed: effectiveSpeed(
+				stateBet,
+				stateConfig.jurisdiction,
+				runtime.spinTurbo || runtime.heldTurbo,
+			),
 			scatterCelebration: runtime.scatterCelebration
 				? { ...runtime.scatterCelebration, keys: [...runtime.scatterCelebration.keys] }
 				: null,
@@ -71,7 +77,7 @@
 			startedAt: runtime.waveStartedAt,
 			roundId: runtime.roundId,
 			revealId: runtime.game.revealId,
-			palette: artTier(
+			palette: portalTier(
 				runtime.sceneTierOverride ? runtime.sceneTierOverride.tier : runtime.game.tier,
 			),
 			reduced: runtime.reduced,
