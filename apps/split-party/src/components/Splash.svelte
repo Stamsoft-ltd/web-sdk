@@ -8,6 +8,7 @@
 	import SkyClouds from './SkyClouds.svelte';
 	import DOMES from '../lib/splash-domes.json';
 	import { i18n } from '../lib/i18n';
+	import { cssUrl } from '../lib/cssUrl';
 
 	// Splash, built from Figma 9078:18632 (1200×670 frame). Landscape keeps the frame's
 	// absolute layout scaled to fit; portrait stacks the logo over one card at a time.
@@ -221,7 +222,7 @@
 			<div class="card card-1" class:active={slide === 0}>
 				<img class="card-frame" src="./splash/v2/panel.webp" alt="" />
 				{#if english}
-					<h2 class="card-title card-art art-split" aria-label={tr('SPLASH SPLIT TITLE')} style="--src:url(./splash/v2/title-split.webp)"><img src="./splash/v2/title-split.webp" alt="" /></h2>
+					<h2 class="card-title card-art art-split" aria-label={tr('SPLASH SPLIT TITLE')} style={`--src:${cssUrl('./splash/v2/title-split.webp')}`}><img src="./splash/v2/title-split.webp" alt="" /></h2>
 				{:else}
 					<h2 class="card-title green long" data-shine={tr('SPLASH SPLIT TITLE')} style={titleFit(tr('SPLASH SPLIT TITLE'), 23, 12)}><JellyText text={tr('SPLASH SPLIT TITLE')} look="green" /></h2>
 				{/if}
@@ -233,8 +234,8 @@
 			<div class="card card-2" class:active={slide === 1}>
 				<img class="card-frame" src="./splash/v2/panel.webp" alt="" />
 				{#if english}
-					<h2 class="card-title card-art art-max" aria-label={tr('SPLASH MAX TITLE')} style="--src:url(./splash/v2/title-max.webp)"><img src="./splash/v2/title-max.webp" alt="" /></h2>
-					<strong class="max-big card-art art-num" aria-label="20,000×" style="--src:url(./splash/v2/max-20000.webp)"><img src="./splash/v2/max-20000.webp" alt="" /></strong>
+					<h2 class="card-title card-art art-max" aria-label={tr('SPLASH MAX TITLE')} style={`--src:${cssUrl('./splash/v2/title-max.webp')}`}><img src="./splash/v2/title-max.webp" alt="" /></h2>
+					<strong class="max-big card-art art-num" aria-label="20,000×" style={`--src:${cssUrl('./splash/v2/max-20000.webp')}`}><img src="./splash/v2/max-20000.webp" alt="" /></strong>
 				{:else}
 					<h2 class="card-title yellow maxwin" data-shine={tr('SPLASH MAX TITLE')} style={titleFit(tr('SPLASH MAX TITLE'), 36, 8)}><JellyText text={tr('SPLASH MAX TITLE')} look="gold" /></h2>
 					<strong class="max-big" data-shine={maxWinText}>{maxWinText}</strong>
@@ -245,7 +246,7 @@
 			<div class="card card-3" class:active={slide === 2}>
 				<img class="card-frame" src="./splash/v2/panel.webp" alt="" />
 				{#if english}
-					<h2 class="card-title card-art art-bonus" aria-label={tr('SPLASH BONUS TITLE')} style="--src:url(./splash/v2/title-bonus.webp)"><img src="./splash/v2/title-bonus.webp" alt="" /></h2>
+					<h2 class="card-title card-art art-bonus" aria-label={tr('SPLASH BONUS TITLE')} style={`--src:${cssUrl('./splash/v2/title-bonus.webp')}`}><img src="./splash/v2/title-bonus.webp" alt="" /></h2>
 				{:else}
 					<h2 class="card-title pink long" data-shine={tr('SPLASH BONUS TITLE')} style={titleFit(tr('SPLASH BONUS TITLE'), 23, 12)}><JellyText text={tr('SPLASH BONUS TITLE')} look="pink" /></h2>
 				{/if}

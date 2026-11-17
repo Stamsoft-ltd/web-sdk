@@ -115,8 +115,11 @@ export function loadSound() {
 	// A browser only lets audio start from a gesture; any press in the game unlocks it. Safari
 	// takes only the release (pointerup / touchend / click) as one, not pointerdown, and iOS
 	// wants a sound started inside that gesture, hence the silent one-sample buffer.
-	const unlock = () => {
-		if (!loading) return;
+	// Only on a real gesture: a scripted click, or a key that isn't one (Escape), would open or
+	// resume the context without permission and log the warning above.
+	const unlock = (e: Event) => {
+		if (!loading || !e.isTrusted) return;
+		if ((navigator as Navigator & { userActivation?: { isActive: boolean } }).userActivation?.isActive === false) return;
 		if (!ctx) openContext();
 		if (!ctx || ctx.state === 'running') return;
 		void ctx.resume();

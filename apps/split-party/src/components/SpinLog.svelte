@@ -6,12 +6,19 @@
 	import { fade, fly } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
 	import Blob from './Blob.svelte';
+	import FACES from '../lib/face-layers.json';
+	import { LOW_MEMORY } from '../lib/features';
 	// Figma 11259:3576 (desktop 11195:8973 right of the board, phone 11075:34378 top left): the
 	// current spin's wins, newest on top. Each row is a cluster: how many blobs it held, the
 	// blob and what it paid. The box only shows once the spin has a win; then six slots show, so it never changes size, and a
 	// long cascade chain scrolls.
 	let { rows, label }: { rows: SpinLogRow[]; label: string } = $props();
 	const SLOTS = 6;
+	// A late bonus spin can log 80+ wins, each a live animated SVG blob; on phones that piled up
+	// thousands of nodes. There only the rows near the top stay live; the ones scrolled out of
+	// view show the blob's painted face.
+	const LIVE_ROWS = LOW_MEMORY ? SLOTS + 2 : Infinity;
+	const faceArt = (symbol: string) => (FACES as Record<string, { base?: string }>)[symbol]?.base ?? `./symbols/hd/${symbol}.webp`;
 	// The rows and the empty slots under them in one keyed list, so the empty slots slide down
 	// with the rows when a win pushes in (the last one drops off the bottom).
 	let slots = $derived([
@@ -82,12 +89,14 @@
 	out:fade={{ duration: ROW_MS * 0.6 }}
 >
 	<ol class="spin-log-rows" use:edgeFade>
-		{#each slots as s (s.key)}
+		{#each slots as s, i (s.key)}
 			<li class="spin-log-row" class:vacant={!s.r} aria-hidden={s.r ? undefined : 'true'} in:dropIn animate:slideDown>
 				{#if s.r}
 					<span class="spin-log-box">{s.r.units}</span>
 					<!-- A live blob, so the premiums wear their gear here too. -->
-					<span class="spin-log-blob" role="img" aria-label={s.r.symbol}><Blob symbol={s.r.symbol} uid={`log-${s.r.id}`} /></span>
+					<span class="spin-log-blob" role="img" aria-label={s.r.symbol}
+						>{#if i < LIVE_ROWS}<Blob symbol={s.r.symbol} uid={`log-${s.r.id}`} />{:else}<img src={faceArt(s.r.symbol)} alt="" />{/if}</span
+					>
 					<strong style={`font-size:${amountSize(s.r.amount)}px`}>{s.r.amount}</strong>
 				{/if}
 			</li>
@@ -178,6 +187,11 @@
 		flex: 0 0 var(--row-img, 33px);
 		width: var(--row-img, 33px);
 		height: var(--row-img, 33px);
+	}
+	.spin-log-blob img {
+		display: block;
+		width: 100%;
+		height: 100%;
 	}
 	strong {
 		flex: 1;

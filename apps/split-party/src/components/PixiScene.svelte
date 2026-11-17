@@ -43,6 +43,11 @@
 			view = null;
 		};
 	});
+	/** Gets a world's art in before App switches to it (low-memory devices load it late);
+	 *  `covered`: App's swap cover is opaque, so the world on screen may go first. */
+	export function prepare(t: Tier, covered = false): Promise<void> {
+		return view?.prepare(t, covered).catch((e) => console.warn('[PixiScene] prepare', e)) ?? Promise.resolve();
+	}
 	// App switches the world under a cover (BonusSwap), so the switch itself is instant.
 	$effect(() => {
 		const t = tier;

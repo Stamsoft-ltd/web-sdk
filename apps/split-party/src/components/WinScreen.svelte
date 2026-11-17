@@ -61,6 +61,7 @@
 </script>
 
 <script lang="ts">
+	import { cssUrl } from '../lib/cssUrl';
 	import { onMount, untrack } from 'svelte';
 
 	// Big-win screen: the scene dims, the pink jelly cloud zooms out and pops into place, the
@@ -171,11 +172,11 @@
 		<div class="fx" bind:this={fxHost}></div>
 		<div class="title" bind:this={titleEl} style={box(t.title)}>
 			<img src={title} alt="" />
-			<span class="shine" style={`--src:url(${title})`}></span>
+			<span class="shine" style={`--src:${cssUrl(title)}`}></span>
 		</div>
 		<div class="win-word" bind:this={winEl} style={box(t.win)}>
 			<img src={win} alt="" />
-			<span class="shine" style={`--src:url(${win})`}></span>
+			<span class="shine" style={`--src:${cssUrl(win)}`}></span>
 		</div>
 		<!-- Over the live bubbles, so they pass behind the number. -->
 		<div class="amount" bind:this={amountEl} style={box(AMOUNT)}>

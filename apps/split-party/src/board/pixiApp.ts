@@ -1,5 +1,6 @@
 // What the three WebGL views (board, scene, logo) share about starting, running and dying.
 import { Application, Graphics, Texture, UPDATE_PRIORITY, type ApplicationOptions } from 'pixi.js';
+import { LOW_MEMORY } from '../lib/features';
 
 // Every texture a view uses is uploaded up front and owned by it, so pixi's texture GC (which
 // unloads anything unbound for 3600 frames) would only ever undo that upload: a bonus world's
@@ -39,7 +40,9 @@ export class PixiApp {
 
 	/** Resolves false when the view was destroyed meanwhile (the caller just returns). */
 	async init(options: Partial<ApplicationOptions>) {
-		await this.app.init({ ...APP_OPTIONS, ...options });
+		// No MSAA on phones: at 2-3x density it barely shows, and it multiplies every antialiased
+		// target by 4 (the board's rim masks alone took a 32MB 2048x1024 x4 target per frame).
+		await this.app.init({ ...APP_OPTIONS, ...options, ...(LOW_MEMORY ? { antialias: false } : {}) });
 		this.ready = true;
 		if (this.destroyed) {
 			this.app.destroy(true, DISPOSE);

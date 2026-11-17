@@ -7,6 +7,7 @@ import { Assets, BlurFilter, ColorMatrixFilter, Container, DisplacementFilter, F
 import { bezier, keyframes, progress, EASE_IN_OUT, type Frame, type Ease } from '../board/anim';
 import { BlobView, BLOB_BOX, blushTexture, loadBlobTextures } from '../board/BoardView';
 import { DISPOSE, PixiApp, textureLookup, watchReducedMotion } from '../board/pixiApp';
+import { LOW_MEMORY } from '../lib/features';
 
 export type Tier = 'normal' | 'super' | 'hidden' | null;
 const SKY = { w: 1200, h: 670 };
@@ -467,7 +468,13 @@ abstract class World {
 		const t = setTimeout(() => (this.timers.delete(t), fn()), ms);
 		this.timers.add(t);
 	}
+	/** Textures this world generated itself (gradients, maps): freed with it. */
+	protected owned: Texture[] = [];
 	constructor(protected ctx: Ctx) {}
+	protected own(t: Texture) {
+		this.owned.push(t);
+		return t;
+	}
 	tick(now: number) {
 		for (const p of this.parts) p.tick(now);
 	}
@@ -476,6 +483,7 @@ abstract class World {
 	destroy() {
 		this.timers.forEach(clearTimeout);
 		this.root.destroy(DISPOSE);
+		for (const t of this.owned) t.destroy(true);
 	}
 	protected sprite(src: string, x: number, y: number, w: number, h: number, flip = false, parent = this.root) {
 		const s = new Sprite(this.ctx.tex(src));
@@ -962,12 +970,12 @@ class BaseWorld extends World {
 		const clip = new Graphics().rect(-20, SEA_HORIZON, 1240, 484 - SEA_HORIZON).fill('#fff');
 		sea.addChild(clip, mirror);
 		mirror.mask = clip;
-		const fade = new Sprite(reflectFade());
+		const fade = new Sprite(this.own(reflectFade()));
 		fade.position.set(-20, SEA_HORIZON);
 		fade.width = 1240;
 		fade.height = 484 - SEA_HORIZON;
 		sea.addChild(fade);
-		const seaMap = (this.seaMap = new Sprite(waterMap()));
+		const seaMap = (this.seaMap = new Sprite(this.own(waterMap())));
 		seaMap.scale.set(2.4, 0.8);
 		sea.addChild(seaMap);
 		sea.filters = [new DisplacementFilter({ sprite: seaMap, scale: { x: 9, y: 3 } })];
@@ -1085,12 +1093,14 @@ class NormalWorld extends World {
 	constructor(ctx: Ctx) {
 		super(ctx);
 		const sky = new Sprite(
-			canvasTexture(4, 496, (g) => {
-				const lg = g.createLinearGradient(0, 0, 0, 496);
-				for (const [o, c] of N_SKY) lg.addColorStop(o, c);
-				g.fillStyle = lg;
-				g.fillRect(0, 0, 4, 496);
-			}),
+			this.own(
+				canvasTexture(4, 496, (g) => {
+					const lg = g.createLinearGradient(0, 0, 0, 496);
+					for (const [o, c] of N_SKY) lg.addColorStop(o, c);
+					g.fillStyle = lg;
+					g.fillRect(0, 0, 4, 496);
+				}),
+			),
 		);
 		// Past the frame on every side, for the cover crop; the top colour carries up.
 		sky.position.set(-80, 0);
@@ -1435,6 +1445,13 @@ const BONUS_SRCS = [
 	`${HA}/gem.webp`,
 	`${HA}/dome.webp`,
 ];
+// Each bonus world's art (Super borrows Normal's cloud). On LOW_MEMORY devices a tier's art is
+// loaded when its bonus starts (App's swap cover waits for prepare()) and freed after it.
+const TIER_SRCS: Record<NonNullable<Tier>, string[]> = {
+	normal: BONUS_SRCS.filter((s) => s.startsWith(NA)),
+	super: [...BONUS_SRCS.filter((s) => s.startsWith(SA)), `${NA}/cloud.webp`],
+	hidden: BONUS_SRCS.filter((s) => s.startsWith(HA)),
+};
 const FADE_MS = 700;
 
 /** The backdrop's resolution: up to 2x, 1x while pinch-zoomed (SceneView.onZoom). */
@@ -1457,8 +1474,22 @@ export class SceneView {
 	private destroyed = false;
 	private extra: Texture[] = [];
 	private dropTex = new Map<string, Texture>();
+	private loading = new Map<NonNullable<Tier>, Promise<void>>();
+	// LOW_MEMORY: the base world and its art are dropped while a bonus world covers it (only one
+	// world's art is ever resident), and loaded again before the return swap uncovers it.
+	private baseOut = false;
+	private baseLoading: Promise<void> | null = null;
+	// Set from the moment the base world is asked for again until a bonus world is: it is not
+	// dropped in between, though a bonus world still hides it.
+	private keepBase = true;
+	private ready: Promise<void>;
+	private markReady!: () => void;
 	private shown = { portrait: false, slice: { x: 0, y: 0, w: SKY.w, h: SKY.h } };
 	frozen: number | null = null;
+
+	constructor() {
+		this.ready = new Promise((r) => (this.markReady = r));
+	}
 
 	async init(host: HTMLElement) {
 		this.host = host;
@@ -1476,7 +1507,7 @@ export class SceneView {
 		});
 		if (!ok) return;
 		await Promise.all(
-			[...BASE_SRCS, ...BONUS_SRCS].map(async (src) => {
+			[...BASE_SRCS, ...(LOW_MEMORY ? [] : BONUS_SRCS)].map(async (src) => {
 				this.textures.set(src, await Assets.load<Texture>({ src, data: { autoGenerateMipmaps: true, scaleMode: 'linear' } }));
 			}),
 		);
@@ -1527,6 +1558,87 @@ export class SceneView {
 		// from the new screen size, not from the event.
 		this.app.renderer.on('resize', () => this.layout());
 		window.visualViewport?.addEventListener('resize', this.onZoom);
+		this.markReady();
+	}
+
+	/** Loads and uploads a world's art before it is shown (LOW_MEMORY only; otherwise it is all
+	 *  in from init): a bonus tier's, or with null the base world's after a bonus. `covered`
+	 *  (App's swap cover is opaque now) lets the world on screen go first, so the two worlds'
+	 *  art is never in memory together. */
+	prepare(tier: Tier, covered = false): Promise<void> {
+		if (!LOW_MEMORY || this.destroyed) return Promise.resolve();
+		if (!tier) {
+			// Under the cover the bonus world goes first, its art with it.
+			if (covered) this.dropBonus();
+			return this.prepareBase();
+		}
+		this.keepBase = false;
+		if (covered) void this.ready.then(() => this.dropBase());
+		let p = this.loading.get(tier);
+		if (!p) {
+			p = this.ready.then(async () => {
+				if (this.destroyed) return;
+				const srcs = TIER_SRCS[tier].filter((src) => !this.textures.has(src));
+				await this.load(srcs);
+			});
+			// A failed load may be retried by the next bonus.
+			p.catch(() => this.loading.delete(tier));
+			this.loading.set(tier, p);
+		}
+		return p;
+	}
+	// Loads and uploads textures one at a time: decoding a whole world's art at once doubled the
+	// peak (every compressed file, decoded bitmap and upload in flight together).
+	private async load(srcs: string[]) {
+		const gl = this.app.renderer.texture as unknown as { initSource?: (s: unknown) => void };
+		for (const src of srcs) {
+			const t = await Assets.load<Texture>({ src, data: { autoGenerateMipmaps: true, scaleMode: 'linear' } });
+			if (this.destroyed) return;
+			this.textures.set(src, t);
+			gl.initSource?.(t.source);
+		}
+	}
+	private prepareBase(): Promise<void> {
+		this.keepBase = true;
+		if (!this.baseOut) return Promise.resolve();
+		this.baseLoading ??= (async () => {
+			await this.load(BASE_SRCS.filter((src) => !this.textures.has(src)));
+			if (this.destroyed) return;
+			this.baseOut = false;
+			this.built = null;
+			this.layout();
+		})().finally(() => (this.baseLoading = null));
+		return this.baseLoading;
+	}
+	private dropBonus() {
+		for (const b of this.bonus) b.world.destroy();
+		this.bonus = [];
+		this.release(null);
+	}
+	// The base world goes, and its art with it, while a bonus world hides it (LOW_MEMORY).
+	private dropBase() {
+		if (!LOW_MEMORY || this.destroyed || this.keepBase || this.baseOut || this.baseLoading) return;
+		this.base?.destroy();
+		this.base = null;
+		this.baseOut = true;
+		for (const src of BASE_SRCS) if (this.textures.delete(src)) void Assets.unload(src);
+	}
+	private has(tier: NonNullable<Tier>) {
+		return TIER_SRCS[tier].every((src) => this.textures.has(src));
+	}
+	// Frees the bonus art no world on screen (or about to be) still uses.
+	private release(tier: Tier = this.tier) {
+		if (!LOW_MEMORY) return;
+		const keep = new Set([tier, ...this.bonus.map((b) => b.tier)].flatMap((t) => (t ? TIER_SRCS[t] : [])));
+		for (const t of Object.keys(TIER_SRCS) as NonNullable<Tier>[]) {
+			if (TIER_SRCS[t].some((src) => keep.has(src))) continue;
+			if (!TIER_SRCS[t].some((src) => this.textures.has(src))) continue;
+			this.loading.delete(t);
+			for (const src of TIER_SRCS[t]) {
+				if (keep.has(src) || !this.textures.delete(src)) continue;
+				void Assets.unload(src);
+			}
+		}
 	}
 	// Pinch-zoomed, the full-window backdrop drops to 1x: at 2x it was ~15MP on a 2560-wide
 	// window, and with the board's canvas that starved Chrome's tile memory, so the zoomed DOM
@@ -1559,7 +1671,7 @@ export class SceneView {
 		// rebuild when the slice gets narrower than that, much wider, or the orientation flips.
 		const b = this.built;
 		const stale = !b || b.portrait !== portrait || (portrait && (slice.w < b.w * 0.99 || slice.w > b.w * 1.25));
-		if (stale) {
+		if (stale && !this.baseOut) {
 			this.built = { portrait, w: slice.w };
 			this.base?.destroy();
 			this.base = new BaseWorld(this.ctx, portrait, slice);
@@ -1570,7 +1682,24 @@ export class SceneView {
 	setTier(tier: Tier, instant = false) {
 		const changed = tier !== this.tier;
 		this.tier = tier;
+		this.keepBase = !tier;
 		if (!this.ctx || (!changed && !instant)) return;
+		// Art not in yet (a resumed bonus, or no prepare() first): the world up now stays until it is.
+		if (!tier && this.baseOut) {
+			void this.prepareBase().then(() => {
+				if (this.tier === tier && !this.destroyed && !this.baseOut) this.show(tier, instant);
+			});
+			return;
+		}
+		if (tier && !this.has(tier)) {
+			void this.prepare(tier).then(() => {
+				if (this.tier === tier && !this.destroyed && this.has(tier)) this.show(tier, instant);
+			});
+			return;
+		}
+		this.show(tier, instant);
+	}
+	private show(tier: Tier, instant: boolean) {
 		const now = performance.now();
 		// Fade out whatever is up, fade the new world in over it (App's 700ms fade).
 		for (const b of this.bonus) if (b.to !== 0) Object.assign(b, { from: this.fadeOf(b, now), to: 0, start: now });
@@ -1597,12 +1726,14 @@ export class SceneView {
 		if (this.base) {
 			this.base.root.visible = !this.bonus.some((b) => b.to === 1 && this.fadeOf(b, now) >= 1);
 			if (this.base.root.visible) this.base.tick(now);
+			else if (LOW_MEMORY) queueMicrotask(() => this.dropBase());
 		}
 		this.bonus = this.bonus.filter((b) => {
 			const a = this.fadeOf(b, now);
 			b.world.root.alpha = a;
 			if (b.to === 0 && a <= 0) {
 				b.world.destroy();
+				queueMicrotask(() => this.release());
 				return false;
 			}
 			b.world.tick(now);
@@ -1612,6 +1743,7 @@ export class SceneView {
 
 	destroy() {
 		this.destroyed = true;
+		this.markReady();
 		window.visualViewport?.removeEventListener('resize', this.onZoom);
 		this.unwatchMotion?.();
 		this.base?.destroy();

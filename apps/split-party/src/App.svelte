@@ -11,7 +11,7 @@
 	import BonusSwap from './components/BonusSwap.svelte';
 	import PixiLogo from './components/PixiLogo.svelte';
 	import PixiMama from './components/PixiMama.svelte';
-	import { SHOW_MAMA } from './lib/features';
+	import { LOW_MEMORY, SHOW_MAMA } from './lib/features';
 	import { candyWarp } from './lib/candyWarp';
 	import BaseScene from './components/BaseScene.svelte';
 	import BonusNormal from './components/BonusNormal.svelte';
@@ -81,6 +81,8 @@
 	let sceneTier = $state<SceneTier>('');
 	let swap = $state<{ style: 'normal' | 'super' | 'hidden' | 'base'; id: number; cover: number; hold: number; reveal: number } | null>(null);
 	let swapId = 0;
+	let pixiSceneView = $state<{ prepare: (t: 'normal' | 'super' | 'hidden' | null, covered?: boolean) => Promise<void> } | null>(null);
+	const PREPARE_MAX_MS = 4000;
 	async function swapWorld(to: string) {
 		const next = to as SceneTier;
 		if (next === sceneTier) return;
@@ -90,10 +92,27 @@
 		}
 		const pace = Math.max(paceScale(), 0.5);
 		const s = { style: next || 'base', id: ++swapId, cover: 560 * pace, hold: 200 * pace, reveal: 720 * pace } as const;
-		swap = s;
+		const prepare = (covered: boolean) => Promise.race([pixiSceneView?.prepare(next || null, covered), sleep(PREPARE_MAX_MS)]);
 		sfx.play('split', 0, 0.7, 0.85);
-		await sleep(s.cover);
-		sceneTier = next;
+		if (LOW_MEMORY && pixiScene) {
+			// Phones: only one world's art is ever in memory (older iPhones crashed entering a
+			// bonus with both). The world on screen is dropped once the cover is opaque, then the
+			// next one loads; the cover holds (its reveal is timed off --hold) until it is in, but
+			// never past PREPARE_MAX_MS.
+			const t0 = performance.now();
+			swap = { ...s, hold: s.hold + PREPARE_MAX_MS };
+			await sleep(s.cover);
+			await prepare(true);
+			if (disposed) return;
+			sceneTier = next;
+			if (swap?.id === s.id) swap = { ...s, hold: performance.now() - t0 - s.cover + s.hold };
+		} else {
+			swap = s;
+			// The cover stays up until the world's art is in, but never longer than PREPARE_MAX_MS.
+			await Promise.all([sleep(s.cover), prepare(false)]);
+			if (disposed) return;
+			sceneTier = next;
+		}
 		await sleep(s.hold);
 		sfx.play('plop');
 		await sleep(s.reveal);
@@ -2118,7 +2137,7 @@
 />
 <svelte:head><title>Blob Split · Split Party v1</title></svelte:head>
 {#if pixiScene}
-	<PixiScene tier={sceneTier || null} onfail={() => (pixiScene = false)} />
+	<PixiScene bind:this={pixiSceneView} tier={sceneTier || null} onfail={() => (pixiScene = false)} />
 {:else}
 <BaseScene />
 <!-- Each bonus tier has its own backdrop, faded in over the base scene for the round. -->

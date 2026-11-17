@@ -4314,9 +4314,30 @@ main.bonus-round:not(.portrait, .phone, .popout) .turbo-button {
 .bonus-overlay.portrait .bm-scroll {
 	padding-top: calc(80px * var(--k));
 }
-/* A short landscape scrolls: the cards start under the close square, not behind it. */
+/* A short landscape scrolls: the scroller itself starts under the close square, so cards never
+   pass behind it (Popout-S review 2026-11-06: ACTIVATE scrolled under the ×). */
 .bonus-overlay.scrolls .bm-scroll {
-	padding-top: calc(72px * var(--k));
+	top: calc(81px * var(--k));
+	padding-top: 0;
+}
+/* Popout-S (400×225, k≈0.35): the zoomed square was a 17px target over the cards' corner; here it
+   is the 30px corner disc size the other popout screens use, the scroller starting under it. */
+@media (max-height: 340px) and (orientation: landscape) {
+	.bonus-overlay.scrolls .bm-close {
+		zoom: 1;
+		top: 6px;
+		right: 6px;
+		width: 30px;
+		height: 30px;
+		border-radius: 8px;
+	}
+	.bonus-overlay.scrolls .bm-close img {
+		width: 13px;
+		height: 13px;
+	}
+	.bonus-overlay.scrolls .bm-scroll {
+		top: 40px;
+	}
 }
 .bm-scroll.more-below {
 	-webkit-mask-image: linear-gradient(#000 calc(100% - 40px), transparent);
@@ -5616,3 +5637,83 @@ main.phone.bonus-round .bet-controls .metric strong {
 	background-size: 709px 440px;
 }
 
+
+/* Short landscape screens (Popout-S 400×225, phones on their side up to 500 tall; Stake review
+   2026-11-06): the stacked confirm card is ~400px tall, so the art filled the screen and the
+   title, price and buttons fell below it. Side by side here: the card art as a left column, the
+   copy and both buttons beside it, all in view and clear of the close disc in the corner. */
+@media (max-height: 500px) and (orientation: landscape) {
+	.dialog.confirm.confirm.confirm.confirm.confirm.confirm {
+		display: grid;
+		grid-template-columns: 118px 1fr;
+		align-content: center;
+		column-gap: 14px;
+		width: min(467px, calc(100% - 84px));
+		padding: 10px 14px 12px 0;
+		overflow: hidden;
+	}
+	.dialog.confirm.confirm.confirm.confirm.confirm.confirm .cf-art {
+		grid-column: 1;
+		grid-row: 1 / span 4;
+		align-self: stretch;
+		height: auto;
+		margin: -10px 0 -12px;
+		background-size: cover;
+		background-position: right top;
+	}
+	.dialog.confirm.confirm.confirm.confirm.confirm.confirm .cf-art .bm-shade {
+		background: linear-gradient(90deg, rgb(75 57 129 / 0) 55%, #4b3981 100%);
+	}
+	.dialog.confirm.confirm.confirm.confirm.confirm.confirm > :not(.cf-art) {
+		grid-column: 2;
+	}
+	.dialog.confirm.confirm.confirm.confirm.confirm.confirm h2 {
+		margin: 0 0 4px;
+		font-size: 17px;
+		line-height: 1.1;
+	}
+	.dialog.confirm.confirm.confirm.confirm.confirm.confirm .confirm-line {
+		font-size: 12px;
+		line-height: 1.25;
+	}
+	.dialog.confirm.confirm.confirm.confirm.confirm.confirm .cf-price {
+		margin: 4px 0 8px;
+		font-size: 22px;
+	}
+	.dialog.confirm.confirm.confirm.confirm.confirm.confirm .dialog-actions {
+		gap: 8px;
+	}
+	.dialog.confirm.confirm.confirm.confirm.confirm.confirm :is(.primary, .secondary) {
+		height: 32px;
+		padding: 0 6px;
+		font-size: 12px;
+		letter-spacing: 0.5px;
+	}
+}
+/* Popout-S: the notice / launch error / skip dialogs at their desktop 32px title and 16px copy ran
+   past the 213px of screen (the launch error's last line was cut). Compact type here; ×6 to
+   outrank the glass pass above. */
+@media (max-height: 340px) and (orientation: landscape) {
+	.dialog.dialog.dialog.dialog.dialog.dialog:not(.confirm, .auto, .replay-card) {
+		width: min(467px, calc(100% - 84px));
+		padding: 12px 16px 14px;
+	}
+	.dialog.dialog.dialog.dialog.dialog.dialog:not(.confirm, .auto, .replay-card) h2 {
+		margin: 0 0 6px;
+		font-size: 19px;
+		line-height: 1.15;
+	}
+	.dialog.dialog.dialog.dialog.dialog.dialog:not(.confirm, .auto, .replay-card) p {
+		margin: 0 0 10px;
+		font-size: 12px;
+		line-height: 1.35;
+		letter-spacing: 0.2px;
+	}
+	.dialog.dialog.dialog.dialog.dialog.dialog:not(.confirm, .auto, .replay-card) .eyebrow {
+		font-size: 10px;
+	}
+	.dialog.dialog.dialog.dialog.dialog.dialog:not(.confirm, .auto, .replay-card) :is(.primary, .secondary) {
+		height: 34px;
+		font-size: 13px;
+	}
+}
