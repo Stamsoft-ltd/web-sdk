@@ -38,16 +38,11 @@
 
 	// Gold icons layered over the button backgrounds
 	const iconMenu = ap('/assets/hud/icon-info.webp');
-	const iconMenuBars = ap('/assets/mcschmutzo/ui-icons/hud-menu.svg'); // hamburger — opens the portrait sound/info menu
 	const iconBurgerClose = ap('/assets/mcschmutzo/ui-icons/burger-close.svg'); // red disc + white X, shown while the menu is open
 	const iconSound = ap('/assets/mcschmutzo/ui-icons/hud-sound.svg');
 	const iconSoundMuted = ap('/assets/mcschmutzo/ui-icons/hud-sound-muted.svg');
 	const iconMinus = ap('/assets/mcschmutzo/ui-icons/hud-minus.svg');
 	const iconPlus = ap('/assets/mcschmutzo/ui-icons/hud-plus.svg');
-	const iconAuto = ap('/assets/mcschmutzo/ui-icons/hud-auto.svg');
-	// Full auto button art (disc + arrows + "AUTO"), used as-is (its AUTO is white-on-dark,
-	// so it must NOT go through the white-recolour filter).
-	const iconAutoFull = ap('/assets/mcschmutzo/ui-icons/auto.svg');
 	// System menu popup — the design's circular icon buttons (disc + white glyph).
 	const menuIcSound = ap('/assets/mcschmutzo/ui-icons/sound.svg');
 	const menuIcMusic = ap('/assets/mcschmutzo/ui-icons/music.svg');
@@ -56,12 +51,17 @@
 	const menuIcSoundOff = ap('/assets/mcschmutzo/ui-icons/sound-disabled.svg');
 	const menuIcMusicOff = ap('/assets/mcschmutzo/ui-icons/music-disabled.svg');
 	const menuIcInfo = ap('/assets/mcschmutzo/ui-icons/info.svg');
-	const iconSpin = ap('/assets/mcschmutzo/ui-icons/turn-button-arrow.webp'); // hi-res white spin arrow
 	const iconStop = ap('/assets/hud/icon-stop.webp');
-	const iconTurbo1 = ap('/assets/hud/icon-lightning-1.webp');
-	const iconTurbo2 = ap('/assets/hud/icon-lightning-2.webp');
-	const iconTurbo3 = ap('/assets/hud/icon-lightning-3.webp');
-	const iconCoins = ap('/assets/mcschmutzo/buybonus/money.webp');
+	// The Press Play bar's glyphs, shared with Blob Split (its public/base/bar/*.svg) so the studio's
+	// games wear one bottom bar: outline bolt = normal, filled = turbo, two bolts = super turbo.
+	const barMenu = ap('/assets/mcschmutzo/bar/menu.svg');
+	const barSpin = ap('/assets/mcschmutzo/bar/spin.svg');
+	const barAuto = ap('/assets/mcschmutzo/bar/auto.svg');
+	const barArrow = ap('/assets/mcschmutzo/bar/arrow.svg');
+	const barBonusMark = ap('/assets/mcschmutzo/bar/bonus-mark.svg');
+	const barTurboOff = ap('/assets/mcschmutzo/bar/turbo-off.svg');
+	const barTurbo = ap('/assets/mcschmutzo/bar/turbo.svg');
+	const barTurboSuper = ap('/assets/mcschmutzo/bar/turbo-super.svg');
 
 	// Portrait game-screen header: the McSchmutzo wordmark with the Press Play studio mark above it,
 	// pinned to the top over the diner background (mirrors the splash / loading header).
@@ -89,10 +89,7 @@
 	import { PORTRAIT_SHORT_ASPECT } from '../game/stateLayout';
 	import { continueBottom } from '../lib/continuePos';
 	import { i18nDerived } from '../i18n/i18nDerived';
-	import { fitLabel } from '../lib/fitLabel';
 	import { mcschmutzoStakeDerived } from '../state/mcschmutzoStake.svelte';
-	import SauceCorner from './SauceCorner.svelte';
-	import { buySauce, turnSauce } from '../lib/splashSauce';
 	import {
 		isReplayMode,
 		prepareReplayStart,
@@ -170,7 +167,6 @@
 	const isAnyModeActive = $derived(isFeatureActive || isChanceActive);
 	// The portrait/landscape BONUS button always just opens the Buy Bonus modal — the deactivate
 	// toggle is desktop-only (it was broken on touch for the activatable modes).
-	const buyLabelText = $derived(i18nDerived.translate('BONUS'));
 	// Buying a bonus is not allowed while a multi-spin bonus round is in progress.
 	// Feature mode keeps its selected-symbol badge after the round, but should not lock the HUD.
 	const isInBonus = $derived(context.stateGame.bonusMode !== null);
@@ -184,7 +180,7 @@
 	);
 	// Bolder icon = faster: Normal shows the outline bolt, Turbo the solid bolt, Super turbo the double.
 	const turboIcon = $derived(
-		stateBet.isSuperTurbo ? iconTurbo3 : stateBet.isTurbo ? iconTurbo1 : iconTurbo2,
+		stateBet.isSuperTurbo ? barTurboSuper : stateBet.isTurbo ? barTurbo : barTurboOff,
 	);
 	const isMuted = $derived(stateSound.volumeValueMaster === 0);
 	// Social-casino jurisdictions can't surface "bet" wording — swap the +/- screen-reader
@@ -899,26 +895,13 @@
 	});
 </script>
 
-{#snippet buyDripsEl()}
-	<span class="buy-drips" aria-hidden="true">
-		<span class="buy-drips__canvas">
-			<SauceCorner spec={buySauce.ketchup} artW={716} artH={440} free outline={6} band={[-5, -3]} />
-			<SauceCorner spec={buySauce.mustard} artW={716} artH={440} free outline={6} band={[-5, -3]} />
-		</span>
-	</span>
-{/snippet}
-
-{#snippet turnDripsEl()}
-	<!-- Live mustard drips on the turn disc: a box matching the background art's contain-fit, with
-	     extra room below so a falling drop can leave the rim. -->
-	<span class="turn-drips" aria-hidden="true">
-		<span class="turn-drips__art">
-			<span class="turn-drips__canvas">
-				<SauceCorner spec={turnSauce.ketchup} artW={701} artH={700} free outline={7} band={[-5, -3]} />
-				<SauceCorner spec={turnSauce.mustard} artW={701} artH={700} free outline={7} band={[-5, -3]} />
-			</span>
-		</span>
-	</span>
+{#snippet bonusFace(showTag: boolean)}
+	<!-- The pink Press Play square (Blob Split's BONUS): the word stays for screen readers and, on the
+	     desktop bar where a press turns an active mode off, shows as a DEACTIVATE tag while one is on. -->
+	<img class="bonus-mark" src={barBonusMark} alt="" />
+	{#if showTag}
+		<span class="bonus-tag">{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.translate('BONUS')}</span>
+	{/if}
 {/snippet}
 
 <OnHotkey
@@ -982,24 +965,20 @@
 							{#if menuOpen}
 								<img class="pt-x-full" src={iconBurgerClose} alt="close" />
 							{:else}
-								<img class="pt-icon" src={iconMenuBars} alt="menu" />
+								<img class="pt-icon bar-menu" src={barMenu} alt="menu" />
 							{/if}
 						</button>
 					</div>
 					<button
-						class="pt-buy pt-buy--controls"
+						class="bonus-square pt-bonus"
+						class:is-active={isAnyModeActive}
 						style:visibility={isReplay ? 'hidden' : null}
 						type="button"
 						disabled={disableBuy}
 						onclick={openBuyBonus}
 						aria-label={i18nDerived.buyBonus()}
 					>
-						<!-- One word per line keeps the compact portrait plate legible and translation-safe. -->
-					<span class="pt-buy__label" use:fitLabel={{ dep: buyLabelText, maxFraction: 0.72 }}>
-						{#each buyLabelText.split(' ') as word}
-							<span class="pt-buy__line">{word}</span>
-						{/each}
-					</span>
+						{@render bonusFace(false)}
 					</button>
 				</div>
 
@@ -1010,9 +989,8 @@
 					aria-label={i18nDerived.translate('SPIN')}
 					disabled={spinDisabled}
 				>
-					{@render turnDripsEl()}
 					{#if !isSpinStop}
-						<img src={iconSpin} alt="" class="pt-spin__icon" />
+						<img src={barSpin} alt="" class="pt-spin__icon" />
 					{/if}
 					{#if hasAuto}
 						<span class="pt-spin__count">{autoSpinsRemainingText}</span>
@@ -1032,7 +1010,7 @@
 					onclick={onTurbo}
 						aria-label={i18nDerived.turboLabel()}
 					>
-						<img class="pt-icon" src={turboIcon} alt="turbo" />
+						<img class="pt-icon turbo-glyph" src={turboIcon} alt="turbo" />
 					</button>
 					<button
 						class="pt-round"
@@ -1043,7 +1021,7 @@
 						disabled={disableAuto}
 						aria-label={i18nDerived.autoplayLabel()}
 					>
-						<img class="pt-icon" src={iconAuto} alt="auto" />
+						<img class="pt-icon auto-glyph" src={barAuto} alt="auto" />
 					</button>
 				</div>
 			</div>
@@ -1158,19 +1136,22 @@
 						{#if menuOpen}
 							<img class="ls-x-full" src={iconBurgerClose} alt="close" />
 						{:else}
-							<img class="ls-icon" src={iconMenuBars} alt="menu" />
+							<img class="ls-icon bar-menu" src={barMenu} alt="menu" />
 						{/if}
 					</button>
 				</div>
 
 				<button
-					class="ls-buy-rail"
+					class="bonus-square ls-bonus"
+					class:is-active={isAnyModeActive}
 					style:visibility={isReplay ? 'hidden' : null}
 					type="button"
 					disabled={disableBuy}
 					onclick={openBuyBonus}
 					aria-label={i18nDerived.buyBonus()}
-				></button>
+				>
+					{@render bonusFace(false)}
+				</button>
 
 				<button
 					class="ls-spin"
@@ -1179,9 +1160,8 @@
 					aria-label={i18nDerived.translate('SPIN')}
 					disabled={spinDisabled}
 				>
-					{@render turnDripsEl()}
 					{#if !isSpinStop}
-						<img src={iconSpin} alt="" class="ls-spin__icon" />
+						<img src={barSpin} alt="" class="ls-spin__icon" />
 					{/if}
 					{#if hasAuto}
 						<span class="ls-spin__count">{autoSpinsRemainingText}</span>
@@ -1199,7 +1179,7 @@
 					onclick={onTurbo}
 					aria-label={i18nDerived.turboLabel()}
 				>
-					<img class="ls-icon" src={turboIcon} alt="turbo" />
+					<img class="ls-icon turbo-glyph" src={turboIcon} alt="turbo" />
 				</button>
 				<button
 					class="ls-round ls-round--auto"
@@ -1210,7 +1190,7 @@
 					disabled={disableAuto}
 					aria-label={i18nDerived.autoplayLabel()}
 				>
-					<img class="ls-icon ls-icon--auto" src={iconAutoFull} alt="auto" />
+					<img class="ls-icon auto-glyph" src={barAuto} alt="auto" />
 				</button>
 			</div>
 
@@ -1272,7 +1252,7 @@
 						{#if menuOpen}
 							<img class="nav-x-full" src={iconBurgerClose} alt="close" />
 						{:else}
-							<img class="nav-icon" src={iconMenuBars} alt="menu" />
+							<img class="nav-icon bar-menu" src={barMenu} alt="menu" />
 						{/if}
 					</button>
 				</div>
@@ -1281,15 +1261,15 @@
 
 			<div class="hud-buy">
 				<button
-					class="buy-btn"
+					class="bonus-square buy-btn"
+					class:is-active={isAnyModeActive}
 					style:visibility={isReplay ? 'hidden' : null}
 					type="button"
 					disabled={disableBuy}
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.buyBonus()}
 				>
-					{@render buyDripsEl()}
-					<span class="buy-btn__label" use:fitLabel={isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.translate('BONUS')}>{isAnyModeActive ? i18nDerived.deactivate() : i18nDerived.translate('BONUS')}</span>
+					{@render bonusFace(true)}
 				</button>
 			</div>
 		</div>
@@ -1318,9 +1298,6 @@
 			<div
 				class="value-pill value-pill--bet bet-pill"
 			>
-				<span class="bet-coin" aria-hidden="true">
-					<img src={iconCoins} alt="" />
-				</span>
 				<div class="bet-values">
 					<span class="label">{i18nDerived.betLabel()}</span>
 					<div class="value-fit value-fit--bet">
@@ -1342,7 +1319,7 @@
 					</button>
 				{/if}
 				<button
-					class="nav-btn nav-btn--framed"
+					class="nav-btn nav-btn--framed nav-btn--step"
 					style:visibility={showBetControls ? null : 'hidden'}
 					type="button"
 					onpointerdown={(event) =>
@@ -1354,10 +1331,10 @@
 					disabled={disableDecrease}
 					aria-label={decBetLabel}
 				>
-					<img class="nav-icon" src={iconMinus} alt="minus" />
+					<img class="step-chevron step-chevron--down" src={barArrow} alt="minus" />
 				</button>
 				<button
-					class="nav-btn nav-btn--framed"
+					class="nav-btn nav-btn--framed nav-btn--step nav-btn--up"
 					style:visibility={showBetControls ? null : 'hidden'}
 					type="button"
 					onpointerdown={(event) =>
@@ -1369,7 +1346,7 @@
 					disabled={disableIncrease}
 					aria-label={incBetLabel}
 				>
-					<img class="nav-icon" src={iconPlus} alt="plus" />
+					<img class="step-chevron" src={barArrow} alt="plus" />
 				</button>
 			</div>
 		</div>
@@ -1384,9 +1361,8 @@
 			aria-label={i18nDerived.translate('SPIN')}
 			disabled={spinDisabled}
 		>
-			{@render turnDripsEl()}
 			{#if !isSpinStop}
-				<img src={iconSpin} alt="" class="spin-btn__icon" />
+				<img src={barSpin} alt="" class="spin-btn__icon" />
 			{/if}
 			{#if hasAuto}
 				<span
@@ -1412,10 +1388,10 @@
 					onclick={onTurbo}
 					aria-label={i18nDerived.turboLabel()}
 				>
-					<img class="nav-icon" src={turboIcon} alt="turbo" />
+					<img class="nav-icon turbo-glyph" src={turboIcon} alt="turbo" />
 				</button>
 				<button
-					class="nav-btn nav-btn--auto"
+					class="nav-btn nav-btn--framed nav-btn--auto"
 					style:visibility={showAuto ? null : 'hidden'}
 					class:active={hasAuto}
 					type="button"
@@ -1423,7 +1399,7 @@
 					disabled={disableAuto}
 					aria-label={i18nDerived.autoplayLabel()}
 				>
-					<img class="nav-btn__auto-full" src={iconAutoFull} alt="auto" />
+					<img class="nav-icon auto-glyph" src={barAuto} alt="auto" />
 				</button>
 			</div>
 		</div>
@@ -1645,42 +1621,7 @@
 		margin-left: calc(var(--d) * 24);
 	}
 
-	/* Live turn-disc drips (see turnDripsEl): .turn-drips fills the button, .turn-drips__art is the
-	   background art's contain box (162:127, centred), the canvas box extends below it for falls. */
-	.turn-drips {
-		position: absolute;
-		inset: 0;
-		display: grid;
-		place-items: center;
-		container-type: size;
-		pointer-events: none;
-	}
-	.turn-drips__art {
-		position: relative;
-		width: min(100cqw, 100cqh * 162 / 127);
-		aspect-ratio: 162 / 127;
-	}
-	.turn-drips__canvas {
-		position: absolute;
-		left: 0;
-		top: 0;
-		width: 100%;
-		aspect-ratio: 701 / 700;
-	}
 
-	/* Live buy-bonus drips: the button box IS the art box (aspect 179:71), the canvas extends below it. */
-	.buy-drips {
-		position: absolute;
-		inset: 0;
-		pointer-events: none;
-	}
-	.buy-drips__canvas {
-		position: absolute;
-		left: 0;
-		top: 0;
-		width: 100%;
-		aspect-ratio: 716 / 440;
-	}
 
 	.spin-pocket {
 		flex: 1 1 0;
@@ -1826,24 +1767,7 @@
 		line-height: 1;
 	}
 
-	.bet-coin {
-		pointer-events: none;
-		/* Smaller coin stack with a bit more air before the BET text (design ask). */
-		width: calc(var(--d) * 40);
-		height: calc(var(--d) * 40);
-		padding: calc(var(--d) * 7);
-		box-sizing: border-box;
-		display: grid;
-		place-items: center;
-		flex: 0 0 auto;
-	}
 
-	.bet-coin img {
-		width: 100%;
-		height: 100%;
-		object-fit: contain;
-		display: block;
-	}
 
 	.label {
 		font-family: 'Nunito', sans-serif;
@@ -2025,12 +1949,6 @@
 	   framed disc, no white filter (its AUTO is white-on-dark and would be erased by it). */
 	.nav-btn--auto {
 		position: relative;
-	}
-	.nav-btn__auto-full {
-		width: 100%;
-		height: 100%;
-		object-fit: contain;
-		display: block;
 	}
 
 	/* Thin dividers between the BALANCE / WIN / BET readouts. */
@@ -2406,28 +2324,6 @@
 		filter: grayscale(0.35);
 	}
 
-	.buy-btn__label {
-		font-family: 'Bowlby One SC', sans-serif;
-		/* Scales with the bar's design unit; fitLabel shrinks it further only when a
-		   translation runs long. */
-		font-size: calc(var(--d) * 16);
-		font-weight: 400;
-		letter-spacing: 0.093em; /* 1.49px at 16px (Figma) */
-		white-space: nowrap;
-		/* White label to match the design's baked "BONUS" text (no shadow). */
-		color: #ffffff;
-		line-height: 1;
-		pointer-events: none;
-		text-align: center;
-		/* Centre the GLYPHS on the red plaque: trim the line box to the capitals (the font's uneven
-		   ascent/descent pushed the text ~2px high), and offset to the plaque's own centre — it sits at
-		   49.23% / 51.58% of the button art (buy-bonus-button.svg inner rect 8.5–167.75 × 15–58.25 of
-		   179×71), not the box centre. */
-		text-box: trim-both cap alphabetic;
-		position: relative;
-		left: -0.77%;
-		top: 1.58%;
-	}
 
 	/* Scatter card keeps its original (tighter) hide breakpoint. */
 	@media (max-width: 1200px) {
@@ -2495,24 +2391,6 @@
 		opacity: 0 !important;
 		transition-duration: 0.12s;
 	}
-	.pt-buy:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
-	/* Vertical BONUS button in the right rail — the bonus-landscape art (red button, "BONUS" baked
-	   in). Sits between the menu and the spin disc (design). Aspect 31:66. */
-	.ls-buy-rail {
-		/* Height in dvh (width follows the 31:66 aspect) so it fits the fixed-height bar — as tall as
-		   the rail's spare room allows, since its stacked letters are small at 13.5dvh. */
-		height: clamp(30px, 17dvh, 84px);
-		width: auto;
-		aspect-ratio: 31 / 66;
-		flex: 0 0 auto;
-		border: 0;
-		padding: 0;
-		background: var(--ls-bonus) center / contain no-repeat;
-		cursor: pointer;
-		transition: filter 0.12s ease;
-	}
-	.ls-buy-rail:not(:disabled):hover { filter: brightness(1.08); }
-	.ls-buy-rail:disabled { opacity: 0.45; filter: grayscale(0.35); cursor: default; }
 	/* BALANCE: one row, small label + value (110 × 23 design px) */
 	.ls-balance {
 		display: flex;
@@ -2751,7 +2629,6 @@
 	/* AUTO uses the full design art (disc + arrows + "AUTO") — no frame, no white filter (its "AUTO"
 	   is white-on-dark and the filter would erase it), exactly like the desktop AUTO button. */
 	.ls-round--auto { border: 0; background: none; }
-	.ls-round--auto .ls-icon--auto { width: 100%; height: 100%; filter: none; }
 	/* Menu open: the burger becomes the red disc + white X art (burger-close.svg fills the whole
 	   button), so drop the button's own dark disc and don't invert-filter the already-white X. */
 	.ls-round--menu-open { background: none; }
@@ -2849,9 +2726,6 @@
 		align-self: center;
 	}
 
-	.hud-shell[data-layout='landscape'] .buy-btn__label {
-		font-size: 0.52rem;
-	}
 
 	.hud-shell[data-layout='landscape'] .buy-btn__amount {
 		font-size: 0.65rem;
@@ -3130,39 +3004,6 @@
 	}
 	.pt-bet__value.value--feature { color: #ffd84a; }
 
-	/* Buy bonus: McSchmutzo red/gold plate with 2-line label inside. */
-	/* Flat red BONUS button (mobile design) — no framed plate. */
-	.pt-buy {
-		flex: 0 0 auto;
-		width: calc(var(--u) * 0.205); height: calc(var(--u) * 0.088);
-		padding: 0 calc(var(--u) * 0.02); cursor: pointer;
-		border: 2px solid #8f130b;
-		border-radius: calc(var(--u) * 0.016);
-		background: linear-gradient(180deg, #e5372a 0%, #c61d12 100%);
-		box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-		/* Flex (not grid) centring: when the nowrap label is wider than the padded content box it
-		   overflows both sides equally, so the text stays horizontally centred; grid place-items left
-		   it a few px off-centre on the narrowest phones. */
-		display: flex; align-items: center; justify-content: center;
-		transition: filter 0.12s ease, transform 0.12s ease;
-	}
-	.pt-buy:hover { filter: brightness(1.1); }
-	.pt-buy:active { transform: scale(0.95); }
-	.pt-buy__label {
-		font-family: 'Bowlby One SC', sans-serif; font-weight: 400;
-		font-size: max(13px, calc(var(--u) * 0.0316)); line-height: 1.05; letter-spacing: 0.02em; text-align: center;
-		max-width: 100%;
-		/* Glyphs centred in the red box: the line box is trimmed to the capitals (uneven font
-		   ascent/descent pushed the text up), and no horizontal nudge (the old -2px overshot left). */
-		text-box: trim-both cap alphabetic;
-		color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-	}
-	.pt-buy__line {
-		display: block;
-		white-space: nowrap;
-	}
-	/* Buy bonus placed in the control row, left of spin. */
-	.pt-buy--controls { width: calc(var(--u) * 0.205); height: calc(var(--u) * 0.088); }
 
 	/* WIN readout — a permanent box mirroring .pt-balance exactly, pinned right of the stats row. */
 	.pt-win {
@@ -3300,6 +3141,507 @@
 	@keyframes win-cont-pulse {
 		50% {
 			opacity: 0.55;
+		}
+	}
+	/* ===== Press Play bar — the bottom bar Blob Split and Theme Park wear (Blob Split's Figma
+	   11395:4052), asked for here 2026-11-24 ===========================================================
+	   One studio bar across the games: a black 47% plate, white round buttons with black rims and black
+	   glyphs, a white spin disc with a black rim, the pink Press Play square as BONUS, pink labels over
+	   white amounts. Desktop also takes Blob Split's placements; portrait and phone landscape keep their
+	   own and wear the look. Later in the sheet than the rules it overrides, so it wins by source order. */
+	.hud-shell {
+		--bar-fill: rgb(0 0 0 / 0.47);
+		--bar-hover: #ffe3ef;
+		/* BONUS wears McSchmutzo's own red (the old BONUS plaque's #e5372a), not Blob Split's pink
+		   (user, 2026-11-24). */
+		--bonus-red: #e5372a;
+	}
+
+	/* -- round buttons, every layout -- */
+	.nav-btn--framed,
+	.pt-round,
+	.ls-round,
+	.ls-step {
+		box-sizing: border-box;
+		border: 2.75px solid #000;
+		border-radius: 50%;
+		background: #fff;
+		box-shadow: none;
+		filter: none;
+		transition:
+			scale 0.12s ease,
+			background-color 0.15s ease;
+	}
+	.ls-round,
+	.ls-step {
+		border-width: clamp(1.5px, 0.6dvh, 2.75px);
+	}
+	.nav-btn--framed .nav-icon,
+	.pt-round .pt-icon,
+	.ls-round .ls-icon,
+	.ls-step .ls-icon {
+		filter: brightness(0);
+		opacity: 1;
+	}
+	.nav-btn--framed:not(:disabled):hover,
+	.pt-round:not(:disabled):hover,
+	.ls-round:not(:disabled):hover,
+	.ls-step:not(:disabled):hover {
+		transform: none;
+		filter: none;
+		background: var(--bar-hover);
+	}
+	.nav-btn--framed:not(:disabled):active,
+	.pt-round:not(:disabled):active,
+	.ls-round:not(:disabled):active,
+	.ls-step:not(:disabled):active {
+		transform: none;
+		scale: 0.93;
+	}
+	.nav-btn--framed:disabled,
+	.pt-round:disabled,
+	.ls-round:disabled,
+	.ls-step:disabled {
+		opacity: 0.5;
+	}
+	/* Turbo (any speed-up) and running autoplay go the BONUS red, and stay red under the pointer so a tap on a
+	   phone, which leaves :hover latched, never reads as "off". */
+	:is(.nav-btn--turbo, .pt-round--turbo, .ls-round--turbo):is(.turbo-fast, .turbo-super),
+	:is(.nav-btn--framed, .pt-round, .ls-round).active,
+	:is(.nav-btn--turbo, .pt-round--turbo, .ls-round--turbo):is(.turbo-fast, .turbo-super):not(:disabled):hover,
+	:is(.nav-btn--framed, .pt-round, .ls-round).active:not(:disabled):hover {
+		filter: none;
+		background: var(--bonus-red);
+	}
+	/* Glyph sizes off Blob Split's 44 button: the bolt 25 tall (the double bolt takes its own width),
+	   the autoplay arrows 27.5 wide. */
+	.nav-btn--framed .turbo-glyph,
+	.pt-round .turbo-glyph,
+	.ls-round .turbo-glyph {
+		width: auto;
+		height: 57%;
+	}
+	.nav-btn--framed .auto-glyph,
+	.pt-round .auto-glyph,
+	.ls-round .auto-glyph {
+		width: 62.5%;
+		height: auto;
+	}
+
+	/* -- menu: bare white bars, every layout -- */
+	.hud-shell [data-menu-toggle],
+	.hud-shell [data-menu-toggle]:not(:disabled):hover {
+		border: 0;
+		background: none;
+	}
+	.hud-shell [data-menu-toggle]:not(:disabled):hover {
+		scale: 1.06;
+	}
+	.hud-shell [data-menu-toggle] .bar-menu {
+		width: 100%;
+		height: auto;
+		filter: none;
+	}
+
+	/* -- spin: a white disc with a black rim, Blob Split's black double arrow -- */
+	.spin-btn,
+	.pt-spin,
+	.ls-spin {
+		box-sizing: border-box;
+		border: 4px solid #000;
+		border-radius: 50%;
+		background: #fff;
+		box-shadow: none;
+		filter: none;
+		transition:
+			scale 0.12s ease,
+			background-color 0.15s ease;
+	}
+	.ls-spin {
+		border-width: clamp(2px, 0.9dvh, 4px);
+	}
+	.spin-btn:not(:disabled):hover,
+	.pt-spin:not(:disabled):hover,
+	.ls-spin:not(:disabled):hover {
+		transform: none;
+		filter: none;
+		background: var(--bar-hover);
+	}
+	.spin-btn:not(:disabled):active,
+	.pt-spin:not(:disabled):active,
+	.ls-spin:not(:disabled):active {
+		transform: none;
+		scale: 0.96;
+	}
+	.spin-btn:disabled,
+	.pt-spin:disabled,
+	.ls-spin:disabled {
+		opacity: 1;
+	}
+	.spin-btn__icon,
+	.pt-spin__icon,
+	.ls-spin__icon {
+		width: auto;
+		height: 79.5%;
+		transform: none;
+		filter: none;
+	}
+	.spin-btn:disabled :is(.spin-btn__icon, .spin-btn__stop),
+	.pt-spin:disabled :is(.pt-spin__icon, .pt-spin__stop),
+	.ls-spin:disabled :is(.ls-spin__icon, .ls-spin__stop) {
+		opacity: 0.35;
+	}
+	.spin-btn__stop,
+	.pt-spin__stop,
+	.ls-spin__stop {
+		filter: brightness(0);
+	}
+	.spin-btn__stop,
+	.spin-btn__count {
+		left: 50%;
+		top: 50%;
+	}
+	/* Absolutely centred: a % height on a grid item in an auto track falls back to the SVG's own
+	   size, which pushed the arrow out of the disc. */
+	.pt-spin__icon,
+	.pt-spin__stop {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+	}
+	.pt-spin__stop {
+		width: 22%;
+		height: auto;
+	}
+	/* The landscape glyphs are absolutely placed on the old disc's off-centre point; the white disc's
+	   centre is its box's. */
+	.ls-spin__icon,
+	.ls-spin__stop,
+	.ls-spin__count {
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+	}
+	/* The old disc art carried a transparent margin, so its box could be wider than the rail; the white
+	   disc fills its box, so it takes the rail's width instead. */
+	.ls-spin {
+		width: calc(var(--ls-rail-w) * 0.92);
+		height: calc(var(--ls-rail-w) * 0.92);
+	}
+	.spin-btn__count,
+	.pt-spin__count,
+	.ls-spin__count {
+		color: #000;
+		text-shadow: none;
+	}
+
+	/* -- BONUS: the 102 x 101 pink Press Play square, a black rim inset in it, the tilted mark -- */
+	.bonus-square {
+		position: relative;
+		display: block;
+		flex: 0 0 auto;
+		box-sizing: border-box;
+		padding: 0;
+		margin: 0;
+		border: 0;
+		background: var(--bonus-red);
+		box-shadow: none;
+		filter: none;
+		cursor: pointer;
+		aspect-ratio: 102 / 101;
+		height: auto;
+		border-radius: 8.8%;
+		/* The rim's width is a share of the square; cq units on the square's OWN properties would
+		   resolve against an ancestor, so the rim is a child (::before). */
+		container-type: inline-size;
+		transition: scale 0.12s ease;
+	}
+	.bonus-square::before {
+		content: '';
+		position: absolute;
+		inset: 3.92%;
+		border: max(1.5px, 2.94cqw) solid #000;
+		border-radius: 6%;
+		pointer-events: none;
+	}
+	.bonus-square .bonus-mark {
+		position: absolute;
+		left: 21.3%;
+		top: 2.97%;
+		width: 65.7%;
+		height: 83.2%;
+		margin: 0;
+		pointer-events: none;
+		transition: rotate 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
+	}
+	.bonus-square:not(:disabled):hover {
+		transform: none;
+		filter: none;
+		background: var(--bonus-red);
+	}
+	.bonus-square:not(:disabled):hover .bonus-mark {
+		rotate: -6deg;
+	}
+	.bonus-square:not(:disabled):active {
+		transform: none;
+		scale: 0.95;
+	}
+	.bonus-square:disabled {
+		opacity: 0.55;
+		filter: none;
+	}
+	.bonus-tag {
+		position: absolute;
+		left: 50%;
+		bottom: 0;
+		translate: -50% 45%;
+		padding: 0.25em 0.7em 0.15em;
+		border-radius: 0.7em;
+		background: #000;
+		color: #9bf715;
+		font-family: 'Bowlby One SC', sans-serif;
+		font-size: max(8px, 10cqw);
+		line-height: 1.25;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		pointer-events: none;
+	}
+	.bonus-square:not(.is-active) .bonus-tag {
+		clip-path: inset(50%);
+		opacity: 0;
+	}
+	.bonus-square.is-active {
+		box-shadow:
+			0 0 0 3px #9bf715,
+			0 0 16px #9bf71599;
+	}
+	.pt-bonus.bonus-square {
+		width: calc(var(--u) * 0.118);
+	}
+	.ls-bonus.bonus-square {
+		width: calc(var(--ls-rail-w) * 0.78);
+	}
+
+	/* -- labels in the BONUS red (user, 2026-11-24), amounts white -- */
+	.label,
+	.pt-balance__label,
+	.pt-bet__label,
+	.pt-win__label,
+	.ls-balance__label,
+	.ls-win__label {
+		background: none;
+		-webkit-text-fill-color: var(--bonus-red);
+		color: var(--bonus-red);
+	}
+
+	/* -- portrait: the control row and the three readouts on the bar's fill -- */
+	.pt-controls {
+		border-radius: 10px;
+		background: var(--bar-fill);
+	}
+	.pt-balance,
+	.pt-bet,
+	.pt-win {
+		border: 0;
+		background: var(--bar-fill);
+		box-shadow: none;
+		backdrop-filter: none;
+	}
+
+	/* -- phone landscape: the rail and the readouts on the bar's fill -- */
+	.ls-right {
+		border-radius: 10px;
+		background: var(--bar-fill);
+	}
+	.ls-bet,
+	.ls-balance,
+	.ls-win {
+		border: 0;
+		border-radius: 8px;
+		background: var(--bar-fill);
+		box-shadow: none;
+	}
+
+	/* -- desktop: Blob Split's placements --------------------------------------------------------
+	   Its desktop bar, in its 1280-wide stage px measured from the pink square's top-left at
+	   (136, 552): square 102 x 101 at (0, 8), plate 817 x 83 at (111, 18), menu bars at 129.67,
+	   BALANCE at 198, WIN at 353, BET ending at 671 with chevrons at 690, the 112 disc at 743, auto
+	   over turbo (44) at 866. --bs is one of those px: 1280 of them span the viewport, as in Blob
+	   Split. The markup's group wrappers dissolve (display: contents) so each control is placed
+	   directly. .hud-bottom only renders on desktop (portrait and landscape hide it). */
+	.hud-bottom {
+		--bs: calc(min(100vw, 2000px) / 1280);
+		display: block;
+		width: calc(var(--bs) * 928);
+		height: calc(var(--bs) * 112);
+		padding: 0;
+		margin-bottom: calc(var(--bs) * 6);
+	}
+	.hud-bottom::before {
+		inset: auto;
+		left: calc(var(--bs) * 111);
+		top: calc(var(--bs) * 18);
+		width: calc(var(--bs) * 817);
+		height: calc(var(--bs) * 83);
+		border-radius: calc(var(--bs) * 10);
+		background: var(--bar-fill);
+	}
+	.hud-bottom :is(.hud-left, .hud-stats, .stepper, .spin-pocket, .hud-controls, .action-cluster) {
+		display: contents;
+	}
+	.hud-bottom :is(.hud-buy, .hud-system, .value-pill, .nav-btn--step, .spin-btn, .nav-btn--turbo, .nav-btn--auto) {
+		position: absolute;
+		margin: 0;
+		z-index: 1;
+	}
+	.hud-bottom .hud-buy {
+		left: 0;
+		top: calc(var(--bs) * 8);
+	}
+	.hud-bottom .buy-btn.bonus-square {
+		width: calc(var(--bs) * 102);
+		height: auto;
+		aspect-ratio: 102 / 101;
+		border-radius: 8.8%;
+	}
+	.hud-bottom .hud-system {
+		left: calc(var(--bs) * 129.67);
+		top: calc(var(--bs) * 40);
+	}
+	.hud-bottom [data-menu-toggle] {
+		width: calc(var(--bs) * 46.67);
+		height: calc(var(--bs) * 40);
+	}
+	.hud-bottom [data-menu-toggle] .nav-x-full {
+		width: calc(var(--bs) * 40);
+		height: calc(var(--bs) * 40);
+	}
+	.hud-bottom .hud-menu-pop {
+		left: calc(var(--bs) * -18.67);
+		bottom: calc(100% + var(--bs) * 56);
+	}
+	/* BALANCE and WIN with Blob Split's 6.67 padding and no rules between; BET's amount ends at 671
+	   and grows leftward with its label centred over it. */
+	.hud-bottom .value-pill {
+		top: calc(var(--bs) * 34);
+		height: calc(var(--bs) * 49);
+		min-width: 0;
+		box-sizing: border-box;
+		padding: 0 calc(var(--bs) * 6.67);
+		border-left: 0;
+		justify-content: center;
+		gap: calc(var(--bs) * 2);
+	}
+	.hud-bottom .value-pill--balance {
+		left: calc(var(--bs) * 198);
+		width: calc(var(--bs) * 155);
+	}
+	.hud-bottom .value-pill--win {
+		left: calc(var(--bs) * 353);
+		width: calc(var(--bs) * 170);
+		align-items: flex-start;
+	}
+	.hud-bottom .value-pill--bet {
+		right: calc(var(--bs) * 257);
+		padding: 0;
+	}
+	.hud-bottom .bet-values {
+		align-items: center;
+	}
+	.hud-bottom .label {
+		font-size: calc(var(--bs) * 10);
+		line-height: calc(var(--bs) * 15);
+		letter-spacing: calc(var(--bs) * 2);
+	}
+	/* The chevrons: up at (690, 31), down at (690, 67), 34 x 19, white and bare. */
+	.hud-bottom .nav-btn--step {
+		left: calc(var(--bs) * 690);
+		top: calc(var(--bs) * 67);
+		width: calc(var(--bs) * 34);
+		height: calc(var(--bs) * 19);
+		border: 0;
+		border-radius: calc(var(--bs) * 4);
+		background: none;
+	}
+	.hud-bottom .nav-btn--up {
+		top: calc(var(--bs) * 31);
+	}
+	.hud-bottom .nav-btn--step:not(:disabled):hover {
+		background: none;
+		scale: 1.12;
+	}
+	.hud-bottom .nav-btn--step:disabled {
+		opacity: 0.3;
+	}
+	.step-chevron {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
+	.step-chevron--down {
+		rotate: 180deg;
+	}
+	/* The 112 disc, overhanging the plate 18 above and 11 below. */
+	.hud-bottom .spin-btn {
+		left: calc(var(--bs) * 743);
+		top: 0;
+		width: calc(var(--bs) * 112);
+		height: calc(var(--bs) * 112);
+		border-width: calc(var(--bs) * 4);
+	}
+	.hud-bottom .spin-btn__count {
+		font-size: calc(var(--bs) * 30);
+	}
+	.hud-bottom :is(.nav-btn--auto, .nav-btn--turbo) {
+		width: calc(var(--bs) * 44);
+		height: calc(var(--bs) * 44);
+		border-width: calc(var(--bs) * 2.75);
+	}
+	.hud-bottom .nav-btn--auto {
+		left: calc(var(--bs) * 866);
+		top: calc(var(--bs) * 12);
+	}
+	.hud-bottom .nav-btn--turbo {
+		left: calc(var(--bs) * 867);
+		top: calc(var(--bs) * 61);
+	}
+	/* -- entrance: the bar rises in from below the screen as the game appears, with the board's own
+	   rise (Game.svelte), and settles with a small overshoot. Phone landscape's right rail slides in
+	   from the right edge with its readouts once the board has landed. The HUD mounts once per
+	   session, so this plays once (user, 2026-11-24: the bar "just shows"). -- */
+	.hud-bottom,
+	.pt-hud {
+		animation: bar-rise 0.75s cubic-bezier(0.34, 1.4, 0.64, 1) 0.15s both;
+	}
+	@keyframes bar-rise {
+		from {
+			translate: 0 calc(100% + 40px);
+		}
+		to {
+			translate: 0 0;
+		}
+	}
+	.ls-hud:not(.ls-hud--in) .ls-right {
+		translate: calc(100% + 24px) 0;
+	}
+	.ls-hud--in .ls-right {
+		animation: ls-rail-in 0.6s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+	}
+	@keyframes ls-rail-in {
+		from {
+			translate: calc(100% + 24px) 0;
+		}
+		to {
+			translate: 0 0;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.hud-bottom,
+		.pt-hud,
+		.ls-hud--in .ls-right {
+			animation: none;
 		}
 	}
 </style>

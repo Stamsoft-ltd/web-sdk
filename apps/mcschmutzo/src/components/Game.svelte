@@ -5,7 +5,6 @@
 	import { EnableHotkey } from 'components-shared';
 	import { MainContainer } from 'components-layout';
 	import { App, Container } from 'pixi-svelte';
-	import { Tween } from 'svelte/motion';
 	import { stateBet, stateMeta, stateModal } from 'state-shared';
 
 	import { GameVersion, Modals } from 'components-ui-html';
@@ -73,31 +72,59 @@
 	let splashPressed = $state(false);
 
 	// Board entrance: once, right after the splash's camera pan hands over to the game, the board (and
-	// everything on it — frame, reels, logo) drops in from above the screen and lands with a little
-	// bounce. Never replayed (the game branch mounts once per session).
-	const boardDrop = new Tween(0);
+	// everything on it — frame, reels, logo) rises in from below the screen, overshoots a touch and
+	// settles (user, 2026-11-24: "come from bottom"; it used to drop in from above). Never replayed
+	// (the game branch mounts once per session).
+	//
+	// Frame-driven, not clock-driven: the board's first frames are its most expensive (every symbol
+	// texture decoded and uploaded on mount), and on a real GPU that can block for about a second. A
+	// clock-timed tween can spend its whole second inside that stall, and the board just appears
+	// (user, 2026-11-24: "still shows, no animation"). So the
+	// board waits off-screen (rendering, so its textures upload unseen) until frames run smoothly,
+	// then advances by at most one 30fps step per frame — a hitch pauses the rise, it never skips it.
+	const boardDrop = $state({ current: 0 });
 	let boardIntroDone = false;
-	// true once the drop has fully landed (bounces included) — the phone chef waits for it
+	// true once the rise has fully settled — the phone chef waits for it
 	let boardLanded = $state(false);
-	const landBounce = (t: number) => {
-		// fall (accelerating) → impact → two shrinking rebounds
-		if (t < 0.62) return (t / 0.62) ** 2;
-		const u = (t - 0.62) / 0.38;
-		return 1 - 0.06 * Math.abs(Math.sin(u * Math.PI * 2)) * (1 - u) ** 1.6;
+	// Decelerating rise that carries ~6% past the resting line, then two shrinking settles. The board
+	// runs from +1.05·h (below) to 0, so an eased value above 1 is the board riding above its place.
+	const riseSettle = (t: number) => {
+		if (t < 0.6) {
+			const u = t / 0.6;
+			return 1.06 * (1 - (1 - u) ** 3);
+		}
+		const u = (t - 0.6) / 0.4;
+		return 1 + 0.06 * Math.cos(u * Math.PI * 1.5) * (1 - u) ** 1.4;
 	};
+	const RISE_MS = 1000;
 	$effect(() => {
 		if (context.stateLayout.showLoadingScreen || boardIntroDone) return;
 		boardIntroDone = true;
-		const h = context.stateLayoutDerived.canvasSizes().height;
-		boardDrop.set(-h * 1.05, { duration: 0 });
-		// a short beat so the splash's fade-out has started before the board arrives
-		setTimeout(
-			() =>
-				boardDrop
-					.set(0, { duration: 950, easing: landBounce })
-					.then(() => (boardLanded = context.stateGame.boardLanded = true)),
-			120,
-		);
+		const from = context.stateLayoutDerived.canvasSizes().height * 1.05;
+		boardDrop.current = from;
+		let last = performance.now();
+		let waited = 0;
+		let smooth = 0;
+		let started = false;
+		let elapsed = 0;
+		const step = (now: number) => {
+			const dt = now - last;
+			last = now;
+			if (!started) {
+				// at least a short beat (so the splash's fade-out has begun), then three smooth frames
+				// in a row; give up waiting after 2.5s so a slow device still gets the entrance
+				waited += dt;
+				smooth = dt < 40 ? smooth + 1 : 0;
+				started = (waited >= 120 && smooth >= 3) || waited > 2500;
+				requestAnimationFrame(step);
+				return;
+			}
+			elapsed = Math.min(RISE_MS, elapsed + Math.min(dt, 34));
+			boardDrop.current = from * (1 - riseSettle(elapsed / RISE_MS));
+			if (elapsed < RISE_MS) requestAnimationFrame(step);
+			else boardLanded = context.stateGame.boardLanded = true;
+		};
+		requestAnimationFrame(step);
 	});
 	const modeImage = './assets/mcschmutzo/background-base.webp';
 	// (the scatter's art is S_scatter.webp: the SCATTER-lettered version under a new name, so no cached S.webp shows)
