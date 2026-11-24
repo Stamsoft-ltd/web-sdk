@@ -211,18 +211,19 @@ describe('shared frontend completeness guards', () => {
 		expect(hud).toContain('data-speed={speedMode}');
 		expect(hud).toContain('--hud-u: calc(min(93.8vw, 1400px) / 1126)');
 		// Every bar shows the speed as art, one bolt per step, so OFF can never read as turbo-on:
-		// the outlined bolt, one solid bolt, two solid bolts. Both the desktop row and the portrait
-		// row pick between the same three files; landscape does the same with its own PNG set.
-		expect(hud).toContain('turbo-1.webp');
-		expect(hud).toContain('turbo-2.webp');
-		expect(hud).toContain('turbo-3.webp');
-		const turboPicks = hud.match(
-			/stateBet\.isSuperTurbo\s*\?\s*navTurboDouble\s*:\s*stateBet\.isTurbo\s*\?\s*navTurboSolid\s*:\s*navTurboOutline/g,
+		// the outlined bolt, one filled bolt, two filled bolts (the Press Play bar set shared with
+		// Blob Split). One pick feeds all three layouts — desktop, portrait and landscape.
+		expect(hud).toContain("ap('/assets/theme-park/v2/hud/bar/turbo-off.svg')");
+		expect(hud).toContain("ap('/assets/theme-park/v2/hud/bar/turbo.svg')");
+		expect(hud).toContain("ap('/assets/theme-park/v2/hud/bar/turbo-super.svg')");
+		expect(hud).toMatch(
+			/turboGlyph = \$derived\(\s*stateBet\.isSuperTurbo \? barTurboSuper : stateBet\.isTurbo \? barTurbo : barTurboOff,?\s*\)/,
 		);
-		expect(turboPicks?.length).toBe(2);
-		expect(hud).toContain(
-			'stateBet.isSuperTurbo ? ptTurboSuper : stateBet.isTurbo ? ptTurboFast : ptTurbo',
-		);
+		expect(hud.match(/src=\{turboGlyph\}/g)?.length).toBe(3);
+		// OFF really is the outline: stroked, not filled.
+		const off = source('static/assets/theme-park/v2/hud/bar/turbo-off.svg');
+		expect(off).toContain('stroke="black"');
+		expect(off).not.toMatch(/<path[^>]*fill="black"/);
 	});
 
 	it('shrinks long HUD currency values in layout instead of paint-only transforms', () => {
