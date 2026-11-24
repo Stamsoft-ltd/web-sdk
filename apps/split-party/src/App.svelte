@@ -297,8 +297,12 @@
 		const ls = inBonus ? 1.08 : Math.min(1.6, 1 + Math.max(0, ex) / 600);
 		return ex >= MAMA_UP_EX ? Math.min(ls, (39 + 0.58 * ex) / 122) : ls;
 	});
+	// Keyed off a derived boolean, not board.tier itself: board is a new object on every event,
+	// so reading it here re-ran the effect each event, and after the player changed speed in a
+	// bonus (dropping the hold) the next event took a fresh hold and switched turbo off again.
+	let bonusRound = $derived(!!board.tier);
 	$effect(() => {
-		const on = !!board.tier;
+		const on = bonusRound;
 		untrack(() => {
 			if (on && !turboHeld) {
 				turboHeld = { turbo, superTurbo };
@@ -2553,9 +2557,14 @@
 				aria-pressed={turbo || superTurbo}
 				disabled={!!jurisdiction.disabledTurbo}
 				onclick={cycleSpeed}
-				><img class="speed-icon" src="./base/bar/turbo.svg" alt="" />{#if superTurbo}<img
-						class="speed-icon speed-second"
-						src="./base/bar/turbo.svg"
+				><!-- Normal: an outline bolt; turbo: a filled bolt; super turbo: two filled bolts. -->{#if superTurbo}<img
+						class="speed-icon speed-super"
+						src="./base/bar/turbo-super.svg"
+						alt=""
+						in:iconIn
+					/>{:else if turbo}<img class="speed-icon" src="./base/bar/turbo.svg" alt="" in:iconIn />{:else}<img
+						class="speed-icon"
+						src="./base/bar/turbo-off.svg"
 						alt=""
 						in:iconIn
 					/>{/if}</button

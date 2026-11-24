@@ -3739,16 +3739,14 @@ main:not(.portrait, .phone, .popout) .base-mama.shown::before {
 .hud .auto-stop {
 	color: #000;
 }
-/* Turbo is one bolt; super turbo a second one behind it, so the three speeds read apart. */
+/* Normal is an outline bolt, turbo a filled one, super turbo two filled bolts side by side. */
 .hud .speed-icon {
 	width: 14.37px;
 	height: 25.08px;
 }
-.hud .speed-icon.speed-second {
-	position: absolute;
-	translate: 5px -2px;
-	opacity: 0.45;
-	z-index: -1;
+/* The double bolt is wider: it keeps each layout's bolt height and takes its own width. */
+main .hud .turbo-button img.speed-icon.speed-super {
+	width: auto;
 }
 .hud .turbo-button {
 	isolation: isolate;
