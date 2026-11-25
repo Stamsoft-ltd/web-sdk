@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { stateBet } from 'state-shared';
-import { createPlayBookUtils } from 'utils-book';
+import { getResumeEventIndex, createPlayBookUtils } from 'utils-book';
 
 import { bookEventHandlerMap } from './bookEventHandlerMap';
 import { eventEmitter } from './eventEmitter';
@@ -15,7 +15,7 @@ export const playBet = async (bet: Bet) => {
 };
 
 export const convertToResumableBet = (betToResume: Bet): Bet => {
-	const resumingIndex = Math.max(0, Number(betToResume.event ?? 0));
+	const resumingIndex = getResumeEventIndex(betToResume.event, betToResume.state.length);
 	const before = betToResume.state.filter((event) => event.index < resumingIndex);
 	const after = betToResume.state.filter((event) => event.index >= resumingIndex);
 	const lastReveal = _.findLast(before, (event) => event.type === 'reveal') as

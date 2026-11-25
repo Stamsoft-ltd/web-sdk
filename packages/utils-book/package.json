@@ -5,7 +5,8 @@
 	"license": "MIT",
 	"scripts": {
 		"format": "prettier --write --ignore-path=../../.prettierignore .",
-		"lint": "eslint \"src\""
+		"lint": "eslint \"src\"",
+		"test": "node --experimental-strip-types --test tests/*.test.mjs"
 	},
 	"type": "module",
 	"devDependencies": {
