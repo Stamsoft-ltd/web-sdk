@@ -153,8 +153,29 @@ const BOOK_EVENT_TYPES_TO_RESERVE_FOR_SNAPSHOT = [
 	'setTotalWin',
 ];
 
+/**
+ * Where a resumed round picks up its book.
+ *
+ * The saved index only exists for free-spin games: `recordBookEvent` runs on their reveals. A Duck
+ * Your Luck (or Duck Collect) round has a single reveal, so nothing is ever recorded and the RGS
+ * hands the round back with no usable `event` (absent, null or empty). `Number(undefined)` is NaN
+ * and every `>= NaN` test is false, so the round resumed with an empty book: the pond never opened
+ * and end-round just paid the win. Duck rounds therefore always replay from the start (the pond
+ * needs its `duckPickStart` pool, and the picks' outcomes are fixed by the book), and any index
+ * that is not a real position in the book falls back to the start as well.
+ */
+export const getResumingIndex = (betToResume: Pick<Bet, 'event' | 'state'>) => {
+	const isDuckRound =
+		betToResume.state.some(({ type }) => type === 'duckPickStart' || type === 'duckCollectStart') &&
+		!betToResume.state.some(({ type }) => type === 'freeSpinTrigger');
+	if (isDuckRound) return 0;
+	const raw = betToResume.event;
+	const saved = raw === null || raw === undefined || raw === '' ? NaN : Number(raw);
+	return Number.isInteger(saved) && saved >= 0 && saved < betToResume.state.length ? saved : 0;
+};
+
 export const convertTorResumableBet = (betToResume: Bet) => {
-	const resumingIndex = Number(betToResume.event);
+	const resumingIndex = getResumingIndex(betToResume);
 	const bookEventsBeforeResume = betToResume.state.filter(
 		(_, eventIndex) => eventIndex < resumingIndex,
 	);
