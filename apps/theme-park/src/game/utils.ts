@@ -1,5 +1,5 @@
 import { stateBet } from 'state-shared';
-import { createPlayBookUtils } from 'utils-book';
+import { getResumeEventIndex, createPlayBookUtils } from 'utils-book';
 
 import { bookEventHandlerMap } from './bookEventHandlerMap';
 import { eventEmitter } from './eventEmitter';
@@ -114,7 +114,12 @@ const BOOK_EVENT_TYPES_TO_RESERVE_FOR_SNAPSHOT = [
 ];
 
 export const convertTorResumableBet = (betToResume: Bet) => {
-	const resumingIndex = Number(betToResume.event);
+	const isDuckRound =
+		betToResume.state.some(({ type }) => type === 'duckPickStart' || type === 'duckCollectStart') &&
+		!betToResume.state.some(({ type }) => type === 'freeSpinTrigger');
+	const resumingIndex = isDuckRound
+		? 0
+		: getResumeEventIndex(betToResume.event, betToResume.state.length);
 	const bookEventsBeforeResume = betToResume.state.filter(
 		(_, eventIndex) => eventIndex < resumingIndex,
 	);

@@ -2,7 +2,7 @@ import _ from 'lodash';
 import { stateBet } from 'state-shared';
 import { stateGame } from './stateGame.svelte';
 import { resetPot } from './potState.svelte';
-import { createPlayBookUtils } from 'utils-book';
+import { getResumeEventIndex, createPlayBookUtils } from 'utils-book';
 import { createGetEmptyPaddedBoard } from 'utils-slots';
 
 import {
@@ -49,7 +49,7 @@ const BOOK_EVENT_TYPES_TO_RESERVE_FOR_SNAPSHOT = [
 ];
 
 export const convertTorResumableBet = (betToResume: Bet) => {
-	const resumingIndex = Number(betToResume.event);
+	const resumingIndex = getResumeEventIndex(betToResume.event, betToResume.state.length);
 	const bookEventsBeforeResume = betToResume.state.filter(
 		(_, eventIndex) => eventIndex < resumingIndex,
 	);
