@@ -1,5 +1,5 @@
 import { stateBet } from 'state-shared';
-import { createPlayBookUtils } from 'utils-book';
+import { getResumeEventIndex, createPlayBookUtils } from 'utils-book';
 import { createGetEmptyPaddedBoard } from 'utils-slots';
 
 import { SYMBOL_W, SYMBOL_H, SYMBOL_SIZE, REEL_PADDING, SYMBOL_INFO_MAP, BOARD_DIMENSIONS } from './constants';
@@ -32,7 +32,7 @@ const BOOK_EVENT_TYPES_TO_RESERVE_FOR_SNAPSHOT = [
 ];
 
 export const convertTorResumableBet = (betToResume: Bet) => {
-	const resumingIndex = Number(betToResume.event);
+	const resumingIndex = getResumeEventIndex(betToResume.event, betToResume.state.length);
 	const bookEventsBeforeResume = betToResume.state.filter((_, eventIndex) => eventIndex < resumingIndex);
 	const bookEventsAfterResume = betToResume.state.filter((_, eventIndex) => eventIndex >= resumingIndex);
 
