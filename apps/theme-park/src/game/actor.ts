@@ -37,7 +37,9 @@ const primaryMachines = createPrimaryMachines<Bet>({
 		}
 		await playBet(bet);
 	},
-	checkIsBonusGame: (bet) => checkIsMultipleRevealEvents({ bookEvents: bet.state }),
+	checkIsBonusGame: (bet) =>
+		checkIsMultipleRevealEvents({ bookEvents: bet.state }) ||
+		bet.state.some(({ type }) => type === 'duckPickStart' || type === 'duckCollectStart'),
 });
 
 const intermediateMachines = createIntermediateMachines(primaryMachines);
