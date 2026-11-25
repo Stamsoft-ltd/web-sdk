@@ -213,7 +213,7 @@
 	   bolt at normal speed, one solid bolt on turbo, two solid bolts on super turbo. No text label —
 	   the FAST/MAX caption under the bolt was this game's own invention. */
 	const turboIcon = $derived(
-		stateBet.isSuperTurbo ? 'icon-turbo-max' : stateBet.isTurbo ? 'icon-turbo-on' : 'icon-turbo',
+		stateBet.isSuperTurbo ? 'turbo-super' : stateBet.isTurbo ? 'turbo' : 'turbo-off',
 	);
 	const turboLabel = $derived(
 		stateBet.isSuperTurbo ? t('MAX') : stateBet.isTurbo ? t('FAST') : t('TURBO'),
@@ -1785,8 +1785,8 @@
 						<span class="close-glyph" aria-hidden="true"></span>
 					{:else}
 						<img
-							class="hud-icon icon-menu"
-							src="./assets/veggie-salad/pixel/hud/icon-menu.webp"
+							class="hud-icon icon-menu bar-glyph"
+							src="./assets/veggie-salad/bar/menu.svg"
 							alt=""
 							draggable="false"
 						/>
@@ -1801,11 +1801,14 @@
 						disabled={!canInteract}
 						onclick={handleBonusButton}
 					>
+						<!-- The Press Play square (Blob Split's bar): the mark carries the button; the words
+						     stay for screen readers and come up as a DEACTIVATE tag while a mode is on. -->
+						<img class="bonus-mark" src="./assets/veggie-salad/bar/bonus-mark.svg" alt="" draggable="false" />
 						{#if persistentModeActive}
-							<span>{t('DEACTIVATE')}</span>
-							<small>{chanceActive ? t('CHANCE') : t('FEATURES')}</small>
+							<span class="bonus-tag">{t('DEACTIVATE')}</span>
+							<small class="bonus-word">{chanceActive ? t('CHANCE') : t('FEATURES')}</small>
 						{:else}
-							<span>{t('BONUS')}</span><small>{t('FEATURES')}</small>
+							<span class="bonus-word">{t('BONUS')}</span><small class="bonus-word">{t('FEATURES')}</small>
 						{/if}
 					</button>
 				{/if}
@@ -1840,9 +1843,10 @@
 							stepBet(-1);
 						}}
 					>
+						<span class="step-glyph minus" aria-hidden="true"></span>
 						<img
-							class="hud-icon icon-minus"
-							src="./assets/veggie-salad/pixel/hud/icon-minus.webp"
+							class="step-chevron step-chevron--down"
+							src="./assets/veggie-salad/bar/arrow.svg"
 							alt=""
 							draggable="false"
 						/>
@@ -1856,12 +1860,8 @@
 							stepBet(1);
 						}}
 					>
-						<img
-							class="hud-icon icon-plus"
-							src="./assets/veggie-salad/pixel/hud/icon-plus.webp"
-							alt=""
-							draggable="false"
-						/>
+						<span class="step-glyph plus" aria-hidden="true"></span>
+						<img class="step-chevron" src="./assets/veggie-salad/bar/arrow.svg" alt="" draggable="false" />
 					</button>
 				</div>
 				<button
@@ -1876,8 +1876,8 @@
 				>
 					{#if isIdle}
 						<img
-							class="spin-arrow"
-							src="./assets/veggie-salad/pixel/hud/spin-arrow.webp"
+							class="spin-arrow bar-glyph"
+							src="./assets/veggie-salad/bar/spin.svg"
 							alt=""
 							draggable="false"
 						/>
@@ -1900,7 +1900,7 @@
 					<img
 						class="turbo-icon"
 						class:wide={stateBet.isSuperTurbo}
-						src="./assets/veggie-salad/pixel/hud/{turboIcon}.webp"
+						src="./assets/veggie-salad/bar/{turboIcon}.svg"
 						alt=""
 					/>
 				</button>
@@ -1921,8 +1921,8 @@
 						{:else}
 							<!-- Design 9456:158078 draws the twin arrows as a pixel raster over the AUTO caption. -->
 							<img
-								class="hud-icon icon-auto"
-								src="./assets/veggie-salad/pixel/hud/icon-auto.webp"
+								class="hud-icon icon-auto bar-glyph"
+								src="./assets/veggie-salad/bar/auto.svg"
 								alt=""
 								draggable="false"
 							/>
@@ -10523,5 +10523,581 @@
 		--cloud-width: clamp(95px, 9.5vw, 190px);
 		--cloud-top: 14%;
 		--cloud-duration: 142s;
+	}
+
+	/* ===== Press Play bar — the studio bottom bar Blob Split, Theme Park and McSchmutzo wear (Blob
+	   Split's Figma 11395:4052), asked for here 2026-11-25 ============================================
+	   A black 47% plate, white round buttons with black rims and black glyphs, a white spin disc with a
+	   black rim, the Press Play square as BONUS, accent labels over white amounts. The accent is the
+	   logo's SALAD orange (#f8a000), not Blob Split's pink. Desktop and tablet take Blob Split's
+	   placements; portrait and phone landscape keep their own and wear the look. Last in the sheet and
+	   on `.scene footer.hud` so it outranks the pixel passes above, several of which shout. */
+	.scene footer.hud {
+		--bar-fill: rgb(0 0 0 / 0.47);
+		--bar-hover: #fff1d6;
+		--bar-accent: #f8a000;
+		image-rendering: auto;
+	}
+	.scene footer.hud img.bar-glyph,
+	.scene footer.hud .turbo-icon,
+	.scene footer.hud .bonus-mark,
+	.scene footer.hud .step-chevron {
+		image-rendering: auto;
+	}
+
+	/* -- round buttons: menu-less utilities and the -/+ stepper -- */
+	.scene footer.hud .utility:not(.menu-toggle),
+	.scene footer.hud .bet-stepper button {
+		box-sizing: border-box;
+		clip-path: none !important;
+		border: 2.75px solid #000 !important;
+		border-radius: 50% !important;
+		background: #fff !important;
+		box-shadow: none !important;
+		color: #000;
+		transform: none !important;
+		transition:
+			scale 0.12s ease,
+			background-color 0.15s ease;
+	}
+	.scene footer.hud .utility:not(.menu-toggle, :disabled):hover,
+	.scene footer.hud .bet-stepper button:not(:disabled):hover {
+		background: var(--bar-hover) !important;
+	}
+	.scene footer.hud .utility:not(.menu-toggle, :disabled):active,
+	.scene footer.hud .utility:global(.pressed-flash):not(.menu-toggle),
+	.scene footer.hud .bet-stepper button:not(:disabled):active {
+		scale: 0.93;
+	}
+	.scene footer.hud button:disabled {
+		opacity: 0.5;
+	}
+	/* Turbo at any speed-up and running autoplay go the accent, and stay it under the pointer so a
+	   tap on a phone (which latches :hover) never reads as off. */
+	.scene footer.hud .turbo[aria-pressed='true'],
+	.scene footer.hud .turbo[aria-pressed='true']:not(:disabled):hover,
+	.scene footer.hud .auto[aria-pressed='true'],
+	.scene footer.hud .auto[aria-pressed='true']:not(:disabled):hover {
+		background: var(--bar-accent) !important;
+	}
+	/* Glyph sizes off Blob Split's 44 button: the bolt 57% tall, the autoplay arrows 62.5% wide. */
+	.scene footer.hud .turbo-icon {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		width: auto !important;
+		height: 57% !important;
+		transform: translate(-50%, -50%);
+		filter: none !important;
+	}
+	.scene footer.hud .icon-auto {
+		width: 62.5% !important;
+		height: auto !important;
+		filter: none !important;
+	}
+	.scene footer.hud .auto {
+		display: grid !important;
+		place-items: center;
+		grid-template-rows: none !important;
+		padding: 0 !important;
+	}
+	.scene footer.hud .auto small {
+		display: none;
+	}
+	.scene footer.hud .auto span {
+		color: #000;
+		font-size: 1.1em;
+		line-height: 1;
+		text-shadow: none;
+	}
+	.scene footer.hud .bet-stepper button {
+		display: grid;
+		place-items: center;
+	}
+	.scene footer.hud .step-glyph {
+		width: 38%;
+		color: #000;
+	}
+	.scene footer.hud .step-glyph::before,
+	.scene footer.hud .step-glyph::after {
+		filter: none;
+		border-radius: 999px;
+	}
+	.scene footer.hud .step-chevron {
+		display: none;
+	}
+
+	/* -- menu: bare white bars; open it is a white disc with a black cross -- */
+	.scene footer.hud .menu-toggle {
+		clip-path: none !important;
+		border: 0 !important;
+		border-radius: 0 !important;
+		background: none !important;
+		box-shadow: none !important;
+		transition: scale 0.12s ease;
+	}
+	.scene footer.hud .menu-toggle:not(:disabled):hover {
+		scale: 1.06;
+	}
+	.scene footer.hud .menu-toggle .icon-menu {
+		width: 70% !important;
+		height: auto !important;
+		filter: none !important;
+	}
+	.scene footer.hud .menu-toggle.open {
+		border: 2.75px solid #000 !important;
+		border-radius: 50% !important;
+		background: #fff !important;
+		color: #000;
+	}
+
+	/* -- spin: a white disc with a black rim and Blob Split's black double arrow -- */
+	.scene footer.hud .spin {
+		box-sizing: border-box;
+		clip-path: none !important;
+		border: 4px solid #000 !important;
+		border-radius: 50% !important;
+		background: #fff !important;
+		box-shadow: none !important;
+		color: #000;
+		transition:
+			scale 0.12s ease,
+			background-color 0.15s ease;
+	}
+	.scene footer.hud .spin:not(:disabled):hover {
+		background: var(--bar-hover) !important;
+	}
+	.scene footer.hud .spin:not(:disabled):active {
+		scale: 0.96;
+	}
+	.scene footer.hud .spin:disabled {
+		opacity: 1;
+	}
+	.scene footer.hud .spin:disabled > * {
+		opacity: 0.35;
+	}
+	.scene footer.hud .spin .spin-arrow {
+		left: 50%;
+		top: 50%;
+		width: auto !important;
+		height: 79.5% !important;
+		transform: translate(-50%, -50%);
+		filter: none !important;
+	}
+	.scene footer.hud .spin span.stop {
+		color: #000;
+		font-size: 2.2em;
+		line-height: 1;
+		text-shadow: none;
+		transform: none;
+	}
+
+	/* -- BONUS: the Press Play square, a black rim inset in it, the tilted mark -- */
+	.scene footer.hud .bonus-button {
+		position: relative;
+		display: block;
+		flex: 0 0 auto;
+		box-sizing: border-box;
+		width: auto;
+		min-width: 0 !important;
+		min-height: 0 !important;
+		aspect-ratio: 102 / 101 !important;
+		padding: 0 !important;
+		clip-path: none !important;
+		border: 0 !important;
+		border-radius: 8.8% !important;
+		background: var(--bar-accent) !important;
+		box-shadow: none !important;
+		/* The rim's width is a share of the square; cq units on the square's own properties would
+		   resolve against an ancestor, so the rim is a child (::before). */
+		container-type: inline-size;
+		transition: scale 0.12s ease;
+	}
+	.scene footer.hud .bonus-button::before {
+		content: '';
+		position: absolute;
+		inset: 3.92%;
+		border: max(1.5px, 2.94cqw) solid #000;
+		border-radius: 6%;
+		pointer-events: none;
+	}
+	.scene footer.hud .bonus-mark {
+		position: absolute;
+		left: 21.3%;
+		top: 2.97%;
+		width: 65.7%;
+		height: 83.2%;
+		margin: 0;
+		pointer-events: none;
+		transition: rotate 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
+	}
+	.scene footer.hud .bonus-button:not(:disabled):hover .bonus-mark {
+		rotate: -6deg;
+	}
+	.scene footer.hud .bonus-button:not(:disabled):active {
+		scale: 0.95;
+	}
+	.scene footer.hud .bonus-button:disabled {
+		opacity: 0.55;
+	}
+	.scene footer.hud .bonus-button .bonus-word {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+	.scene footer.hud .bonus-button .bonus-tag {
+		position: absolute;
+		left: 50%;
+		bottom: 0;
+		translate: -50% 45%;
+		padding: 0.2em 0.6em 0.1em;
+		border-radius: 0.6em;
+		background: #000;
+		color: #9bf715 !important;
+		font-size: max(10px, 15cqw);
+		line-height: 1.1;
+		letter-spacing: 0.05em;
+		white-space: nowrap;
+		pointer-events: none;
+	}
+	.scene footer.hud .bonus-button.deactivate {
+		box-shadow:
+			0 0 0 3px #9bf715,
+			0 0 16px #9bf71599 !important;
+	}
+
+	/* -- labels in the accent, amounts white, no coin -- */
+	.scene footer.hud .metric span {
+		color: var(--bar-accent) !important;
+	}
+	.scene footer.hud .metric strong,
+	.scene footer.hud .metric.win strong {
+		color: #fff !important;
+		text-shadow: none !important;
+	}
+	.scene footer.hud .metric.bet.boosted span,
+	.scene footer.hud .metric.bet.boosted strong {
+		color: #9bf715 !important;
+	}
+	.scene footer.hud .metric.bet {
+		background-image: none !important;
+	}
+
+	/* -- portrait: the bar plate and the three readouts on the bar's fill -- */
+	@media (orientation: portrait) {
+		.scene footer.hud::before {
+			border: 0 !important;
+			border-radius: 10px;
+			background: var(--bar-fill) !important;
+			box-shadow: none !important;
+		}
+		.scene footer.hud .metric {
+			border: 0 !important;
+			border-radius: 8px;
+			background: var(--bar-fill) !important;
+			box-shadow: none !important;
+		}
+		.scene footer.hud .bonus-button {
+			height: auto !important;
+			width: clamp(44px, 12.5vw, 60px) !important;
+		}
+		.scene footer.hud .menu-toggle {
+			width: clamp(34px, 9vw, 44px) !important;
+		}
+	}
+
+	/* -- phone landscape: the rail, the stepper and the readouts on the bar's fill -- */
+	@media (max-height: 460px) and (orientation: landscape) {
+		.scene footer.hud {
+			border: 0 !important;
+			border-radius: 10px !important;
+			background: var(--bar-fill) !important;
+			box-shadow: none !important;
+		}
+		.scene footer.hud .metric,
+		.scene footer.hud .bet-stepper {
+			border: 0 !important;
+			border-radius: 8px !important;
+			background: var(--bar-fill) !important;
+			box-shadow: none !important;
+		}
+		.scene footer.hud .bonus-button {
+			height: auto !important;
+			width: 78% !important;
+		}
+		.scene footer.hud .utility:not(.menu-toggle),
+		.scene footer.hud .bet-stepper button {
+			border-width: 2px !important;
+		}
+		.scene footer.hud .spin {
+			border-width: 3px !important;
+		}
+	}
+
+	/* -- desktop + tablet: Blob Split's placements ----------------------------------------------
+	   Its desktop bar in 1280-wide stage px, from the square's top-left: square 102 x 101 at (0, 8),
+	   plate 817 x 83 at (111, 18), menu bars at 129.67, BALANCE at 198, WIN at 353, BET ending at
+	   671 with chevrons at 690, the 112 disc at 743, auto over turbo (44) at 866. --bs is one of
+	   those px; it follows the width as in Blob Split but is capped by the height so a short
+	   window's bar never climbs into the board. The group wrappers dissolve (display: contents) so
+	   each control is placed directly. Same gate as the desktop bar pass above. */
+	@media (min-width: 681px) and (orientation: landscape) and (min-height: 461px) {
+		.scene footer.hud {
+			--bs: min(calc(min(100vw, 2000px) / 1280), calc(100dvh / 760));
+			display: block !important;
+			box-sizing: border-box;
+			width: calc(var(--bs) * 928) !important;
+			height: calc(var(--bs) * 112) !important;
+			min-height: 0 !important;
+			padding: 0 !important;
+			bottom: calc(var(--bs) * 6) !important;
+			border: 0 !important;
+			border-radius: 0 !important;
+			background: none !important;
+			box-shadow: none !important;
+		}
+		.scene footer.hud::before {
+			content: '';
+			position: absolute;
+			display: block;
+			inset: auto;
+			left: calc(var(--bs) * 111);
+			top: calc(var(--bs) * 18);
+			width: calc(var(--bs) * 817);
+			height: calc(var(--bs) * 83);
+			border: 0;
+			border-radius: calc(var(--bs) * 10);
+			background: var(--bar-fill);
+			box-shadow: none;
+		}
+		.scene footer.hud :is(.hud-left, .hud-right, .metrics, .bet-stepper) {
+			display: contents !important;
+		}
+		.scene footer.hud :is(.menu-toggle, .bonus-button, .metric, .bet-stepper button, .spin, .turbo, .auto) {
+			position: absolute !important;
+			z-index: 1;
+			margin: 0 !important;
+		}
+		.scene footer.hud .bonus-button {
+			left: 0;
+			top: calc(var(--bs) * 8);
+			width: calc(var(--bs) * 102) !important;
+			height: auto !important;
+		}
+		.scene footer.hud .menu-toggle {
+			left: calc(var(--bs) * 129.67);
+			top: calc(var(--bs) * 40);
+			width: calc(var(--bs) * 46.67) !important;
+			height: calc(var(--bs) * 40) !important;
+		}
+		.scene footer.hud .menu-toggle .icon-menu {
+			width: 100% !important;
+		}
+		.scene footer.hud .menu-toggle.open {
+			left: calc(var(--bs) * 133);
+			width: calc(var(--bs) * 40) !important;
+		}
+		/* BALANCE and WIN with Blob Split's 6.67 padding and no rules; BET's amount ends at 671
+		   and grows leftward with its label centred over it. */
+		.scene footer.hud .metric {
+			top: calc(var(--bs) * 34);
+			height: calc(var(--bs) * 49) !important;
+			min-width: 0 !important;
+			min-height: 0 !important;
+			box-sizing: border-box;
+			display: flex !important;
+			flex-direction: column;
+			justify-content: center;
+			align-items: flex-start;
+			gap: calc(var(--bs) * 2);
+			padding: 0 calc(var(--bs) * 6.67) !important;
+			border: 0 !important;
+			background: none !important;
+			text-align: left;
+		}
+		.scene footer.hud .metric.balance {
+			left: calc(var(--bs) * 198);
+			width: calc(var(--bs) * 155);
+		}
+		.scene footer.hud .metric.win {
+			left: calc(var(--bs) * 353);
+			width: calc(var(--bs) * 170);
+		}
+		/* A definite width: an earlier pass makes the BET group an inline-size container, which
+		   shrink-to-fit collapses to 0px, and the amount then spilled right onto the chevrons. */
+		.scene footer.hud .metric.bet {
+			right: calc(var(--bs) * 257);
+			width: calc(var(--bs) * 130) !important;
+			max-width: none !important;
+			align-items: flex-end;
+			padding: 0 !important;
+			overflow: visible !important;
+		}
+		.scene footer.hud .metric.bet strong {
+			text-align: right;
+		}
+		.scene footer.hud .metric span {
+			font-size: calc(var(--bs) * 15) !important;
+			line-height: 1;
+			letter-spacing: 0.12em;
+		}
+		.scene footer.hud .metric strong {
+			max-width: 100%;
+			font-size: calc(var(--bs) * 26) !important;
+			line-height: 1;
+		}
+		/* The chevrons: up at (690, 31), down at (690, 67), 34 x 19, white and bare. */
+		.scene footer.hud .bet-stepper button {
+			left: calc(var(--bs) * 690);
+			top: calc(var(--bs) * 67);
+			width: calc(var(--bs) * 34) !important;
+			height: calc(var(--bs) * 19) !important;
+			border: 0 !important;
+			border-radius: calc(var(--bs) * 4) !important;
+			background: none !important;
+		}
+		.scene footer.hud .bet-stepper button:last-child {
+			top: calc(var(--bs) * 31);
+		}
+		.scene footer.hud .bet-stepper button:not(:disabled):hover {
+			background: none !important;
+			scale: 1.12;
+		}
+		.scene footer.hud .bet-stepper button:disabled {
+			opacity: 0.3;
+		}
+		.scene footer.hud .bet-stepper .step-glyph {
+			display: none;
+		}
+		.scene footer.hud .step-chevron {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: contain;
+		}
+		.scene footer.hud .step-chevron--down {
+			rotate: 180deg;
+		}
+		/* The 112 disc, overhanging the plate 18 above and 11 below. */
+		.scene footer.hud .spin {
+			left: calc(var(--bs) * 743);
+			top: 0;
+			width: calc(var(--bs) * 112) !important;
+			height: calc(var(--bs) * 112) !important;
+			border-width: calc(var(--bs) * 4) !important;
+			font-size: calc(var(--bs) * 16);
+		}
+		.scene footer.hud :is(.turbo, .auto) {
+			width: calc(var(--bs) * 44) !important;
+			height: calc(var(--bs) * 44) !important;
+			border-width: calc(var(--bs) * 2.75) !important;
+			font-size: calc(var(--bs) * 16);
+		}
+		.scene footer.hud .auto {
+			left: calc(var(--bs) * 866);
+			top: calc(var(--bs) * 12);
+		}
+		.scene footer.hud .turbo {
+			left: calc(var(--bs) * 867);
+			top: calc(var(--bs) * 61);
+		}
+	}
+
+	/* -- phone landscape: Blob Split's rail (Figma 11318:45947, user's reference 2026-11-25) -------
+	   Rail = menu, turbo, spin, auto. The P square leaves the rail and sits under a wider bet
+	   stepper, which loses its -/+ discs for Blob's bare chevrons around a bigger amount. The 47%
+	   fill read too thin over the bright sky ("difficult to see"), so the plates here are 60%. */
+	@media (max-height: 460px) and (orientation: landscape) {
+		.scene footer.hud {
+			--ls-col: 5.6vw;
+			--ls-gap: 8px;
+			--bar-fill: rgb(0 0 0 / 0.6);
+			grid-template-rows: repeat(4, auto) !important;
+			align-content: space-evenly;
+			gap: 0 !important;
+		}
+		.scene footer.hud .menu-toggle {
+			grid-row: 1 !important;
+		}
+		.scene footer.hud .turbo {
+			grid-row: 2 !important;
+		}
+		.scene footer.hud .spin {
+			grid-row: 3 !important;
+		}
+		.scene footer.hud .auto {
+			grid-row: 4 !important;
+		}
+		.scene footer.hud .bonus-button {
+			position: fixed !important;
+			inset: auto 11.6% 12% auto !important;
+			width: var(--ls-col) !important;
+			height: auto !important;
+		}
+		.scene footer.hud .bet-stepper {
+			inset: auto 11.6% calc(12% + var(--ls-col) + var(--ls-gap)) auto !important;
+			width: var(--ls-col) !important;
+			height: 34vh !important;
+			padding: 0.8vh 0 !important;
+			grid-template-rows: auto 1fr auto !important;
+		}
+		.scene footer.hud .bet-stepper button {
+			width: 70% !important;
+			height: 6vh !important;
+			border: 0 !important;
+			border-radius: 4px !important;
+			background: none !important;
+		}
+		.scene footer.hud .bet-stepper button:first-child {
+			grid-row: 3;
+		}
+		.scene footer.hud .bet-stepper button:last-child {
+			grid-row: 1;
+		}
+		.scene footer.hud .bet-stepper button:not(:disabled):hover {
+			background: none !important;
+			scale: 1.12;
+		}
+		.scene footer.hud .bet-stepper button:disabled {
+			opacity: 0.3;
+		}
+		.scene footer.hud .bet-stepper .step-glyph {
+			display: none;
+		}
+		.scene footer.hud .step-chevron {
+			display: block;
+			width: 100%;
+			height: 100%;
+			object-fit: contain;
+		}
+		.scene footer.hud .step-chevron--down {
+			rotate: 180deg;
+		}
+		/* The amount rides the stepper's middle: its centre is the stepper's bottom plus half its
+		   34vh, less half this box's own height. */
+		.scene footer.hud .metric.bet {
+			position: fixed !important;
+			inset: auto 11.6% calc(12% + var(--ls-col) + var(--ls-gap) + 17vh - 11px) auto !important;
+			display: grid !important;
+			place-items: center;
+			width: var(--ls-col) !important;
+			height: 22px !important;
+			padding: 0 !important;
+			border: 0 !important;
+			background: none !important;
+			container-type: inline-size;
+			overflow: visible !important;
+		}
+		.scene footer.hud .metric.bet span {
+			display: none;
+		}
+		.scene footer.hud .metric.bet strong {
+			font-size: clamp(9px, calc(230cqw / var(--chars, 5)), 17px) !important;
+			line-height: 1;
+			white-space: nowrap;
+		}
 	}
 </style>
