@@ -223,12 +223,6 @@ const PORTRAIT_TOP_OFFSET = 236; // portrait: push frame down from the top (main
 const MOBILE_FRAME_INNER_W = 0.965;
 const MOBILE_FRAME_INNER_H = 0.78;
 
-// Mobile-landscape reserves a bottom control strip + side rails (Figma 2682-3639) and
-// centres the reel grid in the remaining play area. Desktop/portrait are unaffected.
-const LS_PANEL_TOP = 22;   // where the inner wood panel (reel area) begins — near the top
-const LS_BOTTOM_BAR = 62;  // gap below the frame for the bet pad
-const LS_LEFT_RAIL = 150;
-const LS_RIGHT_RAIL = 120;
 // reel_frame.png cropped to opaque bounds (2121×1638). The rope hangs from the top ~25% of the
 // image; the inner wood panel (where the reels sit) is measured below it.
 const LS_FRAME_ASPECT = 2121 / 1638;
@@ -239,6 +233,23 @@ const LS_FRAME_INNER_CY = 0.6; // grid vertical centre in the frame (even top/bo
 const LS_PANEL_FILL = 0.98;  // reel pitch fills ~98% of the inner panel (both axes)
 const LS_SYMBOL_FILL = 1.12; // symbol size vs its cell (bigger → fills the cell, tighter gaps)
 const LS_FRAME_WIDTH = 0.9;  // slight narrowing of the frame/background (forest margin on sides)
+// Mobile landscape fits the frame between the HUD's Press Play rail pieces, in its --lu units
+// (HudHtml.svelte `.ls-stats` / `.ls-side` — keep in step): BALANCE/WIN boxes 14 from the left,
+// 120 wide; stepper column's left edge 92.5 + 46 from the right.
+const LS_STATS_LEFT_LU = 14;
+const LS_STATS_W_LU = 120;
+const LS_SIDE_FROM_RIGHT_LU = 92.5 + 46;
+const LS_HUD_GAP_LU = 8;
+const LS_TOP_LU = 10; // clearance above the visible frame
+const LS_FOOT_LU = 40; // the rail / stats foot line, up from the bottom
+// The drawn wood box inside the frame rect (fractions), measured at 740x420.
+const LS_FRAME_VIS_X0 = 0.066;
+const LS_FRAME_VIS_X1 = 0.94;
+const LS_FRAME_VIS_Y0 = 0.238;
+const LS_FRAME_VIS_Y1 = 0.947;
+
+// Clearance between the desktop board frame and the top of the HUD's Press Play bar, device px.
+const DESKTOP_BAR_GAP_PX = 6;
 
 const boardLayout = () => {
 	const layoutType = stateLayoutDerived.layoutType();
@@ -247,16 +258,30 @@ const boardLayout = () => {
 	// included) inside the play area, then place the reel grid inside its inner wood region.
 	if (layoutType === 'landscape') {
 		const main = stateLayoutDerived.mainLayout();
-		const availW = main.width - LS_LEFT_RAIL - LS_RIGHT_RAIL;
-		// Pin the inner PANEL: its top sits at LS_PANEL_TOP (near the screen top) and the frame
-		// bottom sits just above the bet pad. The rope extends off-screen above (that's fine — it
-		// keeps the wood panel high, as in the design). Solve frameH from these two constraints.
-		const frameBottom = main.height - LS_BOTTOM_BAR;
-		const panelTopFrac = LS_FRAME_INNER_CY - LS_FRAME_INNER_H * 0.5;
-		const frameH = (frameBottom - LS_PANEL_TOP) / (1 - panelTopFrac);
-		const frameW = frameH * LS_FRAME_ASPECT * LS_FRAME_WIDTH;
-		const frameCx = LS_LEFT_RAIL + availW * 0.5;
-		const frameCy = frameBottom - frameH * 0.5;
+		// As big as the screen allows without touching the HUD (2026-11-26 ask): the VISIBLE wood box
+		// (LS_FRAME_VIS_*, measured off the drawn frame — the rect above it is empty) fills the gap
+		// between the BALANCE/WIN boxes and the bet-stepper column, and between the screen top and
+		// the rail's foot line. The HUD (HudHtml's Press Play landscape rail) is laid out in
+		// --lu = min(vw/800, vh/360) px, so the gap is worked out in canvas px, then mapped to main.
+		const canvas = stateLayoutDerived.canvasSizes();
+		const ms = main.scale || 1;
+		const lu = Math.min(canvas.width / 800, canvas.height / 360);
+		const gap = LS_HUD_GAP_LU * lu;
+		const left = (LS_STATS_LEFT_LU + LS_STATS_W_LU) * lu + gap;
+		const right = canvas.width - LS_SIDE_FROM_RIGHT_LU * lu - gap;
+		const top = LS_TOP_LU * lu;
+		const bottom = canvas.height - LS_FOOT_LU * lu;
+		const aspect = LS_FRAME_ASPECT * LS_FRAME_WIDTH;
+		const visW = LS_FRAME_VIS_X1 - LS_FRAME_VIS_X0;
+		const visH = LS_FRAME_VIS_Y1 - LS_FRAME_VIS_Y0;
+		const frameHpx = Math.max(1, Math.min((right - left) / (visW * aspect), (bottom - top) / visH));
+		const frameWpx = frameHpx * aspect;
+		const frameLeftPx = (left + right) * 0.5 - ((LS_FRAME_VIS_X0 + LS_FRAME_VIS_X1) * 0.5) * frameWpx;
+		const frameTopPx = (top + bottom) * 0.5 - ((LS_FRAME_VIS_Y0 + LS_FRAME_VIS_Y1) * 0.5) * frameHpx;
+		const frameW = frameWpx / ms;
+		const frameH = frameHpx / ms;
+		const frameCx = main.width * 0.5 + (frameLeftPx + frameWpx * 0.5 - canvas.width * 0.5) / ms;
+		const frameCy = main.height * 0.5 + (frameTopPx + frameHpx * 0.5 - canvas.height * 0.5) / ms;
 		// Inner wood panel (where the reels sit).
 		const innerW = frameW * LS_FRAME_INNER_W;
 		const innerH = frameH * LS_FRAME_INNER_H;
@@ -316,7 +341,7 @@ const boardLayout = () => {
 	// bigger overall scale; the frame is sized/centred from the new-frame interior fractions
 	// (kept in sync with BoardFrame.svelte). The ×1.1 is the "whole board 10% bigger" ask —
 	// BoardFrame derives its size from these scale values, so grid + frame grow together.
-	const boardScale = getBoardScale() * 1.05;
+	let boardScale = getBoardScale() * 1.05;
 	const H_SPREAD = 1.12;
 	const V_TIGHTEN = 0.95;
 	// Panel fractions measured from board_frame_desktop.webp (mirrors BoardFrame.svelte):
@@ -325,9 +350,24 @@ const boardLayout = () => {
 	const NEW_INNER_H = 0.947 - 0.04;
 	const NEW_INNER_CY = (0.947 + 0.04) / 2;
 	// Margins 1.004 / 1.004 mirror BoardFrame.svelte — outer columns/rows sit ~1px from the rails.
+	const DESKTOP_TOP_GAP = 54;
+	// Keep the frame clear of the HUD's Press Play bar (2026-11-26). The bar is Blob Split's, laid
+	// out in --bs = min(vw/1280, vh/760) px and standing 8px + 122·bs tall from the bottom (HudHtml),
+	// so it grows with the window while this board is sized from fixed px padding — on big screens
+	// the frame's bottom log ran under the bar. Shrink the board just enough to end above it.
+	{
+		const main = stateLayoutDerived.mainLayout();
+		const canvas = stateLayoutDerived.canvasSizes();
+		const ms = main.scale || 1;
+		const bs = Math.min(canvas.width / 1280, canvas.height / 760);
+		const barTopMain =
+			main.height * 0.5 + (canvas.height * 0.5 - (8 + 122 * bs) - DESKTOP_BAR_GAP_PX) / ms;
+		const frameH0 = (BOARD_SIZES.height * boardScale * V_TIGHTEN * 1.004) / NEW_INNER_H;
+		const maxFrameH = barTopMain - DESKTOP_TOP_GAP;
+		if (maxFrameH > 0 && frameH0 > maxFrameH) boardScale *= maxFrameH / frameH0;
+	}
 	const frameW = (BOARD_SIZES.width * boardScale * H_SPREAD * 1.004) / NEW_INNER_W;
 	const frameH = (BOARD_SIZES.height * boardScale * V_TIGHTEN * 1.004) / NEW_INNER_H;
-	const DESKTOP_TOP_GAP = 54;
 	return {
 		x: stateLayoutDerived.mainLayout().width * 0.5 + getBoardOffset().x,
 		y: DESKTOP_TOP_GAP + frameH * NEW_INNER_CY,
