@@ -1,5 +1,7 @@
 # Mystery Extreme and operation-specific gate rewards — 2026-11-26
 
+Update: the pending Super section below is historical; see super-duration-2026-11-26.md for the approved30+/500x/<=1% correction.
+
 ## Frontend
 
 - Keep Mystery Bonus at 400x, 65/30/5 Normal/Super/Hidden.

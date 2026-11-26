@@ -136,7 +136,7 @@ const en: Record<string, string> = {
 	'NORMAL RULES':
 		'Triggered by 3 Keys, selected by Mystery, or bought directly. Each gate gives one additive multiplier reward. The first reward sets the multiplier; later additive rewards increase it. Normal has no sticky Wilds or extra-spin rewards. A direct Normal purchase always awards Normal, with no chance of upgrading to Super or Hidden.',
 	'SUPER RULES':
-		'Triggered by 4 Keys, selected by Mystery, or bought directly. Each gate gives one reward: an additive multiplier, multiplication of the current multiplier by 2, 3 or 5, a sticky Wild, 1, 2, 3 or 5 extra spins, or a 15-spin retrigger. Sticky Wilds substitute for paying symbols and remain in place through tumbles and subsequent free spins, with up to 3 at once. A direct Super purchase always awards Super, with no chance of upgrading to Hidden.',
+		'Triggered by 4 Keys, selected by Mystery, or bought directly. Each gate gives one reward: an additive multiplier, multiplication of the current multiplier by 2, 3 or 5, a sticky Wild, 1, 2, 3 or 5 extra spins, or a 15-spin retrigger. Sticky Wilds substitute for paying symbols and remain in place through tumbles and subsequent free spins, with up to 3 at once. A direct Super purchase always awards Super, with no chance of upgrading to Hidden. Super bonuses with 30+ played free spins return at least 500× base bet from free spins alone and occur in at most 1% of Super bonuses.',
 	'HIDDEN RULES':
 		'Triggered by 5 or more Keys or selected by Mystery; not sold directly. Uses the same reward types as Super, but every gate awards two rewards, applied in order. Multiplier upgrades and sticky Wilds persist through the bonus. Both rewards are resolved before the current spin win is calculated.',
 	'MYSTERY RULES':
@@ -297,7 +297,7 @@ const bg: Record<string, string> = {
 	'NORMAL RULES':
 		'Активира се с 3 ключа, чрез Мистери или с директна покупка. Всеки портал дава една награда за добавяне към множителя. Първата награда задава множителя, а следващите го увеличават. Няма залепващи Wild символи или награди с допълнителни врътки. Директната покупка винаги дава Нормален бонус, без шанс за Супер или Скрит.',
 	'SUPER RULES':
-		'Активира се с 4 ключа, чрез Мистери или с директна покупка. Всеки портал дава една награда: добавяне към множителя, умножаване на текущия множител по 2, 3 или 5, залепващ Wild, 1–2 допълнителни врътки или ретригър с 3 или 5 врътки. Wild символите заместват плащащите символи и остават на място при каскадите и следващите бонус врътки — до 3 едновременно. Директната покупка винаги дава Супер бонус, без шанс за Скрит.',
+		'Активира се с 4 ключа, чрез Мистери или с директна покупка. Всеки портал дава една награда: добавяне към множителя, умножаване на текущия множител по 2, 3 или 5, залепващ Wild, 1–2 допълнителни врътки или ретригър с 3 или 5 врътки. Wild символите заместват плащащите символи и остават на място при каскадите и следващите бонус врътки — до 3 едновременно. Директната покупка винаги дава Супер бонус, без шанс за Скрит. Супер бонусите с 30+ изиграни безплатни врътки връщат поне 500× основния залог само от безплатните врътки и се случват в не повече от 1% от Супер бонусите.',
 	'HIDDEN RULES':
 		'Активира се с 5 или повече ключа или чрез Мистери; няма директна покупка. Наградите са като в Супер, но всеки портал дава две награди, прилагани последователно. Множителят и залепващите Wild символи се запазват през бонуса. И двете награди се прилагат преди изчисляване на печалбата от текущата врътка.',
 	'MYSTERY RULES':
