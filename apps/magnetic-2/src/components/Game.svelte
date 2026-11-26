@@ -448,6 +448,8 @@
 		height: 100dvh;
 		background: #060b16;
 		overflow: hidden;
+		/* Modal focus restoration must not scroll the canvas/HUD during rotation. */
+		overflow: clip;
 	}
 	.magnetic-shell::before,
 	.magnetic-shell::after {
