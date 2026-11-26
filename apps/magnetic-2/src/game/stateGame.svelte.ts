@@ -421,15 +421,14 @@ const LS_GRID_H_FILL = 0.98;
  *  is width-bound and the margin is the only thing holding it off the rail and the nav. 0.012 left
  *  it crowding both (user, 2026-09-11: "make board a bit smaller"). */
 const LS_BOARD_MARGIN = 0.032;
-// The board is tall enough now to reach down into the band the BALANCE and WIN chips occupy, so on
-// the right it is the WIN chip — not the nav bar above it — that sets how wide the board may be. On
-// the left the binding edge is the rail's, which the BALANCE chip now sits inside of since it moved
-// further left (user, 2026-09-11). A currency string long enough to push BALANCE past the rail will
-// overlap the board's bottom-left corner; that is the same trade the WIN chip's max-width makes.
-// 0.804 -> 0.85: the WIN bar's resting width came down from the design's 16.6% of the screen to 12%
-// specifically to give the board this room back (user, 2026-09-11). Keep the two in step — this is
-// 1 - (.ls-win right) - (.ls-win min-width) in HudHtml.
-const LS_WIN_LEFT = 0.85;
+// The board's RIGHT bound is the left edge of the HUD's bet-stepper column (Blob Split's Press Play
+// rail, 2026-11-25). HudHtml places it in Blob's 800x360 frame units, --lu = min(100vw/800,
+// 100dvh/360): rail right inset 13.5 + rail 65 + gap 14 + column 46 = 138.5 lu from the right edge.
+// Keep these in step with the .ls-side / .ls-nav rules at the end of HudHtml's stylesheet. It used
+// to be a fixed 0.85 (the old WIN chip's edge), which left the column touching the board.
+const LS_SIDE_FROM_RIGHT_LU = 138.5;
+const lsSideLeftFraction = (vis: { width: number; height: number }) =>
+	1 - LS_SIDE_FROM_RIGHT_LU * Math.min(1 / 800, vis.height / vis.width / 360);
 const LS_BOARD_CY = 0.5042;
 
 /** The visible canvas as a rect in MAIN coordinates — what every fraction above is taken of. */
@@ -713,7 +712,7 @@ const boardLayout = () => {
 		const vis = visibleBox();
 		const m = vis.width * LS_BOARD_MARGIN;
 		const leftBound = vis.left + vis.width * (LS_RAIL_CX + LS_RAIL_W * 0.5) + m;
-		const rightBound = vis.left + vis.width * LS_WIN_LEFT - m;
+		const rightBound = vis.left + vis.width * lsSideLeftFraction(vis) - m;
 		const boardScale = Math.min(
 			(vis.height * LS_GRID_H_FILL) / BOARD_SIZES.height,
 			(rightBound - leftBound) / BOARD_SIZES.width,

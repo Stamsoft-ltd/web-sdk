@@ -14,7 +14,6 @@
 
 	// Round icon-buttons — each PNG is a COMPLETE button (dark disc + cyan ring + icon baked in),
 	// with default + disabled/mute states from the "Icon Buttons" set. Used as the whole button.
-	const iconMenu = ap('/assets/components/navbar/icons/v2/ic_menu.svg');
 	// Same button (cyan ring + dark fill) as menu.webp but with a white X (Figma 4036-3577) — shown
 	// while the menu popover is open so the button reads as "close".
 	// ?v= because an earlier cut of this file shipped with an opaque white background (Figma's export
@@ -37,15 +36,16 @@
 	const iconMinusDisabled = ap('/assets/components/navbar/icons/v2/ic_minus.svg');
 	const iconPlus = ap('/assets/components/navbar/icons/v2/ic_plus.svg');
 	const iconPlusDisabled = ap('/assets/components/navbar/icons/v2/ic_plus.svg');
-	const iconAuto = ap('/assets/components/navbar/icons/v2/ic_auto.svg');
-	const iconAutoDisabled = ap('/assets/components/navbar/icons/v2/ic_auto.svg');
-	const iconSpin = ap('/assets/components/ui/spin_arrow.webp?v=20260807');
-	// Three-state turbo bolt — the DESIGN'S own arts (Figma 4148:16896 outline = off,
-	// 2503:7489 solid = fast, 4148:16893 double = super), not regenerated shapes.
-	const iconTurbo = ap('/assets/components/ui/ic_thunder.webp?v=20260810b');
-	const iconTurbo1 = ap('/assets/components/ui/ic_thunder_double.webp?v=20260810b');
-	const iconTurbo3 = ap('/assets/components/ui/ic_thunder_outline.webp?v=20260810b');
-	const iconCoins = ap('/assets/components/navbar/coins.webp');
+	// The Press Play bar's glyphs, shared with Blob Split (its public/base/bar/*.svg) so the studio's
+	// games wear one bottom bar: outline bolt = normal, filled = turbo, two bolts = super turbo.
+	const barMenu = ap('/assets/components/navbar/icons/bar/menu.svg');
+	const barSpin = ap('/assets/components/navbar/icons/bar/spin.svg');
+	const barAuto = ap('/assets/components/navbar/icons/bar/auto.svg');
+	const barArrow = ap('/assets/components/navbar/icons/bar/arrow.svg');
+	const barBonusMark = ap('/assets/components/navbar/icons/bar/bonus-mark.svg');
+	const barTurboOff = ap('/assets/components/navbar/icons/bar/turbo-off.svg');
+	const barTurbo = ap('/assets/components/navbar/icons/bar/turbo.svg');
+	const barTurboSuper = ap('/assets/components/navbar/icons/bar/turbo-super.svg');
 
 	const scatterFrame = ap('/assets/components/frames/scatter_frame.webp');
 	const hudFrame = ap('/assets/components/frames/hud_frame.webp');
@@ -61,7 +61,6 @@
 		heroCardBg,
 		menuBtnFrame,
 		soundBtnFrame,
-		iconMenu,
 		iconMenuMusic,
 		iconMenuInfo,
 		iconMenuMusicOff,
@@ -69,12 +68,14 @@
 		iconMenuSoundOff,
 		iconMinus,
 		iconPlus,
-		iconAuto,
-		iconSpin,
-		iconTurbo,
-		iconTurbo1,
-		iconTurbo3,
-		iconCoins,
+		barMenu,
+		barSpin,
+		barAuto,
+		barArrow,
+		barBonusMark,
+		barTurboOff,
+		barTurbo,
+		barTurboSuper,
 		scatterFrame,
 		hudFrame,
 		smallBtnFrame,
@@ -98,14 +99,6 @@
 
 	const context = getContext();
 
-	// Shrink a button label so long-locale copy fits its button. Two button shapes:
-	//   • Wide pills (landscape / desktop, `white-space: nowrap`) — the single line must fit the inner
-	//     width (e.g. de "BONUS KAUFEN", fr "ACHETER BONUS", pt "COMPRAR BÔNUS", ru "КУПИТЬ БОНУС").
-	//   • The round portrait pad (`white-space: normal`, text wraps) — the wrapped block must sit inside
-	//     the pad's INSCRIBED area, which is smaller than its square box; long copy (ar/es/fr/hi/ja/ko/
-	//     pt/ru/vi) otherwise reaches the ring. Short labels (en "BUY BONUS", da "KØB BONUS") keep base.
-	// Iterative so it also converges when shrinking re-flows a wrapped label onto fewer lines. Re-runs on
-	// language change (text passed as the dep), on resize, and once the web font has loaded.
 	// The landscape BALANCE / BET group is centred on the left rail's column, which is a pixi
 	// measurement: on a narrow popout the column sits close enough to the screen edge that half the
 	// group hangs off it (the BALANCE box lost its first letter at 610x347 once the type was sized
@@ -139,51 +132,6 @@
 	const renderScale = (el: HTMLElement) =>
 		el.offsetWidth > 0 ? el.getBoundingClientRect().width / el.offsetWidth : 1;
 
-	function fitLabel(node: HTMLElement, _dep?: unknown) {
-		const apply = () => {
-			const btn = node.parentElement;
-			if (!btn) return;
-			node.style.fontSize = '';
-			node.style.letterSpacing = '';
-			const cs = getComputedStyle(node);
-			const baseSize = parseFloat(cs.fontSize);
-			const baseLs = parseFloat(cs.letterSpacing) || 0;
-			const bcs = getComputedStyle(btn);
-			const bw = btn.clientWidth;
-			const bh = btn.clientHeight;
-			const padX = parseFloat(bcs.paddingLeft || '0') + parseFloat(bcs.paddingRight || '0');
-			const padY = parseFloat(bcs.paddingTop || '0') + parseFloat(bcs.paddingBottom || '0');
-			// Near-square pads are the round buy-bonus button: usable text area is a fraction of the box so
-			// the wrapped copy clears the ring. Wide pills use their full inner width (height never binds).
-			const round = Math.max(bw, bh) > 0 && Math.abs(bw - bh) / Math.max(bw, bh) < 0.35;
-			const k = renderScale(btn);
-			const availW = (round ? bw * 0.62 : Math.max(0, bw - padX) * 0.96) * k;
-			const availH = (round ? bh * 0.6 : Math.max(0, bh - padY)) * k;
-			if (availW <= 0 || availH <= 0) return;
-			// Measure the ACTUAL rendered text (widest line + total height) via a Range — for a wrapping
-			// label `scrollWidth` reports the max-width box, not the widest line, which would over-shrink.
-			const range = document.createRange();
-			range.selectNodeContents(node);
-			const overflows = () => {
-				const r = range.getBoundingClientRect();
-				return r.width > availW + 0.5 || r.height > availH + 0.5;
-			};
-			let size = baseSize;
-			let guard = 0;
-			while (guard++ < 48 && size > baseSize * 0.4 && overflows()) {
-				size -= 0.5;
-				const k = size / baseSize;
-				node.style.fontSize = `${size}px`;
-				node.style.letterSpacing = `${baseLs * k}px`;
-			}
-		};
-		const ro = new ResizeObserver(apply);
-		if (node.parentElement) ro.observe(node.parentElement);
-		requestAnimationFrame(apply);
-		(document as Document).fonts?.ready.then(apply);
-		return { update: apply, destroy: () => ro.disconnect() };
-	}
-
 	// Portrait: report the HUD's topmost edge so the board can be fitted above it. That edge is the
 	// spin disc, which is centred on the control bar and taller than it; offsetHeight is used for the
 	// disc because a rect would pick up its spin rotation. The bar is bottom-anchored, so a window
@@ -211,7 +159,7 @@
 
 	// Fit an AMOUNT into its fixed-width pill (desktop balance / win). The pills hold a fixed width
 	// so a count-up never re-lays the bar; what gives instead is the type — a long amount steps its
-	// font down until the text clears the pill's inner width. Unlike fitLabel this watches the TEXT
+	// font down until the text clears the pill's inner width. Unlike a resize-driven fitter this watches the TEXT
 	// (MutationObserver): the pill never resizes when its number changes, so a parent
 	// ResizeObserver would never fire, and Svelte 5 does not call an action's update() on a dep
 	// change either.
@@ -256,18 +204,6 @@
 		};
 	}
 
-	// Publishes the landscape WIN chip's rendered height on the HUD layer as --ls-win-h, so the nav
-	// column can end above it. The chip wraps to two lines when its gutter is narrow (long currency
-	// codes), and at a fixed 76.7vh the column's AUTO button then sat on top of it.
-	function publishWinHeight(node: HTMLElement) {
-		const host = node.parentElement;
-		const ro = new ResizeObserver(() =>
-			host?.style.setProperty('--ls-win-h', `${node.getBoundingClientRect().height}px`),
-		);
-		ro.observe(node);
-		return { destroy: () => ro.disconnect() };
-	}
-
 	// Centre of the left rail in device px — the BET and BALANCE chips sit on the same column as the
 	// logo and the FREE SPINS / TOTAL WIN / RESPIN boxes (user, 2026-09-11: "always center those
 	// horizontally between left and board"). The column lives in main units, so convert it with the
@@ -309,13 +245,18 @@
 	// ones scale the bar a touch further.
 	const DESKTOP_BAR_WIDTH = 1200;
 	const desktopBarScale = $derived.by(() => {
-		if (layoutType !== 'desktop') return 1;
+		if (layoutType !== 'desktop' && layoutType !== 'tablet') return 1;
 		// 16px of shell padding either side, as the shell's own `padding: 8px` plus the plate's
 		// breathing room; below 0.55 (a 660px plate, the floor the 1060px bar had at 0.62) the type
 		// would be smaller than the mobile HUD's, and a window that narrow is already on the mobile
 		// layout on its short axis.
-		const available = context.stateLayoutDerived.canvasSizes().width - 32;
-		return Math.max(0.55, Math.min(1, available / DESKTOP_BAR_WIDTH));
+		const canvas = context.stateLayoutDerived.canvasSizes();
+		const available = canvas.width - 32;
+		// Blob Split's Press Play bar is 928 of its 1280-px stage (~72% of the width), capped by the
+		// height (760-px stage) — sized like that, not to fill the window, or it ran under the board
+		// (user, 2026-11-25: "too big"). The floor still keeps popout type legible.
+		const blobBar = 928 * Math.min(canvas.width / 1280, canvas.height / 760);
+		return Math.max(0.45, Math.min(1, blobBar / DESKTOP_BAR_WIDTH, available / DESKTOP_BAR_WIDTH));
 	});
 
 	const canInteract = $derived(context.stateXstateDerived.isIdle());
@@ -355,9 +296,8 @@
 	const disableBuy = $derived(isInBonus || !context.stateXstateDerived.isIdle());
 	// Bolder icon = faster: normal = outline bolt (turbo3), turbo = solid bolt (turbo), super = double (turbo1)
 	const turboIcon = $derived(
-		stateBet.isSuperTurbo ? iconTurbo1 : stateBet.isTurbo ? iconTurbo : iconTurbo3,
+		stateBet.isSuperTurbo ? barTurboSuper : stateBet.isTurbo ? barTurbo : barTurboOff,
 	);
-	const isMuted = $derived(stateSound.volumeValueMaster === 0);
 	const betOptions = $derived(stateConfig.betAmountOptions);
 	const smallestBet = $derived(stateConfig.betAmountOptions[0]);
 	const biggestBet = $derived(
@@ -444,18 +384,6 @@
 			return;
 		}
 		action();
-	};
-
-	const toggleSound = () => {
-		context.eventEmitter.broadcast({ type: 'soundPressGeneral' });
-		const unmuting = stateSound.volumeValueMaster === 0;
-		stateSound.volumeValueMaster = unmuting ? 50 : 0;
-		// Unmuting the master while BOTH channels are individually off would stay silent —
-		// restore the channels so the button audibly unmutes everything.
-		if (unmuting && stateSound.volumeValueMusic === 0 && stateSound.volumeValueSoundEffect === 0) {
-			stateSound.volumeValueMusic = 75;
-			stateSound.volumeValueSoundEffect = 75;
-		}
 	};
 
 	let showMenuPopup = $state(false);
@@ -726,6 +654,17 @@
 >
 	<!-- Menu popover (SOUND / MUSIC / INFO) — shared by desktop and portrait; rendered inside a
 	     position:relative nav container so it floats above the menu button. -->
+	{#snippet bonusFace(showTag: boolean)}
+		<!-- The Press Play square (Blob Split's BONUS): the word stays for screen readers and, on the
+		     desktop bar where a press turns an active mode off, shows as a DEACTIVATE tag while one is on. -->
+		<img class="bonus-mark" src={barBonusMark} alt="" />
+		{#if showTag}
+			<span class="bonus-tag"
+				>{isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.bonus()}</span
+			>
+		{/if}
+	{/snippet}
+
 	{#snippet menuPopup()}
 		<div class="menu-popup">
 			<button class="menu-row" type="button" onclick={toggleSfx}>
@@ -777,8 +716,9 @@
 		<div class="hud-left">
 			<div class="hud-system">
 				<button
-					class="nav-btn nav-btn--framed"
+					class="nav-btn nav-btn--framed nav-btn--menu"
 					class:nav-btn--open={showMenuPopup}
+					data-menu-toggle
 					type="button"
 					onclick={toggleMenuPopup}
 					aria-label="Menu"
@@ -789,7 +729,7 @@
 						     cyan ring, which read as a second, smaller button inside this one. -->
 						<span class="nav-close-x" aria-hidden="true"></span>
 					{:else}
-						<img class="nav-icon" src={iconMenu} alt="menu" />
+						<img class="nav-icon bar-menu" src={barMenu} alt="menu" />
 					{/if}
 				</button>
 				{#if showMenuPopup}{@render menuPopup()}{/if}
@@ -800,21 +740,14 @@
 
 			<div class="hud-buy">
 				<button
-					class="buy-btn"
+					class="bonus-square"
+					class:is-active={isAnyModeActive}
 					type="button"
 					disabled={disableBuy}
 					onclick={isAnyModeActive ? handleDeactivate : openBuyBonus}
 					aria-label={isAnyModeActive ? 'Deactivate' : i18nDerived.buyBonus()}
 				>
-					<!-- Label is the SHORT form; the aria-label keeps the full "buy bonus" wording so the
-					     control still announces what it does. -->
-					<span
-						class="buy-btn__label"
-						use:fitLabel={isAnyModeActive
-							? i18nDerived.translate('DEACTIVATE')
-							: i18nDerived.bonus()}
-						>{isAnyModeActive ? i18nDerived.translate('DEACTIVATE') : i18nDerived.bonus()}</span
-					>
+					{@render bonusFace(true)}
 				</button>
 			</div>
 
@@ -841,9 +774,6 @@
 
 			<!-- Display-only: bet changes go through the − / + steppers (bet menu on click disabled). -->
 			<div class="value-pill value-pill--bet bet-pill">
-				<span class="bet-coin" aria-hidden="true">
-					<img src={iconCoins} alt="" />
-				</span>
 				<div class="bet-values">
 					<span class="label">{i18nDerived.betLabel()}</span>
 					<span class="value" class:value--feature={isAnyModeActive} use:fitAmount
@@ -853,26 +783,8 @@
 			</div>
 
 			<div class="stepper">
-				{#if isLandscapeMobile}
-					<button
-						class="nav-btn nav-btn--framed"
-						type="button"
-						onclick={openRules}
-						aria-label="Game rules"
-					>
-						<img class="nav-icon" src={iconMenu} alt="menu" />
-					</button>
-					<button
-						class="nav-btn nav-btn--framed"
-						type="button"
-						onclick={toggleSound}
-						aria-label="Sound"
-					>
-						<img class="nav-icon" src={isMuted ? iconMenuSoundOff : iconSound} alt="sound" />
-					</button>
-				{/if}
 				<button
-					class="nav-btn nav-btn--framed"
+					class="nav-btn nav-btn--framed nav-btn--step"
 					type="button"
 					onpointerdown={(event) =>
 						startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
@@ -883,10 +795,10 @@
 					disabled={disableDecrease}
 					aria-label={`Decrease ${i18nDerived.betLabel()}`}
 				>
-					<img class="nav-icon" src={disableDecrease ? iconMinusDisabled : iconMinus} alt="minus" />
+					<img class="step-chevron step-chevron--down" src={barArrow} alt="minus" />
 				</button>
 				<button
-					class="nav-btn nav-btn--framed"
+					class="nav-btn nav-btn--framed nav-btn--step nav-btn--up"
 					type="button"
 					onpointerdown={(event) =>
 						startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
@@ -897,7 +809,7 @@
 					disabled={disableIncrease}
 					aria-label={`Increase ${i18nDerived.betLabel()}`}
 				>
-					<img class="nav-icon" src={disableIncrease ? iconPlusDisabled : iconPlus} alt="plus" />
+					<img class="step-chevron" src={barArrow} alt="plus" />
 				</button>
 			</div>
 
@@ -912,7 +824,7 @@
 					aria-label="Spin"
 					disabled={isBusy || (canInteract && !hasAuto && !canAffordBet)}
 				>
-					<img class="spin-btn__icon" src={iconSpin} alt="" />
+					<img class="spin-btn__icon" src={barSpin} alt="" />
 					{#if hasAuto}
 						<span
 							class="spin-btn__count"
@@ -933,26 +845,17 @@
 					onclick={onTurbo}
 					aria-label={i18nDerived.turboLabel()}
 				>
-					<img class="nav-icon" src={turboIcon} alt="turbo" />
+					<img class="nav-icon turbo-glyph" src={turboIcon} alt="turbo" />
 				</button>
 				<button
-					class="nav-btn nav-btn--framed"
+					class="nav-btn nav-btn--framed nav-btn--auto"
 					class:active={hasAuto}
 					type="button"
 					onclick={onAuto}
 					disabled={disableAuto}
 					aria-label={i18nDerived.autoplayLabel()}
 				>
-					<!-- The design captions this one: glyph on top, AUTO beneath it, so it reads as
-					     autoplay at a glance rather than by icon alone. -->
-					<span class="auto-stack">
-						<img
-							class="nav-icon nav-icon--auto"
-							src={disableAuto ? iconAutoDisabled : iconAuto}
-							alt="auto"
-						/>
-						<span class="auto-word">{i18nDerived.autoShort()}</span>
-					</span>
+					<img class="nav-icon auto-glyph" src={barAuto} alt="auto" />
 				</button>
 			</div>
 		</div>
@@ -964,8 +867,9 @@
 			<div class="pt-controls" use:reportHudTop>
 				<div class="pt-grp pt-grp--left">
 					<button
-						class="nav-btn nav-btn--framed"
+						class="nav-btn nav-btn--framed nav-btn--menu"
 						class:nav-btn--open={showMenuPopup}
+						data-menu-toggle
 						type="button"
 						onclick={toggleMenuPopup}
 						aria-label="Menu"
@@ -976,23 +880,19 @@
 						     cyan ring, which read as a second, smaller button inside this one. -->
 							<span class="nav-close-x" aria-hidden="true"></span>
 						{:else}
-							<img class="nav-icon" src={iconMenu} alt="menu" />
+							<img class="nav-icon bar-menu" src={barMenu} alt="menu" />
 						{/if}
 					</button>
 					{#if showMenuPopup}{@render menuPopup()}{/if}
 					<div class="pt-buy pt-buy--nav">
 						<button
-							class="buy-btn"
+							class="bonus-square pt-bonus"
 							type="button"
 							disabled={disableBuy}
 							onclick={openBuyBonus}
 							aria-label={i18nDerived.buyBonus()}
 						>
-							<!-- Short label, as the design's pill has it and as the desktop bar already does;
-							     the aria-label keeps the full wording so the control still announces itself. -->
-							<span class="buy-btn__label" use:fitLabel={i18nDerived.bonus()}
-								>{i18nDerived.bonus()}</span
-							>
+							{@render bonusFace(false)}
 						</button>
 					</div>
 				</div>
@@ -1007,7 +907,7 @@
 					aria-label="Spin"
 					disabled={isBusy || (canInteract && !hasAuto && !canAffordBet)}
 				>
-					<img class="spin-btn__icon" src={iconSpin} alt="" />
+					<img class="spin-btn__icon" src={barSpin} alt="" />
 					{#if hasAuto}
 						<span class="spin-btn__count" style={`--spin-count-scale:${autoSpinsCountScale}`}
 							>{autoSpinsRemainingText}</span
@@ -1024,7 +924,7 @@
 						onclick={onTurbo}
 						aria-label={i18nDerived.turboLabel()}
 					>
-						<img class="nav-icon" src={turboIcon} alt="turbo" />
+						<img class="nav-icon turbo-glyph" src={turboIcon} alt="turbo" />
 					</button>
 					<button
 						class="nav-btn nav-btn--framed"
@@ -1034,7 +934,7 @@
 						disabled={disableAuto}
 						aria-label={i18nDerived.autoplayLabel()}
 					>
-						<img class="nav-icon" src={disableAuto ? iconAutoDisabled : iconAuto} alt="auto" />
+						<img class="nav-icon auto-glyph" src={barAuto} alt="auto" />
 					</button>
 				</div>
 			</div>
@@ -1102,7 +1002,10 @@
 	{/if}
 
 	{#if isLandscapeMobile}
-		<!-- ── Landscape HUD: vertical nav bar (right), balance/bet (bottom-left), buy bonus ── -->
+		<!-- ── Phone landscape: Blob Split's rail (Figma 11318:45947) — rail = menu, turbo, spin, auto;
+		     a vertical chevron bet stepper with the Press Play square under it, left of the rail.
+		     BALANCE and WIN stay on the left rail's column, where BALANCE / BET sat (user, 2026-09-11).
+		     The master-mute disc stays out of the rail (user, 2026-09-11): sound is in the menu. ── -->
 		<div class="ls-hud">
 			<div class="ls-stats" use:keepInside={lsRailCX}>
 				<div class="value-pill value-pill--balance ls-balance">
@@ -1111,37 +1014,18 @@
 					</div>
 					<span class="value" use:fitAmount>{formattedBalance}</span>
 				</div>
+				<div class="value-pill value-pill--balance ls-balance ls-win-box">
+					<div class="label label--balance">
+						<span class="label-text">{i18nDerived.win()}</span>
+					</div>
+					<span class="value" use:fitAmount>{formattedWin}</span>
+				</div>
+			</div>
+
+			<div class="ls-side">
 				<div class="ls-bet">
 					<button
-						class="nav-btn nav-btn--framed ls-step"
-						type="button"
-						onpointerdown={(event) =>
-							startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
-						onpointerup={clearHoldRepeat}
-						onpointercancel={clearHoldRepeat}
-						onpointerleave={clearHoldRepeat}
-						onclick={(event) => maybeRunClickAction(event, onDecrease)}
-						disabled={disableDecrease}
-						aria-label={`Decrease ${i18nDerived.betLabel()}`}
-					>
-						<img
-							class="nav-icon"
-							src={disableDecrease ? iconMinusDisabled : iconMinus}
-							alt="minus"
-						/>
-					</button>
-					<div
-						class="ls-bet-val"
-						role="button"
-						tabindex="0"
-						onkeydown={(e) =>
-							e.key === 'Enter' && canInteract && (stateModal.modal = { name: 'betAmountMenu' })}
-						onclick={() => canInteract && (stateModal.modal = { name: 'betAmountMenu' })}
-					>
-						<span class="value" class:value--feature={isAnyModeActive} use:fitAmount>{formattedBet}</span>
-					</div>
-					<button
-						class="nav-btn nav-btn--framed ls-step"
+						class="ls-chev"
 						type="button"
 						onpointerdown={(event) =>
 							startHoldRepeat(event, onIncrease, () => stepBet(1, { playSound: false }))}
@@ -1152,57 +1036,71 @@
 						disabled={disableIncrease}
 						aria-label={`Increase ${i18nDerived.betLabel()}`}
 					>
-						<img class="nav-icon" src={disableIncrease ? iconPlusDisabled : iconPlus} alt="plus" />
+						<img class="step-chevron" src={barArrow} alt="" />
+					</button>
+					<div
+						class="ls-bet-val"
+						role="button"
+						tabindex="0"
+						onkeydown={(e) =>
+							e.key === 'Enter' && canInteract && (stateModal.modal = { name: 'betAmountMenu' })}
+						onclick={() => canInteract && (stateModal.modal = { name: 'betAmountMenu' })}
+					>
+						<span class="value" class:value--feature={isAnyModeActive} use:fitAmount
+							>{formattedBet}</span
+						>
+					</div>
+					<button
+						class="ls-chev"
+						type="button"
+						onpointerdown={(event) =>
+							startHoldRepeat(event, onDecrease, () => stepBet(-1, { playSound: false }))}
+						onpointerup={clearHoldRepeat}
+						onpointercancel={clearHoldRepeat}
+						onpointerleave={clearHoldRepeat}
+						onclick={(event) => maybeRunClickAction(event, onDecrease)}
+						disabled={disableDecrease}
+						aria-label={`Decrease ${i18nDerived.betLabel()}`}
+					>
+						<img class="step-chevron step-chevron--down" src={barArrow} alt="" />
 					</button>
 				</div>
-			</div>
-
-			<div class="ls-win" use:publishWinHeight>
-				<div class="value-pill value-pill--balance ls-win-pill">
-					<div class="label label--balance">
-						<span class="label-text">{i18nDerived.win()}</span>
-					</div>
-					<span class="value" use:fitAmount>{formattedWin}</span>
-				</div>
-			</div>
-
-			<div class="ls-nav">
 				<button
-					class="nav-btn nav-btn--framed"
-					class:nav-btn--open={showMenuPopup}
-					type="button"
-					onclick={toggleMenuPopup}
-					aria-label="Menu"
-				>
-					{#if showMenuPopup}
-						<!-- Open state (design): the disc fills lilac and a bare white X sits in it. Drawn,
-						     not the old menu_close.webp — that was the previous theme's navy disc with a
-						     cyan ring, which read as a second, smaller button inside this one. -->
-						<span class="nav-close-x" aria-hidden="true"></span>
-					{:else}
-						<img class="nav-icon" src={iconMenu} alt="menu" />
-					{/if}
-				</button>
-				{#if showMenuPopup}{@render menuPopup()}{/if}
-				<!-- NOTE: the landscape nav carries exactly the design's five controls (menu, BONUS, spin,
-				     turbo, AUTO). The standalone sound/mute disc that used to sit here is gone by
-				     request (user, 2026-09-11) — a sixth button crowded the column and the design has
-				     no slot for it. Master mute is still one tap away in the menu popover, which
-				     carries SOUND / MUSIC / INFO. Portrait and desktop keep their own sound button. -->
-				<!-- BONUS pill, in the nav column where the design puts it (4161:22199). It used to be a
-				     round badge floating in the sky right of the board — the spot the capsule tube used
-				     to occupy — which, once the board grew to the design's size, left it half on the
-				     nav bar. -->
-				<button
-					class="buy-btn ls-nav-buy"
+					class="bonus-square ls-bonus"
 					type="button"
 					disabled={disableBuy}
 					onclick={openBuyBonus}
 					aria-label={i18nDerived.buyBonus()}
 				>
-					<span class="buy-btn__label" use:fitLabel={i18nDerived.bonus()}
-						>{i18nDerived.bonus()}</span
-					>
+					{@render bonusFace(false)}
+				</button>
+			</div>
+
+			<div class="ls-nav">
+				<button
+					class="nav-btn nav-btn--framed nav-btn--menu"
+					class:nav-btn--open={showMenuPopup}
+					data-menu-toggle
+					type="button"
+					onclick={toggleMenuPopup}
+					aria-label="Menu"
+				>
+					{#if showMenuPopup}
+						<span class="nav-close-x" aria-hidden="true"></span>
+					{:else}
+						<img class="nav-icon bar-menu" src={barMenu} alt="menu" />
+					{/if}
+				</button>
+				{#if showMenuPopup}{@render menuPopup()}{/if}
+				<button
+					class="nav-btn nav-btn--framed nav-btn--turbo"
+					class:turbo-fast={stateBet.isTurbo && !stateBet.isSuperTurbo}
+					class:turbo-super={stateBet.isSuperTurbo}
+					type="button"
+					onclick={onTurbo}
+					aria-label={i18nDerived.turboLabel()}
+				>
+					<img class="nav-icon turbo-glyph" src={turboIcon} alt="turbo" />
 				</button>
 				<button
 					class="spin-btn ls-spin"
@@ -1214,7 +1112,7 @@
 					aria-label="Spin"
 					disabled={isBusy || (canInteract && !hasAuto && !canAffordBet)}
 				>
-					<img class="spin-btn__icon" src={iconSpin} alt="" />
+					<img class="spin-btn__icon" src={barSpin} alt="" />
 					{#if hasAuto}
 						<span class="spin-btn__count" style={`--spin-count-scale:${autoSpinsCountScale}`}
 							>{autoSpinsRemainingText}</span
@@ -1222,28 +1120,14 @@
 					{/if}
 				</button>
 				<button
-					class="nav-btn nav-btn--framed nav-btn--turbo"
-					class:turbo-fast={stateBet.isTurbo && !stateBet.isSuperTurbo}
-					class:turbo-super={stateBet.isSuperTurbo}
-					type="button"
-					onclick={onTurbo}
-					aria-label={i18nDerived.turboLabel()}
-				>
-					<img class="nav-icon" src={turboIcon} alt="turbo" />
-				</button>
-				<button
-					class="nav-btn nav-btn--framed ls-nav-auto"
+					class="nav-btn nav-btn--framed"
 					class:active={hasAuto}
 					type="button"
 					onclick={onAuto}
 					disabled={disableAuto}
 					aria-label={i18nDerived.autoplayLabel()}
 				>
-					<!-- Glyph AND the word, stacked — the design's AUTO disc carries both. -->
-					<img class="nav-icon" src={disableAuto ? iconAutoDisabled : iconAuto} alt="auto" />
-					<span class="ls-nav-auto__label" use:fitLabel={i18nDerived.autoShort()}
-						>{i18nDerived.autoShort()}</span
-					>
+					<img class="nav-icon auto-glyph" src={barAuto} alt="auto" />
 				</button>
 			</div>
 		</div>
@@ -2579,16 +2463,13 @@
 		   It used to be sized by min(4.8vw, 8.4vh), which rendered it ~30px on that frame: half the
 		   design's width, so the whole control column read as a thin sliver. */
 		right: 2.34vw;
-		/* The design's top edge (49.2% centre - half of 76.7%). The column ends at the design's bottom
-		   or 8px above the WIN chip, whichever is higher (--ls-win-h is measured on the chip). */
+		/* The design's top edge (49.2% centre - half of 76.7%). Blob Split's rail at the end of the
+		   sheet re-places it (Press Play bar). */
 		top: 10.85%;
 		/* The big spin disc deliberately overflows the bar's sides as the focal control (mirrors the
 		   desktop spin button, which protrudes past the bar via negative margins). */
 		width: 7.83vw;
-		height: min(
-			76.7vh,
-			calc(100% - 10.85% - clamp(6px, 2.2vh, 20px) - var(--ls-win-h, 0px) - 8px)
-		);
+		height: 76.7vh;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -2609,44 +2490,6 @@
 		   popout cannot grow them past the bar. */
 		width: clamp(14px, min(8.3vh, 5.4vw), 46px);
 		height: clamp(14px, min(8.3vh, 5.4vw), 46px);
-	}
-	/* AUTO carries the word under its glyph (design 4161:22199), so it stacks rather than centring a
-	   single icon. The glyph gives up the room the label needs; the disc itself stays the same size as
-	   the others in the column. */
-	.ls-nav .ls-nav-auto {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 0;
-	}
-	.ls-nav .ls-nav-auto .nav-icon {
-		width: 42%;
-		height: 42%;
-	}
-	.ls-nav .ls-nav-auto__label {
-		font-family: 'Chakra Petch', 'Inter', sans-serif;
-		font-weight: 700;
-		/* Was clamp(7px, 2.6vh, 12px), which ran "AUTO" out to the disc's ring (the disc is
-		   min(8.3vh, 5.4vw), so the word's share of it grew on wide windows). A smaller base, and
-		   fitLabel keeps any locale's word inside the disc's inscribed width. */
-		font-size: clamp(6px, 2.1vh, 10px);
-		line-height: 1.1;
-		letter-spacing: 0.02em;
-		white-space: nowrap;
-		color: #fff;
-	}
-	/* The disc is min(8.3vh, 5.4vw); under ~26px (these two breakpoints) the fitted word came out
-	   at 4px on Popout-S. There the glyph carries the button alone, at the size the other discs'
-	   icons have — the button keeps its autoplay aria-label. */
-	@media (max-height: 313px), (max-width: 481px) {
-		.ls-nav .ls-nav-auto__label {
-			display: none;
-		}
-		.ls-nav .ls-nav-auto .nav-icon {
-			width: 58%;
-			height: 58%;
-		}
 	}
 	/* Focal spin — big disc that overflows the slim nav panel on both sides (negative side margins so
 	   it protrudes past the panel edges without widening the flex column), centred. */
@@ -2774,35 +2617,6 @@
 		color: #fff;
 		white-space: nowrap;
 	}
-	/* BONUS pill inside the nav column. The design's is a full-width lilac rounded rect the same
-	   height as the icon buttons either side of it (62 x 26 of the 800x360 frame). */
-	.ls-nav .ls-nav-buy {
-		/* Spans the bar's OUTER width, as in the design: measured on the frame, the pill's lilac is
-		   60px against a 60px bar. Inside the bar's own border it came out 54, which is what made it
-		   read as a small chip floating in the column. The dark 2px rim went with it — the design's
-		   pill is flat --hud-accent, edge to edge. */
-		width: calc(100% + 4px);
-		margin: 0 -2px;
-		box-sizing: border-box;
-		height: clamp(14px, min(8.3vh, 5.4vw), 46px);
-		flex: 0 0 auto;
-		background: var(--hud-accent);
-		border: none;
-		border-radius: 999px;
-		padding: 0;
-	}
-	.ls-nav .ls-nav-buy .buy-btn__label {
-		white-space: nowrap;
-		line-height: 1;
-		text-align: center;
-		/* Measured, not guessed, twice: the design's BONUS ink is 45x6 px on its 800x360 frame. 3.9vh
-		   overshot it (58x9) because the ink is not just bigger there — it is TRACKED wider. The ratio
-		   45/6 = 7.5 against this face's own 6.4 is the whole difference, so the size comes down to
-		   match the height and the tracking opens up to match the width. */
-		font-size: clamp(0.2rem, 2.42vh, 0.62rem);
-		letter-spacing: 0.28em;
-		max-width: 92%;
-	}
 
 	/* ── Landscape (mirrors portrait): menu opens the SOUND/MUSIC/INFO popover (sound lives there now),
 	   the buy-bonus moves into the vertical nav where sound was, and the last-round WIN takes the buy's
@@ -2881,103 +2695,20 @@
 			font-size: 10px;
 		}
 	}
-	.ls-nav-buy {
-		flex: 0 0 auto;
-		display: flex;
-	}
-	.ls-nav-buy .buy-btn {
-		width: clamp(34px, 15vh, 62px);
-		height: clamp(34px, 15vh, 62px);
-		aspect-ratio: 1;
-		background: var(--hud-accent);
-		border: 2px solid var(--hud-accent-rim);
-		border-radius: 50%;
-		padding: 0;
-	}
-	.ls-nav-buy .buy-btn__label {
-		white-space: normal;
-		line-height: 1.02;
-		text-align: center;
-		font-size: clamp(0.28rem, 1.5vh, 0.48rem);
-		max-width: 80%;
-	}
-	/* WIN: a bar stretched across the lower-right gutter — starting just right of the board, running under
-	   the buy-bonus/capsule across to under the nav. Bottom-anchored so it sits beneath the buy-bonus. */
-	.ls-win {
-		position: absolute;
-		/* Design: a 133x26 bar at x 643..776 of 800, 8px clear of the bottom. Anchored by its RIGHT
-		   edge with a min width rather than pinned on both sides, so a long win amount grows the bar
-		   leftward instead of spilling out of it. (It used to be pinned to the buy badge's centre,
-		   which moved into the nav column.) */
-		right: 3vw;
-		left: auto;
-		bottom: clamp(6px, 2.2vh, 20px);
-		/* 16.6% is the design's own bar width; 12% is narrower on purpose, to hand the width back to
-		   the board (user, 2026-09-11). stateGame's LS_WIN_LEFT mirrors 1 - right - this. A long win
-		   amount still grows the bar leftward up to max-width. */
-		min-width: 12%;
-		/* Right of the board only: a long amount grows the bar leftward up to the board's edge and
-		   then wraps / steps down, rather than running over the last column. */
-		max-width: calc(100% - 3vw - var(--ls-board-right, 54%) - 10px);
-		display: flex;
-		justify-content: flex-end;
-	}
-	/* Scoped under the layout attribute so it outranks the generic `[data-layout='landscape']
-	   .value-pill` rule — which is more specific than a bare `.ls-win .ls-win-pill` and was winning,
-	   collapsing this into a 98x12 sliver instead of the design's 184x26 bar. */
-	.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill {
-		width: 100%;
-		box-sizing: border-box;
-		flex-direction: row;
-		align-items: center;
-		/* Design: the label sits against the left edge and the amount against the right, not the two
-		   centred as a pair. */
-		justify-content: space-between;
-		flex-wrap: wrap;
-		gap: 0 clamp(6px, 1.6vw, 16px);
-		overflow: hidden;
-		background: var(--hud-bar-dark);
-		border: none;
-		/* The design's chip is a ROUNDED bar (~10px on its 800x360 frame); this rule used to end in a
-		   second `border-radius: 0` that squared it off. */
-		border-radius: clamp(5px, 1.25vw, 12px);
-		box-shadow: none;
-		backdrop-filter: none;
-		min-width: 0;
-		padding: clamp(4px, 2vh, 10px) clamp(8px, 2vw, 18px);
-	}
 	/* The three bottom-row chips (BET, BALANCE, WIN) are set in POPPINS in the design, not in the
 	   Audiowide the rest of the HUD uses for numerals — measured, not guessed: the design's
 	   "$1,50.00" has an ink aspect of 4.385, against Poppins 700's 4.52 and Audiowide's 5.98 (whose
 	   slashed zero is the giveaway). Scoped to landscape; portrait and desktop keep Audiowide. */
-	.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill .value,
 	.hud-shell[data-layout='landscape'] .ls-balance .value,
 	.hud-shell[data-layout='landscape'] .ls-bet-val .value {
 		font-family: 'Poppins', 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		letter-spacing: 0;
 	}
-	.hud-shell[data-layout='landscape'] .ls-win .label-text,
 	.hud-shell[data-layout='landscape'] .ls-balance .label-text {
 		font-family: 'Poppins', 'Chakra Petch', 'Inter', sans-serif;
 		font-weight: 700;
 		letter-spacing: 0.03em;
-	}
-	.ls-win .label--balance {
-		justify-content: center;
-		width: auto;
-	}
-	.ls-win .label--balance {
-		justify-content: center;
-	}
-	.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill .value {
-		font-size: clamp(11px, 4.6vh, 22px);
-		white-space: nowrap;
-		color: #fff;
-	}
-	.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill .label-text {
-		font-size: clamp(8px, 2.9vh, 14px);
-		color: #fff;
 	}
 
 	/* NOTE: the BONUS pill's label used to be stepped down again here (max-height 400 and 300). Both
@@ -2998,19 +2729,6 @@
 			gap: 0;
 			padding: clamp(3px, 1.6vh, 9px) clamp(6px, 1.8vw, 14px);
 		}
-		.hud-shell[data-layout='landscape'] .ls-win {
-			min-width: 0;
-		}
-		.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill {
-			flex-direction: column;
-			align-items: flex-end;
-			justify-content: center;
-			gap: 0;
-			padding: clamp(3px, 1.6vh, 9px) clamp(6px, 1.8vw, 14px);
-		}
-		.hud-shell[data-layout='landscape'] .ls-win .label--balance {
-			justify-content: flex-end;
-		}
 	}
 
 	/* Very small landscape screens (e.g. 400x225): the boxes have to give up some of the room the
@@ -3027,21 +2745,6 @@
 		}
 		.hud-shell[data-layout='landscape'] .ls-bet-val .value {
 			font-size: clamp(9px, 4.4vh, 14px);
-		}
-		/* WIN, bottom right: a touch smaller than the balance so it clears the board's right edge. */
-		.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill .value {
-			font-size: clamp(9px, 4.2vh, 13px);
-		}
-		.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill .label-text {
-			font-size: clamp(7px, 2.6vh, 10px);
-		}
-		/* Drop the pill's box (min-width / dark fill / blur) here — centred on the capsule, the boxed pill
-		   grew LEFT into the board with a real win value. As plain centred text it stays clear of the board. */
-		.hud-shell[data-layout='landscape'] .ls-win .ls-win-pill {
-			min-width: 0;
-			background: none;
-			box-shadow: none;
-			backdrop-filter: none;
 		}
 		/* Menu popup: shrink further on this tiny screen (it otherwise nearly fills a 225px height). */
 		.hud-shell[data-layout='landscape'] .menu-popup {
@@ -3063,5 +2766,529 @@
 		.hud-shell[data-layout='landscape'] .menu-row__label {
 			font-size: clamp(7px, 3.2vh, 11px);
 		}
+	}
+
+	/* ===== Press Play bar — the studio bottom bar Blob Split, Theme Park, McSchmutzo and Veggie Salad
+	   wear (Blob Split's Figma 11395:4052), asked for here 2026-11-25 ================================
+	   A black 47% plate, white round buttons with black rims and black glyphs, a white spin disc with a
+	   black rim, the Press Play square as BONUS, accent labels over white amounts. Desktop + tablet also
+	   take Blob Split's placements; portrait keeps its own and wears the look; phone landscape takes
+	   Blob's rail. Later in the sheet than the MOTHERSHIP rules it overrides, so it wins by source order. */
+	.hud-shell {
+		--bar-fill: rgb(0 0 0 / 0.47);
+		--bar-hover: #efeaff;
+		/* MOTHERSHIP's own violet (the old BONUS pill), not Blob Split's pink. */
+		--bar-accent: var(--hud-accent);
+	}
+
+	/* -- round buttons, every layout -- */
+	.nav-btn--framed {
+		box-sizing: border-box;
+		border: 2.75px solid #000;
+		border-radius: 50%;
+		background: #fff;
+		box-shadow: none;
+		filter: none;
+		transition:
+			scale 0.12s ease,
+			background-color 0.15s ease;
+	}
+	.pt-step {
+		border-width: 2px;
+	}
+	.nav-btn--framed .nav-icon {
+		filter: brightness(0);
+	}
+	.nav-btn--framed:not(:disabled):hover {
+		filter: none;
+		background: var(--bar-hover);
+	}
+	.nav-btn--framed:not(:disabled):active {
+		filter: none;
+		scale: 0.93;
+	}
+	.nav-btn--framed:disabled {
+		opacity: 0.5;
+	}
+	.nav-btn--framed:disabled .nav-icon {
+		opacity: 1;
+	}
+	/* Turbo (any speed-up) and running autoplay go the accent, and stay it under the pointer so a tap
+	   on a phone, which leaves :hover latched, never reads as "off". */
+	.nav-btn--turbo.turbo-fast,
+	.nav-btn--turbo.turbo-super,
+	.nav-btn--framed.active,
+	.nav-btn--turbo.turbo-fast:not(:disabled):hover,
+	.nav-btn--turbo.turbo-super:not(:disabled):hover,
+	.nav-btn--framed.active:not(:disabled):hover {
+		filter: none;
+		background: var(--bar-accent);
+	}
+	/* Glyph sizes off Blob Split's 44 button: the bolt 25 tall (the double bolt takes its own width),
+	   the autoplay arrows 27.5 wide. */
+	.nav-btn--framed .nav-icon.turbo-glyph {
+		width: auto;
+		height: 57%;
+	}
+	.nav-btn--framed .nav-icon.auto-glyph {
+		width: 62.5%;
+		height: auto;
+	}
+
+	/* -- menu: bare white bars, every layout; open = a white disc with a black X -- */
+	.hud-shell [data-menu-toggle],
+	.hud-shell [data-menu-toggle]:not(:disabled):hover {
+		border: 0;
+		background: none;
+	}
+	.hud-shell [data-menu-toggle]:not(:disabled):hover {
+		scale: 1.06;
+	}
+	.hud-shell [data-menu-toggle] .nav-icon.bar-menu {
+		width: 100%;
+		height: auto;
+		filter: none;
+	}
+	.hud-shell [data-menu-toggle].nav-btn--open,
+	.hud-shell [data-menu-toggle].nav-btn--open:not(:disabled):hover {
+		aspect-ratio: 1;
+		height: auto;
+		border: 2.75px solid #000;
+		background: #fff;
+	}
+	.hud-shell [data-menu-toggle] .nav-close-x::before,
+	.hud-shell [data-menu-toggle] .nav-close-x::after {
+		background: #000;
+	}
+
+	/* -- spin: a white disc with a black rim, Blob Split's black double arrow -- */
+	.spin-btn {
+		box-sizing: border-box;
+		border: 4px solid #000;
+		border-radius: 50%;
+		background: #fff;
+		transition:
+			scale 0.12s ease,
+			background-color 0.15s ease;
+	}
+	.spin-btn::before,
+	.ls-nav .ls-spin::before {
+		content: none;
+	}
+	.pt-spin {
+		border-width: 3px;
+	}
+	.spin-btn:not(:disabled):hover {
+		filter: none;
+		background: var(--bar-hover);
+	}
+	.spin-btn:not(:disabled):active {
+		filter: none;
+		scale: 0.96;
+	}
+	.spin-btn:disabled {
+		opacity: 1;
+	}
+	.spin-btn:disabled .spin-btn__icon {
+		opacity: 0.35;
+	}
+	/* Absolutely centred: a % height on a grid item in an auto track falls back to the SVG's own size,
+	   which pushes the arrow out of a small disc. `translate`, not transform, so the hover crank and
+	   the hold spin (both transforms) still apply. */
+	.spin-btn__icon {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		translate: -50% -50%;
+		width: auto;
+		height: 79.5%;
+	}
+	.spin-btn--holding .spin-btn__icon {
+		filter: none;
+	}
+	.spin-btn__count {
+		width: 52%;
+		height: 52%;
+		background: #fff;
+		color: #000;
+		text-shadow: none;
+	}
+
+	/* -- BONUS: the 102 x 101 Press Play square, a black rim inset in it, the tilted mark -- */
+	.bonus-square {
+		position: relative;
+		display: block;
+		flex: 0 0 auto;
+		box-sizing: border-box;
+		padding: 0;
+		margin: 0;
+		border: 0;
+		background: var(--bar-accent);
+		cursor: pointer;
+		aspect-ratio: 102 / 101;
+		height: auto;
+		border-radius: 8.8%;
+		/* The rim's width is a share of the square; cq units on the square's OWN properties would
+		   resolve against an ancestor, so the rim is a child (::before). */
+		container-type: inline-size;
+		transition: scale 0.12s ease;
+	}
+	.bonus-square::before {
+		content: '';
+		position: absolute;
+		inset: 3.92%;
+		border: max(1.5px, 2.94cqw) solid #000;
+		border-radius: 6%;
+		pointer-events: none;
+	}
+	.bonus-square .bonus-mark {
+		position: absolute;
+		left: 21.3%;
+		top: 2.97%;
+		width: 65.7%;
+		height: 83.2%;
+		margin: 0;
+		pointer-events: none;
+		transition: rotate 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
+	}
+	.bonus-square:not(:disabled):hover .bonus-mark {
+		rotate: -6deg;
+	}
+	.bonus-square:not(:disabled):active {
+		scale: 0.95;
+	}
+	.bonus-square:disabled {
+		opacity: 0.55;
+		cursor: default;
+	}
+	.bonus-tag {
+		position: absolute;
+		left: 50%;
+		bottom: 0;
+		translate: -50% 45%;
+		padding: 0.25em 0.7em 0.15em;
+		border-radius: 0.7em;
+		background: #000;
+		color: #9bf715;
+		font-family: 'Audiowide', 'Chakra Petch', 'Inter', sans-serif;
+		font-size: max(8px, 10cqw);
+		line-height: 1.25;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		white-space: nowrap;
+		pointer-events: none;
+	}
+	.bonus-square:not(.is-active) .bonus-tag {
+		clip-path: inset(50%);
+		opacity: 0;
+	}
+	.bonus-square.is-active {
+		box-shadow:
+			0 0 0 3px #9bf715,
+			0 0 16px #9bf71599;
+	}
+	.pt-bonus.bonus-square {
+		width: clamp(36px, 11vw, 48px);
+	}
+
+	/* -- labels in the accent, amounts white -- */
+	.hud-shell .label,
+	.hud-shell .label-text {
+		color: var(--bar-accent);
+	}
+
+	/* -- portrait: the control row and the three readouts on the bar's fill -- */
+	.pt-controls::before {
+		border: 0;
+		background: var(--bar-fill);
+	}
+	.pt-balance,
+	.pt-bet {
+		border: 0;
+		background: var(--bar-fill);
+	}
+
+	/* -- desktop + tablet: Blob Split's placements ------------------------------------------------
+	   Its desktop bar, in its 1280-wide stage px measured from the square's top-left at (136, 552):
+	   square 102 x 101 at (0, 8), plate 817 x 83 at (111, 18), menu bars at 129.67, BALANCE at 198,
+	   WIN at 353, BET ending at 671 with chevrons at 690, the 112 disc at 743, auto over turbo (44)
+	   at 866. --bs is one of those px, sized so the 928-px bar is laid out at DESKTOP_BAR_WIDTH
+	   (1200) and then scaled as a unit by --bar-scale, exactly as the MOTHERSHIP bar was — that is
+	   what keeps it whole on Stake's popouts. The markup's group wrappers dissolve (display:
+	   contents) so each control is placed directly. Portrait and landscape hide .hud-bottom. */
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom {
+		--bs: calc(1200px / 928);
+		display: block;
+		width: calc(var(--bs) * 928);
+		max-width: none;
+		height: calc(var(--bs) * 112);
+		padding: 0;
+		margin-bottom: 12px;
+		border-radius: 0;
+		transform: scale(var(--bar-scale, 1));
+		transform-origin: bottom center;
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom::before {
+		inset: auto;
+		left: calc(var(--bs) * 111);
+		top: calc(var(--bs) * 18);
+		width: calc(var(--bs) * 817);
+		height: calc(var(--bs) * 83);
+		border: 0;
+		border-radius: calc(var(--bs) * 10);
+		background: var(--bar-fill);
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape'])
+		.hud-bottom
+		:is(.hud-left, .hud-controls, .stepper, .play-cluster, .action-cluster) {
+		display: contents;
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape'])
+		.hud-bottom
+		:is(.hud-divider, .bet-coin) {
+		display: none;
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .hud-buy,
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .hud-system,
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .value-pill,
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .nav-btn--step,
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .spin-btn,
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .nav-btn--turbo,
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .nav-btn--auto {
+		position: absolute;
+		margin: 0;
+		z-index: 1;
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .hud-buy {
+		left: 0;
+		top: calc(var(--bs) * 8);
+		padding: 0;
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .bonus-square {
+		width: calc(var(--bs) * 102);
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .hud-system {
+		left: calc(var(--bs) * 129.67);
+		top: calc(var(--bs) * 40);
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom [data-menu-toggle] {
+		width: calc(var(--bs) * 46.67);
+		height: calc(var(--bs) * 40);
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape'])
+		.hud-bottom
+		[data-menu-toggle].nav-btn--open {
+		width: calc(var(--bs) * 40);
+		height: calc(var(--bs) * 40);
+		margin-left: calc(var(--bs) * 3.33);
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .menu-popup {
+		left: calc(var(--bs) * -18.67);
+	}
+	/* BALANCE and WIN with Blob Split's 6.67 padding and no rules between; BET's amount is a fixed
+	   box ending at 671 with its label centred over it. All three keep a FIXED width (fitAmount steps
+	   a long amount's type down to it), so a count-up never re-lays the bar. */
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .value-pill {
+		top: calc(var(--bs) * 34);
+		height: calc(var(--bs) * 49);
+		min-width: 0;
+		box-sizing: border-box;
+		padding: 0 calc(var(--bs) * 6.67);
+		border-left: 0;
+		justify-content: center;
+		gap: calc(var(--bs) * 2);
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .value-pill--balance {
+		left: calc(var(--bs) * 198);
+		width: calc(var(--bs) * 155);
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .value-pill--win {
+		left: calc(var(--bs) * 353);
+		width: calc(var(--bs) * 170);
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .value-pill--bet {
+		left: calc(var(--bs) * 531);
+		width: calc(var(--bs) * 140);
+		padding: 0;
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .bet-values {
+		width: 100%;
+		align-items: center;
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .label {
+		font-size: calc(var(--bs) * 10);
+		line-height: calc(var(--bs) * 15);
+		letter-spacing: calc(var(--bs) * 2);
+	}
+	/* The chevrons: up at (690, 31), down at (690, 67), 34 x 19, white and bare. */
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .nav-btn--step {
+		left: calc(var(--bs) * 690);
+		top: calc(var(--bs) * 67);
+		width: calc(var(--bs) * 34);
+		height: calc(var(--bs) * 19);
+		border: 0;
+		border-radius: calc(var(--bs) * 4);
+		background: none;
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .nav-btn--up {
+		top: calc(var(--bs) * 31);
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape'])
+		.hud-bottom
+		.nav-btn--step:not(:disabled):hover {
+		background: none;
+		scale: 1.12;
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .nav-btn--step:disabled {
+		opacity: 0.3;
+	}
+	.step-chevron {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+	}
+	.step-chevron--down {
+		rotate: 180deg;
+	}
+	/* The 112 disc, overhanging the plate 18 above and 11 below. */
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .spin-btn {
+		left: calc(var(--bs) * 743);
+		top: 0;
+		width: calc(var(--bs) * 112);
+		height: calc(var(--bs) * 112);
+		border-width: calc(var(--bs) * 4);
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .spin-btn__count {
+		font-size: calc(var(--bs) * 30 * var(--spin-count-scale, 1));
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .nav-btn--auto,
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .nav-btn--turbo {
+		width: calc(var(--bs) * 44);
+		height: calc(var(--bs) * 44);
+		border-width: calc(var(--bs) * 2.75);
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .nav-btn--auto {
+		left: calc(var(--bs) * 866);
+		top: calc(var(--bs) * 12);
+	}
+	.hud-shell:not([data-layout='portrait'], [data-layout='landscape']) .hud-bottom .nav-btn--turbo {
+		left: calc(var(--bs) * 867);
+		top: calc(var(--bs) * 61);
+	}
+
+	/* -- phone landscape: Blob Split's rail (Figma 11318:45947, the reference Veggie Salad was moved
+	   onto 2026-11-25) ---------------------------------------------------------------------------
+	   In its 800 x 360 frame: rail 65 x 285 with its right edge at 786.5 and its foot at 320 — menu,
+	   turbo, an 84 spin disc overhanging both sides, auto. Left of it, 14 apart, a 46-wide column: the
+	   bet stepper (137 tall, bare chevrons around the amount) over the Press Play square, 8 apart, on
+	   the rail's foot line. --lu is one of those px. The board's right bound is this column's left
+	   edge less its margin (LS_SIDE_FROM_RIGHT_LU in stateGame — keep the two in step). BALANCE and
+	   WIN sit on the left rail's column
+	   where BALANCE / BET did. Plates at 60%: 47% reads too thin over the bright sky (user, Veggie). */
+	.hud-shell[data-layout='landscape'] .ls-hud {
+		--lu: min(100vw / 800, 100dvh / 360);
+		--bar-fill: rgb(0 0 0 / 0.6);
+	}
+	.hud-shell[data-layout='landscape'] .ls-nav {
+		top: auto;
+		right: calc(var(--lu) * 13.5);
+		bottom: calc(var(--lu) * 40);
+		width: calc(var(--lu) * 65);
+		height: calc(var(--lu) * 285);
+		padding: calc(var(--lu) * 18) 0;
+		justify-content: space-between;
+		border: 0;
+		border-radius: calc(var(--lu) * 10);
+		background: var(--bar-fill);
+	}
+	.hud-shell[data-layout='landscape'] .ls-nav .nav-btn {
+		width: calc(var(--lu) * 42);
+		height: calc(var(--lu) * 42);
+		border-width: max(1.5px, calc(var(--lu) * 2.5));
+	}
+	.hud-shell[data-layout='landscape'] .ls-nav [data-menu-toggle] {
+		width: calc(var(--lu) * 40);
+		height: calc(var(--lu) * 34);
+	}
+	.hud-shell[data-layout='landscape'] .ls-nav [data-menu-toggle].nav-btn--open {
+		width: calc(var(--lu) * 40);
+		height: calc(var(--lu) * 40);
+	}
+	.hud-shell[data-layout='landscape'] .ls-nav .ls-spin {
+		width: calc(var(--lu) * 84);
+		height: calc(var(--lu) * 84);
+		margin: 0 calc(var(--lu) * -9.5);
+		border-width: max(2px, calc(var(--lu) * 3.5));
+	}
+	.hud-shell[data-layout='landscape'] .ls-nav .ls-spin .spin-btn__count {
+		font-size: calc(var(--lu) * 22 * var(--spin-count-scale, 1));
+	}
+	/* The popover opens left of the stepper column, not over it. */
+	.hud-shell[data-layout='landscape'] .menu-popup {
+		top: 0;
+		right: calc(100% + var(--lu) * 70);
+	}
+	.ls-side {
+		position: absolute;
+		right: calc(var(--lu) * 92.5);
+		bottom: calc(var(--lu) * 40);
+		width: calc(var(--lu) * 46);
+		display: flex;
+		flex-direction: column;
+		gap: calc(var(--lu) * 8);
+	}
+	.hud-shell[data-layout='landscape'] .ls-side .ls-bet {
+		width: 100%;
+		height: calc(var(--lu) * 137);
+		box-sizing: border-box;
+		padding: calc(var(--lu) * 8) calc(var(--lu) * 3);
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0;
+		border: 0;
+		border-radius: calc(var(--lu) * 8);
+		background: var(--bar-fill);
+	}
+	.ls-chev {
+		width: calc(var(--lu) * 32);
+		height: calc(var(--lu) * 19);
+		padding: 0;
+		border: 0;
+		background: none;
+		cursor: pointer;
+		transition: scale 0.12s ease;
+	}
+	.ls-chev:not(:disabled):hover {
+		scale: 1.12;
+	}
+	.ls-chev:disabled {
+		opacity: 0.3;
+		cursor: default;
+	}
+	.hud-shell[data-layout='landscape'] .ls-side .ls-bet-val {
+		width: 100%;
+	}
+	/* fitAmount steps a long bet down to the column's width from here. */
+	.hud-shell[data-layout='landscape'] .ls-side .ls-bet-val .value {
+		font-size: clamp(11px, calc(var(--lu) * 15), 20px);
+		line-height: 1;
+	}
+	.hud-shell[data-layout='landscape'] .ls-side .ls-bonus.bonus-square {
+		width: 100%;
+	}
+	/* BALANCE over WIN, both the design's black-50% boxes. */
+	.hud-shell[data-layout='landscape'] .ls-stats {
+		flex-direction: column;
+	}
+	.hud-shell[data-layout='landscape'] .ls-balance {
+		width: 100%;
+		background: rgb(0 0 0 / 0.5);
+		box-shadow: none;
+		backdrop-filter: none;
+	}
+	.hud-shell[data-layout='landscape'] .ls-balance .label-text {
+		color: var(--bar-accent);
 	}
 </style>
