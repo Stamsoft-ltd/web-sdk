@@ -549,6 +549,18 @@ const boardLayout = () => {
 // so the capsule and the buy badge beneath it stay aligned at every device aspect ratio.
 // 0 (was 0.01): the capsule starts flush with the screen top (user pass 2026-08-10).
 const LANDSCAPE_CAPSULE_TOP_GAP = 0;
+// The HUD's phone-landscape bet-stepper column (Blob Split's Press Play rail, 2026-11-26) is placed in
+// Blob's 800x360 frame units, --lu = min(100vw/800, 100dvh/360): rail right inset 13.5 + rail 65 +
+// gap 14 + column 46 = 138.5 lu from the right edge. Keep in step with HudHtml's .ls-side / .ls-nav.
+// The capsule tube must stay clear of that column (and the board) by LANDSCAPE_CAPSULE_SIDE_GAP_LU,
+// shrinking where it has to — see landscapeCapsuleLayout.
+const LS_SIDE_FROM_RIGHT_LU = 138.5;
+// Its top: foot 40 + stepper 137 + gap 8 + Press Play square 46. The rail's left edge: 13.5 + 65.
+const LS_SIDE_FROM_BOTTOM_LU = 231;
+const LS_RAIL_FROM_RIGHT_LU = 78.5;
+const LANDSCAPE_CAPSULE_SIDE_GAP_LU = 6;
+// LandscapeCapsule draws the shell at 0.941 of tubeH tall and 695/1488 of that wide.
+const LANDSCAPE_CAPSULE_SHELL_W_PER_H = 0.941 * (695 / 1488);
 
 const landscapeCapsuleLayout = () => {
 	const board = boardLayout();
@@ -560,13 +572,39 @@ const landscapeCapsuleLayout = () => {
 	const canvasRightX =
 		main.width * 0.5 + stateLayoutDerived.canvasSizes().width / (2 * (main.scale || 1));
 	const boardRightX = board.x + gridHalfW;
-	const colX = boardRightX + (canvasRightX - boardRightX) * landscapeCapsuleBias();
+	let colX = boardRightX + (canvasRightX - boardRightX) * landscapeCapsuleBias();
 	// 10% larger than the board-derived base size, anchored near the SCREEN TOP (not centred on
 	// the board) so the capsule column starts almost at the top edge.
 	const tubeRatio =
 		LANDSCAPE_CAPSULE_TUBE_RATIO_MIN +
 		landscapeSizeT() * (LANDSCAPE_CAPSULE_TUBE_RATIO - LANDSCAPE_CAPSULE_TUBE_RATIO_MIN);
-	const baseH = gridHalfH * tubeRatio * 1.1;
+	let baseH = gridHalfH * tubeRatio * 1.1;
+	// Keep the drawn shell clear of the HUD's bet-stepper column (see LS_SIDE_FROM_RIGHT_LU). Two ways
+	// to fit, whichever leaves the tube bigger: BESIDE the column (squeezed into the gutter between
+	// the board frame and the column) or ABOVE it (top-anchored as ever, shortened so its foot clears
+	// the column's top, and kept left of the rail). A tube that already clears both is untouched.
+	const canvas = stateLayoutDerived.canvasSizes();
+	const ms = main.scale || 1;
+	const lu = Math.min(canvas.width / 800, canvas.height / 360) / ms;
+	const gap = LANDSCAPE_CAPSULE_SIDE_GAP_LU * lu;
+	const canvasTop = main.height * 0.5 - canvas.height / (2 * ms);
+	const canvasBottom = main.height * 0.5 + canvas.height / (2 * ms);
+	const sideLeftX = canvasRightX - LS_SIDE_FROM_RIGHT_LU * lu;
+	const sideTopY = canvasBottom - LS_SIDE_FROM_BOTTOM_LU * lu;
+	const railLeftX = canvasRightX - LS_RAIL_FROM_RIGHT_LU * lu;
+	// The board FRAME's bezel reaches ~6% of the grid's half-width past the grid (measured, 932x430).
+	const frameRightX = board.x + gridHalfW * 1.06;
+	const shellW0 = baseH * LANDSCAPE_CAPSULE_TUBE_STRETCH * LANDSCAPE_CAPSULE_SHELL_W_PER_H;
+	const visibleH0 = baseH * LANDSCAPE_CAPSULE_TUBE_STRETCH * LANDSCAPE_CAPSULE_VISIBLE_H;
+	const topY = canvasTop + main.height * LANDSCAPE_CAPSULE_TOP_GAP;
+	const kBeside = Math.min(1, Math.max(0, sideLeftX - frameRightX - gap * 2) / shellW0);
+	const kAbove = Math.min(1, Math.max(0, sideTopY - gap - topY) / visibleH0);
+	const above = kAbove >= kBeside;
+	const k = above ? kAbove : kBeside;
+	baseH *= k;
+	const shellW = shellW0 * k;
+	colX = Math.min(colX, (above ? railLeftX : sideLeftX) - gap - shellW / 2);
+	colX = Math.max(colX, frameRightX + gap + shellW / 2);
 	const tubeW = baseH * LANDSCAPE_CAPSULE_TUBE_ASPECT;
 	const tubeH = baseH * LANDSCAPE_CAPSULE_TUBE_STRETCH;
 	// Visible (opaque) tube extents — the sprite box is padded, so size the symbol against these and
