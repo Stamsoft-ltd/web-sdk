@@ -24,6 +24,7 @@ export const COSTS = {
 	BONUS: 100,
 	SUPER: 300,
 	MYSTERY: 400,
+	MYSTERY_EXTREME: 400,
 } as const;
 export type Mode = keyof typeof COSTS;
 export const PAYS = [

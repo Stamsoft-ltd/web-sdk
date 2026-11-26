@@ -3066,3 +3066,7 @@
 	margin-inline: auto;
 	max-width: 100%;
 }
+
+/* Extreme is a separate buy, not a renamed old Mystery action. */
+.cartoon-modal .mode-card.extreme h3 { color: #a9f6ff; }
+.cartoon-modal .mode-card.extreme .mode-art { filter: hue-rotate(135deg); }

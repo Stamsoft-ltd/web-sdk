@@ -27,6 +27,7 @@ test('quarter pays and mode costs preserved', () => {
 		BONUS: 100,
 		SUPER: 300,
 		MYSTERY: 400,
+		MYSTERY_EXTREME: 400,
 	});
 });
 test('cascade displays raw amount without crediting a win', () => {

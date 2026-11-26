@@ -32,7 +32,7 @@ export const RULE_WIN_METHODS = [
 	...info(name),
 	title: `INFO ${name === 'ANYWHERE PAYOUTS' ? 'ANYWHERE WINS' : name}`,
 }));
-export const RULE_BUYS = ['CHANCE', 'FEATURE', 'BONUS', 'SUPER', 'MYSTERY'] as const;
+export const RULE_BUYS = ['CHANCE', 'FEATURE', 'BONUS', 'SUPER', 'MYSTERY', 'MYSTERY_EXTREME'] as const;
 export const RULE_BUY_INFO = Object.fromEntries(
 	RULE_BUYS.map((mode, i) => [
 		mode,
@@ -43,6 +43,7 @@ export const RULE_BUY_INFO = Object.fromEntries(
 				'NORMAL BONUS BUY',
 				'SUPER BONUS BUY',
 				'MYSTERY BONUS BUY',
+				'MYSTERY EXTREME BUY',
 			][i],
 		),
 	]),

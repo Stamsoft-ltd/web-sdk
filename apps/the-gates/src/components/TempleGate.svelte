@@ -5,6 +5,8 @@
 	import { untrack } from 'svelte';
 	import { Container, Text, Matrix, Graphics } from 'pixi.js';
 	import { createRewardFlight } from '../game/gpuRewardFlight';
+	import { rewardVisual, rewardMotion } from '../game/rewardVisual';
+	import { drawRewardBadge } from '../game/gpuRewardBadge';
 	import { REWARD_FLIGHT_START_MS } from '../game/rewardDelivery';
 	import { dingRewardArrival } from '../game/rewardAudio';
 	import { runtime, arriveGateReward } from '../game/playback.svelte';
@@ -12,7 +14,7 @@
 	import { loadRig } from '../game/spine';
 	import { useGpu } from '../game/gpuContext';
 	import { gateCycleTracks, GATE_CYCLE } from '../game/gateAnimation';
-	import { gatePresentationFrame } from '../game/gatePlayback';
+	import { gatePresentationFrame, GATE_REWARD_ENTER_MS } from '../game/gatePlayback';
 	import { projectFullscreenGate } from '../game/gateViewport';
 	import { t } from '../i18n';
 	let { rewardText }: { rewardText: string } = $props();
@@ -64,7 +66,8 @@
 					},
 				});
 				label.anchor.set(0.5);
-				award.addChild(label);
+				const badge = new Graphics();
+				award.addChild(badge, label);
 				const wild = engine.pose(wildData);
 				wild.begin();
 				wild.actor.sample('idle', 0);
@@ -176,6 +179,17 @@
 							? `${state.delivery!.reward.kind === 'stickyWild' ? state.delivery!.reward.positions.length : 0}×`
 							: state.text;
 						if (label.text !== rewardLabel) label.text = rewardLabel;
+						const visual = rewardVisual(state.delivery?.reward),
+							motion = rewardMotion(
+								state.delivery?.reward.kind,
+								state.delivery
+									? (now - state.delivery.startedAt) * (state.delivery.speedFactor ?? 1) -
+											GATE_REWARD_ENTER_MS
+									: 0,
+								0,
+								state.reduced,
+							);
+						if (label.style.fill !== visual.fill) label.style.fill = visual.fill;
 						label.x = sticky ? -53 : 0;
 						const flying =
 							!!state.delivery &&
@@ -186,9 +200,17 @@
 						if (bone) {
 							const fit = Math.min(
 								1,
-								(sticky ? 80 : 185) / Math.max(1, label.getLocalBounds().width),
+								(sticky ? 80 : visual.badge ? 145 : 185) /
+									Math.max(1, label.getLocalBounds().width),
 							);
-							label.scale.set(fit);
+							label.scale.set(fit * motion.scale);
+							label.y = motion.y;
+							label.rotation = motion.rotation;
+							const bounds = label.getLocalBounds();
+							drawRewardBadge(badge, visual, bounds.width * fit, bounds.height * fit);
+							badge.scale.set(motion.scale);
+							badge.y = motion.y;
+							badge.rotation = motion.rotation;
 							award.setFromMatrix(
 								new Matrix(
 									scale * bone.a,
@@ -204,6 +226,7 @@
 						element.dataset.gateTime = time.toFixed(3);
 						element.dataset.gateEnded = String(frame.ended);
 						element.dataset.rewardOrder = String(state.order);
+						element.dataset.rewardKind = state.delivery?.reward.kind ?? '';
 						element.dataset.rewardDelivery = flying ? 'flying' : 'portal';
 						element.dataset.rewardArrivals = String(state.delivery?.arrived.length ?? 0);
 						element.dataset.renderer = 'pixi-webgl';

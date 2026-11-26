@@ -146,7 +146,7 @@ const en: Record<string, string> = {
 	'FEATURE RULES':
 		'An optional paid-spin mode guaranteeing at least one gate on the full entry spin. Gate rewards on that spin are additive multipliers. Keys can also trigger a bonus. Remains active for each paid spin until deactivated; a bonus is not guaranteed.',
 	'BONUS PURCHASE RULES':
-		'All costs above are multiples of the base bet. Bonus purchases play the full entry spin before the free spins begin. Normal and Super purchases are tier-locked; only Mystery randomly selects a tier. Wins are calculated from the base bet, not the purchase cost. The 25,000× round cap includes the entry spin and the entire bonus.',
+		'All costs above are multiples of the base bet. Bonus purchases play the full entry spin before the free spins begin. Normal and Super purchases are tier-locked; Mystery Bonus and Mystery Extreme randomly select a tier. Wins are calculated from the base bet, not the purchase cost. The 25,000× round cap includes the entry spin and the entire bonus.',
 
 	'REDUCED MOTION': 'Reduced motion',
 	SPIN: 'Spin',
@@ -203,7 +203,8 @@ const en: Record<string, string> = {
 	NORMAL: 'Normal bonus',
 	SUPER: 'Super bonus',
 	HIDDEN: 'Hidden bonus',
-	MYSTERY: 'Mystery bonus',
+	MYSTERY: 'Mystery Bonus',
+	MYSTERY_EXTREME: 'Mystery Extreme',
 	CHANCE: 'Extra chance',
 	FEATURE: 'Feature spin',
 	BASE: 'Base game',
@@ -276,7 +277,12 @@ const en: Record<string, string> = {
 	'MODE FEATURE TITLE': 'Feature spin',
 	'MODE BONUS TITLE': 'Normal bonus',
 	'MODE SUPER TITLE': 'Super bonus',
-	'MODE MYSTERY TITLE': 'Mystery bonus',
+	'MODE MYSTERY TITLE': 'Mystery Bonus',
+	'MODE MYSTERY_EXTREME TITLE': 'Mystery Extreme',
+	'MYSTERY_EXTREME DESC':
+		'15 free spins. 50% Normal · 35% Super · 15% Hidden. Separate payout distribution from Mystery Bonus; higher Hidden chance does not guarantee a higher win.',
+	'MYSTERY_EXTREME RULES':
+		'Costs 400× base bet. Selects 50% Normal, 35% Super or 15% Hidden, with 15 starting free spins. Uses a separately balanced payout distribution, not the same conditional payouts as Mystery Bonus. Both modes target 96.1% RTP. No later tier upgrade.',
 	'REPLAY ERROR GENERIC': 'Unable to load this replay. Please reconnect.',
 };
 const bg: Record<string, string> = {
@@ -301,7 +307,7 @@ const bg: Record<string, string> = {
 	'FEATURE RULES':
 		'Режим за платени врътки, гарантиращ поне един портал по време на пълната входна врътка. Наградите от порталите в нея добавят към множителя. Ключовете могат да активират бонус, но той не е гарантиран. Режимът остава активен до изключването му.',
 	'BONUS PURCHASE RULES':
-		'Всички цени са кратни на основния залог. При покупка се изиграва цялата входна врътка преди безплатните врътки. Нормален и Супер дават само съответния бонус; само Мистери избира случаен вид. Печалбите се изчисляват спрямо основния залог, не цената на покупката. Лимитът от 25 000× включва входната врътка и целия бонус.',
+		'Всички цени са кратни на основния залог. При покупка се изиграва цялата входна врътка преди безплатните врътки. Нормален и Супер дават само съответния бонус; Мистери бонус и Мистери Екстрийм избират случаен вид. Печалбите се изчисляват спрямо основния залог, не цената на покупката. Лимитът от 25 000× включва входната врътка и целия бонус.',
 
 	SPIN: 'Завърти',
 	STOP: 'Стоп',
@@ -330,6 +336,12 @@ const bg: Record<string, string> = {
 	SUPER: 'Супер бонус',
 	HIDDEN: 'Скрит бонус',
 	MYSTERY: 'Мистери бонус',
+	MYSTERY_EXTREME: 'Мистери Екстрийм',
+	'MYSTERY_EXTREME DESC':
+		'15 безплатни врътки. 50% Нормален · 35% Супер · 15% Скрит. Отделно разпределение на печалбите спрямо Мистери бонус; по-високият шанс за Скрит не гарантира по-висока печалба.',
+	'MODE MYSTERY_EXTREME TITLE': 'Мистери Екстрийм',
+	'MYSTERY_EXTREME RULES':
+		'Цена 400× основния залог. Избира 50% Нормален, 35% Супер или 15% Скрит с 15 начални безплатни врътки. Отделно балансирано разпределение на печалбите спрямо Мистери бонус. И двата режима целят RTP 96.1%. Няма последващо надграждане.',
 	CHANCE: 'Допълнителен шанс',
 	FEATURE: 'Специална врътка',
 	BASE: 'Основна игра',

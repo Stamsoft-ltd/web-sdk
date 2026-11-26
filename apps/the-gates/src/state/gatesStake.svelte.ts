@@ -64,7 +64,7 @@ const modeCostMultiplier = () => {
 			? 20
 			: replayMode() === 'BONUS'
 				? 100
-				: replayMode() === 'MYSTERY'
+				: replayMode() === 'MYSTERY' || replayMode() === 'MYSTERY_EXTREME'
 					? 400
 					: replayMode() === 'SUPER'
 						? 300
@@ -80,11 +80,13 @@ const modeTitle = () => {
 				? 'MODE FEATURE TITLE'
 				: mode === 'BONUS'
 					? 'MODE BONUS TITLE'
-					: mode === 'MYSTERY'
-						? 'MODE MYSTERY TITLE'
-						: mode === 'SUPER'
-							? 'MODE SUPER TITLE'
-							: 'BET MODE BASE TITLE';
+					: mode === 'MYSTERY_EXTREME'
+						? 'MODE MYSTERY_EXTREME TITLE'
+						: mode === 'MYSTERY'
+							? 'MODE MYSTERY TITLE'
+							: mode === 'SUPER'
+								? 'MODE SUPER TITLE'
+								: 'BET MODE BASE TITLE';
 	return stateI18nDerived.translate(key);
 };
 

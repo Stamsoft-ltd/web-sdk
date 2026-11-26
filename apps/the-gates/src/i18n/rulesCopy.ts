@@ -11,7 +11,7 @@ export const rulesCopy: Record<string, string> = {
 		'3 Keys — 2× + Normal Bonus. 4 Keys — 10× + Super Bonus. 5+ Keys — 50× + Hidden Bonus. Normal Bonus: Gate multipliers stay active and keep growing across Free Spins. Super Bonus: each Gate gives 1 reward — Multiplier, Multiplier Boost, Sticky Wild, Extra Spin or Retrigger. Hidden Bonus: each Gate gives 2 Super Bonus rewards. Super/Hidden retain tumble progress between Free Spins, including blanks; every third winning Cascade opens a Gate and the meter resets when its doors close. Each Bonus starts with 15 Free Spins. Gate extra-spin rewards add 1, 2, 3 or 5 spins; a Retrigger adds 15 spins in Super and Hidden. Keys do not appear during Free Spins.',
 	'INFO FEATURE OPTIONS': 'FEATURE OPTIONS',
 	'INFO FEATURE OPTIONS COPY':
-		'Extra Bonus Chance — 2× bet, 3× bonus chance. Feature Spin — 20×, guarantees at least 1 Gate. Normal Bonus — 100×. Super Bonus — 300×. Mystery Bonus — 400×. Mystery result: 65% Normal / 30% Super / 5% Hidden.',
+		'Extra Bonus Chance — 2× bet, 3× bonus chance. Feature Spin — 20×, guarantees at least 1 Gate. Normal Bonus — 100×. Super Bonus — 300×. Mystery Bonus — 400×. Mystery result: 65% Normal / 30% Super / 5% Hidden. Mystery Extreme — 400×: 50% Normal / 35% Super / 15% Hidden, with a separately balanced payout distribution.',
 	'INFO MAX WIN': 'MAX WIN',
 	'INFO MAX WIN COPY':
 		'The maximum win is 25,000× the selected base bet. When the maximum win is reached, no additional win value can be added and the full 25,000× amount is awarded.',
@@ -59,5 +59,8 @@ export const rulesCopy: Record<string, string> = {
 		'Costs 300× the selected base bet. Awards the full entry spin followed by the Super Bonus. Each opened Gate awards one reward from the Super Reward pool.',
 	'INFO MYSTERY BONUS BUY': 'MYSTERY BONUS BUY',
 	'INFO MYSTERY BONUS BUY COPY':
-		'Costs 400× the selected base bet and randomly awards: 65% — Normal Bonus, 30% — Super Bonus, 5% — Hidden Bonus. The Hidden Bonus cannot be purchased directly. It can only be triggered naturally with 5 or more Keys or awarded by the Mystery Bonus Buy.',
+		'Costs 400× the selected base bet and randomly awards: 65% — Normal Bonus, 30% — Super Bonus, 5% — Hidden Bonus. The Hidden Bonus cannot be purchased directly. It can only be triggered naturally with 5 or more Keys or awarded by either Mystery buy.',
+	'INFO MYSTERY EXTREME BUY': 'MYSTERY EXTREME',
+	'INFO MYSTERY EXTREME BUY COPY':
+		'Costs 400× the selected base bet, the same as Mystery Bonus. Awards 50% Normal, 35% Super or 15% Hidden, each with 15 starting free spins. Extreme has a separately balanced payout distribution; its higher Hidden selection chance does not mean the same Hidden payout distribution as Mystery Bonus. Target RTP is 96.1% in both modes.',
 };

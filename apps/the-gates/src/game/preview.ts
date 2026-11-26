@@ -13,7 +13,13 @@ export function previewEvents(mode: Mode): BookEvent[] {
 	// Helper accepts each discriminated payload without widening public runtime types.
 	const add = (e: unknown) => emit(e as Omit<BookEvent, 'index'>);
 	const tier: Tier | null =
-		mode === 'BONUS' ? 'normal' : mode === 'SUPER' ? 'super' : mode === 'MYSTERY' ? 'hidden' : null;
+		mode === 'BONUS'
+			? 'normal'
+			: mode === 'SUPER'
+				? 'super'
+				: mode === 'MYSTERY' || mode === 'MYSTERY_EXTREME'
+					? 'hidden'
+					: null;
 	const positions = Array.from({ length: 8 }, (_, i) => ({ reel: Math.floor(i / 5), row: i % 5 }));
 	let total = 0;
 	function spin(id: number, bonus: Tier | null, fs: number, gate: boolean, keys = 0) {
@@ -116,12 +122,12 @@ export function previewEvents(mode: Mode): BookEvent[] {
 			{ length: tier === 'normal' ? 3 : tier === 'super' ? 4 : 5 },
 			(_, reel) => ({ reel, row: 4 }),
 		);
-		if (mode === 'MYSTERY')
+		if (mode === 'MYSTERY' || mode === 'MYSTERY_EXTREME')
 			add({ type: 'mysterySelect', tier, scatterCount: positions.length, positions });
 		add({
 			type: 'freeSpinTrigger',
 			tier,
-			source: mode === 'MYSTERY' ? 'mystery' : 'buy',
+			source: mode === 'MYSTERY' || mode === 'MYSTERY_EXTREME' ? 'mystery' : 'buy',
 			scatterCount: positions.length,
 			positions,
 			totalFs: 15,

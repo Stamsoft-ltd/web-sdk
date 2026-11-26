@@ -33,7 +33,7 @@ export function createGatesActor() {
 				stateBet.autoSpinsCounter = 0;
 				throw error;
 			}
-			if (['BONUS', 'SUPER', 'MYSTERY'].includes(stateBet.activeBetModeKey))
+			if (['BONUS', 'SUPER', 'MYSTERY', 'MYSTERY_EXTREME'].includes(stateBet.activeBetModeKey))
 				stateBet.activeBetModeKey = 'BASE';
 		},
 		checkIsBonusGame: (bet) => bet.state.some((e) => e.type === 'freeSpinTrigger'),

@@ -60,7 +60,7 @@ test('rules use seven ordered pages with bounded navigation and verified payout 
 	assert.equal(rulesPageIndex(0, -1), 0);
 	assert.equal(rulesPageIndex(6, 1), 6);
 	for (let i = 0; i < 6; i++) assert.equal(rulesPageIndex(i, 1), i + 1);
-	assert.deepEqual(RULE_BUYS, ['CHANCE', 'FEATURE', 'BONUS', 'SUPER', 'MYSTERY']);
+	assert.deepEqual(RULE_BUYS, ['CHANCE', 'FEATURE', 'BONUS', 'SUPER', 'MYSTERY', 'MYSTERY_EXTREME']);
 	const rules = source('components/Rules.svelte');
 	assert.match(rules, /each PAYS.slice\(start, start \+ capacity\) as pays/);
 	assert.match(rules, /disabled=\{page === RULES_PAGES.length - 1\}/);

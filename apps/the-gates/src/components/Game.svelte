@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { multiplierRewardText } from '../game/rewardVisual';
 	import { panelCounters, panelBonusWin } from '../game/panelPresentation';
 	import { effectiveSpeed } from '../game/uiPolicy';
 	import { onMount } from 'svelte';
@@ -236,7 +237,7 @@
 	const rewardText = $derived.by(() => {
 		const r = runtime.game.reward;
 		if (!r) return '';
-		if ('value' in r) return `${r.kind === 'addMultiplier' ? '+' : ''}${r.value}×`;
+		if ('value' in r) return multiplierRewardText(r)!;
 		if (r.kind === 'stickyWild') return `${r.positions.length}× ${t('STICKY WILD')}`;
 		return `+${'spinsAdded' in r ? r.spinsAdded : 0} ${t('FREE SPINS')}`;
 	});
@@ -278,7 +279,7 @@
 					new URLSearchParams(location.search).get('artPreview'),
 				);
 				await playEvents(artReview ?? previewEvents(mode), true);
-				if (['BONUS', 'SUPER', 'MYSTERY'].includes(mode)) stateBet.activeBetModeKey = 'BASE';
+				if (['BONUS', 'SUPER', 'MYSTERY', 'MYSTERY_EXTREME'].includes(mode)) stateBet.activeBetModeKey = 'BASE';
 			} catch (error) {
 				runtime.error = String(error);
 			} finally {
@@ -325,7 +326,7 @@
 		const next = selected;
 		stateBet.activeBetModeKey = next;
 		selected = null;
-		if (['BONUS', 'SUPER', 'MYSTERY'].includes(next)) void spin(true);
+		if (['BONUS', 'SUPER', 'MYSTERY', 'MYSTERY_EXTREME'].includes(next)) void spin(true);
 	}
 	function resume() {
 		if (busy || !stateBet.betToResume) return;
@@ -1097,9 +1098,10 @@
 		wide
 		fitted={buyFit}
 		><div class="mode-cards">
-			{#each ['CHANCE', 'FEATURE', 'BONUS', 'SUPER', 'MYSTERY'] as key}<button
+			{#each ['CHANCE', 'FEATURE', 'BONUS', 'SUPER', 'MYSTERY', 'MYSTERY_EXTREME'] as key}<button
 					class="mode-card"
-					class:rare={key === 'MYSTERY'}
+					class:rare={key === 'MYSTERY' || key === 'MYSTERY_EXTREME'}
+					class:extreme={key === 'MYSTERY_EXTREME'}
 					onclick={() => choose(key as Mode)}
 					data-mode={key}
 					title={!availableMode(key as Mode) ? t('ERROR BALANCE') : t(key)}

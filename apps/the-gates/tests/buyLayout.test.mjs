@@ -26,7 +26,7 @@ test('original card dimensions never change at any breakpoint', () => {
 		for (const active of [false, true]) {
 			const fit = fitBuyMenu(w, h, active);
 			assert.equal(fit.width, fit.columns * BUY_CARD.width + BUY_MENU_PADDING * 2);
-			assert.equal(fit.rows, Math.ceil(5 / fit.columns));
+			assert.equal(fit.rows, Math.ceil(6 / fit.columns));
 			assert.equal(
 				fit.height,
 				fit.rows * BUY_CARD.height +
@@ -36,24 +36,24 @@ test('original card dimensions never change at any breakpoint', () => {
 			);
 		}
 });
-test('all five cards fit without a scroll track; choose largest uniform scale', () => {
+test('all six cards fit without a scroll track; choose largest uniform scale', () => {
 	for (const [w, h] of sizes)
 		for (const active of [false, true]) {
 			const fit = fitBuyMenu(w, h, active);
 			assert.ok(fit.scale > 0 && fit.scale <= 1);
 			assert.ok(fit.width * fit.scale <= w - 24 + 1e-9, `${w}x${h} width`);
 			assert.ok(fit.height * fit.scale <= h - 24 + 1e-9, `${w}x${h} height`);
-			for (let columns = 1; columns <= 5; columns++) {
+			for (let columns = 1; columns <= 6; columns++) {
 				const width = columns * 355 + BUY_MENU_PADDING * 2,
 					height =
-						Math.ceil(5 / columns) * 295 +
+						Math.ceil(6 / columns) * 295 +
 						BUY_MENU_FOOTER +
 						BUY_MENU_PADDING * 2 +
 						(active ? BUY_MENU_ACTIVE_FOOTER : 0);
 				assert.ok(fit.scale + 1e-9 >= Math.min(1, (w - 24) / width, (h - 24) / height));
 			}
 		}
-	assert.equal(fitBuyMenu(1920, 1080).columns, 5);
+	assert.equal(fitBuyMenu(1920, 1080).columns, 3);
 	assert.equal(fitBuyMenu(1200, 800).columns, 3);
 	assert.ok(fitBuyMenu(844, 390).columns >= 3);
 });
@@ -64,7 +64,7 @@ test('restored menu renders original captions and cards, not pages or new rectan
 		source.indexOf("{:else if modal === 'rules'}"),
 	);
 	assert.match(menu, /fitted=\{buyFit\}/);
-	assert.match(menu, /\['CHANCE', 'FEATURE', 'BONUS', 'SUPER', 'MYSTERY'\]/);
+	assert.match(menu, /\['CHANCE', 'FEATURE', 'BONUS', 'SUPER', 'MYSTERY', 'MYSTERY_EXTREME'\]/);
 	assert.match(menu, /class="mode-card"/);
 	assert.match(menu, /class="mode-action"/);
 	assert.doesNotMatch(menu, /ButtonLabel|BuyMenu|pagination|buy-action/);

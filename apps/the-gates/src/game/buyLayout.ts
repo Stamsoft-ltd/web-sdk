@@ -6,9 +6,9 @@ export const BUY_MENU_ACTIVE_FOOTER = 60;
 export function fitBuyMenu(viewportWidth: number, viewportHeight: number, active = false) {
 	const availableWidth = Math.max(0, viewportWidth - 24);
 	const availableHeight = Math.max(0, viewportHeight - 24);
-	let best = { width: 0, height: 0, scale: -1, columns: 1, rows: 5 };
-	for (let columns = 1; columns <= 5; columns++) {
-		const rows = Math.ceil(5 / columns);
+	let best = { width: 0, height: 0, scale: -1, columns: 1, rows: 6 };
+	for (let columns = 1; columns <= 6; columns++) {
+		const rows = Math.ceil(6 / columns);
 		const width = columns * BUY_CARD.width + BUY_MENU_PADDING * 2;
 		const height =
 			rows * BUY_CARD.height +
@@ -16,9 +16,13 @@ export function fitBuyMenu(viewportWidth: number, viewportHeight: number, active
 			BUY_MENU_PADDING * 2 +
 			(active ? BUY_MENU_ACTIVE_FOOTER : 0);
 		const scale = Math.min(1, availableWidth / width, availableHeight / height);
-		const empty = rows * columns - 5;
-		const bestEmpty = best.rows * best.columns - 5;
-		if (scale > best.scale + 1e-9 || (Math.abs(scale - best.scale) < 1e-9 && empty < bestEmpty))
+		const empty = rows * columns - 6;
+		const bestEmpty = best.rows * best.columns - 6;
+		if (
+			scale > best.scale + 1e-9 ||
+			(Math.abs(scale - best.scale) < 1e-9 &&
+				(empty < bestEmpty || (empty === bestEmpty && rows < best.rows)))
+		)
 			best = { width, height, scale, columns, rows };
 	}
 	return best;
